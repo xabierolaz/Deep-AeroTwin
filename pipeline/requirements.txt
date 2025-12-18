@@ -1,0 +1,8 @@
+numpy
+opencv-python
+openvino
+requests
+flask
+pymavlink
+matplotlib
+pyproj

@@ -1,0 +1,5 @@
+# Git LFS for large model assets
+pipeline/yolov5/openvino/*.bin filter=lfs diff=lfs merge=lfs -text
+pipeline/yolov5/openvino/*.xml filter=lfs diff=lfs merge=lfs -text
+Unreal/Plugins/CesiumForUnreal/Source/ThirdParty/lib/Android-aarch64-Release/libs2.a filter=lfs diff=lfs merge=lfs -text
+Unreal/Plugins/CesiumForUnreal/Source/ThirdParty/lib/Android-aarch64-Release/libdraco.a filter=lfs diff=lfs merge=lfs -text

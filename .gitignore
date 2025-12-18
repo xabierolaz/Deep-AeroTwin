@@ -1,0 +1,65 @@
+# Root gitignore para NO subir instalaciones pesadas ni artefactos locales
+
+# Entornos virtuales
+venv/
+env/
+.env
+
+# Directorios externos al pipeline
+# /ardupilot/  <-- Habilitado para control de versiones (submódulo)
+# /Unreal/     <-- Habilitado para control de versiones
+
+# Unreal Engine - Ignorar carpetas temporales y generadas (IMPORTANTE)
+Unreal/Intermediate/
+Unreal/Saved/
+Unreal/DerivedDataCache/
+Unreal/Build/
+Unreal/Binaries/
+Unreal/.vscode/
+Unreal/*.sln
+Unreal/.vs/
+
+# Logs/artifacts raíz (SITL, imágenes sueltas)
+/# logs/artifacts
+/logs/
+/pipeline/logs/
+/pipeline/detection_results/
+*.log
+*.png
+*.jpg
+*.jpeg
+nul
+
+# Python caches globales
+__pycache__/
+*.pyc
+
+# Otros temporales comunes
+*.tmp
+*.bak
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
+.vs/
+.fleet/
+.spyproject/
+.ropeproject/
+.history/
+*.code-workspace
+.project
+.classpath
+.settings/
+.ipynb_checkpoints/
+
+# Nota: el subproyecto está en /pipeline y tiene su propio .gitignore
+
+# Archivos grandes ignorados por LFS quota
+*.fbx
+*.bin
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+
+pipeline/yolov5/openvino/*.xml
