@@ -18,6 +18,7 @@ from constants import (
     NAV_SPEED_HORIZONTAL_MS,
     EARTH_RADIUS_M,
     SAFETY_DISTANCE_M,
+    DETECTION_RANGE_M,
     REACTION_DISTANCE_M, # NUEVO: Distancia de reaccion explicita
     ARRIVAL_TOLERANCE_M,
     ALTITUDE_TOLERANCE_M,
@@ -60,6 +61,7 @@ state = {
     'last_obstacle_update': 0,
     'evasion_active': False,
     'evasion_path': [],
+    'evasion_grid_origin': None, # NUEVO: Centro del grid A*
     'path_index': 0,
     'takeoff_initiated': False
 }
@@ -320,6 +322,7 @@ def control_loop():
                     if new_route:
                         log.info(f"[PORCE] Ruta generada: {len(new_route)} sub-puntos.")
                         state['evasion_path'] = new_route
+                        state['evasion_grid_origin'] = {'lat': tel['lat'], 'lon': tel['lon']}
                         state['path_index'] = 0
                         state['evasion_active'] = True
                         active_path = new_route
@@ -372,9 +375,33 @@ def control_loop():
             if time.time() % 3.0 < 0.1:
                 log.info(f"[NAV] Hacia WP{current_idx} (Dist: {dist:.1f}m)")
         else:
-            if tel['mode'] != 'RTL':
-                log.info("Misión Terminada. RTL.")
-                master.set_mode('RTL')
+            if tel['mode'] != 'LAND':
+                log.info("Misión Terminada. Aterrizando (LAND).")
+                master.set_mode('LAND')
+
+# --- UI DATA ENDPOINT (OBSERVABILITY) ---
+@app.route('/api/ui/data', methods=['GET'])
+def ui_data_endpoint():
+    """
+    Endpoint para herramientas de visualización (Sidecar).
+    Expone el estado interno sin bloquear el bucle de control.
+    """
+    with state_lock:
+        return jsonify({
+            'telemetry': state['telemetry'],
+            'home': state['home'],
+            'waypoints': state['waypoints'],
+            'obstacles': state['obstacles'],
+            'evasion': {
+                'active': state['evasion_active'], 
+                'path': state['evasion_path'],
+                'grid_origin': state['evasion_grid_origin']
+            },
+            'params': {
+                'safety_dist': SAFETY_DISTANCE_M, 
+                'detection_dist': DETECTION_RANGE_M
+            }
+        })
 
 if __name__ == '__main__':
     if not load_mission():
