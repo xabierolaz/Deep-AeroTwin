@@ -3,6 +3,13 @@
 **Version:** 2.3  
 **Author:** Xabier Olaz
 
+<div align="center">
+  <video width="100%" controls autoplay loop muted>
+    <source src="readme_video.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
 ## Overview
 
 **Deep-AeroTwin** is a cutting-edge aerospace framework designed to bridge the gap between simulation and reality. It operates on a dual-pipeline architecture designed for two distinct operational modes: **Autonomous Synthetic Simulation** (Current) and **Real-Time Digital Twin Teleoperation** (In Development).
