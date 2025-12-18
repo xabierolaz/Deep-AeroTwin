@@ -4,10 +4,7 @@
 **Author:** Xabier Olaz
 
 <div align="center">
-  <video width="100%" controls autoplay loop muted>
-    <source src="readme_video.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
+  <img src="readme_gif.gif" width="100%" alt="Deep-AeroTwin Demo">
 </div>
 
 ## Overview
