@@ -63,3 +63,11 @@ Thumbs.db
 
 
 pipeline/yolov5/openvino/*.xml
+
+# --- DATASET GENERATION ---
+# Ignorar pesos pesados y datasets generados
+*.pt
+3d_to_dataset_xabi/dataset/
+3d_to_dataset_xabi/venv/
+3d_to_dataset_xabi/yolo_3d_experiment/
+3d_to_dataset_xabi/__pycache__/
