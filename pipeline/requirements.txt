@@ -1,8 +1,7 @@
-numpy
-opencv-python
-openvino
 requests
-flask
-pymavlink
-matplotlib
-pyproj
+ultralytics
+opencv-python
+mss
+trimesh
+pyrender
+numpy

@@ -1,0 +1,10 @@
+path: D:/ArduPilot_SITL_Install/3d_to_dataset_xabi/dataset  # dataset root dir
+train: images/train  # train images (relative to 'path') 
+val: images/val  # val images (relative to 'path') 
+test:  # test images (optional)
+
+# Classes
+names:
+  0: biker
+  1: cow
+  2: tower
