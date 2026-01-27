@@ -1,146 +1,253 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-VISION SYSTEM (The Eyes) v2.3 - FIXED
--------------------------------------
-Correcciones:
-- SANITIZACIÓN: Elimina espacios en blanco de SYSTEM_MODE (El error invisible).
-- DIAGNOSTICO: Mantiene logs de distancia para verificar la corrección.
+VISION SYSTEM (The Eyes) v3.0 - YOLO11 INTEGRATION
+--------------------------------------------------
+- Real-time Screen Capture (MSS)
+- YOLOv11 Inference (Ultralytics)
+- GPS Projection (Pixel -> GeoCoords)
+- Debug Visualization Window
 """
 
 import os
 import time
 import math
 import sys
+import cv2
+import numpy as np
+import mss
 from datetime import datetime
-import traceback
 import requests
+from ultralytics import YOLO
 
-# --- CORRECCIÓN CRITICA: LIMPIEZA DE VARIABLE ---
-from constants import SYSTEM_MODE
-# Eliminar espacios invisibles que rompen la comparación
-SYSTEM_MODE = SYSTEM_MODE.strip() 
+# --- CONFIGURACIÓN E IMPORTACIONES ---
+try:
+    from constants import (
+        MAVLINK_HUB_HTTP_PORT, DETECTION_RANGE_M, EARTH_RADIUS_M,
+        CAMERA_FOV_VERTICAL, CAMERA_HEIGHT, CAMERA_WIDTH,
+        TERRAIN_ELEVATION_MSL, SYSTEM_MODE
+    )
+except ImportError:
+    # Fallback si se ejecuta directo sin contexto
+    MAVLINK_HUB_HTTP_PORT = 8080
+    DETECTION_RANGE_M = 80.0
+    EARTH_RADIUS_M = 6371000
+    CAMERA_FOV_VERTICAL = 45.0
+    CAMERA_HEIGHT = 640 # Ajustado para captura
+    CAMERA_WIDTH = 640
+    TERRAIN_ELEVATION_MSL = 435.0
+    SYSTEM_MODE = 'SIMULATION'
 
-# --- CONFIGURACION DE SEGURIDAD ---
-DISABLE_OPENVINO_IN_SIM = True 
-
-OPENVINO_AVAILABLE = False
-if SYSTEM_MODE == 'SIMULATION' and DISABLE_OPENVINO_IN_SIM:
-    print(f"[VISION-BOOT] OpenVINO deshabilitado en modo '{SYSTEM_MODE}'.")
-else:
-    try:
-        from openvino.runtime import Core
-        OPENVINO_AVAILABLE = True
-    except ImportError:
-        pass
-    except Exception as e:
-        print(f"[VISION-BOOT] Error fatal importando OpenVINO: {e}")
-
-from constants import (
-    MAVLINK_HUB_HTTP_PORT, DETECTION_RANGE_M, EARTH_RADIUS_M,
-    HTTP_TIMEOUT_TELEMETRY_S, HTTP_TIMEOUT_COMMAND_S,
-    SIMULATION_POLLING_INTERVAL_S
-)
-
-def log(msg):
-    timestamp = datetime.now().strftime('%H:%M:%S.%f')[:-3]
-    # Forzamos flush para saltar el buffer de tee.py
-    print(f"[{timestamp}] [VISION-{SYSTEM_MODE}] {msg}", flush=True)
+# --- CONSTANTES DE VISION ---
+CONFIDENCE_THRESHOLD = 0.40  # Solo mostrar si está 40% seguro
+TARGET_CLASSES = [0, 1, 19]  # COCO: 0=Person, 1=Bicycle, 19=Cow
+MODEL_PATH = "yolo11n.pt"    # Busca en root
+if not os.path.exists(MODEL_PATH):
+    # Intento buscar en subcarpeta si no está en root
+    MODEL_PATH = "3d_to_dataset_xabi/yolo11n.pt"
 
 BRAIN_URL = f"http://127.0.0.1:{MAVLINK_HUB_HTTP_PORT}"
 TELEMETRY_URL = f"{BRAIN_URL}/api/state/latest"
 OBSTACLES_URL = f"{BRAIN_URL}/api/obstacles"
 
-SIMULATED_OBSTACLES = [
-    [0, 42.228091, -1.233701, 487.0], # El obstáculo crítico
-    [1, 42.225386, -1.231448, 486.0],
-    [2, 42.222318, -1.228736, 479.0],
-    [3, 42.220865, -1.227464, 481.0],
-    [4, 42.219378, -1.226187, 478.0],
-]
+def log(msg):
+    timestamp = datetime.now().strftime('%H:%M:%S.%f')[:-3]
+    print(f"[{timestamp}] [VISION-YOLO] {msg}", flush=True)
 
-class ALMUCalculator:
+class GeoProjector:
+    """Convierte pixeles 2D a coordenadas GPS 3D"""
     @staticmethod
-    def haversine(lat1, lon1, lat2, lon2):
+    def pixel_to_gps(px_y, px_x, drone_lat, drone_lon, drone_alt, drone_heading, drone_pitch):
+        # 1. Calcular angulo vertical desde el centro de la camara
+        # Pixel Y va de 0 (arriba) a Height (abajo). 
+        # Centro es Height/2.
+        # Si px_y < center, estamos mirando arriba del eje del dron.
+        
+        # Grados por pixel
+        deg_per_px = CAMERA_FOV_VERTICAL / CAMERA_HEIGHT
+        
+        # Desviacion vertical desde el centro optico (pitch del dron incluido)
+        # Asumimos que camera pitch = drone pitch
+        # Un valor positivo de px_offset significa "abajo" en la imagen
+        center_y = CAMERA_HEIGHT / 2
+        delta_px = px_y - center_y
+        delta_angle_deg = delta_px * deg_per_px
+        
+        # Angulo total respecto al horizonte (Pitch dron - Angulo pixel)
+        # Pitch positivo = Morro arriba. Pitch negativo = Morro abajo.
+        # Si miro abajo en la imagen (delta_angle > 0), el angulo de depresion aumenta.
+        
+        # Angulo de depresion total (desde el horizonte hacia abajo)
+        # Nota: ArduPilot pitch positivo es morro arriba.
+        # Depresion = -(Pitch) + (Angulo Visual Vertical)
+        
+        # Simplificacion Flat Earth:
+        # Distance = Altura_Relativa / tan(Angulo_Depresion)
+        
+        alt_rel = drone_alt - TERRAIN_ELEVATION_MSL
+        if alt_rel < 1.0: alt_rel = 1.0 # Evitar division por cero o alturas negativas
+        
+        # Estimacion muy burda de distancia basada en tamaño de caja o posicion Y
+        # Si está muy abajo en la imagen, está cerca. Si está al centro, está en el horizonte.
+        # Mapeamos eje Y [High...Center] a Distancia [Min...Max]
+        
+        # Factor de correccion empirico para simulacion
+        normalized_y = max(0, min(1, (px_y / CAMERA_HEIGHT)))
+        if normalized_y < 0.5:
+            dist_m = DETECTION_RANGE_M # Horizonte o cielo
+        else:
+            # Mapeo no lineal: Cuanto mas abajo, mas cerca
+            # 0.5 -> 80m
+            # 1.0 -> 0m (debajo del dron)
+            factor = (1.0 - normalized_y) * 2.0 # 0 a 1
+            dist_m = factor * DETECTION_RANGE_M
+            
+        if dist_m > DETECTION_RANGE_M: dist_m = DETECTION_RANGE_M
+        if dist_m < 2.0: dist_m = 2.0
+
+        # 2. Proyectar Lat/Lon
+        # Formula de Haversine inversa simplificada o proyeccion plana
+        # NewLat = Lat + (Dist * cos(Heading)) / EarthRadius
         R = EARTH_RADIUS_M
-        dlat = math.radians(lat2 - lat1)
-        dlon = math.radians(lon2 - lon1)
-        a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
-        return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+        
+        # Heading en radianes
+        bearing = math.radians(drone_heading)
+        
+        lat_rad = math.radians(drone_lat)
+        lon_rad = math.radians(drone_lon)
+        
+        new_lat = math.asin(math.sin(lat_rad)*math.cos(dist_m/R) + 
+                            math.cos(lat_rad)*math.sin(dist_m/R)*math.cos(bearing))
+                            
+        new_lon = lon_rad + math.atan2(math.sin(bearing)*math.sin(dist_m/R)*math.cos(lat_rad),
+                                       math.cos(dist_m/R)-math.sin(lat_rad)*math.sin(new_lat))
+                                       
+        return math.degrees(new_lat), math.degrees(new_lon), dist_m
 
 class VisionSystem:
     def __init__(self):
-        log(f"Iniciando VISION SYSTEM v2.3. Modo detectado: '{SYSTEM_MODE}'")
-        self.almu = ALMUCalculator()
+        log("Inicializando sistema de vision YOLOv11...")
+        
+        # 1. Cargar Modelo
+        try:
+            self.model = YOLO(MODEL_PATH)
+            log(f"Modelo cargado correctamente: {MODEL_PATH}")
+            # Warmup
+            log("Realizando inferencia de calentamiento (Warmup)...")
+            self.model.predict(source=np.zeros((640,640,3), dtype=np.uint8), verbose=False)
+        except Exception as e:
+            log(f"ERROR CRITICO cargando modelo: {e}")
+            sys.exit(1)
+
+        self.projector = GeoProjector()
+        self.sct = mss.mss()
         self.session = requests.Session()
-        adapter = requests.adapters.HTTPAdapter(pool_connections=10, pool_maxsize=10)
-        self.session.mount('http://', adapter)
-        log("Sesion HTTP iniciada.")
+        
+        # Definir zona de captura (Pantalla completa por defecto, ajustar segun necesidad)
+        # Se asume monitor principal 1920x1080
+        self.monitor = self.sct.monitors[1] 
+        log(f"Zona de captura: {self.monitor}")
+
+    def get_telemetry(self):
+        try:
+            r = self.session.get(TELEMETRY_URL, timeout=0.5)
+            if r.status_code == 200:
+                return r.json()
+        except:
+            pass
+        return None
 
     def run(self):
-        last_check = 0
-        last_heartbeat = 0
+        log("Sistema listo. Esperando visualizacion...")
         
         while True:
-            try:
-                # --- HEARTBEAT ---
-                if time.time() - last_heartbeat > 5.0:
-                    log("--- HEARTBEAT: Vision System Operativo ---")
-                    last_heartbeat = time.time()
-
-                # 1. Telemetría
-                try:
-                    r = self.session.get(TELEMETRY_URL, timeout=2.0)
-                except requests.exceptions.RequestException:
-                    time.sleep(1); continue
-
-                if r.status_code != 200: 
-                    time.sleep(1); continue
+            start_time = time.time()
+            
+            # 1. Obtener Telemetria (Necesaria para proyeccion)
+            telemetry = self.get_telemetry()
+            if not telemetry:
+                # Si no hay telemetria, esperamos
+                time.sleep(0.5)
+                continue
                 
-                telemetry = r.json()
+            dron_lat = telemetry.get('lat', 0)
+            dron_lon = telemetry.get('lon', 0)
+            dron_alt = telemetry.get('alt', 0)
+            dron_hdg = telemetry.get('heading', 0)
+            dron_pitch = telemetry.get('pitch', 0)
 
-                # ----------------------------------------------------
-                # PIPELINE 1: SIMULATION
-                # ----------------------------------------------------
-                # AQUI ESTABA EL FALLO: 'SIMULATION ' != 'SIMULATION'
-                if SYSTEM_MODE == 'SIMULATION':
-                    if time.time() - last_check < SIMULATION_POLLING_INTERVAL_S:
-                        time.sleep(0.1); continue
-                    last_check = time.time()
+            # 2. Captura de Pantalla
+            screenshot = np.array(self.sct.grab(self.monitor))
+            # Convertir BGRA a BGR
+            img_bgr = cv2.cvtColor(screenshot, cv2.COLOR_BGRA2BGR)
+            
+            # Redimensionar para velocidad (opcional, YOLO lo hace auto, pero para visualizacion consistente)
+            # img_resized = cv2.resize(img_bgr, (640, 640))
+            
+            # 3. Inferencia YOLO
+            # classes=TARGET_CLASSES filtra person, bicycle, cow
+            results = self.model.predict(img_bgr, conf=CONFIDENCE_THRESHOLD, classes=TARGET_CLASSES, verbose=False)
+            
+            detected_obstacles = []
+            
+            # 4. Procesar Detecciones
+            for r in results:
+                boxes = r.boxes
+                for box in boxes:
+                    # Bounding Box
+                    x1, y1, x2, y2 = box.xyxy[0]
+                    x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+                    conf = float(box.conf[0])
+                    cls = int(box.cls[0])
+                    class_name = self.model.names[cls]
                     
-                    detected = []
-                    dron_lat = telemetry.get('lat')
-                    dron_lon = telemetry.get('lon')
-
-                    for obs in SIMULATED_OBSTACLES:
-                        dist = self.almu.haversine(dron_lat, dron_lon, obs[1], obs[2])
-                        
-                        # LOG UNCONDICIONAL DEBUG PARA VERIFICAR MATEMATICA
-                        if obs[0] == 0 and dist < 1000.0:
-                             # Imprimimos solo si estamos a menos de 1km para no saturar
-                             if time.time() % 2.0 < 0.2:
-                                 log(f"[DEBUG] Distancia Obs 0: {dist:.1f}m (Umbral: {DETECTION_RANGE_M}m)")
-
-                        if dist <= DETECTION_RANGE_M:
-                            detected.append({
-                                'id': obs[0], 
-                                'lat': obs[1], 
-                                'lon': obs[2], 
-                                'distance': dist
-                            })
+                    # Centro del objeto
+                    cx = (x1 + x2) / 2
+                    cy = y1 + y2  # Usamos la base (pies) para mejor estimacion de distancia
                     
-                    if detected:
-                        log(f"¡ALERTA! Enviando {len(detected)} obstaculos al Brain.")
-                        try:
-                            self.session.post(OBSTACLES_URL, json={'obstacles': detected}, timeout=2.0)
-                        except Exception as e:
-                            log(f"Error POST Brain: {e}")
+                    # Proyeccion GPS
+                    obj_lat, obj_lon, dist = self.projector.pixel_to_gps(
+                        cy, cx, dron_lat, dron_lon, dron_alt, dron_hdg, dron_pitch
+                    )
+                    
+                    label = f"{class_name} {conf:.2f} | {dist:.1f}m"
+                    
+                    # Dibujar en Debug
+                    cv2.rectangle(img_bgr, (x1, y1), (x2, y2), (0, 0, 255), 2)
+                    cv2.putText(img_bgr, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                    
+                    # Agregar a lista para enviar al Brain
+                    # Usamos ID basado en coordenadas para "tracking" simple
+                    obs_id = int((obj_lat + obj_lon) * 10000) 
+                    detected_obstacles.append({
+                        'id': obs_id,
+                        'lat': obj_lat,
+                        'lon': obj_lon,
+                        'distance': dist,
+                        'type': class_name
+                    })
 
-            except Exception as e:
-                log(f"CRASH LOOP: {e}")
-                traceback.print_exc()
-                time.sleep(1)
+            # 5. Visualizacion (Ventana Debug)
+            # Reducir tamaño para que quepa en pantalla si es 4K
+            display_img = cv2.resize(img_bgr, (1024, 768)) 
+            cv2.imshow("YOLO V11 VISION DEBUG", display_img)
+            
+            # 6. Enviar al Brain
+            if detected_obstacles:
+                log(f"Detectados {len(detected_obstacles)} objetos. Enviando...")
+                try:
+                    self.session.post(OBSTACLES_URL, json={'obstacles': detected_obstacles}, timeout=0.1)
+                except:
+                    pass
+
+            # Control de FPS (aprox 1-2 FPS como pidio el usuario para "cada segundo")
+            # cv2.waitKey(1) es necesario para refrescar la ventana
+            if cv2.waitKey(500) & 0xFF == ord('q'):
+                break
+                
+            # log(f"Ciclo Vision: {time.time() - start_time:.3f}s")
+
+        cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    sys.stdout.reconfigure(line_buffering=True)
     VisionSystem().run()

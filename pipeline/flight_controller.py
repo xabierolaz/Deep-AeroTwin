@@ -157,6 +157,20 @@ def status():
             'obstacles_count': len(state['obstacles'])
         })
 
+# --- PIPELINE B: UNREAL SYNC ENDPOINT ---
+@app.route('/api/unreal/sync', methods=['GET'])
+def unreal_sync():
+    """
+    Endpoint especifico para que Unreal Engine (VaRest) consulte
+    que objetos debe spawnear en el Gemelo Digital.
+    """
+    with state_lock:
+        # Formato simplificado para Blueprint
+        return jsonify({
+            "timestamp": time.time(),
+            "obstacles": state['obstacles']
+        })
+
 def mavlink_loop():
     global master
     conn_str = f"tcp:127.0.0.1:{SITL_TCP_PORT}"
