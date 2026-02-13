@@ -109,6 +109,16 @@ The system is composed of independent Python processes communicating via HTTP/TC
 
 ---
 
+## 6. Repo Layout (What Lives Where)
+
+* `pipeline/`: Pipeline A/B runtime (Brain, Vision, E2E runner, launch helpers).
+* `pipeline/weights/`: Final YOLO weights used by `pipeline/vision_system.py` (dataset/runs are not committed).
+* `3d_to_dataset_xabi/`: Synthetic dataset generation + training scripts (OBJ -> dome dataset -> YOLO).
+* `tools/`: Small developer utilities (e.g. `tools/inspect_model.py`, `tools/check_status.py`).
+* `Unreal/`: Unreal project sources (generated binaries/cache are ignored).
+
+---
+
 ## 6. Installation
 
 ### Requirements

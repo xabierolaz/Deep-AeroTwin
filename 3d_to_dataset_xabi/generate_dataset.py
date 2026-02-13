@@ -30,7 +30,7 @@ import trimesh
 
 
 THIS_DIR = Path(__file__).resolve().parent
-ASSETS_DIR = THIS_DIR / "assets_folder"
+ASSETS_DIR = THIS_DIR / "assets"
 
 
 CLASSES: list[tuple[str, Path]] = [

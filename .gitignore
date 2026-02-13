@@ -62,8 +62,6 @@ Thumbs.db
 *.sqlite-wal
 
 
-pipeline/yolov5/openvino/*.xml
-
 # --- DATASET GENERATION ---
 # Ignorar pesos pesados y datasets generados
 *.pt

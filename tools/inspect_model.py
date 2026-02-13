@@ -3,7 +3,7 @@ import os
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULTS = [
     REPO_ROOT / "pipeline" / "weights" / "yolo_3d_dome_v1_best.pt",
     REPO_ROOT / "yolo11n.pt",
