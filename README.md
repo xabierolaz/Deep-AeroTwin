@@ -63,12 +63,30 @@ The project leverages **YOLOv11 Nano** optimized for NVIDIA Blackwell architectu
 ### Synthetic Training Workflow (`3d_to_dataset_xabi/`)
 We generate our own datasets to detect specific hazards not found in COCO (like Electric Towers).
 1.  **Assets:** 3D Models (`.obj`) of Bikers, Cows, and Towers.
-2.  **Generation:** `generate_dataset.py` uses **PyRender** to create thousands of 640x640 labeled images with random backgrounds, lighting, and angles.
+2.  **Generation:** `generate_dataset.py` uses **PyRender** to create thousands of 640x640 labeled images with:
+    *   **Upper-hemisphere ("dome") camera sampling** (drone-like views; always from above).
+    *   Heavy domain randomization: backgrounds, noise, blur, JPEG artifacts, occlusions, lighting variation.
 3.  **Training:** `train_yolo.py` fine-tunes YOLOv11n on this custom dataset.
 
 **Current Model Status:**
-*   **File:** `yolo11n.pt`
-*   **Classes:** Person, Bicycle, Cow (Base COCO). *Custom Tower training in progress.*
+*   **Classes:** `biker`, `cow`, `tower`
+*   **Weights:** produced under `3d_to_dataset_xabi/runs/.../weights/best.pt` (ignored by git)
+
+**Repro (generate + train):**
+```powershell
+cd D:\Deep-AeroTwin-upstream\3d_to_dataset_xabi
+python generate_dataset.py --num-per-class 2000 --imgsz 640 --preview
+python train_yolo.py --epochs 50 --imgsz 640 --batch 32 --device 0 --name yolo_3d_dome_v1
+```
+
+**Latest metrics (synthetic test split, 2026-02-13):**
+* mAP50: ~0.992
+* mAP50-95: ~0.922
+
+**RTX 5090 timings (measured, 2026-02-13):**
+* Dataset generation (6000 images @ 640): ~6.5 min
+* Training (YOLO11n, 50 epochs, batch 32, imgsz 640): ~46.6 min
+* Test eval (589 images): ~3 sec (after cache)
 
 ---
 
