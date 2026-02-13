@@ -7,6 +7,7 @@ Actualizado para usar parámetros realistas de visión:
 - Márgenes ajustados para evitar "enjaulamiento".
 """
 
+import os
 import time, math, threading, sys, logging, json
 from flask import Flask, request, jsonify
 from pymavlink import mavutil
@@ -29,6 +30,8 @@ from constants import (
     MAVLINK_INTERVAL_MED_US,
     MAVLINK_INTERVAL_LOW_US
 )
+
+PORCE_ENABLE_EVASION = os.environ.get('PORCE_ENABLE_EVASION', '1').strip() not in ('0', 'false', 'False', '')
 
 print(f"DEBUG: ALTITUDE_TOLERANCE_M is {ALTITUDE_TOLERANCE_M}")
 
@@ -63,7 +66,14 @@ state = {
     'evasion_path': [],
     'evasion_grid_origin': None, # NUEVO: Centro del grid A*
     'path_index': 0,
-    'takeoff_initiated': False
+    'takeoff_initiated': False,
+    # E2E / observability flags
+    'saw_evasion': False,
+    'mission_state': 'BOOTING',  # BOOTING -> RUNNING -> COMPLETED
+    'last_error': None,
+    # Zero-trust / observability counters (do not affect flight logic)
+    'inject_posts_unauthorized': 0,
+    'inject_posts_total': 0
 }
 
 state_lock = threading.Lock()
@@ -128,8 +138,22 @@ def get_states_opensky():
         payload = { "time": int(now), "states": [vehicle_data] if t['last_update'] > 0 else [] }
         return jsonify(payload)
 
+@app.route('/health', methods=['GET'])
+def health():
+    # Minimal readiness endpoint for test harnesses.
+    return jsonify(status="ok")
+
 @app.route('/api/obstacles', methods=['POST'])
 def rx_obstacles():
+    # Zero-trust: if a token is configured, require it on every obstacle ingestion POST.
+    expected_token = os.environ.get('PORCE_OBSTACLE_TOKEN', '').strip()
+    if expected_token:
+        got = request.headers.get('X-PORCE-Token', '')
+        if got != expected_token:
+            with state_lock:
+                state['inject_posts_unauthorized'] = int(state.get('inject_posts_unauthorized', 0)) + 1
+            return jsonify(error="unauthorized"), 401
+
     try:
         data = request.get_json(force=True)
         obs_list = data.get('obstacles', [])
@@ -138,9 +162,16 @@ def rx_obstacles():
             clean_obs.append({
                 'id': o.get('id', 0),
                 'distance': float(o.get('distance', 9999)),
-                'lat': o.get('lat'), 'lon': o.get('lon')
+                'lat': o.get('lat'),
+                'lon': o.get('lon'),
+                # Optional metadata (kept for future audit/debug; ignored by planner for now)
+                'type': o.get('type'),
+                'confidence': o.get('confidence'),
+                'source': o.get('source'),
+                'bbox': o.get('bbox'),
             })
         with state_lock:
+            state['inject_posts_total'] = int(state.get('inject_posts_total', 0)) + 1
             state['obstacles'] = clean_obs
             state['last_obstacle_update'] = time.time()
         return jsonify(status="ok")
@@ -150,11 +181,22 @@ def rx_obstacles():
 @app.route('/api/status', methods=['GET'])
 def status():
     with state_lock:
+        t = state['telemetry']
+        telemetry_active = (time.time() - t['last_update']) < HEARTBEAT_TIMEOUT_S
         return jsonify({
             'mode': state['telemetry']['mode'],
+            'armed': bool(state['telemetry']['armed']),
+            'telemetry_active': bool(telemetry_active),
             'wp_idx': state['current_wp_idx'],
             'evasion': state['evasion_active'],
-            'obstacles_count': len(state['obstacles'])
+            'obstacles_count': len(state['obstacles']),
+            'saw_evasion': bool(state.get('saw_evasion', False)),
+            'mission_state': state.get('mission_state', 'UNKNOWN'),
+            'last_error': state.get('last_error'),
+            'porce_enable_evasion': bool(PORCE_ENABLE_EVASION),
+            'token_enabled': bool(os.environ.get('PORCE_OBSTACLE_TOKEN', '').strip()),
+            'inject_posts_total': int(state.get('inject_posts_total', 0)),
+            'inject_posts_unauthorized': int(state.get('inject_posts_unauthorized', 0)),
         })
 
 # --- PIPELINE B: UNREAL SYNC ENDPOINT ---
@@ -188,17 +230,9 @@ def mavlink_loop():
                 except: pass
                 continue
             log.info("MAVLink: Heartbeat recibido. Conectado a ArduPilot!")
-            
-            params_to_set = {
-                b'AHRS_EKF_TYPE': (10, mavutil.mavlink.MAV_PARAM_TYPE_INT8),
-                b'ARMING_CHECK': (0, mavutil.mavlink.MAV_PARAM_TYPE_INT32),
-                b'FRAME_CLASS': (1, mavutil.mavlink.MAV_PARAM_TYPE_INT8),
-                b'FRAME_TYPE': (1, mavutil.mavlink.MAV_PARAM_TYPE_INT8),
-            }
-            for param_id, (val, type_id) in params_to_set.items():
-                master.mav.param_set_send(master.target_system, master.target_component,
-                                        param_id, val, type_id)
-                time.sleep(0.05)
+            # NOTE: The Brain must not relax autopilot safety checks (e.g. ARMING_CHECK)
+            # or mutate vehicle tuning as part of normal operation. Keep the SITL/vehicle
+            # configuration in the SITL defaults/params to ensure reproducibility.
             
             messages_to_stream = [
                 (mavutil.mavlink.MAVLINK_MSG_ID_GLOBAL_POSITION_INT, MAVLINK_INTERVAL_HIGH_US),
@@ -215,7 +249,8 @@ def mavlink_loop():
             while True:
                 try:
                     msg = master.recv_match(type=['GLOBAL_POSITION_INT', 'ATTITUDE', 'HEARTBEAT', 
-                                                'GPS_RAW_INT', 'SYS_STATUS', 'VFR_HUD'], 
+                                                'GPS_RAW_INT', 'SYS_STATUS', 'VFR_HUD',
+                                                'STATUSTEXT', 'COMMAND_ACK'], 
                                           blocking=True, timeout=1.0)
                     if not msg: continue
                     time.sleep(0.02)
@@ -225,6 +260,8 @@ def mavlink_loop():
                             state['telemetry']['lat'] = msg.lat / 1e7
                             state['telemetry']['lon'] = msg.lon / 1e7
                             state['telemetry']['alt'] = msg.alt / 1000.0
+                            # Relative to home position (useful for takeoff checks).
+                            state['telemetry']['rel_alt'] = getattr(msg, 'relative_alt', 0) / 1000.0
                             state['telemetry']['heading'] = msg.hdg / 100.0
                             state['telemetry']['last_update'] = time.time()
                         elif msg_type == 'ATTITUDE':
@@ -244,6 +281,50 @@ def mavlink_loop():
                         elif msg_type == 'GPS_RAW_INT':
                             state['telemetry']['gps_fix'] = msg.fix_type
                             state['telemetry']['satellites'] = msg.satellites_visible
+                        elif msg_type == 'STATUSTEXT':
+                            # Surface autopilot prearm/arm errors into logs for debugging.
+                            text = getattr(msg, 'text', '')
+                            sev = getattr(msg, 'severity', None)
+                            state['telemetry']['last_statustext'] = text
+                            state['telemetry']['last_statustext_severity'] = sev
+                            state['telemetry']['last_statustext_ts'] = time.time()
+                            # Log only relevant messages to avoid flooding.
+                            if isinstance(text, str) and ("PreArm" in text or "Arm" in text or "EKF" in text or "GPS" in text or "Takeoff" in text or "takeoff" in text):
+                                log.warning(f"[STATUSTEXT] {text}")
+                        elif msg_type == 'COMMAND_ACK':
+                            cmd = getattr(msg, 'command', None)
+                            res = getattr(msg, 'result', None)
+                            state['telemetry']['last_command_ack'] = {'command': cmd, 'result': res, 'ts': time.time()}
+
+                    # Also log key ACKs outside the lock to avoid blocking.
+                    if msg_type == 'COMMAND_ACK':
+                        try:
+                            cmd = int(getattr(msg, 'command', -1))
+                        except Exception:
+                            cmd = -1
+                        try:
+                            res = int(getattr(msg, 'result', -1))
+                        except Exception:
+                            res = -1
+
+                        cmd_name = None
+                        try:
+                            cmd_name = mavutil.mavlink.enums['MAV_CMD'][cmd].name  # type: ignore[index]
+                        except Exception:
+                            cmd_name = f"CMD_{cmd}"
+
+                        res_name = None
+                        try:
+                            res_name = mavutil.mavlink.enums['MAV_RESULT'][res].name  # type: ignore[index]
+                        except Exception:
+                            res_name = f"RES_{res}"
+
+                        if cmd in (
+                            mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
+                            mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
+                            mavutil.mavlink.MAV_CMD_DO_SET_MODE,
+                        ) or res != mavutil.mavlink.MAV_RESULT_ACCEPTED:
+                            log.info(f"[ACK] {cmd_name}({cmd}) -> {res_name}({res})")
                 except Exception as e:
                     log.error(f"Error en loop MAVLink: {e}")
                     time.sleep(1.0)
@@ -257,6 +338,11 @@ def mavlink_loop():
 
 def control_loop():
     time.sleep(2)
+    last_arm_attempt_ts = 0.0
+    last_guided_attempt_ts = 0.0
+    takeoff_cmd_sent = False
+    land_start_ts = None
+    last_disarm_attempt_ts = 0.0
     while True:
         time.sleep(0.1)
         with state_lock:
@@ -271,27 +357,79 @@ def control_loop():
             lat = tel.get('lat', 0)
             lon = tel.get('lon', 0)
             alt = tel.get('alt', 0)
+            rel_alt = tel.get('rel_alt', 0.0)
             mode = tel.get('mode', 'UNK')
             obs_count = len(obs)
-            log.info(f"[STATUS] Mode: {mode} | GPS: {lat:.6f}, {lon:.6f} Alt: {alt:.1f}m | WP: {current_idx} | Obs: {obs_count}")
+            log.info(f"[STATUS] Mode: {mode} | GPS: {lat:.6f}, {lon:.6f} Alt: {alt:.1f}m (rel {rel_alt:.1f}m) | WP: {current_idx} | Obs: {obs_count}")
 
-        if (time.time() - tel['last_update']) > 2.0: continue
-            
-        if not tel['armed'] and tel['mode'] != 'GUIDED' and current_idx == 1:
-             master.set_mode('GUIDED')
-             
-        if not tel['armed'] and current_idx == 1 and tel['mode'] == 'GUIDED':
-            master.arducopter_arm()
-            home_alt = home['alt'] if home else 0
-            takeoff_alt = (wps[1]['alt'] - home_alt) if len(wps) > 1 else 30.0
-            master.mav.command_long_send(master.target_system, master.target_component,
-                                         mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, takeoff_alt)
-            log.info(f"Iniciando Despegue a {takeoff_alt}m")
-            with state_lock: state['takeoff_initiated'] = True
-            master.mav.param_set_send(master.target_system, master.target_component, 
-                                    b'WPNAV_SPEED', NAV_SPEED_HORIZONTAL_MS*100, mavutil.mavlink.MAV_PARAM_TYPE_REAL32)
+        if (time.time() - tel['last_update']) > 2.0:
+            continue
 
-        if not tel['armed']: continue
+        # Mark RUNNING on first valid telemetry.
+        with state_lock:
+            if state.get('mission_state') == 'BOOTING':
+                state['mission_state'] = 'RUNNING'
+
+        # --- ARM + TAKEOFF STATE MACHINE (WP1) ---
+        if current_idx == 1:
+            # Ensure GUIDED before arming.
+            if tel['mode'] != 'GUIDED':
+                now = time.time()
+                if now - last_guided_attempt_ts > 1.0:
+                    last_guided_attempt_ts = now
+                    master.set_mode('GUIDED')
+                continue
+
+            if not tel['armed']:
+                now = time.time()
+                if now - last_arm_attempt_ts > 1.0:
+                    last_arm_attempt_ts = now
+                    # Optional force-arm for SITL automation.
+                    force_arm = os.environ.get('PORCE_FORCE_ARM', '').strip() in ('1', 'true', 'True')
+                    if force_arm:
+                        master.mav.command_long_send(
+                            master.target_system,
+                            master.target_component,
+                            mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
+                            0,
+                            1,      # arm
+                            21196,  # force
+                            0, 0, 0, 0, 0
+                        )
+                        log.warning("[ARM] Force-arm requested (PORCE_FORCE_ARM=1).")
+                    else:
+                        master.arducopter_arm()
+                        log.info("[ARM] Arm requested.")
+                continue
+
+            # Armed: command takeoff. If it gets rejected (EKF not ready) or doesn't climb,
+            # command it once.
+            if not takeoff_cmd_sent:
+                home_alt = home['alt'] if home else 0
+                takeoff_alt = (wps[1]['alt'] - home_alt) if len(wps) > 1 else 30.0
+                master.mav.command_long_send(
+                    master.target_system,
+                    master.target_component,
+                    mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
+                    0,
+                    0, 0, 0, 0,
+                    0, 0,  # take off from current location (avoids GPS/EKF timing issues)
+                    float(takeoff_alt),
+                )
+                log.info(f"[TAKEOFF] Commanded takeoff to {takeoff_alt:.1f}m (rel).")
+                takeoff_cmd_sent = True
+                with state_lock:
+                    state['takeoff_initiated'] = True
+                master.mav.param_set_send(
+                    master.target_system,
+                    master.target_component,
+                    b'WPNAV_SPEED',
+                    NAV_SPEED_HORIZONTAL_MS * 100,
+                    mavutil.mavlink.MAV_PARAM_TYPE_REAL32,
+                )
+
+        if not tel['armed']:
+            continue
 
         if current_idx < len(wps) and tel['mode'] not in ['GUIDED', 'LAND', 'RTL', 'AUTO']:
             log.warning(f"[MODE FIX] Detectado {tel['mode']} durante misión. Forzando GUIDED.")
@@ -329,7 +467,7 @@ def control_loop():
                         nearest_obs = o
                 
                 # --- CAMBIO CLAVE: REACCION_DISTANCE_M ---
-                if nearest_obs and min_dist < REACTION_DISTANCE_M:
+                if PORCE_ENABLE_EVASION and nearest_obs and min_dist < REACTION_DISTANCE_M:
                     log.warning(f"[PORCE] Obstáculo detectado a {min_dist:.1f}m. Planificando ruta A*...")
                     target_wp = wps[current_idx] if current_idx < len(wps) else wps[-1]
                     new_route = planner.plan_route(tel['lat'], tel['lon'], target_wp['lat'], target_wp['lon'], obs)
@@ -339,6 +477,7 @@ def control_loop():
                         state['evasion_grid_origin'] = {'lat': tel['lat'], 'lon': tel['lon']}
                         state['path_index'] = 0
                         state['evasion_active'] = True
+                        state['saw_evasion'] = True
                         active_path = new_route
                     else:
                         log.error("[PORCE] A* falló. Manteniendo curso (Riesgo de colisión).")
@@ -392,6 +531,33 @@ def control_loop():
             if tel['mode'] != 'LAND':
                 log.info("Misión Terminada. Aterrizando (LAND).")
                 master.set_mode('LAND')
+                land_start_ts = time.time()
+            else:
+                # Consider the mission complete on touchdown even if ArduPilot stays armed
+                # for a while in LAND.
+                rel_alt = float(tel.get('rel_alt', 9999.0) or 0.0)
+                groundspeed = float(tel.get('groundspeed', 9999.0) or 0.0)
+                landed = (rel_alt <= 0.3) and (groundspeed <= 0.5)
+                if landed or (not tel['armed']):
+                    with state_lock:
+                        if state.get('mission_state') != 'COMPLETED':
+                            state['mission_state'] = 'COMPLETED'
+
+                # Ask for a clean disarm if we've touched down but are still armed.
+                if landed and tel['armed']:
+                    now = time.time()
+                    if land_start_ts and (now - land_start_ts) > 3.0 and (now - last_disarm_attempt_ts) > 1.0:
+                        last_disarm_attempt_ts = now
+                        master.mav.command_long_send(
+                            master.target_system,
+                            master.target_component,
+                            mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
+                            0,
+                            0,  # disarm
+                            0,
+                            0, 0, 0, 0, 0
+                        )
+                        log.info("[DISARM] Landed; disarm requested.")
 
 # --- UI DATA ENDPOINT (OBSERVABILITY) ---
 @app.route('/api/ui/data', methods=['GET'])

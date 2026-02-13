@@ -142,6 +142,7 @@ class VisionSystem:
         self.projector = GeoProjector()
         self.sct = mss.mss()
         self.session = requests.Session()
+        self._obstacle_token = os.environ.get("PORCE_OBSTACLE_TOKEN", "").strip()
         
         # Definir zona de captura (Pantalla completa por defecto, ajustar segun necesidad)
         # Se asume monitor principal 1920x1080
@@ -236,7 +237,10 @@ class VisionSystem:
             if detected_obstacles:
                 log(f"Detectados {len(detected_obstacles)} objetos. Enviando...")
                 try:
-                    self.session.post(OBSTACLES_URL, json={'obstacles': detected_obstacles}, timeout=0.1)
+                    headers = {}
+                    if self._obstacle_token:
+                        headers["X-PORCE-Token"] = self._obstacle_token
+                    self.session.post(OBSTACLES_URL, json={'obstacles': detected_obstacles}, headers=headers, timeout=0.1)
                 except:
                     pass
 

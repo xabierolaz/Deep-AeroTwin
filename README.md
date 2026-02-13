@@ -112,5 +112,44 @@ Double-click `launch_pipeline_A.bat` to fly.
 
 ---
 
+## 7. Pipeline A E2E (Flight Matrix)
+
+For reproducible validation of **Pipeline A** (SITL in WSL + Brain on Windows), use:
+
+```powershell
+cd D:\Deep-AeroTwin-upstream
+python pipeline\e2e_flight_matrix.py --scenario porce_off_no_detections --scenario-timeout 420 --arm-timeout 240 --takeoff-timeout 180
+```
+
+### Scenarios
+
+| Scenario | PORCE_ENABLE_EVASION | Obstacle injection | Expected `saw_evasion` |
+| :--- | :---: | :---: | :---: |
+| `porce_off_no_detections` | 0 | no | false |
+| `porce_on_no_detections` | 1 | no | false |
+| `porce_off_with_detections` | 0 | yes | false |
+| `porce_on_with_detections` | 1 | yes | true |
+
+### Obstacle Ingestion Token (Zero-Trust)
+
+If `PORCE_OBSTACLE_TOKEN` is set, the Brain requires every `POST /api/obstacles` to include:
+- Header: `X-PORCE-Token: <PORCE_OBSTACLE_TOKEN>`
+
+The E2E runner asserts `inject_posts_unauthorized=0` when the token is enabled.
+
+### Logs
+
+Each run writes logs under:
+- `pipeline/logs/e2e/<scenario>_<timestamp>/brain.log`
+- `pipeline/logs/e2e/<scenario>_<timestamp>/sitl.log`
+
+### Current E2E Status
+
+Verified on **2026-02-13**:
+- `porce_off_no_detections`: PASS
+- Remaining scenarios: pending re-run after latest zero-trust + SITL defaults fixes
+
+---
+
 ## License
 Proprietary. All rights reserved.
