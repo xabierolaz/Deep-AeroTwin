@@ -1,156 +1,68 @@
-# Deep-AeroTwin: Autonomous Navigation & Digital Twin Framework
-
-**Version:** 3.0 (Blackwell Ready)  
-**Date:** January 2026  
-**Core:** PORCE System (Path planning & Obstacle avoidance with Real-time Collision Evasion)
+# Deep-AeroTwin (PORCE)
 
 <div align="center">
   <img src="readme_gif.gif" width="100%" alt="Deep-AeroTwin Demo">
 </div>
 
-## 1. Overview
+This repo contains a **Windows + WSL2** setup for running an ArduPilot Copter mission in **SITL**, ingesting obstacles over **HTTP**, and (optionally) running **YOLO** vision to feed the planner (**PORCE**).
 
-**Deep-AeroTwin** is a high-performance aerospace framework designed to bridge the gap between simulation and reality using NVIDIA RTX 50-series hardware. It operates on a **Dual-Pipeline Architecture**, allowing a single codebase to serve two distinct operational goals:
+## Source Of Truth (Zero-Trust)
 
-1.  **Pipeline A (Simulation):** Autonomous HITL flight in Unreal Engine 5.6.
-2.  **Pipeline B (Digital Twin):** Real-time replication of a physical drone's environment for remote teleoperation.
+Everything stated here is derived from the code in this repo and/or from runs that were executed locally.
 
----
+* **Pipeline A E2E runner:** `pipeline/e2e_flight_matrix.py`
+* **Brain (Flask + MAVLink + PORCE):** `pipeline/flight_controller.py`
+* **PORCE planner (A*):** `pipeline/porce_manager.py`
+* **SITL launcher (WSL):** `pipeline/run_sitl.sh`
+* **Vision (MSS + YOLO -> `/api/obstacles`):** `pipeline/vision_system.py`
 
-## 2. Quick Start (Dual Launchers)
+## Current Status (Verified)
 
-The project now includes dedicated launchers for each mode. **Do not run `launch.bat` directly** unless you know what you are doing.
+**Pipeline A (SIMULATION) is operational and validated end-to-end.**
 
-### Pipeline A: Autonomous Simulation
-*   **Goal:** Test AI evasion logic against synthetic obstacles.
-*   **Launcher:** `launch_pipeline_A.bat`
-*   **Components:** SITL (WSL) + Unreal Vision (Screen Capture) + Brain + Recorder.
-*   **Behavior:** Drone flies autonomously. Detects obstacles via MSS Screen Capture. Avoids them using A*.
+Verified on **2026-02-13** (Windows + WSL2):
+* `porce_off_no_detections`: PASS
+* `porce_on_no_detections`: PASS
+* `porce_off_with_detections`: PASS (token enabled; `inject_posts_unauthorized=0`)
+* `porce_on_with_detections`: PASS (token enabled; `inject_posts_unauthorized=0`; `saw_evasion=true`)
 
-### Pipeline B: Digital Twin (Real World)
-*   **Goal:** Replicate real-world hazards in Unreal for a human pilot.
-*   **Launcher:** `launch_pipeline_B.bat`
-*   **Components:** Brain (Real Drone Mode) + Vision (Real Video Feed) + Recorder. **NO SITL**.
-*   **Behavior:** 
-    1.  Vision System detects real obstacles (Cows, Bikers) from video.
-    2.  Brain exposes object data via API (`/api/unreal/sync`).
-    3.  Unreal Engine (VaRest) polls API and spawns virtual obstacles in real-time.
+## Pipelines
 
----
+### Pipeline A (SIMULATION)
 
-## 3. The PORCE System (Intelligence Core)
+* Starts **ArduPilot Copter SITL** in WSL (`pipeline/run_sitl.sh`).
+* Starts the **Brain** on Windows (`pipeline/flight_controller.py`) and connects MAVLink to `tcp:127.0.0.1:5760`.
+* Optional: starts **Vision** (`pipeline/vision_system.py`) which uses **MSS screen capture** + YOLO and POSTs obstacles to the Brain.
+* Optional: starts **Viz recorder** (`pipeline/viz_recorder.py`) which polls `/api/ui/data` and writes PNG frames under `pipeline/logs/viz_frames/`.
 
-The **PORCE** (Path planning & Obstacle avoidance) engine manages the drone's safety. It is mode-aware and adjusts its physics based on the active pipeline.
+Launchers:
+* `launch_pipeline_A.bat` (recommended)
+* E2E harness: `pipeline/e2e_flight_matrix.py` (recommended for CI-like validation)
 
-| Parameter | Pipeline A (Sim) | Pipeline B (Real) | Description |
-| :--- | :--- | :--- | :--- |
-| **Cruise Speed** | 8.0 m/s | 5.0 m/s | Slower in reality for safety. |
-| **Detection Range** | 80 m | 150 m | Max reliable vision range. |
-| **Reaction Distance** | 45 m | 60 m | Distance to trigger evasion. |
-| **Safety Radius** | 12 m | 12 m | Hard keep-out zone. |
+### Pipeline B (REAL_TWIN) (Not Validated / Experimental)
 
-### Safety Mechanisms
-*   **Look-Ahead Orientation:** The drone's yaw is locked to its velocity vector, ensuring the camera always faces the direction of travel for continuous obstacle scanning.
-*   **Infinite Column Assumption:** Safety logic that forbids flying directly over vertical structures (towers) to avoid high-voltage lines. The system only plans detours *around* obstacles.
-*   **Emergency Escape:** If the drone initializes inside a danger zone, a specific routine prioritizes exiting the safety radius before navigation resumes.
+The repo includes `launch_pipeline_B.bat` and the Brain exposes `/api/unreal/sync`, but **Pipeline B is not yet “real drone + real video”**:
+* The Brain MAVLink connection is still hard-coded to `tcp:127.0.0.1:5760` (`pipeline/flight_controller.py`).
+* Vision currently uses **MSS screen capture** (no RTSP/VideoCapture integration yet) (`pipeline/vision_system.py`).
 
----
+Treat Pipeline B as a placeholder until those pieces are made configurable and validated.
 
-## 4. Vision Engine & Synthetic Data (RTX 5090)
+## Quick Start (Pipeline A)
 
-The project leverages **YOLOv11 Nano** optimized for NVIDIA Blackwell architecture (CUDA 12.8).
+1. Install Python deps:
+   ```bash
+   pip install -r pipeline/requirements.txt
+   ```
+2. Ensure WSL has an ArduCopter SITL binary:
+   * Preferred: initialize/build the `ardupilot` submodule.
+   * Fallback supported by code: a WSL home clone at `$HOME/ardupilot/build/sitl/bin/arducopter`.
+   * Override supported by code: set `ARDUPILOT_SITL_BIN=/path/to/arducopter` (WSL env).
+3. Run one E2E scenario:
+   ```powershell
+   python pipeline\e2e_flight_matrix.py --scenario porce_off_no_detections --scenario-timeout 420 --arm-timeout 240 --takeoff-timeout 180
+   ```
 
-### Synthetic Training Workflow (`3d_to_dataset_xabi/`)
-We generate our own datasets to detect specific hazards not found in COCO (like Electric Towers).
-1.  **Assets:** 3D Models (`.obj`) of Bikers, Cows, and Towers.
-2.  **Generation:** `generate_dataset.py` uses **PyRender** to create thousands of 640x640 labeled images with:
-    *   **Upper-hemisphere ("dome") camera sampling** (drone-like views; always from above).
-    *   Heavy domain randomization: backgrounds, noise, blur, JPEG artifacts, occlusions, lighting variation.
-3.  **Training:** `train_yolo.py` fine-tunes YOLOv11n on this custom dataset.
-
-**Current Model Status:**
-*   **Classes:** `biker`, `cow`, `tower`
-*   **Weights (committed):** `pipeline/weights/yolo_3d_dome_v1_best.pt`
-*   **Training outputs:** `3d_to_dataset_xabi/runs/.../weights/best.pt` (ignored by git)
-
-**Repro (generate + train):**
-```powershell
-cd D:\Deep-AeroTwin-upstream\3d_to_dataset_xabi
-python generate_dataset.py --num-per-class 2000 --imgsz 640 --preview
-python train_yolo.py --epochs 50 --imgsz 640 --batch 32 --device 0 --name yolo_3d_dome_v1
-```
-
-**Latest metrics (synthetic test split, 2026-02-13):**
-* mAP50: ~0.992
-* mAP50-95: ~0.922
-
-**RTX 5090 timings (measured, 2026-02-13):**
-* Dataset generation (6000 images @ 640): ~6.5 min
-* Training (YOLO11n, 50 epochs, batch 32, imgsz 640): ~46.6 min
-* Test eval (589 images): ~3 sec (after cache)
-
----
-
-## 5. Technical Architecture (Microservices)
-
-The system is composed of independent Python processes communicating via HTTP/TCP:
-
-*   **Brain (`flight_controller.py`):** Flask Server (Port 8080). Central hub. Manages state and MAVLink.
-*   **Eyes (`vision_system.py`):** YOLO Inference Engine. Captures MSS (Sim) or Video (Real). Sends POST to Brain.
-*   **Recorder (`viz_recorder.py`):** Generates high-res mission logs and PNG frames.
-*   **Unreal Bridge:** 
-    *   **Sim:** Visual feedback only.
-    *   **Twin:** Polls `http://localhost:8080/api/unreal/sync` to spawn objects.
-
-### Network Ports
-*   **8080:** Brain API (HTTP)
-*   **9090:** Master Log Server (TCP)
-*   **5760:** SITL Connection (TCP)
-
----
-
-## 6. Repo Layout (What Lives Where)
-
-* `pipeline/`: Pipeline A/B runtime (Brain, Vision, E2E runner, launch helpers).
-* `pipeline/weights/`: Final YOLO weights used by `pipeline/vision_system.py` (dataset/runs are not committed).
-* `3d_to_dataset_xabi/`: Synthetic dataset generation + training scripts (OBJ -> dome dataset -> YOLO).
-* `tools/`: Small developer utilities (e.g. `tools/inspect_model.py`, `tools/check_status.py`).
-* `Unreal/`: Unreal project sources (generated binaries/cache are ignored).
-
----
-
-## 6. Installation
-
-### Requirements
-*   Windows 10/11 (with WSL2 enabled)
-*   **GPU:** NVIDIA RTX 30/40/50 Series (CUDA 11.8+)
-*   **Python:** 3.12+
-*   **Unreal Engine:** 5.6
-
-### Setup
-1.  Clone repo.
-2.  Install dependencies:
-    ```bash
-    pip install -r pipeline/requirements.txt
-    ```
-3.  **For Pipeline A:** Ensure ArduPilot SITL is installed in WSL.
-4.  **For Pipeline B:** Configure Unreal Engine "VaRest" plugin to point to localhost:8080.
-
-### Running
-Double-click `launch_pipeline_A.bat` to fly.
-
----
-
-## 7. Pipeline A E2E (Flight Matrix)
-
-For reproducible validation of **Pipeline A** (SITL in WSL + Brain on Windows), use:
-
-```powershell
-cd D:\Deep-AeroTwin-upstream
-python pipeline\e2e_flight_matrix.py --scenario porce_off_no_detections --scenario-timeout 420 --arm-timeout 240 --takeoff-timeout 180
-```
-
-### Scenarios
+## Pipeline A E2E Matrix
 
 | Scenario | PORCE_ENABLE_EVASION | Obstacle injection | Expected `saw_evasion` |
 | :--- | :---: | :---: | :---: |
@@ -159,28 +71,57 @@ python pipeline\e2e_flight_matrix.py --scenario porce_off_no_detections --scenar
 | `porce_off_with_detections` | 0 | yes | false |
 | `porce_on_with_detections` | 1 | yes | true |
 
-### Obstacle Ingestion Token (Zero-Trust)
+Logs per run:
+* `pipeline/logs/e2e/<scenario>_<timestamp>/brain.log`
+* `pipeline/logs/e2e/<scenario>_<timestamp>/sitl.log`
 
-If `PORCE_OBSTACLE_TOKEN` is set, the Brain requires every `POST /api/obstacles` to include:
-- Header: `X-PORCE-Token: <PORCE_OBSTACLE_TOKEN>`
+## Obstacle Ingestion Token (Zero-Trust)
 
-The E2E runner asserts `inject_posts_unauthorized=0` when the token is enabled.
+If `PORCE_OBSTACLE_TOKEN` is set, the Brain requires all `POST /api/obstacles` to include:
+* Header: `X-PORCE-Token: <PORCE_OBSTACLE_TOKEN>`
 
-### Logs
+When the token is enabled, the E2E harness asserts `inject_posts_unauthorized=0`.
 
-Each run writes logs under:
-- `pipeline/logs/e2e/<scenario>_<timestamp>/brain.log`
-- `pipeline/logs/e2e/<scenario>_<timestamp>/sitl.log`
+## Vision Model (YOLO)
 
-### Current E2E Status
+* Default weights (committed): `pipeline/weights/yolo_3d_dome_v1_best.pt`
+* Override: set `PORCE_YOLO_MODEL` to a different `.pt` path.
+* Classes in the committed model: `biker`, `cow`, `tower`.
 
-Verified on **2026-02-13** (Pipeline A):
-- `porce_off_no_detections`: PASS
-- `porce_on_no_detections`: PASS
-- `porce_off_with_detections`: PASS (`PORCE_OBSTACLE_TOKEN` enabled; `inject_posts_unauthorized=0`)
-- `porce_on_with_detections`: PASS (`PORCE_OBSTACLE_TOKEN` enabled; `inject_posts_unauthorized=0`; `saw_evasion=true`)
+Vision posts obstacles as:
+* `type`, `confidence`, `source`, `bbox` + `lat/lon/distance` (see `pipeline/vision_system.py`).
 
----
+## Synthetic Training (OBJ -> Dome Dataset -> YOLO)
+
+Assets:
+* `3d_to_dataset_xabi/assets/biker.obj`
+* `3d_to_dataset_xabi/assets/cow.obj`
+* `3d_to_dataset_xabi/assets/tower.obj`
+
+Generate + train:
+```powershell
+cd 3d_to_dataset_xabi
+python generate_dataset.py --num-per-class 2000 --imgsz 640 --preview
+python train_yolo.py --epochs 50 --imgsz 640 --batch 32 --device 0 --name yolo_3d_dome_v1
+```
+
+Notes:
+* `3d_to_dataset_xabi/dataset/` and `3d_to_dataset_xabi/runs/` are **not committed** (ignored by git).
+* The generator samples camera viewpoints from the **upper hemisphere** (“dome”, drone-like: always above the object) and applies heavy domain randomization.
+
+## Repo Layout
+
+* `pipeline/`: runtime (Brain, Vision, E2E runner, launch helpers).
+* `pipeline/weights/`: committed final YOLO weight used by Vision by default.
+* `3d_to_dataset_xabi/`: synthetic dataset generation + training scripts.
+* `tools/`: small developer utilities (e.g. `tools/inspect_model.py`, `tools/check_status.py`).
+* `Unreal/`: Unreal project sources (generated binaries/cache are ignored).
+
+## Known Gaps / TODO (Code-Based)
+
+* Make MAVLink connection configurable for a real drone (Brain currently hardcodes SITL TCP).
+* Implement/validate video ingestion for REAL_TWIN (Vision currently uses MSS capture).
+* Add a true Vision-in-the-loop E2E scenario (current E2E uses an HTTP injector, not YOLO).
 
 ## License
 Proprietary. All rights reserved.
