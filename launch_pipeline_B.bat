@@ -20,7 +20,7 @@ echo [0/4] Limpiando procesos antiguos...
 taskkill /F /FI "WINDOWTITLE eq FLIGHT CONTROLLER*" /T >nul 2>&1
 taskkill /F /FI "WINDOWTITLE eq VISION SYSTEM*" /T >nul 2>&1
 taskkill /F /FI "WINDOWTITLE eq VIZ RECORDER*" /T >nul 2>&1
-taskkill /F /IM python.exe >nul 2>&1
+REM NOTE: do NOT kill all python.exe processes; that is unsafe on dev machines.
 
 echo [1/4] Iniciando MASTER LOG SERVER...
 start "MASTER LOG (Twin)" cmd /k "call "%VENV_ACTIVATE%" && cd "%PROJECT_ROOT%\pipeline" && python -u log_server.py"
