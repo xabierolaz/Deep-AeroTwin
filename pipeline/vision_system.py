@@ -19,6 +19,7 @@ import mss
 from datetime import datetime
 import requests
 from ultralytics import YOLO
+from pathlib import Path
 
 # --- CONFIGURACIÓN E IMPORTACIONES ---
 try:
@@ -40,8 +41,15 @@ except ImportError:
 
 # --- CONSTANTES DE VISION ---
 CONFIDENCE_THRESHOLD = 0.40  # Solo mostrar si está 40% seguro
-TARGET_CLASSES = [0, 1, 19]  # COCO: 0=Person, 1=Bicycle, 19=Cow
-MODEL_PATH = "yolo11n.pt"    # Busca en root
+TARGET_CLASS_NAMES = ["biker", "cow", "tower"]  # Custom synthetic classes (3d_to_dataset_xabi)
+
+PIPELINE_DIR = Path(__file__).resolve().parent
+DEFAULT_MODEL_PATH = PIPELINE_DIR / "weights" / "yolo_3d_dome_v1_best.pt"
+MODEL_PATH = os.environ.get("PORCE_YOLO_MODEL", str(DEFAULT_MODEL_PATH))
+
+# Back-compat fallbacks (older docs referenced COCO weights).
+if not Path(MODEL_PATH).exists():
+    MODEL_PATH = "yolo11n.pt"  # repo root / cwd fallback
 if not os.path.exists(MODEL_PATH):
     # Intento buscar en subcarpeta si no está en root
     MODEL_PATH = "3d_to_dataset_xabi/yolo11n.pt"
@@ -132,6 +140,21 @@ class VisionSystem:
         try:
             self.model = YOLO(MODEL_PATH)
             log(f"Modelo cargado correctamente: {MODEL_PATH}")
+
+            # Resolve class indices by name so this works for both custom-trained and COCO weights.
+            names = self.model.names
+            if isinstance(names, dict):
+                id_by_name = {str(v): int(k) for k, v in names.items()}
+            else:
+                id_by_name = {str(v): int(i) for i, v in enumerate(list(names))}
+
+            target_names = list(TARGET_CLASS_NAMES)
+            # If the custom names are missing, fall back to common COCO labels.
+            if not any(n in id_by_name for n in target_names):
+                target_names = ["person", "bicycle", "cow"]
+
+            self._target_class_ids = sorted({id_by_name[n] for n in target_names if n in id_by_name})
+            log(f"Clases objetivo: {target_names} -> ids={self._target_class_ids}")
             # Warmup
             log("Realizando inferencia de calentamiento (Warmup)...")
             self.model.predict(source=np.zeros((640,640,3), dtype=np.uint8), verbose=False)
@@ -186,8 +209,12 @@ class VisionSystem:
             # img_resized = cv2.resize(img_bgr, (640, 640))
             
             # 3. Inferencia YOLO
-            # classes=TARGET_CLASSES filtra person, bicycle, cow
-            results = self.model.predict(img_bgr, conf=CONFIDENCE_THRESHOLD, classes=TARGET_CLASSES, verbose=False)
+            # Filter by class IDs when available (reduces spurious detections on COCO weights).
+            class_filter = getattr(self, "_target_class_ids", None)
+            if not class_filter:
+                results = self.model.predict(img_bgr, conf=CONFIDENCE_THRESHOLD, verbose=False)
+            else:
+                results = self.model.predict(img_bgr, conf=CONFIDENCE_THRESHOLD, classes=class_filter, verbose=False)
             
             detected_obstacles = []
             
@@ -200,7 +227,7 @@ class VisionSystem:
                     x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
                     conf = float(box.conf[0])
                     cls = int(box.cls[0])
-                    class_name = self.model.names[cls]
+                    class_name = str(self.model.names[cls])
                     
                     # Centro del objeto
                     cx = (x1 + x2) / 2
@@ -225,7 +252,10 @@ class VisionSystem:
                         'lat': obj_lat,
                         'lon': obj_lon,
                         'distance': dist,
-                        'type': class_name
+                        'type': class_name,
+                        'confidence': conf,
+                        'source': 'vision',
+                        'bbox': {'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2},
                     })
 
             # 5. Visualizacion (Ventana Debug)

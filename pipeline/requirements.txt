@@ -1,7 +1,10 @@
 requests
+flask
+pymavlink
 ultralytics
 opencv-python
 mss
 trimesh
 pyrender
 numpy
+matplotlib

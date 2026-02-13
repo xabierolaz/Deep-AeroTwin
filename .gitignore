@@ -72,3 +72,8 @@ pipeline/yolov5/openvino/*.xml
 3d_to_dataset_xabi/venv/
 3d_to_dataset_xabi/yolo_3d_experiment/
 3d_to_dataset_xabi/__pycache__/
+
+# Allow committing a final YOLO weight for Pipeline A/B usage (keep everything else ignored).
+!pipeline/weights/
+pipeline/weights/*.pt
+!pipeline/weights/yolo_3d_dome_v1_best.pt

@@ -70,7 +70,8 @@ We generate our own datasets to detect specific hazards not found in COCO (like 
 
 **Current Model Status:**
 *   **Classes:** `biker`, `cow`, `tower`
-*   **Weights:** produced under `3d_to_dataset_xabi/runs/.../weights/best.pt` (ignored by git)
+*   **Weights (committed):** `pipeline/weights/yolo_3d_dome_v1_best.pt`
+*   **Training outputs:** `3d_to_dataset_xabi/runs/.../weights/best.pt` (ignored by git)
 
 **Repro (generate + train):**
 ```powershell

@@ -5,10 +5,16 @@ import cv2
 from ultralytics import YOLO
 import numpy as np
 from datetime import datetime
+from pathlib import Path
 
 # --- CONFIGURACIÓN ---
-IMAGE_PATH = "D:/ArduPilot_SITL_Install/Unreal/Saved/Screenshots/WindowsEditor/raw_capture.png"
-MODEL_PATH = "D:/ArduPilot_SITL_Install/pipeline/weights/best.pt" # Ruta actualizada
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_IMAGE_PATH = REPO_ROOT / "Unreal" / "Saved" / "Screenshots" / "WindowsEditor" / "raw_capture.png"
+DEFAULT_MODEL_PATH = REPO_ROOT / "pipeline" / "weights" / "yolo_3d_dome_v1_best.pt"
+
+IMAGE_PATH = os.environ.get("PORCE_VISUAL_IMAGE", str(DEFAULT_IMAGE_PATH))
+# Keep the model env var aligned with pipeline/vision_system.py.
+MODEL_PATH = os.environ.get("PORCE_YOLO_MODEL", str(DEFAULT_MODEL_PATH))
 DETECTION_CONFIDENCE_THRESHOLD = 0.4
 POLLING_INTERVAL_S = 1.0
 
