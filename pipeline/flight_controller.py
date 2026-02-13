@@ -119,7 +119,11 @@ def get_telemetry():
             "ts": time.time(),
             "active": active,
             "lat": t['lat'], "lon": t['lon'], "alt": t['alt'],
-            "heading": t['heading'], "yaw": t['heading'],
+            # rel_alt is used by vision for pixel->ground projection (AGL approx in SIM).
+            "rel_alt": float(t.get('rel_alt', 0.0) or 0.0),
+            "heading": t['heading'],
+            # Prefer attitude yaw (ATTITUDE) if available; fall back to heading.
+            "yaw": float(t.get('yaw', t['heading']) or t['heading']),
             "roll": t['roll'], "pitch": t['pitch'],
             "armed": t['armed'], "mode": t['mode']
         })
@@ -461,7 +465,14 @@ def control_loop():
                 nearest_obs = None
                 min_dist = float('inf')
                 for o in obs:
-                    d = o.get('distance', 9999)
+                    # Zero-trust: prefer distance computed from geo-coordinates when available.
+                    d_reported = float(o.get('distance', 9999) or 9999.0)
+                    d = d_reported
+                    try:
+                        if o.get('lat') is not None and o.get('lon') is not None:
+                            d = haversine(tel['lat'], tel['lon'], float(o['lat']), float(o['lon']))
+                    except Exception:
+                        d = d_reported
                     if d < min_dist: 
                         min_dist = d
                         nearest_obs = o

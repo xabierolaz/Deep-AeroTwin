@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import math
 import os
 import signal
 import subprocess
@@ -138,6 +139,12 @@ def _get_status(base_url: str) -> dict:
     return r.json()
 
 
+def _get_telemetry(base_url: str) -> dict:
+    r = requests.get(f"{base_url}/api/state/latest", timeout=2)
+    r.raise_for_status()
+    return r.json()
+
+
 def _inject_obstacles(base_url: str, token: str, *, duration_s: float = 15.0, hz: float = 3.0) -> dict[str, int | Optional[int]]:
     # Keep posting the same obstacle so it stays fresh (expiry-based store in the Brain).
     headers = {}
@@ -147,12 +154,34 @@ def _inject_obstacles(base_url: str, token: str, *, duration_s: float = 15.0, hz
     posts_unauthorized = 0
     last_status: Optional[int] = None
 
-    # Place an obstacle close to the first leg (home -> WP2) so it is inside PORCE horizon.
+    # Place an obstacle close to the vehicle so Brain-computed distance (from lat/lon) is deterministic.
+    target_dist_m = 35.0  # must be < REACTION_DISTANCE_M (45m in SIM) to trigger evasion
+    obs_lat = 42.229300
+    obs_lon = -1.234700
+
+    try:
+        tel = _get_telemetry(base_url)
+        lat0 = float(tel.get("lat", 0.0) or 0.0)
+        lon0 = float(tel.get("lon", 0.0) or 0.0)
+        yaw_deg = float(tel.get("yaw", tel.get("heading", 0.0)) or 0.0)
+        if abs(lat0) > 0.0001 or abs(lon0) > 0.0001:
+            br = math.radians(yaw_deg)
+            north_m = math.cos(br) * target_dist_m
+            east_m = math.sin(br) * target_dist_m
+            R = 6371000.0
+            dlat = north_m / R
+            denom = R * (math.cos(math.radians(lat0)) or 1e-6)
+            dlon = east_m / denom
+            obs_lat = lat0 + math.degrees(dlat)
+            obs_lon = lon0 + math.degrees(dlon)
+    except Exception:
+        pass
+
     obstacle = {
         "id": 1,
-        "lat": 42.229300,
-        "lon": -1.234700,
-        "distance": 35.0,  # must be < REACTION_DISTANCE_M (45m in SIM) to trigger evasion
+        "lat": obs_lat,
+        "lon": obs_lon,
+        "distance": target_dist_m,
         "type": "injector_tower",
         "confidence": 0.99,
         "source": "injector",

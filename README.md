@@ -21,10 +21,13 @@ Everything stated here is derived from the code in this repo and/or from runs th
 **Pipeline A (SIMULATION) is operational and validated end-to-end.**
 
 Verified on **2026-02-13** (Windows + WSL2):
-* `porce_off_no_detections`: PASS
-* `porce_on_no_detections`: PASS
-* `porce_off_with_detections`: PASS (token enabled; `inject_posts_unauthorized=0`)
-* `porce_on_with_detections`: PASS (token enabled; `inject_posts_unauthorized=0`; `saw_evasion=true`)
+* E2E matrix (token disabled):
+  * `porce_off_no_detections`: PASS
+  * `porce_on_no_detections`: PASS
+  * `porce_off_with_detections`: PASS (`saw_evasion=false`)
+  * `porce_on_with_detections`: PASS (`saw_evasion=true`)
+* Token enforcement (`PORCE_OBSTACLE_TOKEN` set):
+  * `porce_on_with_detections`: PASS (`inject_posts_unauthorized=0`, `saw_evasion=true`)
 
 ## Pipelines
 
@@ -82,6 +85,9 @@ If `PORCE_OBSTACLE_TOKEN` is set, the Brain requires all `POST /api/obstacles` t
 
 When the token is enabled, the E2E harness asserts `inject_posts_unauthorized=0`.
 
+Distance handling (zero-trust):
+* When an obstacle includes `lat/lon`, the Brain computes distance from the drone position (haversine) and does not rely on the reported `distance` field for PORCE triggering.
+
 ## Vision Model (YOLO)
 
 * Default weights (committed): `pipeline/weights/yolo_3d_dome_v1_best.pt`
@@ -90,6 +96,21 @@ When the token is enabled, the E2E harness asserts `inject_posts_unauthorized=0`
 
 Vision posts obstacles as:
 * `type`, `confidence`, `source`, `bbox` + `lat/lon/distance` (see `pipeline/vision_system.py`).
+
+### Vision Geo Projection (Pixel -> Ground)
+
+Vision projects a detection to a ground point using:
+* Pinhole camera model (VFOV + frame aspect ratio)
+* Vehicle attitude (`yaw`, `pitch`, `roll`) and AGL (`rel_alt`)
+* A fixed camera mount rotation (default: `-30` deg pitch, i.e. 30 deg down from horizon)
+
+Key env vars:
+* `PORCE_CAMERA_VFOV_DEG` (defaults to `CAMERA_FOV_VERTICAL` in `pipeline/constants.py`)
+* `PORCE_CAMERA_MOUNT_PITCH_DEG` (defaults to `-30`)
+* `PORCE_CAMERA_MOUNT_ROLL_DEG`, `PORCE_CAMERA_MOUNT_YAW_DEG` (defaults to `0`)
+* `PORCE_CAPTURE_MONITOR` (defaults to `1`)
+* Optional ROI (recommended if Unreal is not fullscreen, for correct geometry):
+  * `PORCE_CAPTURE_LEFT`, `PORCE_CAPTURE_TOP`, `PORCE_CAPTURE_WIDTH`, `PORCE_CAPTURE_HEIGHT`
 
 ## Synthetic Training (OBJ -> Dome Dataset -> YOLO)
 

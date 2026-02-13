@@ -20,6 +20,7 @@ from datetime import datetime
 import requests
 from ultralytics import YOLO
 from pathlib import Path
+from typing import Optional, Tuple
 
 # --- CONFIGURACIÓN E IMPORTACIONES ---
 try:
@@ -63,74 +64,145 @@ def log(msg):
     print(f"[{timestamp}] [VISION-YOLO] {msg}", flush=True)
 
 class GeoProjector:
-    """Convierte pixeles 2D a coordenadas GPS 3D"""
-    @staticmethod
-    def pixel_to_gps(px_y, px_x, drone_lat, drone_lon, drone_alt, drone_heading, drone_pitch):
-        # 1. Calcular angulo vertical desde el centro de la camara
-        # Pixel Y va de 0 (arriba) a Height (abajo). 
-        # Centro es Height/2.
-        # Si px_y < center, estamos mirando arriba del eje del dron.
-        
-        # Grados por pixel
-        deg_per_px = CAMERA_FOV_VERTICAL / CAMERA_HEIGHT
-        
-        # Desviacion vertical desde el centro optico (pitch del dron incluido)
-        # Asumimos que camera pitch = drone pitch
-        # Un valor positivo de px_offset significa "abajo" en la imagen
-        center_y = CAMERA_HEIGHT / 2
-        delta_px = px_y - center_y
-        delta_angle_deg = delta_px * deg_per_px
-        
-        # Angulo total respecto al horizonte (Pitch dron - Angulo pixel)
-        # Pitch positivo = Morro arriba. Pitch negativo = Morro abajo.
-        # Si miro abajo en la imagen (delta_angle > 0), el angulo de depresion aumenta.
-        
-        # Angulo de depresion total (desde el horizonte hacia abajo)
-        # Nota: ArduPilot pitch positivo es morro arriba.
-        # Depresion = -(Pitch) + (Angulo Visual Vertical)
-        
-        # Simplificacion Flat Earth:
-        # Distance = Altura_Relativa / tan(Angulo_Depresion)
-        
-        alt_rel = drone_alt - TERRAIN_ELEVATION_MSL
-        if alt_rel < 1.0: alt_rel = 1.0 # Evitar division por cero o alturas negativas
-        
-        # Estimacion muy burda de distancia basada en tamaño de caja o posicion Y
-        # Si está muy abajo en la imagen, está cerca. Si está al centro, está en el horizonte.
-        # Mapeamos eje Y [High...Center] a Distancia [Min...Max]
-        
-        # Factor de correccion empirico para simulacion
-        normalized_y = max(0, min(1, (px_y / CAMERA_HEIGHT)))
-        if normalized_y < 0.5:
-            dist_m = DETECTION_RANGE_M # Horizonte o cielo
-        else:
-            # Mapeo no lineal: Cuanto mas abajo, mas cerca
-            # 0.5 -> 80m
-            # 1.0 -> 0m (debajo del dron)
-            factor = (1.0 - normalized_y) * 2.0 # 0 a 1
-            dist_m = factor * DETECTION_RANGE_M
-            
-        if dist_m > DETECTION_RANGE_M: dist_m = DETECTION_RANGE_M
-        if dist_m < 2.0: dist_m = 2.0
+    """Convierte pixeles 2D a coordenadas GPS usando geometria (pinhole + actitud + suelo plano).
 
-        # 2. Proyectar Lat/Lon
-        # Formula de Haversine inversa simplificada o proyeccion plana
-        # NewLat = Lat + (Dist * cos(Heading)) / EarthRadius
-        R = EARTH_RADIUS_M
-        
-        # Heading en radianes
-        bearing = math.radians(drone_heading)
-        
-        lat_rad = math.radians(drone_lat)
-        lon_rad = math.radians(drone_lon)
-        
-        new_lat = math.asin(math.sin(lat_rad)*math.cos(dist_m/R) + 
-                            math.cos(lat_rad)*math.sin(dist_m/R)*math.cos(bearing))
-                            
-        new_lon = lon_rad + math.atan2(math.sin(bearing)*math.sin(dist_m/R)*math.cos(lat_rad),
-                                       math.cos(dist_m/R)-math.sin(lat_rad)*math.sin(new_lat))
-                                       
-        return math.degrees(new_lat), math.degrees(new_lon), dist_m
+    Zero-trust:
+    - No inventa distancia con heuristicas por Y.
+    - Si el rayo no intersecta el suelo (p.ej. cielo/horizonte), devuelve None.
+
+    Supuestos/limitaciones:
+    - Terreno local plano bajo el dron (necesita AGL).
+    - Camara rigidamente montada con offsets fijos.
+    - Sin calibracion intrinseca precisa: usa VFOV aproximado.
+    """
+
+    @staticmethod
+    def _rot_x(deg: float) -> np.ndarray:
+        r = math.radians(deg)
+        c, s = math.cos(r), math.sin(r)
+        return np.array([[1.0, 0.0, 0.0], [0.0, c, -s], [0.0, s, c]], dtype=float)
+
+    @staticmethod
+    def _rot_y(deg: float) -> np.ndarray:
+        r = math.radians(deg)
+        c, s = math.cos(r), math.sin(r)
+        return np.array([[c, 0.0, s], [0.0, 1.0, 0.0], [-s, 0.0, c]], dtype=float)
+
+    @staticmethod
+    def _rot_z(deg: float) -> np.ndarray:
+        r = math.radians(deg)
+        c, s = math.cos(r), math.sin(r)
+        return np.array([[c, -s, 0.0], [s, c, 0.0], [0.0, 0.0, 1.0]], dtype=float)
+
+    @staticmethod
+    def _ned_from_body(yaw_deg: float, pitch_deg: float, roll_deg: float) -> np.ndarray:
+        # Body (x forward, y right, z down) -> NED (x north, y east, z down)
+        return GeoProjector._rot_z(yaw_deg) @ GeoProjector._rot_y(pitch_deg) @ GeoProjector._rot_x(roll_deg)
+
+    @staticmethod
+    def _offset_latlon(drone_lat: float, drone_lon: float, north_m: float, east_m: float) -> Tuple[float, float]:
+        # Proyeccion local (suficiente para offsets <~1km)
+        R = float(EARTH_RADIUS_M)
+        lat_rad = math.radians(float(drone_lat))
+        dlat = float(north_m) / R
+        denom = R * (math.cos(lat_rad) or 1e-6)
+        dlon = float(east_m) / denom
+        return float(drone_lat) + math.degrees(dlat), float(drone_lon) + math.degrees(dlon)
+
+    @staticmethod
+    def pixel_to_gps(
+        px_y: float,
+        px_x: float,
+        *,
+        image_height: int,
+        image_width: int,
+        drone_lat: float,
+        drone_lon: float,
+        drone_yaw_deg: float,
+        drone_pitch_deg: float,
+        drone_roll_deg: float,
+        alt_agl_m: float,
+        camera_vfov_deg: float,
+        mount_roll_deg: float,
+        mount_pitch_deg: float,
+        mount_yaw_deg: float,
+        max_range_m: float,
+    ) -> Optional[Tuple[float, float, float]]:
+        if image_height <= 0 or image_width <= 0:
+            return None
+
+        # Clamp (YOLO puede dar boxes ligeramente fuera del frame)
+        u = float(max(0.0, min(float(image_width - 1), float(px_x))))
+        v = float(max(0.0, min(float(image_height - 1), float(px_y))))
+
+        h = float(alt_agl_m)
+        if not math.isfinite(h) or h < 0.5:
+            return None
+
+        vfov_rad = math.radians(float(camera_vfov_deg))
+        if not (0.01 < vfov_rad < math.radians(179.0)):
+            return None
+
+        # Camera intrinsics from VFOV + aspect ratio
+        H = float(image_height)
+        W = float(image_width)
+        fy = (H / 2.0) / math.tan(vfov_rad / 2.0)
+        hfov_rad = 2.0 * math.atan(math.tan(vfov_rad / 2.0) * (W / H))
+        fx = (W / 2.0) / math.tan(hfov_rad / 2.0)
+        cx = W / 2.0
+        cy = H / 2.0
+
+        # OpenCV camera frame: x right, y down, z forward
+        x_cam = (u - cx) / fx
+        y_cam = (v - cy) / fy
+        z_cam = 1.0
+        ray_cam = np.array([x_cam, y_cam, z_cam], dtype=float)
+        ray_cam = ray_cam / (np.linalg.norm(ray_cam) + 1e-12)
+
+        # camera->body aligned (camera forward == body forward).
+        # Body frame (MAVLink): x forward, y right, z down.
+        R_body_cam_align = np.array(
+            [
+                [0.0, 0.0, 1.0],  # body_x = cam_z
+                [1.0, 0.0, 0.0],  # body_y = cam_x
+                [0.0, 1.0, 0.0],  # body_z = cam_y
+            ],
+            dtype=float,
+        )
+
+        # Mount rotation (default mount_pitch=-30deg => camera tilted down 30deg).
+        R_mount = GeoProjector._rot_z(mount_yaw_deg) @ GeoProjector._rot_y(mount_pitch_deg) @ GeoProjector._rot_x(mount_roll_deg)
+        ray_body = R_mount @ (R_body_cam_align @ ray_cam)
+
+        # Body -> NED using vehicle attitude.
+        R_ned_body = GeoProjector._ned_from_body(float(drone_yaw_deg), float(drone_pitch_deg), float(drone_roll_deg))
+        ray_ned = R_ned_body @ ray_body
+
+        # Intersect with ground plane at z = h (NED down positive).
+        down = float(ray_ned[2])
+        if not math.isfinite(down) or down <= 1e-6:
+            return None
+
+        t = h / down
+        if not math.isfinite(t) or t <= 0.0:
+            return None
+
+        north_m = float(ray_ned[0]) * t
+        east_m = float(ray_ned[1]) * t
+        dist_h = math.hypot(north_m, east_m)
+        if not math.isfinite(dist_h):
+            return None
+
+        # Clamp to detection range to avoid near-horizon blowups.
+        max_r = float(max_range_m)
+        if math.isfinite(max_r) and max_r > 0.0 and dist_h > max_r:
+            scale = max_r / (dist_h + 1e-9)
+            north_m *= scale
+            east_m *= scale
+            dist_h = max_r
+
+        obj_lat, obj_lon = GeoProjector._offset_latlon(float(drone_lat), float(drone_lon), north_m, east_m)
+        return float(obj_lat), float(obj_lon), float(dist_h)
 
 class VisionSystem:
     def __init__(self):
@@ -162,6 +234,12 @@ class VisionSystem:
             log(f"ERROR CRITICO cargando modelo: {e}")
             sys.exit(1)
 
+        # Projection config (defaults tuned for Pipeline A SIM).
+        # Camera tilt: 30deg down from horizon => mount_pitch=-30deg unless overridden.
+        self._camera_vfov_deg = float(os.environ.get("PORCE_CAMERA_VFOV_DEG", str(CAMERA_FOV_VERTICAL)))
+        self._mount_roll_deg = float(os.environ.get("PORCE_CAMERA_MOUNT_ROLL_DEG", "0"))
+        self._mount_pitch_deg = float(os.environ.get("PORCE_CAMERA_MOUNT_PITCH_DEG", "-30"))
+        self._mount_yaw_deg = float(os.environ.get("PORCE_CAMERA_MOUNT_YAW_DEG", "0"))
         self.projector = GeoProjector()
         self.sct = mss.mss()
         self.session = requests.Session()
@@ -169,7 +247,20 @@ class VisionSystem:
         
         # Definir zona de captura (Pantalla completa por defecto, ajustar segun necesidad)
         # Se asume monitor principal 1920x1080
-        self.monitor = self.sct.monitors[1] 
+        monitor_idx = int(os.environ.get("PORCE_CAPTURE_MONITOR", "1"))
+        self.monitor = self.sct.monitors[monitor_idx]
+        # Optional ROI override (match Unreal camera viewport for correct geometry).
+        roi_left = os.environ.get("PORCE_CAPTURE_LEFT")
+        roi_top = os.environ.get("PORCE_CAPTURE_TOP")
+        roi_w = os.environ.get("PORCE_CAPTURE_WIDTH")
+        roi_h = os.environ.get("PORCE_CAPTURE_HEIGHT")
+        if roi_left and roi_top and roi_w and roi_h:
+            self.monitor = {
+                "left": int(roi_left),
+                "top": int(roi_top),
+                "width": int(roi_w),
+                "height": int(roi_h),
+            }
         log(f"Zona de captura: {self.monitor}")
 
     def get_telemetry(self):
@@ -196,9 +287,15 @@ class VisionSystem:
                 
             dron_lat = telemetry.get('lat', 0)
             dron_lon = telemetry.get('lon', 0)
-            dron_alt = telemetry.get('alt', 0)
+            dron_alt_msl = telemetry.get('alt', 0)
+            # Prefer AGL if provided by Brain, else use MSL - terrain.
+            dron_alt_agl = telemetry.get('rel_alt', None)
+            if dron_alt_agl is None:
+                dron_alt_agl = float(dron_alt_msl) - float(TERRAIN_ELEVATION_MSL)
             dron_hdg = telemetry.get('heading', 0)
+            dron_yaw = telemetry.get('yaw', dron_hdg)
             dron_pitch = telemetry.get('pitch', 0)
+            dron_roll = telemetry.get('roll', 0)
 
             # 2. Captura de Pantalla
             screenshot = np.array(self.sct.grab(self.monitor))
@@ -231,12 +328,30 @@ class VisionSystem:
                     
                     # Centro del objeto
                     cx = (x1 + x2) / 2
-                    cy = y1 + y2  # Usamos la base (pies) para mejor estimacion de distancia
+                    cy = y2  # Base del bbox (pies). Antes era y1+y2 (bug) => fuera de frame.
                     
                     # Proyeccion GPS
-                    obj_lat, obj_lon, dist = self.projector.pixel_to_gps(
-                        cy, cx, dron_lat, dron_lon, dron_alt, dron_hdg, dron_pitch
+                    H, W = img_bgr.shape[:2]
+                    projected = self.projector.pixel_to_gps(
+                        cy,
+                        cx,
+                        image_height=int(H),
+                        image_width=int(W),
+                        drone_lat=float(dron_lat),
+                        drone_lon=float(dron_lon),
+                        drone_yaw_deg=float(dron_yaw),
+                        drone_pitch_deg=float(dron_pitch),
+                        drone_roll_deg=float(dron_roll),
+                        alt_agl_m=float(dron_alt_agl),
+                        camera_vfov_deg=float(self._camera_vfov_deg),
+                        mount_roll_deg=float(self._mount_roll_deg),
+                        mount_pitch_deg=float(self._mount_pitch_deg),
+                        mount_yaw_deg=float(self._mount_yaw_deg),
+                        max_range_m=float(DETECTION_RANGE_M),
                     )
+                    if not projected:
+                        continue
+                    obj_lat, obj_lon, dist = projected
                     
                     label = f"{class_name} {conf:.2f} | {dist:.1f}m"
                     
