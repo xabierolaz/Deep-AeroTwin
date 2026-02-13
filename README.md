@@ -145,9 +145,11 @@ Each run writes logs under:
 
 ### Current E2E Status
 
-Verified on **2026-02-13**:
+Verified on **2026-02-13** (Pipeline A):
 - `porce_off_no_detections`: PASS
-- Remaining scenarios: pending re-run after latest zero-trust + SITL defaults fixes
+- `porce_on_no_detections`: PASS
+- `porce_off_with_detections`: PASS (`PORCE_OBSTACLE_TOKEN` enabled; `inject_posts_unauthorized=0`)
+- `porce_on_with_detections`: PASS (`PORCE_OBSTACLE_TOKEN` enabled; `inject_posts_unauthorized=0`; `saw_evasion=true`)
 
 ---
 
