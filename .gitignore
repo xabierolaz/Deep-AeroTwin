@@ -1,44 +1,25 @@
-# Root gitignore para NO subir instalaciones pesadas ni artefactos locales
+# Root .gitignore: ignore build artifacts, caches and machine-local files.
 
-# Entornos virtuales
+# --- Python ---
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Virtual envs
+.venv/
 venv/
 env/
+
+# Env files (local)
 .env
+.env.*
 
-# Directorios externos al pipeline
-# /ardupilot/  <-- Habilitado para control de versiones (submódulo)
-# /Unreal/     <-- Habilitado para control de versiones
-
-# Unreal Engine - Ignorar carpetas temporales y generadas (IMPORTANTE)
-Unreal/Intermediate/
-Unreal/Saved/
-Unreal/DerivedDataCache/
-Unreal/Build/
-Unreal/Binaries/
-Unreal/.vscode/
-Unreal/*.sln
-Unreal/.vs/
-
-# Logs/artifacts raíz (SITL, imágenes sueltas)
-/# logs/artifacts
-/logs/
-/pipeline/logs/
-/pipeline/detection_results/
-*.log
-*.png
-*.jpg
-*.jpeg
-nul
-
-# Python caches globales
-__pycache__/
-*.pyc
-
-# Otros temporales comunes
-*.tmp
-*.bak
-Thumbs.db
-.DS_Store
+# --- Editor/OS ---
 .vscode/
 .idea/
 .vs/
@@ -47,31 +28,56 @@ Thumbs.db
 .ropeproject/
 .history/
 *.code-workspace
-.project
-.classpath
-.settings/
-.ipynb_checkpoints/
+Thumbs.db
+.DS_Store
 
-# Nota: el subproyecto está en /pipeline y tiene su propio .gitignore
+# --- Temporary files ---
+*.tmp
+*.bak
+*.swp
 
-# Archivos grandes ignorados por LFS quota
+# --- Logs / run artifacts ---
+logs/
+pipeline/logs/
+pipeline/detection_results/
+*.log
+nul
+
+# --- Unreal Engine ---
+# Keep source/assets under Unreal/, ignore generated output (Binaries/Intermediate/Saved/DerivedDataCache) and IDE files.
+Unreal/**/Binaries/
+Unreal/**/Build/
+Unreal/**/DerivedDataCache/
+Unreal/**/Intermediate/
+Unreal/**/Saved/
+Unreal/**/.vs/
+Unreal/**/.vscode/
+Unreal/*.sln
+Unreal/*.suo
+Unreal/*.opensdf
+Unreal/*.sdf
+Unreal/*.VC.db
+Unreal/*.VC.opendb
+
+# AI/tool local config (do not commit)
+**/.claude/
+
+# --- Large files (avoid accidental commits without LFS) ---
 *.fbx
 *.bin
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
 
-
-# --- DATASET GENERATION ---
-# Ignorar pesos pesados y datasets generados
-*.pt
+# --- Dataset / training artifacts ---
 3d_to_dataset_xabi/dataset/
 3d_to_dataset_xabi/runs/
 3d_to_dataset_xabi/venv/
 3d_to_dataset_xabi/yolo_3d_experiment/
 3d_to_dataset_xabi/__pycache__/
 
-# Allow committing a final YOLO weight for Pipeline A/B usage (keep everything else ignored).
+# YOLO weights: ignore by default; allow committing a curated final weight in pipeline/weights.
+*.pt
 !pipeline/weights/
 pipeline/weights/*.pt
 !pipeline/weights/yolo_3d_dome_v1_best.pt
