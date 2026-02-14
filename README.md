@@ -112,6 +112,10 @@ Key env vars:
 * Optional ROI (recommended if Unreal is not fullscreen, for correct geometry):
   * `PORCE_CAPTURE_LEFT`, `PORCE_CAPTURE_TOP`, `PORCE_CAPTURE_WIDTH`, `PORCE_CAPTURE_HEIGHT`
 
+Evaluation:
+* Projection error / sensitivity tool: `tools/eval_projection_error.py`
+* Run logs and example outputs: `docs/PROJECTION_ERROR_EVAL.md`
+
 ## Synthetic Training (OBJ -> Dome Dataset -> YOLO)
 
 Assets:
