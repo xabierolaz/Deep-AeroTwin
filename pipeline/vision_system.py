@@ -21,6 +21,7 @@ import requests
 from ultralytics import YOLO
 from pathlib import Path
 from typing import Optional, Tuple
+from dataclasses import dataclass
 
 # --- CONFIGURACIÓN E IMPORTACIONES ---
 try:
@@ -43,6 +44,14 @@ except ImportError:
 # --- CONSTANTES DE VISION ---
 CONFIDENCE_THRESHOLD = 0.40  # Solo mostrar si está 40% seguro
 TARGET_CLASS_NAMES = ["biker", "cow", "tower"]  # Custom synthetic classes (3d_to_dataset_xabi)
+
+MIN_BOX_HEIGHT_PX = float(os.environ.get("PORCE_VISION_MIN_BOX_HEIGHT_PX", "10"))
+MIN_BOX_AREA_FRAC = float(os.environ.get("PORCE_VISION_MIN_BOX_AREA_FRAC", "0.001"))
+TRACK_TTL_S = float(os.environ.get("PORCE_VISION_TRACK_TTL_S", "2.0"))
+TRACK_HOLD_S = float(os.environ.get("PORCE_VISION_TRACK_HOLD_S", "0.8"))
+SMOOTH_TAU_S = float(os.environ.get("PORCE_VISION_SMOOTH_TAU_S", "0.6"))
+ID_BUCKET_PX = int(float(os.environ.get("PORCE_VISION_ID_BUCKET_PX", "64")))
+MAX_OBS_PER_FRAME = int(float(os.environ.get("PORCE_VISION_MAX_OBS_PER_FRAME", "25")))
 
 PIPELINE_DIR = Path(__file__).resolve().parent
 DEFAULT_MODEL_PATH = PIPELINE_DIR / "weights" / "yolo_3d_dome_v1_best.pt"
@@ -204,6 +213,22 @@ class GeoProjector:
         obj_lat, obj_lon = GeoProjector._offset_latlon(float(drone_lat), float(drone_lon), north_m, east_m)
         return float(obj_lat), float(obj_lon), float(dist_h)
 
+
+@dataclass(frozen=True)
+class VisionTrack:
+    obs_id: int
+    class_name: str
+    lat: float
+    lon: float
+    dist: float
+    conf: float
+    bbox: dict
+    cx: float
+    cy: float
+    last_seen_ts: float
+    seen_count: int
+
+
 class VisionSystem:
     def __init__(self):
         log("Inicializando sistema de vision YOLOv11...")
@@ -263,6 +288,9 @@ class VisionSystem:
             }
         log(f"Zona de captura: {self.monitor}")
 
+        # Simple temporal stabilizer (reduces bbox/telemetry jitter in the projected lat/lon).
+        self._tracks: dict[int, VisionTrack] = {}
+
     def get_telemetry(self):
         try:
             r = self.session.get(TELEMETRY_URL, timeout=0.5)
@@ -271,6 +299,30 @@ class VisionSystem:
         except:
             pass
         return None
+
+    @staticmethod
+    def _alpha_from_dt(dt_s: float) -> float:
+        tau = float(SMOOTH_TAU_S)
+        if not math.isfinite(tau) or tau <= 0.0:
+            return 1.0
+        dt = max(0.0, float(dt_s))
+        return float(1.0 - math.exp(-dt / tau))
+
+    @staticmethod
+    def _make_obs_id(cls: int, cx: float, cy: float) -> int:
+        bucket = int(ID_BUCKET_PX) if int(ID_BUCKET_PX) > 0 else 64
+        bx = int(max(0.0, float(cx)) // bucket)
+        by = int(max(0.0, float(cy)) // bucket)
+        return int((int(cls) + 1) * 1_000_000 + by * 1000 + bx)
+
+    def _purge_tracks(self, now_s: float) -> None:
+        ttl = float(TRACK_TTL_S)
+        if not math.isfinite(ttl) or ttl <= 0.0:
+            self._tracks.clear()
+            return
+        dead = [k for k, t in self._tracks.items() if (now_s - float(t.last_seen_ts)) > ttl]
+        for k in dead:
+            self._tracks.pop(k, None)
 
     def run(self):
         log("Sistema listo. Esperando visualizacion...")
@@ -313,8 +365,12 @@ class VisionSystem:
             else:
                 results = self.model.predict(img_bgr, conf=CONFIDENCE_THRESHOLD, classes=class_filter, verbose=False)
             
-            detected_obstacles = []
-            
+            now_s = time.time()
+            self._purge_tracks(now_s)
+
+            H, W = img_bgr.shape[:2]
+            frame_dets: dict[int, dict] = {}
+             
             # 4. Procesar Detecciones
             for r in results:
                 boxes = r.boxes
@@ -326,12 +382,24 @@ class VisionSystem:
                     cls = int(box.cls[0])
                     class_name = str(self.model.names[cls])
                     
-                    # Centro del objeto
-                    cx = (x1 + x2) / 2
-                    cy = y2  # Base del bbox (pies). Antes era y1+y2 (bug) => fuera de frame.
+                    # Filtros basicos:
+                    # - La proyeccion pixel->suelo es extremadamente sensible para bboxes pequenas (cerca del horizonte).
+                    bw = x2 - x1
+                    bh = y2 - y1
+                    if bw <= 1 or bh <= 1:
+                        continue
+                    if bh < float(MIN_BOX_HEIGHT_PX):
+                        continue
+                    if (bw * bh) < (float(MIN_BOX_AREA_FRAC) * float(H) * float(W)):
+                        continue
+
+                    # Centro del objeto (base del bbox = "pies" en el suelo)
+                    cx = float((x1 + x2) / 2.0)
+                    cy = float(y2)  # Base del bbox. Antes era y1+y2 (bug) => fuera de frame.
+                    cx = float(min(max(cx, 0.0), float(W - 1)))
+                    cy = float(min(max(cy, 0.0), float(H - 1)))
                     
                     # Proyeccion GPS
-                    H, W = img_bgr.shape[:2]
                     projected = self.projector.pixel_to_gps(
                         cy,
                         cx,
@@ -359,19 +427,22 @@ class VisionSystem:
                     cv2.rectangle(img_bgr, (x1, y1), (x2, y2), (0, 0, 255), 2)
                     cv2.putText(img_bgr, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                     
-                    # Agregar a lista para enviar al Brain
-                    # Usamos ID basado en coordenadas para "tracking" simple
-                    obs_id = int((obj_lat + obj_lon) * 10000) 
-                    detected_obstacles.append({
-                        'id': obs_id,
-                        'lat': obj_lat,
-                        'lon': obj_lon,
-                        'distance': dist,
-                        'type': class_name,
-                        'confidence': conf,
-                        'source': 'vision',
-                        'bbox': {'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2},
-                    })
+                    # Agregar a lista para enviar al Brain (con ID estable por bucket de pixeles)
+                    obs_id = self._make_obs_id(cls, cx, cy)
+                    prev = frame_dets.get(obs_id)
+                    if (prev is None) or (conf > float(prev.get("confidence", 0.0))):
+                        frame_dets[obs_id] = {
+                            'id': int(obs_id),
+                            'lat': float(obj_lat),
+                            'lon': float(obj_lon),
+                            'distance': float(dist),
+                            'type': str(class_name),
+                            'confidence': float(conf),
+                            'source': 'vision',
+                            'bbox': {'x1': int(x1), 'y1': int(y1), 'x2': int(x2), 'y2': int(y2)},
+                            'cx': float(cx),
+                            'cy': float(cy),
+                        }
 
             # 5. Visualizacion (Ventana Debug)
             # Reducir tamaño para que quepa en pantalla si es 4K
@@ -379,13 +450,78 @@ class VisionSystem:
             cv2.imshow("YOLO V11 VISION DEBUG", display_img)
             
             # 6. Enviar al Brain
-            if detected_obstacles:
-                log(f"Detectados {len(detected_obstacles)} objetos. Enviando...")
+            seen_ids = set(frame_dets.keys())
+            for obs_id, d in frame_dets.items():
+                prev_t = self._tracks.get(obs_id)
+                if prev_t is None:
+                    self._tracks[obs_id] = VisionTrack(
+                        obs_id=int(obs_id),
+                        class_name=str(d.get('type')),
+                        lat=float(d.get('lat')),
+                        lon=float(d.get('lon')),
+                        dist=float(d.get('distance')),
+                        conf=float(d.get('confidence')),
+                        bbox=d.get('bbox') or {},
+                        cx=float(d.get('cx')),
+                        cy=float(d.get('cy')),
+                        last_seen_ts=float(now_s),
+                        seen_count=1,
+                    )
+                    continue
+
+                dt = float(now_s) - float(prev_t.last_seen_ts)
+                a = self._alpha_from_dt(dt)
+                lat = float(prev_t.lat) + a * (float(d.get('lat')) - float(prev_t.lat))
+                lon = float(prev_t.lon) + a * (float(d.get('lon')) - float(prev_t.lon))
+                dist = float(prev_t.dist) + a * (float(d.get('distance')) - float(prev_t.dist))
+                conf_s = max(float(prev_t.conf), float(d.get('confidence')))
+                self._tracks[obs_id] = VisionTrack(
+                    obs_id=int(obs_id),
+                    class_name=str(d.get('type')),
+                    lat=float(lat),
+                    lon=float(lon),
+                    dist=float(dist),
+                    conf=float(conf_s),
+                    bbox=d.get('bbox') or {},
+                    cx=float(d.get('cx')),
+                    cy=float(d.get('cy')),
+                    last_seen_ts=float(now_s),
+                    seen_count=int(prev_t.seen_count) + 1,
+                )
+
+            outgoing = []
+            hold_s = float(TRACK_HOLD_S)
+            for obs_id, t in self._tracks.items():
+                if obs_id in seen_ids:
+                    ok = True
+                else:
+                    age_s = float(now_s) - float(t.last_seen_ts)
+                    ok = math.isfinite(hold_s) and hold_s > 0.0 and age_s <= hold_s and int(t.seen_count) >= 2
+                if not ok:
+                    continue
+
+                outgoing.append({
+                    'id': int(t.obs_id),
+                    'lat': float(t.lat),
+                    'lon': float(t.lon),
+                    'distance': float(t.dist),
+                    'type': str(t.class_name),
+                    'confidence': float(t.conf),
+                    'source': 'vision',
+                    'bbox': t.bbox,
+                })
+
+            outgoing.sort(key=lambda o: float(o.get('distance', 9999.0)))
+            max_out = int(MAX_OBS_PER_FRAME) if int(MAX_OBS_PER_FRAME) > 0 else len(outgoing)
+            outgoing = outgoing[:max_out]
+
+            if outgoing:
+                log(f"Dets frame={len(frame_dets)} tracks={len(self._tracks)} send={len(outgoing)}")
                 try:
                     headers = {}
                     if self._obstacle_token:
                         headers["X-PORCE-Token"] = self._obstacle_token
-                    self.session.post(OBSTACLES_URL, json={'obstacles': detected_obstacles}, headers=headers, timeout=0.1)
+                    self.session.post(OBSTACLES_URL, json={'obstacles': outgoing}, headers=headers, timeout=0.1)
                 except:
                     pass
 
