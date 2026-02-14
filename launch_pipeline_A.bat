@@ -1,7 +1,7 @@
 @echo off
-TITLE DEEP-AEROTWIN: PIPELINE A (SIMULATION)
+TITLE DEEP-AEROTWIN: PIPELINE A (SIMULATION) [TABS]
 echo ======================================================
-echo    LAUNCHING PIPELINE A: AUTONOMOUS SIMULATION
+echo    LAUNCHING PIPELINE A: AUTONOMOUS SIMULATION (TABS)
 echo ======================================================
 echo.
 echo [CONFIG] Setting PORCE_SYSTEM_MODE=SIMULATION

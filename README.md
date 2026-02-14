@@ -53,8 +53,8 @@ Vision capture modes (Pipeline A):
   * Optional: `PORCE_VISION_TARGET_FPS=30` (0 = as fast as possible)
 
 Launchers:
-* `launch_pipeline_A.bat` (recommended)
-* `launch_pipeline_A_tabs.bat` (Windows Terminal tabs)
+* `launch_pipeline_A.bat` (Windows Terminal tabs, recommended)
+* `launch_pipeline_B.bat` (Windows Terminal tabs)
 * E2E harness: `pipeline/e2e_flight_matrix.py` (recommended for CI-like validation)
 
 Stop:

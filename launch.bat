@@ -1,6 +1,6 @@
 @echo off
 setlocal enabledelayedexpansion
-TITLE DEEP-AEROTWIN: MASTER SYSTEM LAUNCHER
+TITLE DEEP-AEROTWIN: LAUNCHER (TABS)
 
 REM ============================================================================
 REM CONFIG
@@ -13,7 +13,6 @@ set "VENV_ACTIVATE=%PROJECT_ROOT%\venv\Scripts\activate.bat"
 
 REM Respect caller mode (launch_pipeline_A/B), default to SIMULATION.
 if not defined PORCE_SYSTEM_MODE set "PORCE_SYSTEM_MODE=SIMULATION"
-set "WINDOW_TITLE_SUFFIX=(%PORCE_SYSTEM_MODE%)"
 
 echo [LAUNCHER] Root: %PROJECT_ROOT%
 echo [CONFIG] PORCE_SYSTEM_MODE=%PORCE_SYSTEM_MODE%
@@ -22,10 +21,8 @@ echo.
 REM ============================================================================
 REM 0. CLEANUP (SAFE)
 REM ============================================================================
-echo [0/5] Cleaning previous pipeline processes...
-REM Zero-trust: stop by PID/commandline (works for separate windows and Windows Terminal tabs).
+echo [0/3] Cleaning previous pipeline processes...
 powershell -NoProfile -ExecutionPolicy Bypass -File "%PROJECT_ROOT%\tools\stop_pipeline.ps1" -Quiet >nul 2>&1
-REM NOTE: do NOT kill all python.exe processes; that is unsafe on dev machines.
 
 if not exist "%LOGS_DIR%" mkdir "%LOGS_DIR%"
 if not exist "%LOGS_DIR%\viz_frames" mkdir "%LOGS_DIR%\viz_frames"
@@ -34,59 +31,58 @@ echo [OK] Cleanup done.
 echo.
 
 REM ============================================================================
-REM 1. MASTER LOG SERVER
+REM 1. WINDOWS TERMINAL
 REM ============================================================================
-echo [1/5] Starting MASTER LOG SERVER...
-if exist "%VENV_ACTIVATE%" (
-    start "MASTER LOG (Do Not Close)" cmd /k "call "%VENV_ACTIVATE%" && cd "%PROJECT_ROOT%\pipeline" && python -u log_server.py"
-) else (
-    echo [WARN] venv not found at "%VENV_ACTIVATE%". Using system Python.
-    start "MASTER LOG (Do Not Close)" cmd /k "cd "%PROJECT_ROOT%\pipeline" && python -u log_server.py"
-)
-timeout /t 2 /nobreak >nul
-
-REM ============================================================================
-REM 2. SITL (WSL)
-REM ============================================================================
-echo [2/5] Starting SITL (WSL)...
-for /f "usebackq tokens=*" %%a in (`wsl wslpath -u "%PROJECT_ROOT%\pipeline\run_sitl.sh"`) do set SITL_SCRIPT_PATH=%%a
-start "ArduPilot SITL" cmd /k "wsl -e bash "%SITL_SCRIPT_PATH%""
-
-REM ============================================================================
-REM 3. FLIGHT CONTROLLER (Brain)
-REM ============================================================================
-echo [3/5] Starting FLIGHT CONTROLLER...
-if exist "%VENV_ACTIVATE%" (
-    start "FLIGHT CONTROLLER %WINDOW_TITLE_SUFFIX%" cmd /c "set PORCE_SYSTEM_MODE=%PORCE_SYSTEM_MODE% && call "%VENV_ACTIVATE%" && cd "%PROJECT_ROOT%\pipeline" && python -u flight_controller.py 2>&1 | python tee.py --prefix BRAIN --cap-lines 200"
-) else (
-    start "FLIGHT CONTROLLER %WINDOW_TITLE_SUFFIX%" cmd /c "set PORCE_SYSTEM_MODE=%PORCE_SYSTEM_MODE% && cd "%PROJECT_ROOT%\pipeline" && python -u flight_controller.py 2>&1 | python tee.py --prefix BRAIN --cap-lines 200"
+set "WT_EXE="
+where wt.exe >nul 2>&1
+if not errorlevel 1 set "WT_EXE=wt.exe"
+if not defined WT_EXE (
+  if exist "%LOCALAPPDATA%\Microsoft\WindowsApps\wt.exe" (
+    set "WT_EXE=%LOCALAPPDATA%\Microsoft\WindowsApps\wt.exe"
+  )
 )
 
-REM ============================================================================
-REM 4. VISION SYSTEM (Eyes)
-REM ============================================================================
-echo [4/5] Starting VISION SYSTEM...
-timeout /t 1 /nobreak >nul
-if exist "%VENV_ACTIVATE%" (
-    start "VISION SYSTEM %WINDOW_TITLE_SUFFIX%" cmd /c "set PORCE_SYSTEM_MODE=%PORCE_SYSTEM_MODE% && call "%VENV_ACTIVATE%" && cd "%PROJECT_ROOT%\pipeline" && python -u vision_system.py 2>&1 | python tee.py --prefix EYES --cap-lines 200"
-) else (
-    start "VISION SYSTEM %WINDOW_TITLE_SUFFIX%" cmd /c "set PORCE_SYSTEM_MODE=%PORCE_SYSTEM_MODE% && cd "%PROJECT_ROOT%\pipeline" && python -u vision_system.py 2>&1 | python tee.py --prefix EYES --cap-lines 200"
+if not defined WT_EXE (
+  echo [ERROR] Windows Terminal (wt.exe) not found. Install Windows Terminal and retry.
+  exit /b 2
 )
 
-REM ============================================================================
-REM 5. VIZ RECORDER
-REM ============================================================================
-echo [5/5] Starting VIZ RECORDER...
+REM WSL path to run_sitl.sh
+set "SITL_SCRIPT_PATH="
+for /f "usebackq tokens=*" %%a in (`wsl wslpath -u "%PIPELINE_DIR%\run_sitl.sh"`) do set SITL_SCRIPT_PATH=%%a
+
+REM Build python activation snippet for cmd.exe
+set "PYENV="
 if exist "%VENV_ACTIVATE%" (
-    start "VIZ RECORDER" cmd /c "call "%VENV_ACTIVATE%" && cd "%PROJECT_ROOT%\pipeline" && python -u viz_recorder.py"
+  set "PYENV=call \"%VENV_ACTIVATE%\" &&"
 ) else (
-    start "VIZ RECORDER" cmd /c "cd "%PROJECT_ROOT%\pipeline" && python -u viz_recorder.py"
+  echo [WARN] venv not found at "%VENV_ACTIVATE%". Using system Python.
+)
+
+echo [1/3] Opening tabs in Windows Terminal...
+
+REM One window, multiple tabs.
+REM NOTE: We keep the tabs open (/k) so you can see logs and exit codes.
+if /i "%PORCE_SYSTEM_MODE%"=="SIMULATION" (
+  "%WT_EXE%" ^
+    new-tab --title "MASTER LOG" cmd /k "cd /d \"%PIPELINE_DIR%\" && %PYENV% python -u log_server.py" ^
+    ; new-tab --title "SITL (WSL)" cmd /k "wsl -e bash \"%SITL_SCRIPT_PATH%\"" ^
+    ; new-tab --title "BRAIN (SIM)" cmd /k "set PORCE_SYSTEM_MODE=%PORCE_SYSTEM_MODE% && cd /d \"%PIPELINE_DIR%\" && %PYENV% python -u flight_controller.py 2>&1 | python tee.py --prefix BRAIN --cap-lines 200" ^
+    ; new-tab --title "EYES (SIM)" cmd /k "set PORCE_SYSTEM_MODE=%PORCE_SYSTEM_MODE% && cd /d \"%PIPELINE_DIR%\" && %PYENV% python -u vision_system.py 2>&1 | python tee.py --prefix EYES --cap-lines 200" ^
+    ; new-tab --title "VIZ RECORDER" cmd /k "cd /d \"%PIPELINE_DIR%\" && %PYENV% python -u viz_recorder.py"
+) else (
+  "%WT_EXE%" ^
+    new-tab --title "MASTER LOG" cmd /k "cd /d \"%PIPELINE_DIR%\" && %PYENV% python -u log_server.py" ^
+    ; new-tab --title "BRAIN (TWIN)" cmd /k "set PORCE_SYSTEM_MODE=%PORCE_SYSTEM_MODE% && cd /d \"%PIPELINE_DIR%\" && %PYENV% python -u flight_controller.py 2>&1 | python tee.py --prefix BRAIN --cap-lines 200" ^
+    ; new-tab --title "EYES (TWIN)" cmd /k "set PORCE_SYSTEM_MODE=%PORCE_SYSTEM_MODE% && cd /d \"%PIPELINE_DIR%\" && %PYENV% python -u vision_system.py 2>&1 | python tee.py --prefix EYES --cap-lines 200" ^
+    ; new-tab --title "VIZ RECORDER" cmd /k "cd /d \"%PIPELINE_DIR%\" && %PYENV% python -u viz_recorder.py"
 )
 
 echo.
-echo [OK] System launched.
-echo.
+echo [OK] Tabs launched.
 echo  - Master log: pipeline\\logs\\SYSTEM_ALL.log
 echo  - Viz frames: pipeline\\logs\\viz_frames
+echo  - Stop everything: powershell -NoProfile -ExecutionPolicy Bypass -File tools\\stop_pipeline.ps1
 echo.
-pause
+exit /b 0
+
