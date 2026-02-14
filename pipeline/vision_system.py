@@ -54,6 +54,7 @@ TRACK_HOLD_S = float(os.environ.get("PORCE_VISION_TRACK_HOLD_S", "0.8"))
 SMOOTH_TAU_S = float(os.environ.get("PORCE_VISION_SMOOTH_TAU_S", "0.6"))
 ID_BUCKET_PX = int(float(os.environ.get("PORCE_VISION_ID_BUCKET_PX", "64")))
 MAX_OBS_PER_FRAME = int(float(os.environ.get("PORCE_VISION_MAX_OBS_PER_FRAME", "25")))
+HEARTBEAT_S = float(os.environ.get("PORCE_VISION_HEARTBEAT_S", "5.0"))
 
 PIPELINE_DIR = Path(__file__).resolve().parent
 DEFAULT_MODEL_PATH = PIPELINE_DIR / "weights" / "yolo_3d_dome_v1_best.pt"
@@ -359,6 +360,18 @@ class VisionSystem:
             else:
                 self.monitor = None
             log(f"Zona de captura (window): title={self._capture_window_title!r} exact={self._capture_window_exact} class={self._capture_window_class!r}")
+            if self._capture_hwnd and self.monitor:
+                log(
+                    "[CAPTURE] Window ready hwnd={hwnd} client={w}x{h} at ({l},{t})".format(
+                        hwnd=int(self._capture_hwnd),
+                        w=int(self.monitor.get("width", 0) or 0),
+                        h=int(self.monitor.get("height", 0) or 0),
+                        l=int(self.monitor.get("left", 0) or 0),
+                        t=int(self.monitor.get("top", 0) or 0),
+                    )
+                )
+            else:
+                log("[CAPTURE] Window not found yet; will retry in run loop.")
         else:
             # Fallback: monitor capture, optionally with ROI override (match Unreal camera viewport for correct geometry).
             monitor_idx = int(os.environ.get("PORCE_CAPTURE_MONITOR", "1"))
@@ -422,6 +435,8 @@ class VisionSystem:
 
         # Simple temporal stabilizer (reduces bbox/telemetry jitter in the projected lat/lon).
         self._tracks: dict[int, VisionTrack] = {}
+        # Ensure we log once when the PIE window becomes available.
+        self._capture_found_logged = bool(self._capture_hwnd and self.monitor)
 
     @staticmethod
     def _set_windows_dpi_aware() -> None:
@@ -655,6 +670,12 @@ class VisionSystem:
 
     def run(self):
         log("Sistema listo. Esperando visualizacion...")
+
+        hb_every_s = float(HEARTBEAT_S)
+        hb_last_ts = time.time()
+        frame_count = 0
+        last_dets = 0
+        last_send = 0
         
         while True:
             frame_now = time.perf_counter()
@@ -716,6 +737,18 @@ class VisionSystem:
                     time.sleep(0.2)
                     continue
 
+                if not self._capture_found_logged:
+                    self._capture_found_logged = True
+                    log(
+                        "[CAPTURE] Window acquired hwnd={hwnd} client={w}x{h} at ({l},{t})".format(
+                            hwnd=int(self._capture_hwnd),
+                            w=int(self.monitor.get("width", 0) or 0),
+                            h=int(self.monitor.get("height", 0) or 0),
+                            l=int(self.monitor.get("left", 0) or 0),
+                            t=int(self.monitor.get("top", 0) or 0),
+                        )
+                    )
+
                 if (int(self.monitor.get("width", 0)) != int(self._expect_w)) or (int(self.monitor.get("height", 0)) != int(self._expect_h)):
                     log(f"[WARN] Client area is {self.monitor.get('width')}x{self.monitor.get('height')} (expected {self._expect_w}x{self._expect_h}). Projection assumes the true camera viewport.")
 
@@ -730,6 +763,7 @@ class VisionSystem:
             screenshot = np.array(self.sct.grab(self.monitor))
             # Convertir BGRA a BGR
             img_bgr = cv2.cvtColor(screenshot, cv2.COLOR_BGRA2BGR)
+            frame_count += 1
             
             # Redimensionar para velocidad (opcional, YOLO lo hace auto, pero para visualizacion consistente)
             # img_resized = cv2.resize(img_bgr, (640, 640))
@@ -993,6 +1027,8 @@ class VisionSystem:
             outgoing.sort(key=lambda o: float(o.get('distance', 9999.0)))
             max_out = int(MAX_OBS_PER_FRAME) if int(MAX_OBS_PER_FRAME) > 0 else len(outgoing)
             outgoing = outgoing[:max_out]
+            last_dets = int(len(frame_dets))
+            last_send = int(len(outgoing))
 
             if outgoing:
                 log(f"Dets frame={len(frame_dets)} tracks={len(self._tracks)} send={len(outgoing)}")
@@ -1003,6 +1039,19 @@ class VisionSystem:
                     self.session.post(OBSTACLES_URL, json={'obstacles': outgoing}, headers=headers, timeout=0.1)
                 except:
                     pass
+
+            # Heartbeat for observability (also useful for E2E harnesses when detections are sparse).
+            if math.isfinite(hb_every_s) and hb_every_s > 0.0:
+                wall_now = time.time()
+                if wall_now - hb_last_ts >= hb_every_s:
+                    hb_last_ts = wall_now
+                    try:
+                        log(
+                            f"[HB] fps={self._fps_ema:.1f} frame={frame_count} "
+                            f"capture={W}x{H} dets={last_dets} tracks={len(self._tracks)} send={last_send}"
+                        )
+                    except Exception:
+                        pass
 
             # Control de FPS (0 = as fast as possible). `cv2.waitKey` is required to refresh the debug window.
             if math.isfinite(self._target_fps) and self._target_fps > 0.0:

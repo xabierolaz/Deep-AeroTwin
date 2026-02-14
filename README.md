@@ -13,6 +13,7 @@ The repo does not rely on a fixed install path: it is safe to move/rename the fo
 Everything stated here is derived from the code in this repo and/or from runs that were executed locally.
 
 * **Pipeline A E2E runner:** `pipeline/e2e_flight_matrix.py`
+* **Pipeline A Unreal+Vision E2E runner:** `pipeline/e2e_unreal_vision.py` (requires Unreal PIE window)
 * **Brain (Flask + MAVLink + PORCE):** `pipeline/flight_controller.py`
 * **PORCE planner (A*):** `pipeline/porce_manager.py`
 * **SITL launcher (WSL):** `pipeline/run_sitl.sh`
@@ -30,6 +31,8 @@ Verified on **2026-02-14** (Windows + WSL2):
   * `porce_on_no_detections`: PASS
   * `porce_off_with_detections`: PASS (`saw_evasion=false`)
   * `porce_on_with_detections`: PASS (`saw_evasion=true`)
+* E2E Unreal + Vision (Unreal PIE running, window capture + YOLO):
+  * `porce_on_with_detections`: PASS (`inject_posts_total>0`, `saw_evasion=true`)
 * Token enforcement (`PORCE_OBSTACLE_TOKEN` set):
   * `porce_on_with_detections`: PASS (`inject_posts_unauthorized=0`, `saw_evasion=true`)
 
@@ -60,6 +63,7 @@ Launchers:
 * `launch_pipeline_A.bat` (Windows Terminal tabs, recommended)
 * `launch_pipeline_B.bat` (Windows Terminal tabs)
 * E2E harness: `pipeline/e2e_flight_matrix.py` (recommended for CI-like validation)
+* E2E harness (Unreal+Vision): `pipeline/e2e_unreal_vision.py`
 
 Stop:
 * `powershell -NoProfile -ExecutionPolicy Bypass -File tools/stop_pipeline.ps1` (stops Brain/Vision/Viz/Log + SITL)
@@ -168,7 +172,7 @@ Notes:
 
 * Make MAVLink connection configurable for a real drone (Brain currently hardcodes SITL TCP).
 * Implement/validate video ingestion for REAL_TWIN (Vision currently uses MSS capture).
-* Add a true Vision-in-the-loop E2E scenario (current E2E uses an HTTP injector, not YOLO).
+* Add a deterministic Unreal scene/route for CI-like Vision-in-the-loop validation (window capture E2E depends on what the camera sees).
 
 ## License
 Proprietary. All rights reserved.
