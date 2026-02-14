@@ -22,7 +22,9 @@ Everything stated here is derived from the code in this repo and/or from runs th
 
 **Pipeline A (SIMULATION) is operational and validated end-to-end.**
 
-Verified on **2026-02-13** (Windows + WSL2):
+Verified on **2026-02-14** (Windows + WSL2):
+* Unit tests:
+  * `python -m unittest pipeline.test_unreal_api pipeline.test_geo_projector`: PASS
 * E2E matrix (token disabled):
   * `porce_off_no_detections`: PASS
   * `porce_on_no_detections`: PASS
@@ -30,6 +32,8 @@ Verified on **2026-02-13** (Windows + WSL2):
   * `porce_on_with_detections`: PASS (`saw_evasion=true`)
 * Token enforcement (`PORCE_OBSTACLE_TOKEN` set):
   * `porce_on_with_detections`: PASS (`inject_posts_unauthorized=0`, `saw_evasion=true`)
+
+Full logs: `docs/test_runs/2026-02-14.md`
 
 ## Pipelines
 
