@@ -37,6 +37,7 @@ Verified on **2026-02-13** (Windows + WSL2):
 * Starts the **Brain** on Windows (`pipeline/flight_controller.py`) and connects MAVLink to `tcp:127.0.0.1:5760`.
 * Optional: starts **Vision** (`pipeline/vision_system.py`) which uses **MSS screen capture** + YOLO and POSTs obstacles to the Brain.
 * Optional: starts **Viz recorder** (`pipeline/viz_recorder.py`) which polls `/api/ui/data` and writes PNG frames under `pipeline/logs/viz_frames/`.
+* Optional: assemble a GIF from those frames: `python tools\\make_gif_from_viz_frames.py --in-dir pipeline\\logs\\viz_frames --out pipeline\\logs\\viz.gif --fps 10 --width 960`
 
 Launchers:
 * `launch_pipeline_A.bat` (recommended)
