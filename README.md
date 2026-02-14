@@ -6,6 +6,8 @@
 
 This repo contains a **Windows + WSL2** setup for running an ArduPilot Copter mission in **SITL**, ingesting obstacles over **HTTP**, and (optionally) running **YOLO** vision to feed the planner (**PORCE**).
 
+The repo does not rely on a fixed install path: it is safe to move/rename the folder as long as you run scripts from the repo root (or use the provided launchers).
+
 ## Source Of Truth (Zero-Trust)
 
 Everything stated here is derived from the code in this repo and/or from runs that were executed locally.
