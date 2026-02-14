@@ -54,7 +54,11 @@ Vision capture modes (Pipeline A):
 
 Launchers:
 * `launch_pipeline_A.bat` (recommended)
+* `launch_pipeline_A_tabs.bat` (Windows Terminal tabs)
 * E2E harness: `pipeline/e2e_flight_matrix.py` (recommended for CI-like validation)
+
+Stop:
+* `powershell -NoProfile -ExecutionPolicy Bypass -File tools/stop_pipeline.ps1` (stops Brain/Vision/Viz/Log + SITL)
 
 ### Pipeline B (REAL_TWIN) (Not Validated / Experimental)
 

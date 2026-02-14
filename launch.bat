@@ -22,15 +22,10 @@ echo.
 REM ============================================================================
 REM 0. CLEANUP (SAFE)
 REM ============================================================================
-echo [0/5] Cleaning previous launcher windows...
-taskkill /F /FI "WINDOWTITLE eq MASTER LOG*" /T >nul 2>&1
-taskkill /F /FI "WINDOWTITLE eq FLIGHT CONTROLLER*" /T >nul 2>&1
-taskkill /F /FI "WINDOWTITLE eq VISION SYSTEM*" /T >nul 2>&1
-taskkill /F /FI "WINDOWTITLE eq ArduPilot SITL*" /T >nul 2>&1
-taskkill /F /FI "WINDOWTITLE eq VIZ RECORDER*" /T >nul 2>&1
+echo [0/5] Cleaning previous pipeline processes...
+REM Zero-trust: stop by PID/commandline (works for separate windows and Windows Terminal tabs).
+powershell -NoProfile -ExecutionPolicy Bypass -File "%PROJECT_ROOT%\tools\stop_pipeline.ps1" -Quiet >nul 2>&1
 REM NOTE: do NOT kill all python.exe processes; that is unsafe on dev machines.
-REM Kill SITL inside WSL (may affect other SITL instances).
-wsl -e pkill -9 -f arducopter >nul 2>&1
 
 if not exist "%LOGS_DIR%" mkdir "%LOGS_DIR%"
 if not exist "%LOGS_DIR%\viz_frames" mkdir "%LOGS_DIR%\viz_frames"

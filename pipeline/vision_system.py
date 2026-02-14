@@ -215,6 +215,68 @@ class GeoProjector:
         obj_lat, obj_lon = GeoProjector._offset_latlon(float(drone_lat), float(drone_lon), north_m, east_m)
         return float(obj_lat), float(obj_lon), float(dist_h)
 
+    @staticmethod
+    def pixel_to_ray_ned(
+        px_y: float,
+        px_x: float,
+        *,
+        image_height: int,
+        image_width: int,
+        drone_yaw_deg: float,
+        drone_pitch_deg: float,
+        drone_roll_deg: float,
+        camera_vfov_deg: float,
+        mount_roll_deg: float,
+        mount_pitch_deg: float,
+        mount_yaw_deg: float,
+    ) -> Optional[np.ndarray]:
+        """Return a unit ray in NED coordinates for the given pixel.
+
+        NED: x=north, y=east, z=down.
+        """
+        if image_height <= 0 or image_width <= 0:
+            return None
+
+        u = float(max(0.0, min(float(image_width - 1), float(px_x))))
+        v = float(max(0.0, min(float(image_height - 1), float(px_y))))
+
+        vfov_rad = math.radians(float(camera_vfov_deg))
+        if not (0.01 < vfov_rad < math.radians(179.0)):
+            return None
+
+        H = float(image_height)
+        W = float(image_width)
+        fy = (H / 2.0) / math.tan(vfov_rad / 2.0)
+        hfov_rad = 2.0 * math.atan(math.tan(vfov_rad / 2.0) * (W / H))
+        fx = (W / 2.0) / math.tan(hfov_rad / 2.0)
+        cx = W / 2.0
+        cy = H / 2.0
+
+        x_cam = (u - cx) / fx
+        y_cam = (v - cy) / fy
+        z_cam = 1.0
+        ray_cam = np.array([x_cam, y_cam, z_cam], dtype=float)
+        ray_cam = ray_cam / (np.linalg.norm(ray_cam) + 1e-12)
+
+        # camera->body aligned (camera forward == body forward).
+        # Body frame (MAVLink): x forward, y right, z down.
+        R_body_cam_align = np.array(
+            [
+                [0.0, 0.0, 1.0],  # body_x = cam_z
+                [1.0, 0.0, 0.0],  # body_y = cam_x
+                [0.0, 1.0, 0.0],  # body_z = cam_y
+            ],
+            dtype=float,
+        )
+
+        R_mount = GeoProjector._rot_z(mount_yaw_deg) @ GeoProjector._rot_y(mount_pitch_deg) @ GeoProjector._rot_x(mount_roll_deg)
+        ray_body = R_mount @ (R_body_cam_align @ ray_cam)
+
+        R_ned_body = GeoProjector._ned_from_body(float(drone_yaw_deg), float(drone_pitch_deg), float(drone_roll_deg))
+        ray_ned = R_ned_body @ ray_body
+        ray_ned = ray_ned / (np.linalg.norm(ray_ned) + 1e-12)
+        return ray_ned
+
 
 @dataclass(frozen=True)
 class VisionTrack:
@@ -350,6 +412,13 @@ class VisionSystem:
             except Exception as e:
                 log(f"[WARN] No se pudo crear la ventana debug de YOLO: {e}")
                 self._debug_enabled = False
+
+        # Local coordinate origin (ENU meters): set once we have a real GPS fix.
+        # Z is "up" in meters relative to the local ground under the origin.
+        self._origin_lat: Optional[float] = None
+        self._origin_lon: Optional[float] = None
+        self._origin_ground_msl: Optional[float] = None
+        self._overlay_max_obs = int(float(os.environ.get("PORCE_VISION_OVERLAY_MAX_OBS", "5")))
 
         # Simple temporal stabilizer (reduces bbox/telemetry jitter in the projected lat/lon).
         self._tracks: dict[int, VisionTrack] = {}
@@ -522,6 +591,68 @@ class VisionSystem:
         for k in dead:
             self._tracks.pop(k, None)
 
+    @staticmethod
+    def _enu_xy_m(origin_lat: float, origin_lon: float, lat: float, lon: float) -> Tuple[float, float]:
+        # Local tangent plane approximation: good enough for <~1km.
+        R = float(EARTH_RADIUS_M)
+        dlat = math.radians(float(lat) - float(origin_lat))
+        dlon = math.radians(float(lon) - float(origin_lon))
+        north = dlat * R
+        east = dlon * R * (math.cos(math.radians(float(origin_lat))) or 1e-6)
+        # ENU: x=east, y=north
+        return float(east), float(north)
+
+    @staticmethod
+    def _estimate_height_m_from_bbox(
+        *,
+        ray_top_ned: np.ndarray,
+        base_north_m: float,
+        base_east_m: float,
+        alt_agl_m: float,
+        dist_h_m: float,
+    ) -> Optional[float]:
+        """Estimate object height (meters) assuming:
+
+        - bbox bottom touches ground (base point),
+        - bbox top is roughly vertically above the base.
+
+        Returns None if the geometry is inconsistent (e.g. huge false-positive boxes).
+        """
+        try:
+            n = float(ray_top_ned[0])
+            e = float(ray_top_ned[1])
+            d = float(ray_top_ned[2])
+        except Exception:
+            return None
+
+        # Least-squares t to align (n*t, e*t) with the base (north,east).
+        denom = n * n + e * e
+        if denom <= 1e-12:
+            return None
+        t = (n * float(base_north_m) + e * float(base_east_m)) / denom
+        if not math.isfinite(t) or t <= 0.0:
+            return None
+
+        pred_n = n * t
+        pred_e = e * t
+        err = math.hypot(pred_n - float(base_north_m), pred_e - float(base_east_m))
+        # If the ray misses the vertical line too much, reject (often caused by massive boxes).
+        if err > max(2.0, 0.25 * max(1.0, float(dist_h_m))):
+            return None
+
+        z_down = d * t
+        h = float(alt_agl_m)
+        if not math.isfinite(z_down) or not math.isfinite(h) or h <= 0.5:
+            return None
+
+        height = h - z_down
+        if not math.isfinite(height):
+            return None
+
+        # Clamp to avoid overlay explosions.
+        height = max(0.0, min(float(height), 200.0))
+        return float(height)
+
     def run(self):
         log("Sistema listo. Esperando visualizacion...")
         
@@ -541,17 +672,33 @@ class VisionSystem:
                 time.sleep(0.5)
                 continue
                 
-            dron_lat = telemetry.get('lat', 0)
-            dron_lon = telemetry.get('lon', 0)
-            dron_alt_msl = telemetry.get('alt', 0)
+            dron_lat = float(telemetry.get('lat', 0) or 0.0)
+            dron_lon = float(telemetry.get('lon', 0) or 0.0)
+            dron_alt_msl = float(telemetry.get('alt', 0) or 0.0)
             # Prefer AGL if provided by Brain, else use MSL - terrain.
             dron_alt_agl = telemetry.get('rel_alt', None)
             if dron_alt_agl is None:
                 dron_alt_agl = float(dron_alt_msl) - float(TERRAIN_ELEVATION_MSL)
+            dron_alt_agl = float(dron_alt_agl or 0.0)
             dron_hdg = telemetry.get('heading', 0)
-            dron_yaw = telemetry.get('yaw', dron_hdg)
-            dron_pitch = telemetry.get('pitch', 0)
-            dron_roll = telemetry.get('roll', 0)
+            dron_yaw = float(telemetry.get('yaw', dron_hdg) or 0.0)
+            dron_pitch = float(telemetry.get('pitch', 0) or 0.0)
+            dron_roll = float(telemetry.get('roll', 0) or 0.0)
+
+            ground_msl = float(dron_alt_msl) - float(dron_alt_agl)
+
+            # Establish a local origin once we have a non-zero GPS fix.
+            if self._origin_lat is None:
+                if (abs(float(dron_lat)) > 0.0001) and (abs(float(dron_lon)) > 0.0001) and math.isfinite(ground_msl):
+                    self._origin_lat = float(dron_lat)
+                    self._origin_lon = float(dron_lon)
+                    self._origin_ground_msl = float(ground_msl)
+                    log(f"[ORIGIN] ENU origin set at lat={self._origin_lat:.6f} lon={self._origin_lon:.6f} ground_msl={self._origin_ground_msl:.1f}m")
+
+            drone_x_m = drone_y_m = 0.0
+            if self._origin_lat is not None and self._origin_lon is not None:
+                drone_x_m, drone_y_m = self._enu_xy_m(self._origin_lat, self._origin_lon, float(dron_lat), float(dron_lon))
+            drone_z_m = float(dron_alt_agl)  # "up" meters above local ground
 
             # 2. Captura de Pantalla
             if self._capture_mode == "window":
@@ -660,9 +807,52 @@ class VisionSystem:
                     if not projected:
                         continue
                     obj_lat, obj_lon, dist = projected
-                    
-                    label = f"{class_name} {conf:.2f} | {dist:.1f}m"
-                    
+
+                    # Local ENU coordinates for overlay/debug (meters).
+                    obj_x_m = obj_y_m = 0.0
+                    if self._origin_lat is not None and self._origin_lon is not None:
+                        obj_x_m, obj_y_m = self._enu_xy_m(self._origin_lat, self._origin_lon, float(obj_lat), float(obj_lon))
+
+                    # Estimate object "height" (z, meters up) from bbox top vs base intersection.
+                    obj_z_m = 0.0
+                    obj_alt_msl_est = float(ground_msl)
+                    try:
+                        # Base offsets relative to drone, reconstructed from projected lat/lon.
+                        R = float(EARTH_RADIUS_M)
+                        dlat = math.radians(float(obj_lat) - float(dron_lat))
+                        dlon = math.radians(float(obj_lon) - float(dron_lon))
+                        base_north_m = dlat * R
+                        base_east_m = dlon * R * (math.cos(math.radians(float(dron_lat))) or 1e-6)
+                        dist_h = math.hypot(base_north_m, base_east_m)
+                        ray_top = self.projector.pixel_to_ray_ned(
+                            float(y1),
+                            float(cx),
+                            image_height=int(H),
+                            image_width=int(W),
+                            drone_yaw_deg=float(dron_yaw),
+                            drone_pitch_deg=float(dron_pitch),
+                            drone_roll_deg=float(dron_roll),
+                            camera_vfov_deg=float(self._camera_vfov_deg),
+                            mount_roll_deg=float(self._mount_roll_deg),
+                            mount_pitch_deg=float(self._mount_pitch_deg),
+                            mount_yaw_deg=float(self._mount_yaw_deg),
+                        )
+                        if ray_top is not None:
+                            h_est = self._estimate_height_m_from_bbox(
+                                ray_top_ned=ray_top,
+                                base_north_m=float(base_north_m),
+                                base_east_m=float(base_east_m),
+                                alt_agl_m=float(dron_alt_agl),
+                                dist_h_m=float(dist_h),
+                            )
+                            if h_est is not None:
+                                obj_z_m = float(h_est)
+                                obj_alt_msl_est = float(ground_msl) + float(h_est)
+                    except Exception:
+                        pass
+                     
+                    label = f"{class_name} {conf:.2f} | {dist:.1f}m z={obj_z_m:.1f}m"
+                     
                     # Dibujar en Debug
                     cv2.rectangle(img_bgr, (x1, y1), (x2, y2), (0, 0, 255), 2)
                     cv2.putText(img_bgr, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
@@ -675,6 +865,7 @@ class VisionSystem:
                             'id': int(obs_id),
                             'lat': float(obj_lat),
                             'lon': float(obj_lon),
+                            'alt_msl': float(obj_alt_msl_est),
                             'distance': float(dist),
                             'type': str(class_name),
                             'confidence': float(conf),
@@ -682,15 +873,46 @@ class VisionSystem:
                             'bbox': {'x1': int(x1), 'y1': int(y1), 'x2': int(x2), 'y2': int(y2)},
                             'cx': float(cx),
                             'cy': float(cy),
+                            # Debug-only local frame (ENU meters, z=up/height).
+                            'x_m': float(obj_x_m),
+                            'y_m': float(obj_y_m),
+                            'z_m': float(obj_z_m),
                         }
 
-            # Overlay stats (FPS, detections) on the debug image.
+            # Overlay debug telemetry in the YOLO window (zero-trust: this is the current estimate).
             if self._debug_enabled:
                 try:
-                    stats1 = f"FPS: {self._fps_ema:.1f}"
-                    stats2 = f"Dets: {len(frame_dets)}  Tracks: {len(self._tracks)}"
-                    cv2.putText(img_bgr, stats1, (10, 22), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
-                    cv2.putText(img_bgr, stats2, (10, 46), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
+                    overlay = []
+                    overlay.append(f"FPS: {self._fps_ema:.1f}  Dets: {len(frame_dets)}  Tracks: {len(self._tracks)}")
+                    overlay.append("XYZ frame: ENU meters (x=East, y=North, z=Up/height)")
+                    overlay.append(
+                        f"DRONE lat={float(dron_lat):.6f} lon={float(dron_lon):.6f} alt_msl={float(dron_alt_msl):.1f}m agl={float(dron_alt_agl):.1f}m"
+                    )
+                    overlay.append(
+                        f"DRONE RPY deg: roll={float(dron_roll):.1f} pitch={float(dron_pitch):.1f} yaw={float(dron_yaw):.1f}"
+                    )
+                    overlay.append(f"DRONE XYZ[m]: x={float(drone_x_m):.1f} y={float(drone_y_m):.1f} z={float(drone_z_m):.1f}")
+                    if self._origin_lat is None:
+                        overlay.append("(waiting for GPS to set local origin...)")
+
+                    dets_sorted = sorted(frame_dets.values(), key=lambda d: float(d.get("distance", 9999.0)))
+                    max_n = max(0, int(self._overlay_max_obs))
+                    if max_n > 0:
+                        dets_sorted = dets_sorted[:max_n]
+                    for i, d in enumerate(dets_sorted, 1):
+                        overlay.append(
+                            f"{i}) {d.get('type')} conf={float(d.get('confidence', 0.0)):.2f} d={float(d.get('distance', 0.0)):.1f}m "
+                            f"XYZ=({float(d.get('x_m', 0.0)):.1f},{float(d.get('y_m', 0.0)):.1f},{float(d.get('z_m', 0.0)):.1f}) "
+                            f"lat={float(d.get('lat', 0.0)):.6f} lon={float(d.get('lon', 0.0)):.6f} alt~{float(d.get('alt_msl', 0.0)):.1f}m"
+                        )
+
+                    x0, y0 = 10, 22
+                    dy = 20
+                    for idx, text in enumerate(overlay):
+                        y = y0 + idx * dy
+                        # Outline for readability
+                        cv2.putText(img_bgr, text, (x0, y), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 0), 3)
+                        cv2.putText(img_bgr, text, (x0, y), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 255, 255), 1)
                 except Exception:
                     pass
 
