@@ -8,5 +8,5 @@ echo [CONFIG] Setting PORCE_SYSTEM_MODE=REAL_TWIN
 set "PORCE_SYSTEM_MODE=REAL_TWIN"
 
 REM Pipeline B uses the same tabbed launcher but skips SITL.
-call launch.bat
+call "%~dp0launch.bat"
 

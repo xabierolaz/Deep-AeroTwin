@@ -16,4 +16,4 @@ if not defined PORCE_VISION_DEBUG_WINDOW set "PORCE_VISION_DEBUG_WINDOW=1"
 if not defined PORCE_VISION_DEBUG_DOCK set "PORCE_VISION_DEBUG_DOCK=1"
 
 REM Llamar al lanzador maestro (que lee la variable de entorno)
-call launch.bat
+call "%~dp0launch.bat"
