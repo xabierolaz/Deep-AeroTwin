@@ -39,6 +39,13 @@ Verified on **2026-02-13** (Windows + WSL2):
 * Optional: starts **Viz recorder** (`pipeline/viz_recorder.py`) which polls `/api/ui/data` and writes PNG frames under `pipeline/logs/viz_frames/`.
 * Optional: assemble a GIF from those frames: `python tools/make_gif_from_viz_frames.py --in-dir pipeline/logs/viz_frames --out pipeline/logs/viz.gif --fps 10 --width 960`
 
+Vision capture modes (Pipeline A):
+* Preferred (robust): capture Unreal PIE by window title (client area, 640x640):
+  * `set PORCE_CAPTURE_WINDOW_TITLE=Play In New Window`
+  * Optional: `set PORCE_CAPTURE_WINDOW_FOCUS=1` (default) and `set PORCE_CAPTURE_WINDOW_TOPMOST=1`
+  * Expected viewport size (warns if mismatch): `PORCE_CAPTURE_EXPECT_WIDTH=640`, `PORCE_CAPTURE_EXPECT_HEIGHT=640`
+* Fallback: capture monitor/ROI via `PORCE_CAPTURE_MONITOR` or `PORCE_CAPTURE_LEFT/TOP/WIDTH/HEIGHT`.
+
 Launchers:
 * `launch_pipeline_A.bat` (recommended)
 * E2E harness: `pipeline/e2e_flight_matrix.py` (recommended for CI-like validation)

@@ -13,6 +13,8 @@ import os
 import time
 import math
 import sys
+import ctypes
+from ctypes import wintypes
 import cv2
 import numpy as np
 import mss
@@ -232,7 +234,10 @@ class VisionTrack:
 class VisionSystem:
     def __init__(self):
         log("Inicializando sistema de vision YOLOv11...")
-        
+
+        # Avoid coordinate mismatches on high-DPI displays (important for window/ROI capture).
+        self._set_windows_dpi_aware()
+
         # 1. Cargar Modelo
         try:
             self.model = YOLO(MODEL_PATH)
@@ -270,26 +275,158 @@ class VisionSystem:
         self.session = requests.Session()
         self._obstacle_token = os.environ.get("PORCE_OBSTACLE_TOKEN", "").strip()
         
-        # Definir zona de captura (Pantalla completa por defecto, ajustar segun necesidad)
-        # Se asume monitor principal 1920x1080
-        monitor_idx = int(os.environ.get("PORCE_CAPTURE_MONITOR", "1"))
-        self.monitor = self.sct.monitors[monitor_idx]
-        # Optional ROI override (match Unreal camera viewport for correct geometry).
-        roi_left = os.environ.get("PORCE_CAPTURE_LEFT")
-        roi_top = os.environ.get("PORCE_CAPTURE_TOP")
-        roi_w = os.environ.get("PORCE_CAPTURE_WIDTH")
-        roi_h = os.environ.get("PORCE_CAPTURE_HEIGHT")
-        if roi_left and roi_top and roi_w and roi_h:
-            self.monitor = {
-                "left": int(roi_left),
-                "top": int(roi_top),
-                "width": int(roi_w),
-                "height": int(roi_h),
-            }
-        log(f"Zona de captura: {self.monitor}")
+        # --- Capture configuration ---
+        # Pipeline A expectation: Unreal "Play In New Window" renders the drone camera at 640x640.
+        self._expect_w = int(os.environ.get("PORCE_CAPTURE_EXPECT_WIDTH", str(CAMERA_WIDTH)))
+        self._expect_h = int(os.environ.get("PORCE_CAPTURE_EXPECT_HEIGHT", str(CAMERA_HEIGHT)))
+
+        # Preferred: capture by window title (robust against being behind other windows).
+        self._capture_window_title = os.environ.get("PORCE_CAPTURE_WINDOW_TITLE", "").strip()
+        self._capture_window_class = os.environ.get("PORCE_CAPTURE_WINDOW_CLASS", "").strip()
+        self._capture_window_exact = os.environ.get("PORCE_CAPTURE_WINDOW_EXACT", "").strip() in ("1", "true", "True")
+        self._capture_window_focus = os.environ.get("PORCE_CAPTURE_WINDOW_FOCUS", "1").strip() in ("1", "true", "True")
+        self._capture_window_topmost = os.environ.get("PORCE_CAPTURE_WINDOW_TOPMOST", "0").strip() in ("1", "true", "True")
+        self._capture_hwnd = None
+
+        if self._capture_window_title:
+            self._capture_mode = "window"
+            self._capture_hwnd = self._win32_find_window()
+            if self._capture_hwnd:
+                self._win32_prepare_window(self._capture_hwnd)
+                self.monitor = self._win32_client_region(self._capture_hwnd)
+            else:
+                self.monitor = None
+            log(f"Zona de captura (window): title={self._capture_window_title!r} exact={self._capture_window_exact} class={self._capture_window_class!r}")
+        else:
+            # Fallback: monitor capture, optionally with ROI override (match Unreal camera viewport for correct geometry).
+            monitor_idx = int(os.environ.get("PORCE_CAPTURE_MONITOR", "1"))
+            self.monitor = self.sct.monitors[monitor_idx]
+            roi_left = os.environ.get("PORCE_CAPTURE_LEFT")
+            roi_top = os.environ.get("PORCE_CAPTURE_TOP")
+            roi_w = os.environ.get("PORCE_CAPTURE_WIDTH")
+            roi_h = os.environ.get("PORCE_CAPTURE_HEIGHT")
+            if roi_left and roi_top and roi_w and roi_h:
+                self.monitor = {
+                    "left": int(roi_left),
+                    "top": int(roi_top),
+                    "width": int(roi_w),
+                    "height": int(roi_h),
+                }
+            self._capture_mode = "roi_or_monitor"
+            log(f"Zona de captura: {self.monitor}")
 
         # Simple temporal stabilizer (reduces bbox/telemetry jitter in the projected lat/lon).
         self._tracks: dict[int, VisionTrack] = {}
+
+    @staticmethod
+    def _set_windows_dpi_aware() -> None:
+        if os.name != "nt":
+            return
+        try:
+            ctypes.windll.user32.SetProcessDPIAware()
+        except Exception:
+            pass
+
+    def _win32_find_window(self):
+        if os.name != "nt":
+            return None
+
+        user32 = ctypes.windll.user32
+
+        target = str(self._capture_window_title)
+        target_l = target.lower()
+        want_class = str(self._capture_window_class) if self._capture_window_class else ""
+
+        matches = []
+
+        EnumProc = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+
+        def _enum(hwnd, lparam):
+            try:
+                if not user32.IsWindowVisible(hwnd):
+                    return True
+                length = user32.GetWindowTextLengthW(hwnd)
+                if length <= 0:
+                    return True
+                buf = ctypes.create_unicode_buffer(length + 1)
+                user32.GetWindowTextW(hwnd, buf, length + 1)
+                title = buf.value or ""
+                if not title:
+                    return True
+
+                if self._capture_window_exact:
+                    ok = (title == target)
+                else:
+                    ok = (target_l in title.lower())
+                if not ok:
+                    return True
+
+                if want_class:
+                    cbuf = ctypes.create_unicode_buffer(256)
+                    user32.GetClassNameW(hwnd, cbuf, 256)
+                    if (cbuf.value or "") != want_class:
+                        return True
+
+                matches.append(hwnd)
+            except Exception:
+                pass
+            return True
+
+        try:
+            user32.EnumWindows(EnumProc(_enum), 0)
+        except Exception:
+            return None
+
+        return matches[0] if matches else None
+
+    def _win32_prepare_window(self, hwnd) -> None:
+        if os.name != "nt" or not hwnd:
+            return
+        user32 = ctypes.windll.user32
+
+        # Best-effort: ensure the window is visible and on top so MSS screen capture sees it.
+        try:
+            SW_RESTORE = 9
+            user32.ShowWindow(hwnd, SW_RESTORE)
+        except Exception:
+            pass
+
+        if self._capture_window_focus:
+            try:
+                user32.SetForegroundWindow(hwnd)
+            except Exception:
+                pass
+
+        if self._capture_window_topmost:
+            try:
+                HWND_TOPMOST = -1
+                SWP_NOMOVE = 0x0002
+                SWP_NOSIZE = 0x0001
+                SWP_SHOWWINDOW = 0x0040
+                user32.SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW)
+            except Exception:
+                pass
+
+    def _win32_client_region(self, hwnd):
+        if os.name != "nt" or not hwnd:
+            return None
+        user32 = ctypes.windll.user32
+
+        rect = wintypes.RECT()
+        if not user32.GetClientRect(hwnd, ctypes.byref(rect)):
+            return None
+        w = int(rect.right - rect.left)
+        h = int(rect.bottom - rect.top)
+        if w <= 0 or h <= 0:
+            return None
+
+        # Client (0,0) -> screen coords.
+        pt = wintypes.POINT(0, 0)
+        if not user32.ClientToScreen(hwnd, ctypes.byref(pt)):
+            return None
+
+        region = {"left": int(pt.x), "top": int(pt.y), "width": int(w), "height": int(h)}
+        return region
 
     def get_telemetry(self):
         try:
@@ -350,6 +487,31 @@ class VisionSystem:
             dron_roll = telemetry.get('roll', 0)
 
             # 2. Captura de Pantalla
+            if self._capture_mode == "window":
+                if not self._capture_hwnd:
+                    self._capture_hwnd = self._win32_find_window()
+                    if self._capture_hwnd:
+                        self._win32_prepare_window(self._capture_hwnd)
+                if not self._capture_hwnd:
+                    # No window yet (Unreal PIE not started?)
+                    time.sleep(0.5)
+                    continue
+
+                self.monitor = self._win32_client_region(self._capture_hwnd)
+                if not self.monitor:
+                    time.sleep(0.2)
+                    continue
+
+                if (int(self.monitor.get("width", 0)) != int(self._expect_w)) or (int(self.monitor.get("height", 0)) != int(self._expect_h)):
+                    log(f"[WARN] Client area is {self.monitor.get('width')}x{self.monitor.get('height')} (expected {self._expect_w}x{self._expect_h}). Projection assumes the true camera viewport.")
+
+                # Keep on top if requested (helps if the window gets covered).
+                self._win32_prepare_window(self._capture_hwnd)
+
+            if not self.monitor:
+                time.sleep(0.5)
+                continue
+
             screenshot = np.array(self.sct.grab(self.monitor))
             # Convertir BGRA a BGR
             img_bgr = cv2.cvtColor(screenshot, cv2.COLOR_BGRA2BGR)
