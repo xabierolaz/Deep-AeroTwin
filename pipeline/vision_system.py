@@ -315,6 +315,42 @@ class VisionSystem:
             self._capture_mode = "roi_or_monitor"
             log(f"Zona de captura: {self.monitor}")
 
+        # --- Debug window (YOLO overlay) ---
+        # Default: enabled, and when capturing a window we "dock" the debug view next to it.
+        self._debug_title = os.environ.get("PORCE_VISION_DEBUG_TITLE", "YOLO V11 VISION DEBUG").strip() or "YOLO V11 VISION DEBUG"
+        self._debug_enabled = os.environ.get("PORCE_VISION_DEBUG_WINDOW", "1").strip() in ("1", "true", "True")
+        self._debug_scale = float(os.environ.get("PORCE_VISION_DEBUG_SCALE", "1.0"))
+        self._debug_dock = os.environ.get("PORCE_VISION_DEBUG_DOCK", "").strip() in ("1", "true", "True")
+        if not os.environ.get("PORCE_VISION_DEBUG_DOCK"):
+            self._debug_dock = (self._capture_mode == "window")
+        self._debug_dock_gap_px = int(float(os.environ.get("PORCE_VISION_DEBUG_DOCK_GAP_PX", "8")))
+        self._debug_topmost = os.environ.get("PORCE_VISION_DEBUG_TOPMOST", "0").strip() in ("1", "true", "True")
+        self._debug_last_dock_anchor = None
+        self._debug_last_size = None
+
+        # Vision loop rate control (0 = as fast as possible).
+        self._target_fps = float(os.environ.get("PORCE_VISION_TARGET_FPS", "0"))
+
+        # FPS measurement (EMA).
+        self._last_frame_ts = None
+        self._fps_ema = 0.0
+
+        if self._debug_enabled:
+            try:
+                cv2.namedWindow(self._debug_title, cv2.WINDOW_NORMAL)
+                base_w = max(1, int(self._expect_w))
+                base_h = max(1, int(self._expect_h))
+                scale = float(self._debug_scale) if math.isfinite(self._debug_scale) and self._debug_scale > 0.0 else 1.0
+                cv2.resizeWindow(self._debug_title, int(base_w * scale), int(base_h * scale))
+                if self._debug_topmost and hasattr(cv2, "WND_PROP_TOPMOST"):
+                    try:
+                        cv2.setWindowProperty(self._debug_title, cv2.WND_PROP_TOPMOST, 1)
+                    except Exception:
+                        pass
+            except Exception as e:
+                log(f"[WARN] No se pudo crear la ventana debug de YOLO: {e}")
+                self._debug_enabled = False
+
         # Simple temporal stabilizer (reduces bbox/telemetry jitter in the projected lat/lon).
         self._tracks: dict[int, VisionTrack] = {}
 
@@ -428,6 +464,31 @@ class VisionSystem:
         region = {"left": int(pt.x), "top": int(pt.y), "width": int(w), "height": int(h)}
         return region
 
+    def _maybe_dock_debug_window(self) -> None:
+        if not self._debug_enabled:
+            return
+        if not self._debug_dock:
+            return
+        if self._capture_mode != "window":
+            return
+        if not self.monitor:
+            return
+        try:
+            anchor = (
+                int(self.monitor.get("left", 0)),
+                int(self.monitor.get("top", 0)),
+                int(self.monitor.get("width", 0)),
+                int(self.monitor.get("height", 0)),
+            )
+            if anchor == self._debug_last_dock_anchor:
+                return
+            x = int(anchor[0]) + int(anchor[2]) + int(self._debug_dock_gap_px)
+            y = int(anchor[1])
+            cv2.moveWindow(self._debug_title, x, y)
+            self._debug_last_dock_anchor = anchor
+        except Exception:
+            pass
+
     def get_telemetry(self):
         try:
             r = self.session.get(TELEMETRY_URL, timeout=0.5)
@@ -465,8 +526,14 @@ class VisionSystem:
         log("Sistema listo. Esperando visualizacion...")
         
         while True:
-            start_time = time.time()
-            
+            frame_now = time.perf_counter()
+            if self._last_frame_ts is not None:
+                dt = float(frame_now) - float(self._last_frame_ts)
+                if math.isfinite(dt) and dt > 1e-6:
+                    fps_inst = 1.0 / dt
+                    self._fps_ema = float(fps_inst) if self._fps_ema <= 0.0 else float(0.9 * self._fps_ema + 0.1 * fps_inst)
+            self._last_frame_ts = float(frame_now)
+             
             # 1. Obtener Telemetria (Necesaria para proyeccion)
             telemetry = self.get_telemetry()
             if not telemetry:
@@ -507,6 +574,7 @@ class VisionSystem:
 
                 # Keep on top if requested (helps if the window gets covered).
                 self._win32_prepare_window(self._capture_hwnd)
+                self._maybe_dock_debug_window()
 
             if not self.monitor:
                 time.sleep(0.5)
@@ -531,8 +599,18 @@ class VisionSystem:
             self._purge_tracks(now_s)
 
             H, W = img_bgr.shape[:2]
+            if self._debug_enabled:
+                try:
+                    scale = float(self._debug_scale) if math.isfinite(self._debug_scale) and self._debug_scale > 0.0 else 1.0
+                    dw = max(1, int(W * scale))
+                    dh = max(1, int(H * scale))
+                    if self._debug_last_size != (dw, dh):
+                        cv2.resizeWindow(self._debug_title, dw, dh)
+                        self._debug_last_size = (dw, dh)
+                except Exception:
+                    pass
             frame_dets: dict[int, dict] = {}
-             
+              
             # 4. Procesar Detecciones
             for r in results:
                 boxes = r.boxes
@@ -606,10 +684,27 @@ class VisionSystem:
                             'cy': float(cy),
                         }
 
+            # Overlay stats (FPS, detections) on the debug image.
+            if self._debug_enabled:
+                try:
+                    stats1 = f"FPS: {self._fps_ema:.1f}"
+                    stats2 = f"Dets: {len(frame_dets)}  Tracks: {len(self._tracks)}"
+                    cv2.putText(img_bgr, stats1, (10, 22), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
+                    cv2.putText(img_bgr, stats2, (10, 46), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
+                except Exception:
+                    pass
+
             # 5. Visualizacion (Ventana Debug)
-            # Reducir tamaño para que quepa en pantalla si es 4K
-            display_img = cv2.resize(img_bgr, (1024, 768)) 
-            cv2.imshow("YOLO V11 VISION DEBUG", display_img)
+            if self._debug_enabled:
+                try:
+                    scale = float(self._debug_scale) if math.isfinite(self._debug_scale) and self._debug_scale > 0.0 else 1.0
+                    if abs(scale - 1.0) > 1e-6:
+                        disp = cv2.resize(img_bgr, (int(W * scale), int(H * scale)), interpolation=cv2.INTER_LINEAR)
+                    else:
+                        disp = img_bgr
+                    cv2.imshow(self._debug_title, disp)
+                except Exception:
+                    pass
             
             # 6. Enviar al Brain
             seen_ids = set(frame_dets.keys())
@@ -687,12 +782,17 @@ class VisionSystem:
                 except:
                     pass
 
-            # Control de FPS (aprox 1-2 FPS como pidio el usuario para "cada segundo")
-            # cv2.waitKey(1) es necesario para refrescar la ventana
-            if cv2.waitKey(500) & 0xFF == ord('q'):
+            # Control de FPS (0 = as fast as possible). `cv2.waitKey` is required to refresh the debug window.
+            if math.isfinite(self._target_fps) and self._target_fps > 0.0:
+                min_period = 1.0 / float(self._target_fps)
+                elapsed = time.perf_counter() - float(frame_now)
+                if elapsed < min_period:
+                    time.sleep(min_period - elapsed)
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-                
-            # log(f"Ciclo Vision: {time.time() - start_time:.3f}s")
+                 
+            # log(f"Ciclo Vision: {time.perf_counter() - frame_now:.3f}s")
 
         cv2.destroyAllWindows()
 

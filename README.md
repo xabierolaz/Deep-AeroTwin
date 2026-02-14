@@ -47,6 +47,10 @@ Vision capture modes (Pipeline A):
   * Optional: `set PORCE_CAPTURE_WINDOW_FOCUS=1` (default) and `set PORCE_CAPTURE_WINDOW_TOPMOST=1`
   * Expected viewport size (warns if mismatch): `PORCE_CAPTURE_EXPECT_WIDTH=640`, `PORCE_CAPTURE_EXPECT_HEIGHT=640`
 * Fallback: capture monitor/ROI via `PORCE_CAPTURE_MONITOR` or `PORCE_CAPTURE_LEFT/TOP/WIDTH/HEIGHT`.
+* YOLO debug window (boxes + class/confidence + FPS):
+  * Enabled by default in Pipeline A: `PORCE_VISION_DEBUG_WINDOW=1`
+  * Dock next to Unreal window: `PORCE_VISION_DEBUG_DOCK=1` (default when using window capture)
+  * Optional: `PORCE_VISION_TARGET_FPS=30` (0 = as fast as possible)
 
 Launchers:
 * `launch_pipeline_A.bat` (recommended)
