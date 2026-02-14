@@ -43,7 +43,7 @@ Verified on **2026-02-13** (Windows + WSL2):
 
 Vision capture modes (Pipeline A):
 * Preferred (robust): capture Unreal PIE by window title (client area, 640x640):
-  * `set PORCE_CAPTURE_WINDOW_TITLE=Play In New Window`
+  * Set `PORCE_CAPTURE_WINDOW_TITLE` to a substring of the PIE window title (example: `AirTraffic Preview`; see `docs/img/unreal_pie_window_title.png`). Use `python tools/list_windows.py` to enumerate windows.
   * Optional: `set PORCE_CAPTURE_WINDOW_FOCUS=1` (default) and `set PORCE_CAPTURE_WINDOW_TOPMOST=1`
   * Expected viewport size (warns if mismatch): `PORCE_CAPTURE_EXPECT_WIDTH=640`, `PORCE_CAPTURE_EXPECT_HEIGHT=640`
 * Fallback: capture monitor/ROI via `PORCE_CAPTURE_MONITOR` or `PORCE_CAPTURE_LEFT/TOP/WIDTH/HEIGHT`.
@@ -54,7 +54,7 @@ Launchers:
 
 ### Pipeline B (REAL_TWIN) (Not Validated / Experimental)
 
-The repo includes `launch_pipeline_B.bat` and the Brain exposes `/api/unreal/sync`, but **Pipeline B is not yet “real drone + real video”**:
+The repo includes `launch_pipeline_B.bat` and the Brain exposes `/api/unreal/sync`, but **Pipeline B is not yet "real drone + real video"**:
 * The Brain MAVLink connection is still hard-coded to `tcp:127.0.0.1:5760` (`pipeline/flight_controller.py`).
 * Vision currently uses **MSS screen capture** (no RTSP/VideoCapture integration yet) (`pipeline/vision_system.py`).
 
@@ -142,7 +142,7 @@ python train_yolo.py --epochs 50 --imgsz 640 --batch 32 --device 0 --name yolo_3
 
 Notes:
 * `3d_to_dataset_xabi/dataset/` and `3d_to_dataset_xabi/runs/` are **not committed** (ignored by git).
-* The generator samples camera viewpoints from the **upper hemisphere** (“dome”, drone-like: always above the object) and applies heavy domain randomization.
+* The generator samples camera viewpoints from the **upper hemisphere** ("dome", drone-like: always above the object) and applies heavy domain randomization.
 
 ## Repo Layout
 

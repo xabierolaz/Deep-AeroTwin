@@ -72,6 +72,7 @@ Unreal/*.VC.opendb
 3d_to_dataset_xabi/venv/
 3d_to_dataset_xabi/yolo_3d_experiment/
 3d_to_dataset_xabi/__pycache__/
+tools/detect/
 
 # YOLO weights: ignore by default; allow committing a curated final weight in pipeline/weights.
 *.pt
