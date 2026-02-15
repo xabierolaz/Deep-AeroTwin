@@ -25,7 +25,7 @@ import numpy as np
 # Reuse the exact implementation used by the pipeline.
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "pipeline"))
-from vision_system import GeoProjector  # noqa: E402
+from geo_projector import GeoProjector  # noqa: E402
 
 
 @dataclass(frozen=True)

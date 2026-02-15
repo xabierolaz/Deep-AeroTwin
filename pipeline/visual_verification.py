@@ -2,6 +2,14 @@ import os
 import time
 import sys
 import cv2
+
+# Ultralytics writes settings under %APPDATA% by default, which can be locked down
+# in some Windows environments. It honors YOLO_CONFIG_DIR as an override.
+_default_yolo_cfg = os.path.join(os.path.dirname(__file__), "logs")
+if "YOLO_CONFIG_DIR" not in os.environ:
+    os.makedirs(_default_yolo_cfg, exist_ok=True)
+    os.environ["YOLO_CONFIG_DIR"] = _default_yolo_cfg
+
 from ultralytics import YOLO
 import numpy as np
 from datetime import datetime

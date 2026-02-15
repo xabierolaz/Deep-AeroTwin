@@ -1,7 +1,7 @@
 # Projection Error Evaluation (Zero-Trust)
 
 This document evaluates the **pixel -> ground** projection used by Vision:
-* Implementation: `pipeline/vision_system.py` (`GeoProjector.pixel_to_gps`)
+* Implementation: `pipeline/geo_projector.py` (`GeoProjector.pixel_to_gps`)
 * Evaluation tool: `tools/eval_projection_error.py`
 
 Important:
@@ -114,4 +114,3 @@ px0          0.00     2.04     3.86     4.43     4.89      1.28      3.13      3
   * correct ROI (only the camera viewport, not the whole screen)
   * calibrate VFOV and mount pitch (or estimate them)
   * incorporate a terrain model (not a single flat plane)
-

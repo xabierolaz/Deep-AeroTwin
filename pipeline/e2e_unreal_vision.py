@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import os
-import signal
 import subprocess
 import sys
 import time
@@ -10,7 +9,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-import requests
+from e2e_common import (
+    get_status as _get_status,
+    kill_proc as _kill_proc,
+    popen as _popen,
+    wait_http_ok as _wait_http_ok,
+    wslpath as _wslpath,
+)
 
 
 def _ts() -> str:
@@ -68,82 +73,6 @@ SCENARIOS: dict[str, Scenario] = {
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
-def _popen(
-    args: list[str],
-    *,
-    env: Optional[dict[str, str]] = None,
-    cwd: Optional[Path] = None,
-    stdout_path: Optional[Path] = None,
-) -> subprocess.Popen:
-    stdout_handle = None
-    if stdout_path is not None:
-        stdout_path.parent.mkdir(parents=True, exist_ok=True)
-        stdout_handle = stdout_path.open("w", encoding="utf-8")
-
-    return subprocess.Popen(
-        args,
-        env=env,
-        cwd=str(cwd or REPO_ROOT),
-        stdout=stdout_handle or subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=(stdout_handle is None),
-        creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
-        preexec_fn=os.setsid if hasattr(os, "setsid") else None,
-    )
-
-
-def _kill_proc(proc: subprocess.Popen, name: str) -> None:
-    if proc.poll() is not None:
-        return
-    try:
-        if os.name == "nt":
-            proc.send_signal(signal.CTRL_BREAK_EVENT)
-        else:
-            if hasattr(os, "killpg"):
-                os.killpg(proc.pid, signal.SIGTERM)
-            else:
-                proc.terminate()
-        proc.wait(timeout=10)
-    except Exception:
-        try:
-            proc.kill()
-        except Exception:
-            pass
-
-
-def _wslpath(win_path: Path) -> str:
-    win_arg = str(win_path).replace("\\", "/")
-    out = subprocess.check_output(
-        ["wsl", "wslpath", "-u", win_arg],
-        text=True,
-        stderr=subprocess.STDOUT,
-    ).strip()
-    if not out:
-        raise RuntimeError(f"wslpath_empty:{win_path}")
-    return out
-
-
-def _wait_http_ok(url: str, timeout_s: float) -> None:
-    deadline = time.time() + timeout_s
-    last_err: str = ""
-    while time.time() < deadline:
-        try:
-            r = requests.get(url, timeout=1)
-            if r.status_code == 200:
-                return
-            last_err = f"status={r.status_code}"
-        except Exception as e:
-            last_err = str(e)
-        time.sleep(0.5)
-    raise TimeoutError(f"http_not_ready:{url}:{last_err}")
-
-
-def _get_status(base_url: str) -> dict:
-    r = requests.get(f"{base_url}/api/status", timeout=2)
-    r.raise_for_status()
-    return r.json()
-
-
 def _file_contains_any(path: Path, needles: list[str]) -> bool:
     try:
         if not path.exists():
@@ -182,15 +111,21 @@ def run_scenario(s: Scenario, args: argparse.Namespace) -> int:
     brain_log = run_dir / "brain.log"
     vision_log = run_dir / "vision.log"
 
-    wsl_script = _wslpath(REPO_ROOT / "pipeline" / "run_sitl.sh")
-    sitl = _popen(["wsl", "-e", "bash", wsl_script], stdout_path=sitl_log)
-    log(f"[{s.name}] SITL started via WSL (pid={sitl.pid}).")
+    sitl: Optional[subprocess.Popen] = None
+    if not bool(getattr(args, "mock_sitl", False)):
+        wsl_script = _wslpath(REPO_ROOT / "pipeline" / "run_sitl.sh")
+        sitl = _popen(["wsl", "-e", "bash", wsl_script], stdout_path=sitl_log)
+        log(f"[{s.name}] SITL started via WSL (pid={sitl.pid}).")
+    else:
+        log(f"[{s.name}] MOCK SITL enabled (PORCE_MOCK_MAVLINK=1). Not starting WSL SITL.")
 
     base_url = f"http://127.0.0.1:{args.http_port}"
 
     brain_env = os.environ.copy()
     brain_env["PORCE_SYSTEM_MODE"] = "SIMULATION"
     brain_env["PORCE_ENABLE_EVASION"] = str(int(s.porce_enable))
+    if bool(getattr(args, "mock_sitl", False)):
+        brain_env["PORCE_MOCK_MAVLINK"] = "1"
     if bool(getattr(args, "force_arm", False)):
         brain_env["PORCE_FORCE_ARM"] = "1"
 
@@ -313,11 +248,13 @@ def run_scenario(s: Scenario, args: argparse.Namespace) -> int:
     finally:
         _kill_proc(vision, "vision")
         _kill_proc(brain, "brain")
-        _kill_proc(sitl, "sitl")
-        try:
-            subprocess.run(["wsl", "-e", "pkill", "-9", "-f", "arducopter"], timeout=10, check=False)
-        except Exception:
-            pass
+        if sitl is not None:
+            _kill_proc(sitl, "sitl")
+        if not bool(getattr(args, "mock_sitl", False)):
+            try:
+                subprocess.run(["wsl", "-e", "pkill", "-9", "-f", "arducopter"], timeout=10, check=False)
+            except Exception:
+                pass
 
 
 def parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
@@ -328,6 +265,12 @@ def parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
     p.add_argument("--takeoff-timeout", dest="takeoff_timeout", type=float, default=180.0)
     p.add_argument("--http-port", type=int, default=8080)
     p.add_argument("--force-arm", dest="force_arm", action="store_true", help="Use PORCE_FORCE_ARM for Brain (SIM debug only).")
+    p.add_argument(
+        "--mock-sitl",
+        dest="mock_sitl",
+        action="store_true",
+        help="Run without WSL/SITL by enabling PORCE_MOCK_MAVLINK in the Brain.",
+    )
 
     p.add_argument("--window-title", dest="window_title", default="AirTraffic Preview")
     p.add_argument("--window-class", dest="window_class", default="UnrealWindow")

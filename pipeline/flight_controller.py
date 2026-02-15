@@ -33,10 +33,8 @@ from constants import (
 
 PORCE_ENABLE_EVASION = os.environ.get('PORCE_ENABLE_EVASION', '1').strip() not in ('0', 'false', 'False', '')
 
-print(f"DEBUG: ALTITUDE_TOLERANCE_M is {ALTITUDE_TOLERANCE_M}")
 
 WP_TOLERANCE_M = ARRIVAL_TOLERANCE_M
-if 'EVASION_SPEED_MS' not in locals(): EVASION_SPEED_MS = 3.0
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [BRAIN] %(message)s', datefmt='%H:%M:%S')
 log_werkzeug = logging.getLogger('werkzeug')
@@ -79,6 +77,232 @@ state = {
 state_lock = threading.Lock()
 master = None
 planner = PorcePlanner()
+
+# -----------------------------------------------------------------------------
+# MOCK MAVLINK BACKEND (for environments where SITL/WSL is unavailable)
+# Enable with: set PORCE_MOCK_MAVLINK=1
+# -----------------------------------------------------------------------------
+
+_MOCK_MAVLINK = os.environ.get('PORCE_MOCK_MAVLINK', '').strip() in ('1', 'true', 'True')
+
+class _MockMav:
+    def __init__(self, parent):
+        self._p = parent
+
+    def command_long_send(self, target_system, target_component, command, confirmation,
+                          param1, param2, param3, param4, param5, param6, param7):
+        # Only a small subset is needed for the Brain control loop.
+        self._p._on_command_long(command, param1, param2, param7)
+
+    def param_set_send(self, *args, **kwargs):
+        return
+
+    def set_position_target_global_int_send(
+        self,
+        time_boot_ms,
+        target_system,
+        target_component,
+        frame,
+        type_mask,
+        lat_int,
+        lon_int,
+        alt_rel,
+        vx,
+        vy,
+        vz,
+        afx,
+        afy,
+        afz,
+        yaw,
+        yaw_rate,
+    ):
+        self._p._on_position_target(lat_int, lon_int, alt_rel)
+
+
+class MockMaster:
+    def __init__(self):
+        self.target_system = 1
+        self.target_component = 1
+        self.mav = _MockMav(self)
+        self._lock = threading.Lock()
+        self._desired_mode = "STABILIZE"
+        self._desired_armed = False
+        self._takeoff_alt_rel = None
+        self._target_lat_int = None
+        self._target_lon_int = None
+        self._target_alt_rel = None
+
+    def close(self):
+        return
+
+    def set_mode(self, mode):
+        with self._lock:
+            self._desired_mode = str(mode)
+
+    def arducopter_arm(self):
+        with self._lock:
+            self._desired_armed = True
+
+    def _on_command_long(self, command, param1, param2, param7):
+        # MAV_CMD_NAV_TAKEOFF=22, MAV_CMD_COMPONENT_ARM_DISARM=400
+        try:
+            cmd = int(command)
+        except Exception:
+            return
+        with self._lock:
+            if cmd == 22:
+                try:
+                    self._takeoff_alt_rel = float(param7)
+                except Exception:
+                    self._takeoff_alt_rel = 10.0
+            elif cmd == 400:
+                try:
+                    self._desired_armed = bool(int(param1) == 1)
+                except Exception:
+                    return
+
+    def _on_position_target(self, lat_int, lon_int, alt_rel):
+        with self._lock:
+            try:
+                self._target_lat_int = int(lat_int)
+                self._target_lon_int = int(lon_int)
+                self._target_alt_rel = float(alt_rel)
+            except Exception:
+                return
+
+    def snapshot(self):
+        with self._lock:
+            return {
+                'mode': self._desired_mode,
+                'armed': self._desired_armed,
+                'takeoff_alt_rel': self._takeoff_alt_rel,
+                'target_lat_int': self._target_lat_int,
+                'target_lon_int': self._target_lon_int,
+                'target_alt_rel': self._target_alt_rel,
+            }
+
+
+def _mock_vehicle_loop():
+    # Deterministic vehicle simulation for E2E without a real autopilot.
+    with state_lock:
+        home = state.get('home') or {}
+        cur_lat = float(home.get('lat', 42.0) or 42.0)
+        cur_lon = float(home.get('lon', -1.0) or -1.0)
+        home_alt = float(home.get('alt', 0.0) or 0.0)
+        state['telemetry'].update({
+            'lat': cur_lat, 'lon': cur_lon, 'alt': home_alt,
+            'rel_alt': 0.0,
+            'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
+            'heading': 0.0,
+            'armed': False,
+            'mode': 'STABILIZE',
+            'groundspeed': 0.0,
+            'last_update': time.time(),
+        })
+
+    cur_rel_alt = 0.0
+    cur_mode = 'STABILIZE'
+    cur_armed = False
+    cur_groundspeed = 0.0
+
+    last_ts = time.time()
+    while True:
+        now = time.time()
+        dt = now - last_ts
+        if dt <= 0.0:
+            dt = 0.05
+        last_ts = now
+
+        snap = {}
+        if isinstance(master, MockMaster):
+            snap = master.snapshot()
+
+        desired_mode = str(snap.get('mode') or cur_mode)
+        desired_armed = bool(snap.get('armed', cur_armed))
+        takeoff_alt_rel = snap.get('takeoff_alt_rel')
+        tgt_lat_int = snap.get('target_lat_int')
+        tgt_lon_int = snap.get('target_lon_int')
+        tgt_alt_rel = snap.get('target_alt_rel')
+
+        cur_mode = desired_mode
+        cur_armed = desired_armed
+
+        # Altitude control (simple rate-limited tracking of commanded rel_alt).
+        desired_rel_alt = cur_rel_alt
+        if cur_mode == 'LAND':
+            desired_rel_alt = 0.0
+        elif tgt_alt_rel is not None:
+            try:
+                desired_rel_alt = float(tgt_alt_rel)
+            except Exception:
+                pass
+        elif takeoff_alt_rel is not None:
+            try:
+                desired_rel_alt = float(takeoff_alt_rel)
+            except Exception:
+                desired_rel_alt = 10.0
+
+        climb_rate = 2.0  # m/s
+        da = desired_rel_alt - cur_rel_alt
+        step = climb_rate * dt
+        if abs(da) <= step:
+            cur_rel_alt = desired_rel_alt
+        else:
+            cur_rel_alt += step if da > 0.0 else -step
+
+        # Horizontal motion toward the last position target.
+        cur_groundspeed = 0.0
+        if tgt_lat_int is not None and tgt_lon_int is not None and cur_armed and cur_mode != 'LAND':
+            try:
+                tgt_lat = float(int(tgt_lat_int)) / 1e7
+                tgt_lon = float(int(tgt_lon_int)) / 1e7
+                R = float(EARTH_RADIUS_M)
+                dlat = math.radians(tgt_lat - cur_lat)
+                dlon = math.radians(tgt_lon - cur_lon)
+                north = dlat * R
+                east = dlon * R * (math.cos(math.radians(cur_lat)) or 1e-6)
+                dist = math.hypot(north, east)
+                if dist > 0.25:
+                    spd = float(NAV_SPEED_HORIZONTAL_MS)
+                    d = min(dist, spd * dt)
+                    s = d / (dist + 1e-9)
+                    north_s = north * s
+                    east_s = east * s
+                    cur_lat += math.degrees(north_s / R)
+                    cur_lon += math.degrees(east_s / (R * (math.cos(math.radians(cur_lat)) or 1e-6)))
+                    cur_groundspeed = d / dt if dt > 1e-6 else 0.0
+            except Exception:
+                pass
+
+        # Auto-disarm on touchdown in LAND for determinism.
+        if cur_mode == 'LAND' and cur_rel_alt <= 0.05:
+            cur_armed = False
+            if isinstance(master, MockMaster):
+                with master._lock:
+                    master._desired_armed = False
+
+        with state_lock:
+            state['telemetry']['lat'] = cur_lat
+            state['telemetry']['lon'] = cur_lon
+            state['telemetry']['alt'] = home_alt + cur_rel_alt
+            state['telemetry']['rel_alt'] = cur_rel_alt
+            state['telemetry']['mode'] = cur_mode
+            state['telemetry']['armed'] = cur_armed
+            state['telemetry']['groundspeed'] = float(cur_groundspeed)
+            state['telemetry']['heading'] = 0.0
+            state['telemetry']['yaw'] = 0.0
+            state['telemetry']['last_update'] = now
+
+        time.sleep(0.05)
+
+
+def _start_mock_mavlink():
+    global master
+    master = MockMaster()
+    t = threading.Thread(target=_mock_vehicle_loop, daemon=True)
+    t.start()
+    log.warning('[MOCK] PORCE_MOCK_MAVLINK=1 enabled: running without real SITL/MAVLink.')
+
 
 def haversine(lat1, lon1, lat2, lon2):
     dlat, dlon = math.radians(lat2-lat1), math.radians(lon2-lon1)
@@ -598,8 +822,11 @@ if __name__ == '__main__':
     if not load_mission():
         log.error("No se pudo cargar la misión. Saliendo.")
         sys.exit(1)
-    t_mav = threading.Thread(target=mavlink_loop, daemon=True)
-    t_mav.start()
+    if _MOCK_MAVLINK:
+        _start_mock_mavlink()
+    else:
+        t_mav = threading.Thread(target=mavlink_loop, daemon=True)
+        t_mav.start()
     t_ctrl = threading.Thread(target=control_loop, daemon=True)
     t_ctrl.start()
     log.info(f"Iniciando CEREBRO en puerto {MAVLINK_HUB_HTTP_PORT}...")

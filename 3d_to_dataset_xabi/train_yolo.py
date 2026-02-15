@@ -14,6 +14,15 @@ from pathlib import Path
 from typing import Iterable
 
 import torch
+
+# Ultralytics writes settings under %APPDATA% by default, which can be locked down
+# in some Windows environments. It honors YOLO_CONFIG_DIR as an override.
+_repo_root = Path(__file__).resolve().parents[1]
+_default_yolo_cfg = _repo_root / "pipeline" / "logs"
+if "YOLO_CONFIG_DIR" not in os.environ:
+    _default_yolo_cfg.mkdir(parents=True, exist_ok=True)
+    os.environ["YOLO_CONFIG_DIR"] = str(_default_yolo_cfg)
+
 from ultralytics import YOLO
 
 

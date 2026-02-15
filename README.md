@@ -38,6 +38,10 @@ Verified on **2026-02-14** (Windows + WSL2):
 
 Full logs: `docs/test_runs/2026-02-14.md`
 
+Verified again on **2026-02-15** (Windows 11 + WSL2 + Ubuntu + real SITL):
+* `tools\fix_wsl_sitl_real.ps1` end-to-end: PASS
+* E2E matrix (real WSL + SITL): 4/4 PASS
+
 ## Pipelines
 
 ### Pipeline A (SIMULATION)
@@ -78,6 +82,14 @@ Treat Pipeline B as a placeholder until those pieces are made configurable and v
 
 ## Quick Start (Pipeline A)
 
+0. Preflight (optional but recommended):
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File tools\preflight_pipeline_a.ps1
+   ```
+   If WSL/SITL is not set up yet (or WSL is broken), run the real fix script from an **elevated** PowerShell:
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File tools\fix_wsl_sitl_real.ps1
+   ```
 1. Install Python deps:
    ```bash
    pip install -r pipeline/requirements.txt
@@ -90,6 +102,46 @@ Treat Pipeline B as a placeholder until those pieces are made configurable and v
    ```powershell
    python pipeline\e2e_flight_matrix.py --scenario porce_off_no_detections --scenario-timeout 420 --arm-timeout 240 --takeoff-timeout 180
    ```
+   If WSL/SITL is unavailable (restricted environments), you can still run the Brain+PORCE E2E in mock mode:
+   ```powershell
+   python pipeline\e2e_flight_matrix.py --scenario porce_off_no_detections --mock-sitl --scenario-timeout 420 --arm-timeout 60 --takeoff-timeout 60
+   ```
+   Note: `--mock-sitl` does not validate real MAVLink/SITL integration.
+
+## Real WSL2 + SITL Setup (Recovery Script)
+
+If WSL works but SITL is missing, or if WSL is broken after a Windows update, use:
+
+```powershell
+# Run from repo root (D:\Deep-AeroTwin) in an elevated PowerShell:
+powershell -NoProfile -ExecutionPolicy Bypass -NoExit -File tools\fix_wsl_sitl_real.ps1 -PauseOnExit
+```
+
+What it does (step-based, audited):
+* Ensures Windows features are enabled: `Microsoft-Windows-Subsystem-Linux`, `VirtualMachinePlatform` (may require reboot).
+* Restarts WSL-related services (best-effort) and validates `wsl --status` and `wsl -l -v`.
+* Ensures a distro exists (auto-selects your default distro; typically `Ubuntu`).
+* Clones + builds ArduPilot Copter SITL in WSL home: `~/ardupilot/build/sitl/bin/arducopter`.
+* Runs `tools\preflight_pipeline_a.ps1`.
+
+Logs:
+* Transcript is saved under `pipeline\logs\fix_wsl_sitl_real_*.txt`
+* Latest transcript pointer: `pipeline\logs\last_fix_wsl_sitl_real.txt`
+
+## Full E2E Matrix (Real)
+
+Run the full matrix (copy/paste as a single line):
+
+```powershell
+@('porce_off_no_detections','porce_on_no_detections','porce_off_with_detections','porce_on_with_detections') | % { python pipeline\e2e_flight_matrix.py --scenario $_ --scenario-timeout 420; if ($LASTEXITCODE -ne 0) { break } }
+```
+
+## Troubleshooting (Common CLI Mistakes)
+
+* `argument --arm-timeout: expected one argument`:
+  * You ran `--arm-timeout` without its number (example: `--arm-timeout 240`).
+* `TIMEOUT /?` appears:
+  * Your command got split across lines and Windows executed the `timeout` program. Copy/paste the command as a single line.
 
 ## Pipeline A E2E Matrix
 

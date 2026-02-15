@@ -5,7 +5,7 @@ import unittest
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from vision_system import GeoProjector
+from geo_projector import GeoProjector
 
 
 class TestGeoProjector(unittest.TestCase):

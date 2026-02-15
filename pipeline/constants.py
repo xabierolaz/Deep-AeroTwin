@@ -17,9 +17,11 @@ import os
 # Opciones: 'SIMULATION' (Pipeline A) | 'REAL_TWIN' (Pipeline B)
 SYSTEM_MODE = os.environ.get('PORCE_SYSTEM_MODE', 'SIMULATION').upper().strip()
 
-print(f"[{os.path.basename(__file__)}] ----------------------------------------")
-print(f"[{os.path.basename(__file__)}] INICIANDO CONFIGURACION EN MODO: {SYSTEM_MODE}")
-print(f"[{os.path.basename(__file__)}] ----------------------------------------")
+_SHOW_BANNER = os.environ.get("PORCE_CONFIG_BANNER", "").strip() in ("1", "true", "True")
+if _SHOW_BANNER:
+    print(f"[{os.path.basename(__file__)}] ----------------------------------------")
+    print(f"[{os.path.basename(__file__)}] INICIANDO CONFIGURACION EN MODO: {SYSTEM_MODE}")
+    print(f"[{os.path.basename(__file__)}] ----------------------------------------")
 
 _current_dir = os.path.dirname(os.path.abspath(__file__))
 _project_root = os.path.dirname(_current_dir)
