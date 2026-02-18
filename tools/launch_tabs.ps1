@@ -80,10 +80,10 @@ $brainTitle = "BRAIN (SIM)"
 $eyesTitle  = "EYES (SIM)"
 
 $masterCmd = _cdPipe "python -u log_server.py"
-$sitlCmd   = "wsl --cd $pipelineDir --exec bash run_sitl.sh"
+$sitlCmd   = _cdPipe ("wsl --cd `"$pipelineDir`" --exec bash run_sitl.sh 2>&1 | python tee.py --prefix `"SITL`" --cap-lines $teeCapLines")
 $brainCmd  = "set PORCE_SYSTEM_MODE=SIMULATION && " + (_cdPipe "python -u flight_controller.py 2>&1 | python tee.py --prefix `"$brainPrefix`" --cap-lines $teeCapLines")
 $eyesCmd   = "set PORCE_SYSTEM_MODE=SIMULATION && set PORCE_VISION_DEBUG_WINDOW=1 && set PORCE_VISION_DEBUG_DOCK=1 && " + (_cdPipe "python -u vision_system.py 2>&1 | python tee.py --prefix `"$eyesPrefix`" --cap-lines $teeCapLines")
-$vizCmd    = _cdPipe "python -u viz_recorder.py"
+$vizCmd    = _cdPipe ("python -u viz_recorder.py 2>&1 | python tee.py --prefix `"VIZ`" --cap-lines $teeCapLines")
 
 function _start_fallback_tab([string]$title, [string]$cmd) {
   $safeTitle = $title -replace '"', ''

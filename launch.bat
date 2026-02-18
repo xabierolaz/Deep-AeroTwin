@@ -35,6 +35,16 @@ if defined PORCE_AUDIT_ROOT (
 if not exist "%PORCE_AUDIT_ROOT%" mkdir "%PORCE_AUDIT_ROOT%"
 
 if not defined PORCE_AUDIT_ENABLE set "PORCE_AUDIT_ENABLE=1"
+if not defined PORCE_CONFIG_BANNER set "PORCE_CONFIG_BANNER=1"
+
+REM Session-scoped master log file (avoid overwriting between runs).
+if not defined PORCE_LOG_SERVER_FILE set "PORCE_LOG_SERVER_FILE=%PORCE_AUDIT_ROOT%\SYSTEM_ALL.log"
+
+REM Make it easy to find the latest run folder.
+if not exist "%PROJECT_ROOT%\pipeline\logs\zero_trust" mkdir "%PROJECT_ROOT%\pipeline\logs\zero_trust" >nul 2>&1
+echo %PORCE_AUDIT_ROOT%>"%PROJECT_ROOT%\pipeline\logs\zero_trust\LATEST_RUN.txt"
+
+powershell -NoProfile -ExecutionPolicy Bypass -File "%PROJECT_ROOT%\tools\write_run_info.ps1" -OutputDir "%PORCE_AUDIT_ROOT%" -ProjectRoot "%PROJECT_ROOT%" >nul 2>&1
 set "PORCE_SYSTEM_MODE=SIMULATION"
 set "PORCE_VISION_DEBUG_WINDOW=1"
 set "PORCE_VISION_DEBUG_DOCK=1"
@@ -85,7 +95,7 @@ if /I "%PORCE_FORCE_CMD_WINDOWS%"=="1" (
 
 echo.
 echo [OK] Tabs launched.
-echo  - Master log: pipeline\\logs\\SYSTEM_ALL.log
+echo  - Master log: %PORCE_LOG_SERVER_FILE%
 echo  - Viz frames: pipeline\\logs\\viz_frames
 echo  - Stop everything: powershell -NoProfile -ExecutionPolicy Bypass -File tools\\stop_pipeline.ps1
 echo.
@@ -101,8 +111,8 @@ if exist "%VENV_ACT%" (
 )
 
 start "MASTER LOG" cmd /k "cd /d \"%PIPELINE_DIR%\" && %PYENV%python -u log_server.py"
-start "SITL (WSL)" cmd /k "wsl --cd \"%PIPELINE_DIR%\" --exec bash run_sitl.sh"
+start "SITL (WSL)" cmd /k "cd /d \"%PIPELINE_DIR%\" && %PYENV%wsl --cd \"%PIPELINE_DIR%\" --exec bash run_sitl.sh 2>&1 | python tee.py --prefix \"SITL\" --cap-lines %PORCE_TEE_CAP_LINES%"
 start "BRAIN (SIM)" cmd /k "set PORCE_SYSTEM_MODE=SIMULATION && cd /d \"%PIPELINE_DIR%\" && %PYENV%python -u flight_controller.py 2>&1 | python tee.py --prefix \"%PORCE_TEE_PREFIX_BRAIN%\" --cap-lines %PORCE_TEE_CAP_LINES%"
 start "EYES (SIM)" cmd /k "set PORCE_SYSTEM_MODE=SIMULATION && set PORCE_VISION_DEBUG_WINDOW=1 && set PORCE_VISION_DEBUG_DOCK=1 && cd /d \"%PIPELINE_DIR%\" && %PYENV%python -u vision_system.py 2>&1 | python tee.py --prefix \"%PORCE_TEE_PREFIX_EYES%\" --cap-lines %PORCE_TEE_CAP_LINES%"
-start "VIZ RECORDER" cmd /k "cd /d \"%PIPELINE_DIR%\" && %PYENV%python -u viz_recorder.py"
+start "VIZ RECORDER" cmd /k "cd /d \"%PIPELINE_DIR%\" && %PYENV%python -u viz_recorder.py 2>&1 | python tee.py --prefix \"VIZ\" --cap-lines %PORCE_TEE_CAP_LINES%"
 exit /b 0
