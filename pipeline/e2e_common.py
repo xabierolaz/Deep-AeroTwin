@@ -1,11 +1,22 @@
 from __future__ import annotations
 
 import os
+import secrets
 import signal
 import subprocess
 import time
 from pathlib import Path
 from typing import Optional
+
+from constants import (
+    BRAIN_HTTP_HOST,
+    MAVLINK_HUB_HTTP_PORT,
+    E2E_HTTP_READY_POLL_INTERVAL_S,
+    E2E_PROC_WAIT_TIMEOUT_S,
+    E2E_REQUEST_TIMEOUT_S,
+    OBSTACLE_TOKEN,
+    OBSTACLE_TOKEN_REQUIRED,
+)
 
 import requests
 
@@ -49,7 +60,7 @@ def kill_proc(proc: subprocess.Popen, name: str) -> None:
                 os.killpg(proc.pid, signal.SIGTERM)
             else:
                 proc.terminate()
-        proc.wait(timeout=10)
+        proc.wait(timeout=float(E2E_PROC_WAIT_TIMEOUT_S))
     except Exception:
         try:
             proc.kill()
@@ -85,17 +96,45 @@ def wait_http_ok(url: str, timeout_s: float) -> None:
     last_err: str = ""
     while time.time() < deadline:
         try:
-            r = requests.get(url, timeout=1)
+            r = requests.get(url, timeout=float(E2E_REQUEST_TIMEOUT_S))
             if r.status_code == 200:
                 return
             last_err = f"status={r.status_code}"
         except Exception as e:
             last_err = str(e)
-        time.sleep(0.5)
+        time.sleep(float(E2E_HTTP_READY_POLL_INTERVAL_S))
     raise TimeoutError(f"http_not_ready:{url}:{last_err}")
 
 
 def get_status(base_url: str) -> dict:
-    r = requests.get(f"{base_url}/api/status", timeout=2)
+    r = requests.get(f"{base_url}/api/status", timeout=float(E2E_REQUEST_TIMEOUT_S))
     r.raise_for_status()
     return r.json()
+
+
+def default_http_host() -> str:
+    return str(BRAIN_HTTP_HOST)
+
+
+def default_http_port() -> int:
+    return int(MAVLINK_HUB_HTTP_PORT)
+
+
+def default_base_url() -> str:
+    return f"http://{default_http_host()}:{default_http_port()}"
+
+
+def ensure_obstacle_token(env: dict[str, str]) -> str:
+    """Ensure a valid obstacle token is available for hardened E2E runs.
+
+    Behavior:
+    - Reuse PORCE_OBSTACLE_TOKEN if provided.
+    - If token is required and missing, generate an ephemeral token for this run.
+    - Write token back into `env` so child processes share the same credential.
+    """
+    token = str(env.get("PORCE_OBSTACLE_TOKEN", "")).strip() or str(OBSTACLE_TOKEN).strip()
+    if bool(OBSTACLE_TOKEN_REQUIRED) and not token:
+        token = secrets.token_urlsafe(24)
+    if token:
+        env["PORCE_OBSTACLE_TOKEN"] = token
+    return token

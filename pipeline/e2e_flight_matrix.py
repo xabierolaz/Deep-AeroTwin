@@ -14,10 +14,39 @@ import requests
 
 from e2e_common import (
     get_status as _get_status,
+    ensure_obstacle_token,
+    default_http_host,
+    default_http_port,
     kill_proc as _kill_proc,
     popen as _popen,
     wait_http_ok as _wait_http_ok,
     wslpath as _wslpath,
+)
+from constants import (
+    EARTH_RADIUS_M,
+    E2E_ARM_TIMEOUT_S,
+    E2E_HTTP_READY_TIMEOUT_S,
+    E2E_INJECT_BASE_LAT,
+    E2E_INJECT_BASE_LON,
+    E2E_INJECT_DISTANCE_MARGIN_FACTOR,
+    E2E_INJECT_CONFIDENCE,
+    E2E_INJECT_DURATION_S,
+    E2E_INJECT_GPS_VALID_DELTA_DEG,
+    E2E_INJECT_HZ_MIN,
+    E2E_INJECT_DISTANCE_M,
+    E2E_INJECT_HZ,
+    E2E_INJECT_OBS_ID,
+    E2E_INJECT_SOURCE,
+    E2E_INJECT_TYPE,
+    E2E_POLL_COMPLETION_S,
+    E2E_POLL_TAKEOFF_S,
+    E2E_POLL_TELEMETRY_S,
+    E2E_SCENARIO_TIMEOUT_S,
+    E2E_TAKEOFF_COMPLETE_WP_IDX,
+    E2E_REQUEST_TIMEOUT_S,
+    E2E_WSL_KILL_TIMEOUT_S,
+    E2E_TAKEOFF_TIMEOUT_S,
+    REACTION_DISTANCE_M,
 )
 
 
@@ -69,12 +98,18 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _get_telemetry(base_url: str) -> dict:
-    r = requests.get(f"{base_url}/api/state/latest", timeout=2)
+    r = requests.get(f"{base_url}/api/state/latest", timeout=float(E2E_REQUEST_TIMEOUT_S))
     r.raise_for_status()
     return r.json()
 
 
-def _inject_obstacles(base_url: str, token: str, *, duration_s: float = 15.0, hz: float = 3.0) -> dict[str, int | Optional[int]]:
+def _inject_obstacles(
+    base_url: str,
+    token: str,
+    *,
+    duration_s: float = E2E_INJECT_DURATION_S,
+    hz: float = E2E_INJECT_HZ,
+) -> dict[str, int | Optional[int]]:
     # Keep posting the same obstacle so it stays fresh (expiry-based store in the Brain).
     headers = {}
     if token:
@@ -84,20 +119,21 @@ def _inject_obstacles(base_url: str, token: str, *, duration_s: float = 15.0, hz
     last_status: Optional[int] = None
 
     # Place an obstacle close to the vehicle so Brain-computed distance (from lat/lon) is deterministic.
-    target_dist_m = 35.0  # must be < REACTION_DISTANCE_M (45m in SIM) to trigger evasion
-    obs_lat = 42.229300
-    obs_lon = -1.234700
+    # Keep a safety margin vs. detection/evasion thresholds.
+    target_dist_m = min(float(E2E_INJECT_DISTANCE_M), float(E2E_INJECT_DISTANCE_MARGIN_FACTOR) * float(REACTION_DISTANCE_M))
+    obs_lat = float(E2E_INJECT_BASE_LAT)
+    obs_lon = float(E2E_INJECT_BASE_LON)
 
     try:
         tel = _get_telemetry(base_url)
         lat0 = float(tel.get("lat", 0.0) or 0.0)
         lon0 = float(tel.get("lon", 0.0) or 0.0)
         yaw_deg = float(tel.get("yaw", tel.get("heading", 0.0)) or 0.0)
-        if abs(lat0) > 0.0001 or abs(lon0) > 0.0001:
+        if abs(lat0) > float(E2E_INJECT_GPS_VALID_DELTA_DEG) or abs(lon0) > float(E2E_INJECT_GPS_VALID_DELTA_DEG):
             br = math.radians(yaw_deg)
             north_m = math.cos(br) * target_dist_m
             east_m = math.sin(br) * target_dist_m
-            R = 6371000.0
+            R = float(EARTH_RADIUS_M)
             dlat = north_m / R
             denom = R * (math.cos(math.radians(lat0)) or 1e-6)
             dlon = east_m / denom
@@ -107,22 +143,27 @@ def _inject_obstacles(base_url: str, token: str, *, duration_s: float = 15.0, hz
         pass
 
     obstacle = {
-        "id": 1,
+        "id": int(E2E_INJECT_OBS_ID),
         "lat": obs_lat,
         "lon": obs_lon,
         "distance": target_dist_m,
-        "type": "injector_tower",
-        "confidence": 0.99,
-        "source": "injector",
+        "type": str(E2E_INJECT_TYPE),
+        "confidence": float(E2E_INJECT_CONFIDENCE),
+        "source": str(E2E_INJECT_SOURCE),
         "bbox": None,
     }
 
-    interval = 1.0 / max(0.1, float(hz))
+    interval = 1.0 / max(float(E2E_INJECT_HZ_MIN), float(hz))
     end = time.time() + float(duration_s)
 
     while time.time() < end:
         try:
-            r = requests.post(f"{base_url}/api/obstacles", json={"obstacles": [obstacle]}, headers=headers, timeout=2)
+            r = requests.post(
+                f"{base_url}/api/obstacles",
+                json={"obstacles": [obstacle]},
+                headers=headers,
+                timeout=float(E2E_REQUEST_TIMEOUT_S),
+            )
             last_status = r.status_code
             if r.status_code == 401:
                 posts_unauthorized += 1
@@ -157,6 +198,10 @@ def run_scenario(s: Scenario, args: argparse.Namespace) -> int:
         brain_env["PORCE_MOCK_MAVLINK"] = "1"
     if bool(getattr(args, "force_arm", False)):
         brain_env["PORCE_FORCE_ARM"] = "1"
+    token_before = str(brain_env.get("PORCE_OBSTACLE_TOKEN", "")).strip()
+    token = ensure_obstacle_token(brain_env)
+    if token and not token_before:
+        log(f"[{s.name}] Auto-generated obstacle token for this run.")
     # Important: run with cwd=pipeline so relative assets (e.g. `ejea_default.waypoints`) resolve.
     brain = _popen(
         [sys.executable, "-u", "flight_controller.py"],
@@ -166,11 +211,10 @@ def run_scenario(s: Scenario, args: argparse.Namespace) -> int:
     )
     log(f"[{s.name}] Brain started (PORCE_ENABLE_EVASION={s.porce_enable}).")
 
-    base_url = f"http://127.0.0.1:{args.http_port}"
-    token = os.environ.get("PORCE_OBSTACLE_TOKEN", "").strip()
+    base_url = f"http://{default_http_host()}:{args.http_port}"
 
     try:
-        _wait_http_ok(f"{base_url}/health", timeout_s=45.0)
+        _wait_http_ok(f"{base_url}/health", timeout_s=E2E_HTTP_READY_TIMEOUT_S)
         log(f"[{s.name}] Brain HTTP ready.")
 
         # Wait until telemetry is active and we are armed.
@@ -180,7 +224,7 @@ def run_scenario(s: Scenario, args: argparse.Namespace) -> int:
             st = _get_status(base_url)
             if st.get("telemetry_active") and st.get("armed"):
                 break
-            time.sleep(0.5)
+            time.sleep(E2E_POLL_TELEMETRY_S)
         if not st.get("telemetry_active"):
             raise TimeoutError("telemetry_inactive_timeout")
         if not st.get("armed"):
@@ -188,20 +232,20 @@ def run_scenario(s: Scenario, args: argparse.Namespace) -> int:
         log(f"[{s.name}] telemetry_active=true armed=true mode={st.get('mode')} wp_idx={st.get('wp_idx')}")
 
         # Fast-fail: confirm we actually take off (WP1 -> WP2 transition) before waiting full scenario timeout.
-        takeoff_timeout = float(getattr(args, "takeoff_timeout", 90.0))
+        takeoff_timeout = float(getattr(args, "takeoff_timeout", E2E_TAKEOFF_TIMEOUT_S))
         deadline = time.time() + takeoff_timeout
         while time.time() < deadline:
             st = _get_status(base_url)
-            if int(st.get("wp_idx") or 0) >= 2:
+            if int(st.get("wp_idx") or 0) >= int(E2E_TAKEOFF_COMPLETE_WP_IDX):
                 break
-            time.sleep(1.0)
-        if int(st.get("wp_idx") or 0) < 2:
+            time.sleep(E2E_POLL_TAKEOFF_S)
+        if int(st.get("wp_idx") or 0) < int(E2E_TAKEOFF_COMPLETE_WP_IDX):
             raise TimeoutError(f"takeoff_timeout_wp_idx={st.get('wp_idx')} mode={st.get('mode')}")
 
         inject_metrics = {"inject_posts_unauthorized": 0, "inject_last_http_status": None}
         if s.inject:
             log(f"[{s.name}] Obstacle injector started (token_enabled={bool(token)}).")
-            inject_metrics = _inject_obstacles(base_url, token, duration_s=15.0, hz=3.0)
+            inject_metrics = _inject_obstacles(base_url, token)
             log(f"[{s.name}] Obstacle injector finished ({inject_metrics}).")
 
         # Wait for completion.
@@ -211,7 +255,7 @@ def run_scenario(s: Scenario, args: argparse.Namespace) -> int:
             final = _get_status(base_url)
             if final.get("mission_state") in ("COMPLETED", "FAILED"):
                 break
-            time.sleep(1.0)
+            time.sleep(E2E_POLL_COMPLETION_S)
 
         if not final:
             raise TimeoutError("no_status")
@@ -243,18 +287,23 @@ def run_scenario(s: Scenario, args: argparse.Namespace) -> int:
         if not bool(getattr(args, "mock_sitl", False)):
             # Extra safety cleanup (avoid orphan SITL processes).
             try:
-                subprocess.run(["wsl", "-e", "pkill", "-9", "-f", "arducopter"], timeout=10, check=False)
+                subprocess.run(
+                    ["wsl", "-e", "pkill", "-9", "-f", "arducopter"],
+                    timeout=float(E2E_WSL_KILL_TIMEOUT_S),
+                    check=False,
+                )
             except Exception:
                 pass
 
 
 def parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
+    http_port_default = default_http_port()
     p = argparse.ArgumentParser(description="E2E scenario runner for Pipeline A (upstream-based)")
     p.add_argument("--scenario", required=True, choices=sorted(SCENARIOS.keys()))
-    p.add_argument("--scenario-timeout", dest="scenario_timeout", type=float, default=420.0)
-    p.add_argument("--arm-timeout", dest="arm_timeout", type=float, default=150.0)
-    p.add_argument("--takeoff-timeout", dest="takeoff_timeout", type=float, default=90.0)
-    p.add_argument("--http-port", type=int, default=8080)
+    p.add_argument("--scenario-timeout", dest="scenario_timeout", type=float, default=E2E_SCENARIO_TIMEOUT_S)
+    p.add_argument("--arm-timeout", dest="arm_timeout", type=float, default=E2E_ARM_TIMEOUT_S)
+    p.add_argument("--takeoff-timeout", dest="takeoff_timeout", type=float, default=E2E_TAKEOFF_TIMEOUT_S)
+    p.add_argument("--http-port", type=int, default=http_port_default)
     p.add_argument("--force-arm", dest="force_arm", action="store_true", help="Use PORCE_FORCE_ARM for Brain (SIM debug only).")
     p.add_argument(
         "--mock-sitl",

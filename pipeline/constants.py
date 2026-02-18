@@ -4,102 +4,416 @@ CONSTANTES GLOBALES - SISTEMA DUAL (SIMULACION / REALIDAD)
 ----------------------------------------------------------
 Estructura:
 1. SELECTOR DE MODO (Environment Variable)
-2. CONSTANTES FISICAS (Inmutables, compartidas)
-3. CONFIGURACION DE RED (Inmutable, compartida para compatibilidad)
-4. PERFILES DE TUNING (Específicos por modo)
+2. CONFIGURACION BASICA (inmutable/compartida)
+3. TUNING GENERAL (override por entorno)
+4. PERFILES DE MODO (override por entorno)
 """
 
 import os
+
+
+def _env_float(name: str, default: float) -> float:
+    try:
+        return float(os.environ.get(name, str(default)))
+    except Exception:
+        return float(default)
+
+
+def _env_int(name: str, default: int) -> int:
+    try:
+        return int(float(os.environ.get(name, str(default))))
+    except Exception:
+        return int(default)
+
+
+def _env_bool(name: str, default: bool = False) -> bool:
+    v = os.environ.get(name, None)
+    if v is None:
+        return bool(default)
+    s = str(v).strip().lower()
+    if s in ("1", "true", "yes", "on"):
+        return True
+    if s in ("0", "false", "no", "off"):
+        return False
+    return bool(default)
+
+
+def _env_list(name: str, default_csv: str) -> list[str]:
+    raw = os.environ.get(name, str(default_csv))
+    items = [item.strip() for item in str(raw).split(",")]
+    return [item for item in items if item]
+
+
+def _resolve_path(value: str) -> str:
+    return os.path.normpath(os.path.expandvars(os.path.expanduser(str(value))))
+
+
+def _env_mode_float(name: str, sim_default: float, real_default: float) -> float:
+    if os.environ.get("PORCE_SYSTEM_MODE", "SIMULATION").upper().strip() == "SIMULATION":
+        return _env_float(f"PORCE_SIM_{name}", _env_float(f"PORCE_{name}", sim_default))
+    return _env_float(f"PORCE_REAL_TWIN_{name}", _env_float(f"PORCE_{name}", real_default))
+
+
+def _env_mode_int(name: str, sim_default: int, real_default: int) -> int:
+    if os.environ.get("PORCE_SYSTEM_MODE", "SIMULATION").upper().strip() == "SIMULATION":
+        return _env_int(f"PORCE_SIM_{name}", _env_int(f"PORCE_{name}", sim_default))
+    return _env_int(f"PORCE_REAL_TWIN_{name}", _env_int(f"PORCE_{name}", real_default))
+
 
 # ============================================================================
 # 1. SELECTOR DE MODO (MASTER SWITCH)
 # ============================================================================
 # Opciones: 'SIMULATION' (Pipeline A) | 'REAL_TWIN' (Pipeline B)
-SYSTEM_MODE = os.environ.get('PORCE_SYSTEM_MODE', 'SIMULATION').upper().strip()
+SYSTEM_MODE = os.environ.get("PORCE_SYSTEM_MODE", "SIMULATION").upper().strip()
 
-_SHOW_BANNER = os.environ.get("PORCE_CONFIG_BANNER", "").strip() in ("1", "true", "True")
-if _SHOW_BANNER:
-    print(f"[{os.path.basename(__file__)}] ----------------------------------------")
+if os.environ.get("PORCE_CONFIG_BANNER", "").strip() in ("1", "true", "True"):
     print(f"[{os.path.basename(__file__)}] INICIANDO CONFIGURACION EN MODO: {SYSTEM_MODE}")
-    print(f"[{os.path.basename(__file__)}] ----------------------------------------")
 
 _current_dir = os.path.dirname(os.path.abspath(__file__))
 _project_root = os.path.dirname(_current_dir)
+PROJECT_ROOT = _project_root
 
 # ============================================================================
-# 2. CONSTANTES FISICAS Y MATEMATICAS (SHARED CORE)
+# 2. CONFIGURACION BASICA (SHARED CORE)
 # ============================================================================
-# Estas NO deben cambiar entre modos para mantener la coherencia lógica.
-EARTH_RADIUS_M = 6371000
-GRID_CELL_SIZE_M = 10.0   # Resolución del A*
-SAFETY_DISTANCE_M = 12.0  # Radio "duro" de seguridad física
+EARTH_RADIUS_M = _env_float("PORCE_EARTH_RADIUS_M", 6371000.0)
+GRID_CELL_SIZE_M = _env_float("PORCE_GRID_CELL_SIZE_M", 10.0)   # Resolucion del A*
+SAFETY_DISTANCE_M = _env_float("PORCE_SAFETY_DISTANCE_M", 12.0)  # Radio de seguridad de obstaculo
+CAMERA_FOV_VERTICAL = _env_float("PORCE_CAMERA_FOV_VERTICAL", 45.0)
+CAMERA_HEIGHT = _env_int("PORCE_CAMERA_HEIGHT", 640)
+CAMERA_WIDTH = _env_int("PORCE_CAMERA_WIDTH", 640)
+TERRAIN_ELEVATION_MSL = _env_float("PORCE_TERRAIN_ELEVATION_MSL", 435.0)
 
-# ============================================================================
-# 3. CONFIGURACION DE RED (SHARED PROTOCOL)
-# ============================================================================
-# Los puertos se mantienen iguales para que las herramientas de debug sirvan en ambos.
-MAVLINK_HUB_HTTP_PORT = 8080  # Brain API
-VIZ_RECORDER_PORT = 8080      # Viz se conecta aquí
-LOG_SERVER_PORT = 9090
-SITL_TCP_PORT = 5760          # Solo relevante en SIM, ignorado en REAL
+# Redes y tiempos base.
+MAVLINK_HUB_HTTP_PORT = _env_int("PORCE_BRAIN_HTTP_PORT", 8080)  # Brain API
+# Vista legacy. Igual al puerto del Brain para mantener compatibilidad.
+VIZ_RECORDER_PORT = MAVLINK_HUB_HTTP_PORT
+BRAIN_HTTP_HOST = os.environ.get("PORCE_BRAIN_HTTP_HOST", "127.0.0.1")
+BRAIN_APP_BIND_HOST = os.environ.get("PORCE_BRAIN_APP_BIND_HOST", "0.0.0.0")
 
-# Timeouts
-HTTP_TIMEOUT_TELEMETRY_S = 10.0
-HTTP_TIMEOUT_COMMAND_S = 10.0
+SITL_TCP_HOST = os.environ.get("PORCE_SITL_TCP_HOST", "127.0.0.1")
+SITL_TCP_PORT = _env_int("PORCE_SITL_TCP_PORT", 5760)          # Solo relevante en SIM, ignorado en REAL
+SITL_CONN_STRING = f"tcp:{SITL_TCP_HOST}:{SITL_TCP_PORT}"
+OBSTACLE_TOKEN = os.environ.get("PORCE_OBSTACLE_TOKEN", "").strip()
 
-# ============================================================================
-# 4. PERFILES DE TUNING (MODE SPECIFIC)
-# ============================================================================
+LOG_SERVER_HOST = os.environ.get("PORCE_LOG_SERVER_HOST", "127.0.0.1")
+LOG_SERVER_LISTEN_HOST = os.environ.get("PORCE_LOG_SERVER_LISTEN_HOST", "0.0.0.0")
+LOG_SERVER_PORT = _env_int("PORCE_LOG_SERVER_PORT", 9090)
+LOG_SERVER_RECV_BUFFER_BYTES = max(128, _env_int("PORCE_LOG_SERVER_RECV_BUFFER_BYTES", 4096))
+TEE_CAP_LINES = max(0, _env_int("PORCE_TEE_CAP_LINES", 200))
+TEE_PREFIX_DEFAULT = str(os.environ.get("PORCE_TEE_PREFIX_DEFAULT", "UNK"))
+TEE_PREFIX_BRAIN = str(os.environ.get("PORCE_TEE_PREFIX_BRAIN", "BRAIN"))
+TEE_PREFIX_EYES = str(os.environ.get("PORCE_TEE_PREFIX_EYES", "EYES"))
+LOG_SERVER_DEDUPE_INTERVAL_S = max(
+    0.0,
+    _env_float(
+        "PORCE_LOG_DEDUPE_INTERVAL_S",
+        _env_float("PORCE_LOG_SERVER_DEDUPE_INTERVAL_S", 1.0),
+    ),
+)
+LOG_SERVER_FILE = os.environ.get(
+    "PORCE_LOG_SERVER_FILE",
+    os.path.join(_current_dir, "logs", "SYSTEM_ALL.log"),
+)
+AUDIT_ROOT = _resolve_path(os.environ.get("PORCE_AUDIT_ROOT", "").strip())
+AUDIT_ENABLED = _env_bool("PORCE_AUDIT_ENABLE", bool(AUDIT_ROOT))
 
-if SYSTEM_MODE == 'SIMULATION':
-    # --- PERFIL A: SIMULACION (Entorno ideal, mss screen capture) ---
-    REACTION_DISTANCE_M = 45.0
-    DETECTION_RANGE_M = 80.0      # Limitado artificialmente para realismo
-    
-    # Visión
-    VISION_SOURCE = 'SCREEN_CAPTURE' # mss
-    YOLO_CONF_THRESHOLD = 0.40
-    
-    # Navegación
-    NAV_SPEED_HORIZONTAL_MS = 8.0
-    ARRIVAL_TOLERANCE_M = 5.5     # Tolerancia laxa para SITL
-    ALTITUDE_TOLERANCE_M = 1.0
-
-elif SYSTEM_MODE == 'REAL_TWIN':
-    # --- PERFIL B: GEMELO DIGITAL (Entorno ruidoso, video real) ---
-    REACTION_DISTANCE_M = 60.0    # Más conservador en la realidad
-    DETECTION_RANGE_M = 150.0     # Aprovechar al máximo la cámara real
-    
-    # Visión
-    VISION_SOURCE = 'VIDEO_STREAM' # cv2.VideoCapture / RTSP
-    YOLO_CONF_THRESHOLD = 0.55    # Más estricto para evitar falsos positivos
-    
-    # Navegación
-    NAV_SPEED_HORIZONTAL_MS = 5.0 # Más lento por seguridad
-    ARRIVAL_TOLERANCE_M = 3.0     # Se asume GPS RTK o mejor precisión
-    ALTITUDE_TOLERANCE_M = 2.0    # Barómetros reales fluctúan más
-
-else:
-    raise ValueError(f"MODO DESCONOCIDO: {SYSTEM_MODE}")
-
-# ============================================================================
-# 5. RUTAS Y RESOURCES
-# ============================================================================
-WAYPOINTS_FILE = 'ejea_default.waypoints'
-RAW_IMAGE_PATH = os.path.join(_project_root, "Unreal", "Saved", "Screenshots", "WindowsEditor", "raw_capture.png")
-
-# Parametros derivados de Vision
-CAMERA_FOV_VERTICAL = 45.0
-CAMERA_HEIGHT = 640
-CAMERA_WIDTH = 640
-TERRAIN_ELEVATION_MSL = 435.0 # Ajustar esto dinámicamente en B sería ideal
-
-# ============================================================================
-# MAVLINK TIMING
-# ============================================================================
+HTTP_TIMEOUT_TELEMETRY_S = _env_float("PORCE_HTTP_TIMEOUT_TELEMETRY_S", 10.0)
+HTTP_TIMEOUT_COMMAND_S = _env_float("PORCE_HTTP_TIMEOUT_COMMAND_S", 10.0)
 MAVLINK_INTERVAL_HIGH_US = 100000
 MAVLINK_INTERVAL_MED_US = 250000
 MAVLINK_INTERVAL_LOW_US = 1000000
-HEARTBEAT_TIMEOUT_S = 3.0
-OBSTACLE_EXPIRY_S = 1.0
-EVASION_VELOCITY_LATERAL_MS = 0.5
+MAVLINK_ATTITUDE_RAD_TO_DEG = _env_float("PORCE_MAVLINK_ATTITUDE_RAD_TO_DEG", 57.29577951308232)
+MAVLINK_ALTITUDE_SCALE_M = _env_float("PORCE_MAVLINK_ALTITUDE_SCALE_M", 1000.0)
+MAVLINK_HEADING_SCALE = _env_float("PORCE_MAVLINK_HEADING_SCALE", 100.0)
+MAVLINK_VOLTAGE_SCALE_MV_TO_V = _env_float("PORCE_MAVLINK_VOLTAGE_SCALE_MV_TO_V", 1000.0)
+MAVLINK_UNKNOWN_DISTANCE_M = _env_float("PORCE_MAVLINK_UNKNOWN_DISTANCE_M", 9999.0)
+MAVLINK_RECV_TIMEOUT_S = _env_float("PORCE_MAVLINK_RECV_TIMEOUT_S", 1.0)
+MAVLINK_LOOP_SLEEP_S = _env_float("PORCE_MAVLINK_LOOP_SLEEP_S", 0.02)
+MAVLINK_ERROR_RETRY_SLEEP_S = _env_float("PORCE_MAVLINK_ERROR_RETRY_SLEEP_S", 1.0)
+MAVLINK_RECONNECT_SLEEP_S = _env_float("PORCE_MAVLINK_RECONNECT_SLEEP_S", 2.0)
+MAVLINK_SPEED_SCALE_CM = _env_float("PORCE_MAVLINK_SPEED_SCALE_CM", 100.0)
+MAVLINK_ARM_FORCE_CODE = _env_int("PORCE_MAVLINK_ARM_FORCE_CODE", 21196)
+MAVLINK_SET_POSITION_TARGET_INT_IGNORE_MASK = 0b0000111111111000
+HEARTBEAT_TIMEOUT_S = _env_float("PORCE_HEARTBEAT_TIMEOUT_S", 3.0)
+CONTROL_LOOP_PERIOD_S = max(0.02, _env_float("PORCE_CONTROL_LOOP_PERIOD_S", 0.1))
+CONTROL_LOOP_STALE_TELEMETRY_S = max(0.5, _env_float("PORCE_CONTROL_LOOP_STALE_TELEMETRY_S", 2.0))
+CONTROL_LOG_INTERVAL_S = max(0.5, _env_float("PORCE_CONTROL_LOG_INTERVAL_S", 2.0))
+CONTROL_LOOP_STARTUP_DELAY_S = max(0.0, _env_float("PORCE_CONTROL_LOOP_STARTUP_DELAY_S", 2.0))
+CONTROL_GUIDED_RETRY_INTERVAL_S = max(0.0, _env_float("PORCE_CONTROL_GUIDED_RETRY_INTERVAL_S", 1.0))
+CONTROL_ARM_RETRY_INTERVAL_S = max(0.0, _env_float("PORCE_CONTROL_ARM_RETRY_INTERVAL_S", 1.0))
+CONTROL_DISARM_RETRY_INTERVAL_S = max(0.0, _env_float("PORCE_CONTROL_DISARM_RETRY_INTERVAL_S", 1.0))
+CONTROL_EVASION_PROGRESS_LOG_MIN_S = max(0.0, _env_float("PORCE_CONTROL_EVASION_PROGRESS_LOG_MIN_S", 1.0))
+CONTROL_NAV_LOG_MIN_S = max(0.0, _env_float("PORCE_CONTROL_NAV_LOG_MIN_S", 3.0))
+CONTROL_NAV_LOG_INTERVAL_MULTIPLIER = max(0.0, _env_float("PORCE_CONTROL_NAV_LOG_INTERVAL_MULTIPLIER", 1.5))
+CONTROL_HEARTBEAT_MIN_DT_S = max(0.0, _env_float("PORCE_CONTROL_HEARTBEAT_MIN_DT_S", 1.0))
+
+OBSTACLE_EXPIRY_S = _env_float("PORCE_OBSTACLE_EXPIRY_S", 1.0)
+OBSTACLE_TOKEN_REQUIRED = _env_bool("PORCE_OBSTACLE_TOKEN_REQUIRED", True)
+
+# ============================================================================
+# 3. TUNING DE PLANNER (shared)
+# ============================================================================
+PLANNER_GRID_RADIUS_CELLS = max(1, _env_int("PORCE_PLANNER_GRID_RADIUS_CELLS", 40))
+PLANNER_MAX_ITERATIONS = max(100, _env_int("PORCE_PLANNER_MAX_ITERATIONS", 10000))
+PLANNER_BOUNDARY_SEARCH_RANGE_CELLS = max(1, _env_int("PORCE_PLANNER_BOUNDARY_SEARCH_RANGE_CELLS", 10))
+PLANNER_ALLOW_DIAGONAL = _env_bool("PORCE_PLANNER_ALLOW_DIAGONAL", True)
+PLANNER_MOVE_COST_CARDINAL = max(0.1, _env_float("PORCE_PLANNER_MOVE_COST_CARDINAL", 1.0))
+PLANNER_MOVE_COST_DIAGONAL = max(0.1, _env_float("PORCE_PLANNER_MOVE_COST_DIAGONAL", 1.4142135623730951))
+PLANNER_GOAL_REACHED_TOLERANCE_CELLS = max(0, _env_int("PORCE_PLANNER_GOAL_REACHED_TOLERANCE_CELLS", 1))
+
+# Evasion and mission completion thresholds.
+EVASION_REPLAN_MIN_INTERVAL_S = max(0.1, _env_float("PORCE_EVASION_REPLAN_MIN_INTERVAL_S", 0.75))
+EVASION_ROUTE_POINT_REACHED_M = max(0.1, _env_float("PORCE_EVASION_ROUTE_POINT_REACHED_M", 3.0))
+LAND_COMPLETED_REL_ALT_M = max(0.0, _env_float("PORCE_LAND_COMPLETED_REL_ALT_M", 0.3))
+LAND_COMPLETION_GROUNDSPEED_MPS = max(0.0, _env_float("PORCE_LAND_COMPLETION_GROUNDSPEED_MPS", 0.5))
+LAND_DISARM_DELAY_S = max(0.0, _env_float("PORCE_LAND_DISARM_DELAY_S", 3.0))
+
+# Mock / tests.
+MOCK_TAKEOFF_ALT_M = max(0.0, _env_float("PORCE_MOCK_TAKEOFF_ALT_M", 10.0))
+MOCK_CLIMB_RATE_MPS = max(0.1, _env_float("PORCE_MOCK_CLIMB_RATE_MPS", 2.0))
+MOCK_LAND_DONE_ALT_M = max(0.0, _env_float("PORCE_MOCK_LAND_DONE_ALT_M", 0.05))
+MOCK_LOOP_MIN_DT_S = max(0.01, _env_float("PORCE_MOCK_LOOP_MIN_DT_S", 0.05))
+MOCK_MOVE_MIN_DIST_M = max(0.0, _env_float("PORCE_MOCK_MOVE_MIN_DIST_M", 0.25))
+TAKEOFF_DEFAULT_ALT_MSL_M = max(0.0, _env_float("PORCE_TAKEOFF_DEFAULT_ALT_MSL_M", 30.0))
+MOCK_HOME_LAT = _env_float("PORCE_MOCK_HOME_LAT", 42.0)
+MOCK_HOME_LON = _env_float("PORCE_MOCK_HOME_LON", -1.0)
+MOCK_HOME_ALT_M = _env_float("PORCE_MOCK_HOME_ALT_M", 0.0)
+
+# ============================================================================
+# 4. PERFILES DE MODO (mode specific, env override)
+# ============================================================================
+if SYSTEM_MODE == "SIMULATION":
+    REACTION_DISTANCE_M = _env_mode_float("REACTION_DISTANCE_M", 45.0, 45.0)
+    DETECTION_RANGE_M = _env_mode_float("DETECTION_RANGE_M", 80.0, 80.0)
+
+    # NOTE: VISION_SOURCE is retained for diagnostics/tests but is not consumed
+    # by current pipeline control flow.
+    VISION_SOURCE = "SCREEN_CAPTURE"
+    YOLO_CONF_THRESHOLD = _env_mode_float("YOLO_CONF_THRESHOLD", 0.40, 0.40)
+
+    NAV_SPEED_HORIZONTAL_MS = _env_mode_float("NAV_SPEED_HORIZONTAL_MS", 8.0, 8.0)
+    ARRIVAL_TOLERANCE_M = _env_mode_float("ARRIVAL_TOLERANCE_M", 5.5, 5.5)
+    ALTITUDE_TOLERANCE_M = _env_mode_float("ALTITUDE_TOLERANCE_M", 1.0, 1.0)
+
+elif SYSTEM_MODE == "REAL_TWIN":
+    REACTION_DISTANCE_M = _env_mode_float("REACTION_DISTANCE_M", 60.0, 60.0)
+    DETECTION_RANGE_M = _env_mode_float("DETECTION_RANGE_M", 150.0, 150.0)
+
+    # NOTE: VISION_SOURCE is retained for diagnostics/tests but is not consumed
+    # by current pipeline control flow.
+    VISION_SOURCE = "VIDEO_STREAM"
+    YOLO_CONF_THRESHOLD = _env_mode_float("YOLO_CONF_THRESHOLD", 0.55, 0.55)
+
+    NAV_SPEED_HORIZONTAL_MS = _env_mode_float("NAV_SPEED_HORIZONTAL_MS", 5.0, 5.0)
+    ARRIVAL_TOLERANCE_M = _env_mode_float("ARRIVAL_TOLERANCE_M", 3.0, 3.0)
+    ALTITUDE_TOLERANCE_M = _env_mode_float("ALTITUDE_TOLERANCE_M", 2.0, 2.0)
+else:
+    raise ValueError(f"MODO DESCONOCIDO: {SYSTEM_MODE}")
+
+
+# ============================================================================
+# 5. AUDIT + TUNING VISION (runtime + pruebas)
+# ============================================================================
+AUDIT_BRAIN_TRAJ_EVERY_S = max(0.1, _env_float("PORCE_AUDIT_BRAIN_TRAJ_EVERY_S", 0.5))
+AUDIT_BRAIN_DECISION_EVERY_S = max(0.1, _env_float("PORCE_AUDIT_BRAIN_DECISION_EVERY_S", 0.5))
+AUDIT_BRAIN_MAX_OBS_IN_EVENT = max(1, _env_int("PORCE_AUDIT_BRAIN_MAX_OBS_IN_EVENT", 20))
+AUDIT_FRAME_DEFAULT_JPEG_QUALITY = max(50, min(100, _env_int("PORCE_AUDIT_FRAME_DEFAULT_JPEG_QUALITY", 90)))
+
+AUDIT_VISION_FRAME_EVERY_N = max(1, _env_int("PORCE_AUDIT_VISION_FRAME_EVERY_N", 3))
+AUDIT_VISION_ONLY_WITH_DETS = _env_bool("PORCE_AUDIT_VISION_ONLY_WITH_DETS", False)
+AUDIT_VISION_MAX_DET_DETAILS = max(0, _env_int("PORCE_AUDIT_VISION_MAX_DET_DETAILS", 25))
+AUDIT_VISION_JPEG_QUALITY = max(50, min(100, _env_int("PORCE_AUDIT_VISION_JPEG_QUALITY", 88)))
+
+BRAIN_ENABLE_EVASION = _env_bool("PORCE_ENABLE_EVASION", True)
+BRAIN_MOCK_MAVLINK = _env_bool("PORCE_MOCK_MAVLINK", False)
+BRAIN_FORCE_ARM = _env_bool("PORCE_FORCE_ARM", False)
+
+VISION_CAMERA_VFOV_DEG = _env_float("PORCE_CAMERA_VFOV_DEG", float(CAMERA_FOV_VERTICAL))
+VISION_CAMERA_MOUNT_ROLL_DEG = _env_float("PORCE_CAMERA_MOUNT_ROLL_DEG", 0.0)
+VISION_CAMERA_MOUNT_PITCH_DEG = _env_float("PORCE_CAMERA_MOUNT_PITCH_DEG", -30.0)
+VISION_CAMERA_MOUNT_YAW_DEG = _env_float("PORCE_CAMERA_MOUNT_YAW_DEG", 0.0)
+
+VISION_DET_CONF = _env_float("PORCE_VISION_DET_CONF", float(YOLO_CONF_THRESHOLD))
+VISION_PUBLISH_CONF = _env_float("PORCE_VISION_PUBLISH_CONF", float(VISION_DET_CONF))
+VISION_TARGET_CLASS_NAMES = _env_list("PORCE_VISION_TARGET_CLASS_NAMES", "biker,cow,tower")
+VISION_TARGET_CLASS_FALLBACK_NAMES = _env_list("PORCE_VISION_TARGET_CLASS_FALLBACK_NAMES", "person,bicycle,cow")
+VISION_MIN_BOX_HEIGHT_PX = _env_float("PORCE_VISION_MIN_BOX_HEIGHT_PX", 8.0)
+VISION_MIN_BOX_AREA_FRAC = _env_float("PORCE_VISION_MIN_BOX_AREA_FRAC", 0.0001)
+VISION_MAX_BOX_AREA_FRAC = _env_float("PORCE_VISION_MAX_BOX_AREA_FRAC", 1.0)
+VISION_MAX_BOX_AREA_FRAC_BIKER = _env_float("PORCE_VISION_MAX_BOX_AREA_FRAC_BIKER", 0.06)
+VISION_MAX_BOX_AREA_FRAC_COW = _env_float("PORCE_VISION_MAX_BOX_AREA_FRAC_COW", 0.12)
+VISION_MAX_BOX_AREA_FRAC_TOWER = _env_float("PORCE_VISION_MAX_BOX_AREA_FRAC_TOWER", 0.60)
+VISION_FPS_EMA_ALPHA = max(0.0, min(0.9999, _env_float("PORCE_VISION_FPS_EMA_ALPHA", 0.9)))
+VISION_BBOX_MIN_SIDE_PX = max(1, _env_int("PORCE_VISION_BBOX_MIN_SIDE_PX", 1))
+VISION_MIN_SEEN_TO_PUBLISH = max(1, _env_int("PORCE_VISION_MIN_SEEN_TO_PUBLISH", 2))
+VISION_MIN_SEEN_TO_PUBLISH_BIKER = max(1, _env_int("PORCE_VISION_MIN_SEEN_TO_PUBLISH_BIKER", VISION_MIN_SEEN_TO_PUBLISH))
+VISION_MIN_SEEN_TO_PUBLISH_COW = max(1, _env_int("PORCE_VISION_MIN_SEEN_TO_PUBLISH_COW", VISION_MIN_SEEN_TO_PUBLISH))
+VISION_MIN_SEEN_TO_PUBLISH_TOWER = max(1, _env_int("PORCE_VISION_MIN_SEEN_TO_PUBLISH_TOWER", VISION_MIN_SEEN_TO_PUBLISH))
+VISION_TRACK_TTL_S = _env_float("PORCE_VISION_TRACK_TTL_S", 2.0)
+VISION_TRACK_HOLD_S = _env_float("PORCE_VISION_TRACK_HOLD_S", 0.8)
+VISION_SMOOTH_TAU_S = _env_float("PORCE_VISION_SMOOTH_TAU_S", 0.6)
+VISION_ID_BUCKET_PX = _env_int("PORCE_VISION_ID_BUCKET_PX", 64)
+VISION_ID_CLASS_OFFSET = max(1, _env_int("PORCE_VISION_ID_CLASS_OFFSET", 1_000_000))
+VISION_ID_COORD_SCALE = max(1, _env_int("PORCE_VISION_ID_COORD_SCALE", 1000))
+VISION_MAX_OBS_PER_FRAME = _env_int("PORCE_VISION_MAX_OBS_PER_FRAME", 25)
+VISION_HEARTBEAT_S = _env_float("PORCE_VISION_HEARTBEAT_S", 5.0)
+VISION_IGNORE_BOTTOM_PX = max(0, _env_int("PORCE_VISION_IGNORE_BOTTOM_PX", 0))
+VISION_IGNORE_BOTTOM_FRAC = max(0.0, min(0.5, _env_float("PORCE_VISION_IGNORE_BOTTOM_FRAC", 0.0)))
+VISION_MIN_DT_S_FOR_FPS = max(0.0, _env_float("PORCE_VISION_MIN_DT_S_FOR_FPS", 1e-6))
+VISION_TRACK_DENOM_EPS = max(0.0, _env_float("PORCE_VISION_TRACK_DENOM_EPS", 1e-12))
+VISION_TRACK_SMOOTH_DENOM_EPS = max(0.0, _env_float("PORCE_VISION_TRACK_SMOOTH_DENOM_EPS", 1e-9))
+VISION_TRACK_COS_DENOM_EPS = max(0.0, _env_float("PORCE_VISION_TRACK_COS_DENOM_EPS", 1e-6))
+
+VISION_CAPTURE_MONITOR = max(1, _env_int("PORCE_CAPTURE_MONITOR", 1))
+VISION_CAPTURE_EXPECT_WIDTH = _env_int("PORCE_CAPTURE_EXPECT_WIDTH", int(CAMERA_WIDTH))
+VISION_CAPTURE_EXPECT_HEIGHT = _env_int("PORCE_CAPTURE_EXPECT_HEIGHT", int(CAMERA_HEIGHT))
+VISION_CAPTURE_WINDOW_TITLE = os.environ.get("PORCE_CAPTURE_WINDOW_TITLE", "").strip()
+VISION_CAPTURE_WINDOW_CLASS = os.environ.get("PORCE_CAPTURE_WINDOW_CLASS", "").strip()
+VISION_CAPTURE_WINDOW_EXACT = _env_bool("PORCE_CAPTURE_WINDOW_EXACT", False)
+VISION_CAPTURE_WINDOW_FOCUS = _env_bool("PORCE_CAPTURE_WINDOW_FOCUS", True)
+VISION_CAPTURE_WINDOW_TOPMOST = _env_bool("PORCE_CAPTURE_WINDOW_TOPMOST", False)
+VISION_CAPTURE_LEFT = os.environ.get("PORCE_CAPTURE_LEFT")
+VISION_CAPTURE_TOP = os.environ.get("PORCE_CAPTURE_TOP")
+VISION_CAPTURE_WIDTH = os.environ.get("PORCE_CAPTURE_WIDTH")
+VISION_CAPTURE_HEIGHT = os.environ.get("PORCE_CAPTURE_HEIGHT")
+
+VISION_DEBUG_TITLE = os.environ.get("PORCE_VISION_DEBUG_TITLE", "YOLO V11 VISION DEBUG").strip() or "YOLO V11 VISION DEBUG"
+VISION_DEBUG_WINDOW = _env_bool("PORCE_VISION_DEBUG_WINDOW", True)
+VISION_DEBUG_SCALE = _env_float("PORCE_VISION_DEBUG_SCALE", 1.0)
+VISION_DEBUG_DOCK = os.environ.get("PORCE_VISION_DEBUG_DOCK", "").strip()
+VISION_DEBUG_DOCK_GAP_PX = max(0, _env_int("PORCE_VISION_DEBUG_DOCK_GAP_PX", 8))
+VISION_DEBUG_TOPMOST = _env_bool("PORCE_VISION_DEBUG_TOPMOST", False)
+VISION_OVERLAY_MAX_OBS = max(0, _env_int("PORCE_VISION_OVERLAY_MAX_OBS", 5))
+VISION_DEBUG_BBOX_COLOR = (0, 0, 255)
+VISION_DEBUG_BBOX_THICKNESS = max(1, _env_int("PORCE_VISION_DEBUG_BBOX_THICKNESS", 2))
+VISION_DEBUG_BBOX_LABEL_SCALE = max(0.1, _env_float("PORCE_VISION_DEBUG_BBOX_LABEL_SCALE", 0.5))
+VISION_DEBUG_BBOX_LABEL_THICKNESS = max(1, _env_int("PORCE_VISION_DEBUG_BBOX_LABEL_THICKNESS", 2))
+VISION_DEBUG_BBOX_LABEL_COLOR = (0, 255, 0)
+VISION_DEBUG_BBOX_BASE_OUTLINE_COLOR = (0, 0, 0)
+VISION_DEBUG_BBOX_BASE_OUTLINE_THICKNESS = max(1, _env_int("PORCE_VISION_DEBUG_BBOX_BASE_OUTLINE_THICKNESS", 3))
+VISION_DEBUG_OVERLAY_X0 = max(0, _env_int("PORCE_VISION_DEBUG_OVERLAY_X0", 10))
+VISION_DEBUG_OVERLAY_Y0 = max(0, _env_int("PORCE_VISION_DEBUG_OVERLAY_Y0", 22))
+VISION_DEBUG_OVERLAY_LINE_STEP = max(1, _env_int("PORCE_VISION_DEBUG_OVERLAY_LINE_STEP", 20))
+VISION_DEBUG_OVERLAY_TEXT_SCALE = max(0.1, _env_float("PORCE_VISION_DEBUG_OVERLAY_TEXT_SCALE", 0.55))
+VISION_DEBUG_OVERLAY_TEXT_COLOR = (0, 255, 255)
+VISION_DEBUG_OVERLAY_OUTLINE_THICKNESS = max(1, _env_int("PORCE_VISION_DEBUG_OVERLAY_OUTLINE_THICKNESS", 3))
+VISION_DEBUG_OVERLAY_TEXT_THICKNESS = max(1, _env_int("PORCE_VISION_DEBUG_OVERLAY_TEXT_THICKNESS", 1))
+VISION_DEBUG_OVERLAY_OUTLINE_COLOR = (0, 0, 0)
+VISION_DEBUG_FOOTER_OVERLAY_COLOR = (20, 20, 20)
+VISION_DEBUG_FOOTER_OVERLAY_ALPHA = max(0.0, min(1.0, _env_float("PORCE_VISION_DEBUG_FOOTER_OVERLAY_ALPHA", 0.35)))
+VISION_DEBUG_FOOTER_LINE_COLOR = (0, 165, 255)
+VISION_DEBUG_FOOTER_LINE_THICKNESS = max(1, _env_int("PORCE_VISION_DEBUG_FOOTER_LINE_THICKNESS", 1))
+VISION_DEBUG_FOOTER_LABEL_SCALE = max(0.1, _env_float("PORCE_VISION_DEBUG_FOOTER_LABEL_SCALE", 0.5))
+VISION_DEBUG_FOOTER_LABEL_THICKNESS = max(1, _env_int("PORCE_VISION_DEBUG_FOOTER_LABEL_THICKNESS", 1))
+VISION_DEBUG_FOOTER_LABEL_X0 = max(0, _env_int("PORCE_VISION_DEBUG_FOOTER_LABEL_X0", 10))
+VISION_DEBUG_FOOTER_LABEL_Y_OFFSET = max(1, _env_int("PORCE_VISION_DEBUG_FOOTER_LABEL_Y_OFFSET", 8))
+VISION_TARGET_FPS = max(0.0, _env_float("PORCE_VISION_TARGET_FPS", 0.0))
+
+VISION_TELEMETRY_TIMEOUT_S = max(0.01, _env_float("PORCE_VISION_TELEMETRY_TIMEOUT_S", 0.5))
+VISION_SLEEP_NO_TELEMETRY_S = max(0.0, _env_float("PORCE_VISION_SLEEP_NO_TELEMETRY_S", 0.5))
+VISION_SLEEP_NO_WINDOW_S = max(0.0, _env_float("PORCE_VISION_SLEEP_NO_WINDOW_S", 0.5))
+VISION_SLEEP_INVALID_MONITOR_S = max(0.0, _env_float("PORCE_VISION_SLEEP_INVALID_MONITOR_S", 0.2))
+VISION_SLEEP_NO_MONITOR_S = max(0.0, _env_float("PORCE_VISION_SLEEP_NO_MONITOR_S", 0.5))
+VISION_POST_TIMEOUT_S = max(0.01, _env_float("PORCE_VISION_POST_TIMEOUT_S", 0.1))
+VISION_GUI_WAITKEY_MS = max(1, _env_int("PORCE_VISION_GUI_WAITKEY_MS", 1))
+
+VISION_HEIGHT_ERR_MIN_M = max(0.0, _env_float("PORCE_VISION_HEIGHT_ERR_MIN_M", 2.0))
+VISION_HEIGHT_ERR_SLOPE = max(0.0, _env_float("PORCE_VISION_HEIGHT_ERR_SLOPE", 0.25))
+VISION_HEIGHT_CLAMP_M = max(1.0, _env_float("PORCE_VISION_HEIGHT_CLAMP_M", 200.0))
+VISION_HEIGHT_DIST_FLOOR_M = max(0.0, _env_float("PORCE_VISION_HEIGHT_DIST_FLOOR_M", 2.0))
+GEOMETRY_MIN_AGL_M = max(0.0, _env_float("PORCE_GEOMETRY_MIN_AGL_M", 0.5))
+GEOMETRY_MIN_VFOV_DEG = max(0.01, min(179.0, _env_float("PORCE_GEOMETRY_MIN_VFOV_DEG", 0.01)))
+GEOMETRY_MAX_VFOV_DEG = max(GEOMETRY_MIN_VFOV_DEG + 0.1, min(179.0, _env_float("PORCE_GEOMETRY_MAX_VFOV_DEG", 179.0)))
+GEOMETRY_PIXEL_EPS = max(1, _env_int("PORCE_GEOMETRY_PIXEL_EPS", 1))
+GEOMETRY_EPS = max(0.0, _env_float("PORCE_GEOMETRY_EPS", 1e-12))
+GEOMETRY_UNIT_EPS = max(0.0, _env_float("PORCE_GEOMETRY_UNIT_EPS", 1e-12))
+GEOMETRY_COS_LAT_EPS = max(0.0, _env_float("PORCE_GEOMETRY_COS_LAT_EPS", 1e-6))
+
+VISION_DEFAULT_MODEL_PATH = _resolve_path(
+    os.path.join(_current_dir, "weights", "yolo_3d_dome_v1_best.pt")
+)
+VISION_YOLO_MODEL = _resolve_path(os.environ.get("PORCE_YOLO_MODEL", VISION_DEFAULT_MODEL_PATH))
+VISION_MODEL_FALLBACK_COCO = _resolve_path(os.path.join(_project_root, "yolo11n.pt"))
+VISION_MODEL_FALLBACK_SYNTH = _resolve_path(os.path.join(_project_root, "3d_to_dataset_xabi", "yolo11n.pt"))
+
+
+# ============================================================================
+# 6. E2E + VISUALIZATION TOOLS
+# ============================================================================
+E2E_HTTP_READY_TIMEOUT_S = max(1.0, _env_float("PORCE_E2E_HTTP_READY_TIMEOUT_S", 45.0))
+E2E_HTTP_POLL_TIMEOUT_S = max(0.1, _env_float("PORCE_E2E_HTTP_POLL_TIMEOUT_S", 1.0))
+E2E_STATUS_REQUEST_TIMEOUT_S = max(0.1, _env_float("PORCE_E2E_STATUS_REQUEST_TIMEOUT_S", 2.0))
+E2E_REQUEST_TIMEOUT_S = max(0.1, _env_float("PORCE_E2E_REQUEST_TIMEOUT_S", 2.0))
+E2E_HTTP_READY_POLL_INTERVAL_S = max(0.01, _env_float("PORCE_E2E_HTTP_READY_POLL_INTERVAL_S", 0.5))
+E2E_PROC_WAIT_TIMEOUT_S = max(0.5, _env_float("PORCE_E2E_PROC_WAIT_TIMEOUT_S", 10.0))
+E2E_WSL_KILL_TIMEOUT_S = max(0.5, _env_float("PORCE_E2E_WSL_KILL_TIMEOUT_S", 10.0))
+E2E_SCENARIO_TIMEOUT_S = max(60.0, _env_float("PORCE_E2E_SCENARIO_TIMEOUT_S", 420.0))
+E2E_ARM_TIMEOUT_S = max(5.0, _env_float("PORCE_E2E_ARM_TIMEOUT_S", 240.0))
+E2E_TAKEOFF_TIMEOUT_S = max(5.0, _env_float("PORCE_E2E_TAKEOFF_TIMEOUT_S", 180.0))
+E2E_TAKEOFF_COMPLETE_WP_IDX = max(1, _env_int("PORCE_E2E_TAKEOFF_COMPLETE_WP_IDX", 2))
+E2E_VISION_WINDOW_TIMEOUT_S = max(5.0, _env_float("PORCE_E2E_VISION_WINDOW_TIMEOUT_S", 60.0))
+E2E_DETECTIONS_TIMEOUT_S = max(5.0, _env_float("PORCE_E2E_DETECTIONS_TIMEOUT_S", 180.0))
+E2E_POLL_TELEMETRY_S = max(0.1, _env_float("PORCE_E2E_POLL_TELEMETRY_S", 0.5))
+E2E_POLL_TAKEOFF_S = max(0.5, _env_float("PORCE_E2E_POLL_TAKEOFF_S", 1.0))
+E2E_POLL_COMPLETION_S = max(0.5, _env_float("PORCE_E2E_POLL_COMPLETION_S", 1.0))
+E2E_INJECT_DURATION_S = max(1.0, _env_float("PORCE_E2E_INJECT_DURATION_S", 15.0))
+E2E_INJECT_HZ = max(0.1, _env_float("PORCE_E2E_INJECT_HZ", 3.0))
+E2E_INJECT_HZ_MIN = max(0.01, _env_float("PORCE_E2E_INJECT_HZ_MIN", 0.1))
+E2E_INJECT_BASE_LAT = _env_float("PORCE_E2E_INJECT_BASE_LAT", 42.229300)
+E2E_INJECT_BASE_LON = _env_float("PORCE_E2E_INJECT_BASE_LON", -1.234700)
+E2E_INJECT_DISTANCE_MARGIN_FACTOR = max(0.0, min(1.0, _env_float("PORCE_E2E_INJECT_DISTANCE_MARGIN_FACTOR", 0.95)))
+E2E_INJECT_GPS_VALID_DELTA_DEG = max(0.0, _env_float("PORCE_E2E_INJECT_GPS_VALID_DELTA_DEG", 0.0001))
+E2E_INJECT_DISTANCE_M = max(1.0, _env_float("PORCE_E2E_INJECT_DISTANCE_M", 35.0))
+E2E_INJECT_OBS_ID = max(1, _env_int("PORCE_E2E_INJECT_OBS_ID", 1))
+E2E_INJECT_ID = E2E_INJECT_OBS_ID
+E2E_INJECT_TYPE = os.environ.get("PORCE_E2E_INJECT_TYPE", "injector_tower").strip() or "injector_tower"
+E2E_INJECT_SOURCE = os.environ.get("PORCE_E2E_INJECT_SOURCE", "injector").strip() or "injector"
+E2E_INJECT_CONFIDENCE = _env_float("PORCE_E2E_INJECT_CONFIDENCE", 0.99)
+E2E_NO_DET_MIN_BOX_HEIGHT_PX = max(0, _env_int("PORCE_E2E_NO_DET_MIN_BOX_HEIGHT_PX", 99999))
+E2E_NO_DET_MIN_BOX_AREA_FRAC = max(0.0, min(1.0, _env_float("PORCE_E2E_NO_DET_MIN_BOX_AREA_FRAC", 1.0)))
+
+VIZ_OUTPUT_DIR = _resolve_path(os.environ.get("PORCE_VIZ_OUTPUT_DIR", os.path.join(_current_dir, "logs", "viz_frames")))
+VIZ_GRID_LINE_WIDTH = max(0.1, _env_float("PORCE_VIZ_GRID_LINE_WIDTH", 0.5))
+VIZ_FIGSIZE_INCH = _env_float("PORCE_VIZ_FIGSIZE_INCH", 16.0)
+VIZ_HOME_LABEL_FONT_SIZE = max(1, _env_int("PORCE_VIZ_HOME_LABEL_FONT_SIZE", 10))
+VIZ_WAYPOINT_LABEL_FONT_SIZE = max(1, _env_int("PORCE_VIZ_WAYPOINT_LABEL_FONT_SIZE", 10))
+VIZ_WAYPOINT_LABEL_OFFSET_M = _env_float("PORCE_VIZ_WAYPOINT_LABEL_OFFSET_M", 5.0)
+VIZ_FETCH_TIMEOUT_S = max(0.01, _env_float("PORCE_VIZ_FETCH_TIMEOUT_S", 0.5))
+VIZ_DPI = _env_int("PORCE_VIZ_DPI", 150)
+VIZ_HISTORY_LIMIT = max(10, _env_int("PORCE_VIZ_HISTORY_LIMIT", 2000))
+VIZ_WAYPOINT_MARKER_SIZE = max(1, _env_int("PORCE_VIZ_WAYPOINT_MARKER_SIZE", 80))
+VIZ_TICK_FONT_SIZE = max(1, _env_int("PORCE_VIZ_TICK_FONT_SIZE", 14))
+VIZ_GRID_SIZE_M = max(1, _env_int("PORCE_VIZ_GRID_SIZE_M", 10))
+VIZ_GRID_RADIUS_M = max(1, _env_int("PORCE_VIZ_GRID_RADIUS_M", 150))
+VIZ_GRID_CELL_HALF_M = max(1, _env_int("PORCE_VIZ_GRID_CELL_HALF_M", 5))
+VIZ_MISSION_LINE_WIDTH = max(0.1, _env_float("PORCE_VIZ_MISSION_LINE_WIDTH", 1.5))
+VIZ_FLIGHT_LINE_WIDTH = max(0.1, _env_float("PORCE_VIZ_FLIGHT_LINE_WIDTH", 1.5))
+VIZ_EVASION_LINE_WIDTH = max(0.1, _env_float("PORCE_VIZ_EVASION_LINE_WIDTH", 1.5))
+VIZ_DRONE_OUTLINE_MARKER_SIZE = max(1, _env_int("PORCE_VIZ_DRONE_OUTLINE_MARKER_SIZE", 80))
+VIZ_DRONE_MARKER_SIZE = max(1, _env_int("PORCE_VIZ_DRONE_MARKER_SIZE", 12))
+VIZ_DRONE_ORIENTATION_SPAN_RAD = _env_float("PORCE_VIZ_DRONE_ORIENTATION_SPAN_RAD", 2.3)
+VIZ_PAD_M = max(0, _env_int("PORCE_VIZ_PAD_M", 150))
+VIZ_STATUS_FONT_SIZE = max(1, _env_int("PORCE_VIZ_STATUS_FONT_SIZE", 16))
+VIZ_LEGEND_FONT_SIZE = max(1, _env_int("PORCE_VIZ_LEGEND_FONT_SIZE", 14))
+VIZ_AXIS_FONT_SIZE = max(1, _env_int("PORCE_VIZ_AXIS_FONT_SIZE", 16))
+VIZ_POLL_TIMEOUT_S = max(0.1, _env_float("PORCE_VIZ_POLL_TIMEOUT_S", 0.5))
+VIZ_EMPTY_SLEEP_S = max(0.1, _env_float("PORCE_VIZ_EMPTY_SLEEP_S", 1.0))
+VIZ_FRAME_STEP_LOG_EVERY = max(1, _env_int("PORCE_VIZ_FRAME_STEP_LOG_EVERY", 10))
+VIZ_CELL_BORDER_SIZE = max(1, _env_int("PORCE_VIZ_CELL_BORDER_SIZE", 10))
+VIZ_CELL_BORDER_HALF_M = max(1, _env_int("PORCE_VIZ_CELL_BORDER_HALF_M", 5))
+
+
+# ============================================================================
+# 7. RUTAS Y RECURSOS
+# ============================================================================
+WAYPOINTS_FILE = "ejea_default.waypoints"
+RAW_IMAGE_PATH = os.path.join(
+    _project_root,
+    "Unreal",
+    "Saved",
+    "Screenshots",
+    "WindowsEditor",
+    "raw_capture.png",
+)
+VISION_DEBUG_SCALE_EPS = max(0.0, _env_float("PORCE_VISION_DEBUG_SCALE_EPS", 0.01))

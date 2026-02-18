@@ -43,6 +43,11 @@ pipeline/detection_results/
 *.log
 nul
 
+# --- Runtime artifacts (local runs) ---
+brain/
+pipeline/brain/
+pipeline/vision/
+
 # --- Unreal Engine ---
 # Keep source/assets under Unreal/, ignore generated output (Binaries/Intermediate/Saved/DerivedDataCache) and IDE files.
 Unreal/**/Binaries/
@@ -74,8 +79,21 @@ Unreal/*.VC.opendb
 3d_to_dataset_xabi/__pycache__/
 tools/detect/
 
+# Keep YOLO workflow artifacts out of git by default (except curated final weights).
+yolo/source/
+yolo/dataset/
+yolo/runs/
+yolo/venv/
+yolo/labels_backup_*/
+
 # YOLO weights: ignore by default; allow committing a curated final weight in pipeline/weights.
 *.pt
 !pipeline/weights/
 pipeline/weights/*.pt
 !pipeline/weights/yolo_3d_dome_v1_best.pt
+
+# Allow committing curated final weights under yolo/weights/.
+!yolo/weights/
+!yolo/weights/*.pt
+# Keep local convenience alias out of git to avoid duplicate large blobs.
+yolo/weights/final.pt

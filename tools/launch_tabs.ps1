@@ -1,7 +1,5 @@
 param(
-  [string]$ProjectRoot = "",
-  [ValidateSet("SIMULATION","REAL_TWIN")]
-  [string]$Mode = ""
+  [string]$ProjectRoot = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -13,12 +11,6 @@ function _fail([string]$msg, [int]$code = 1) {
 
 if (-not $ProjectRoot) {
   $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-}
-if (-not $Mode) {
-  $Mode = $env:PORCE_SYSTEM_MODE
-}
-if (-not $Mode) {
-  $Mode = "SIMULATION"
 }
 
 $pipelineDir = Join-Path $ProjectRoot "pipeline"
@@ -41,7 +33,7 @@ if (-not $wt) {
   }
 }
 if (-not $wt) {
-  _fail "Windows Terminal (wt.exe) not found. Install Windows Terminal and retry." 2
+  Write-Host "[launch_tabs] WARN: Windows Terminal (wt.exe) not available or not invocable." -ForegroundColor Yellow
 }
 
 $venvActivate = Join-Path $ProjectRoot "venv\\Scripts\\activate.bat"
@@ -52,37 +44,109 @@ if (Test-Path $venvActivate) {
   Write-Host "[launch_tabs] WARN: venv not found at: $venvActivate (using system python)"
 }
 
-function _cdPipe([string]$cmd) {
-  return "cd /d `"$pipelineDir`" && $pyenv$cmd"
+function _read_int_env([string]$name, [int]$default) {
+  $raw = [System.Environment]::GetEnvironmentVariable($name)
+  if ([string]::IsNullOrWhiteSpace($raw)) {
+    return $default
+  }
+  try {
+    $value = [int]$raw
+    if ($value -lt 0) {
+      return $default
+    }
+    return $value
+  } catch {
+    return $default
+  }
 }
 
-$brainTitle = if ($Mode -eq "SIMULATION") { "BRAIN (SIM)" } else { "BRAIN (TWIN)" }
-$eyesTitle  = if ($Mode -eq "SIMULATION") { "EYES (SIM)" } else { "EYES (TWIN)" }
+function _read_text_env([string]$name, [string]$default) {
+  $raw = [System.Environment]::GetEnvironmentVariable($name)
+  if ([string]::IsNullOrWhiteSpace($raw)) {
+    return $default
+  }
+  return $raw
+}
+
+$teeCapLines = _read_int_env "PORCE_TEE_CAP_LINES" 200
+$brainPrefix = _read_text_env "PORCE_TEE_PREFIX_BRAIN" "BRAIN"
+$eyesPrefix = _read_text_env "PORCE_TEE_PREFIX_EYES" "EYES"
+
+function _cdPipe([string]$cmd) {
+  return "cd /d $pipelineDir && $pyenv$cmd"
+}
+
+$brainTitle = "BRAIN (SIM)"
+$eyesTitle  = "EYES (SIM)"
 
 $masterCmd = _cdPipe "python -u log_server.py"
-$sitlCmd   = "wsl --cd `"$pipelineDir`" --exec bash run_sitl.sh"
-$brainCmd  = "set PORCE_SYSTEM_MODE=$Mode && " + (_cdPipe "python -u flight_controller.py 2>&1 | python tee.py --prefix BRAIN --cap-lines 200")
-$eyesCmd   = "set PORCE_SYSTEM_MODE=$Mode && " + (_cdPipe "python -u vision_system.py 2>&1 | python tee.py --prefix EYES --cap-lines 200")
+$sitlCmd   = "wsl --cd $pipelineDir --exec bash run_sitl.sh"
+$brainCmd  = "set PORCE_SYSTEM_MODE=SIMULATION && " + (_cdPipe "python -u flight_controller.py 2>&1 | python tee.py --prefix `"$brainPrefix`" --cap-lines $teeCapLines")
+$eyesCmd   = "set PORCE_SYSTEM_MODE=SIMULATION && set PORCE_VISION_DEBUG_WINDOW=1 && set PORCE_VISION_DEBUG_DOCK=1 && " + (_cdPipe "python -u vision_system.py 2>&1 | python tee.py --prefix `"$eyesPrefix`" --cap-lines $teeCapLines")
 $vizCmd    = _cdPipe "python -u viz_recorder.py"
 
-$args = @(
-  "new-tab","--title","MASTER LOG","cmd","/k",$masterCmd
-)
+function _start_fallback_tab([string]$title, [string]$cmd) {
+  $safeTitle = $title -replace '"', ''
+  try {
+    $safeTitle = if ([string]::IsNullOrWhiteSpace($safeTitle)) { "PORCE" } else { $safeTitle }
+    Write-Host "[launch_tabs] INFO: launching fallback tab '$safeTitle'."
+    $tmpName = "porce_tab_" + [System.Guid]::NewGuid().ToString("N") + ".bat"
+    $tmpFile = Join-Path $env:TEMP $tmpName
+    @(
+      "@echo off",
+      "title `"$safeTitle`"",
+      "cd /d $pipelineDir",
+      $cmd
+    ) | Set-Content -Path $tmpFile -Encoding UTF8
 
-if ($Mode -eq "SIMULATION") {
-  $args += @(";", "new-tab","--title","SITL (WSL)","cmd","/k",$sitlCmd)
+    Start-Process -FilePath "cmd.exe" -ArgumentList @('/k', "`"$tmpFile`"") -WindowStyle Normal | Out-Null
+    return $true
+  } catch {
+    Write-Host "[launch_tabs] WARN: fallback tab creation failed for '$safeTitle': $($_.Exception.Message)" -ForegroundColor Yellow
+    return $false
+  }
 }
 
-$args += @(
-  ";","new-tab","--title",$brainTitle,"cmd","/k",$brainCmd,
-  ";","new-tab","--title",$eyesTitle,"cmd","/k",$eyesCmd,
-  ";","new-tab","--title","VIZ RECORDER","cmd","/k",$vizCmd
-)
-
-try {
-  & $wt @args | Out-Null
-  exit $LASTEXITCODE
-} catch {
-  _fail $_.Exception.Message
+function _start_with_tabs() {
+  if (-not $wt) {
+    return $false
+  }
+  try {
+    _start_wt_tab "new" "MASTER LOG" $masterCmd
+    Start-Sleep -Milliseconds 250
+    _start_wt_tab "last" "SITL (WSL)" $sitlCmd
+    _start_wt_tab "last" $brainTitle $brainCmd
+    _start_wt_tab "last" $eyesTitle $eyesCmd
+    _start_wt_tab "last" "VIZ RECORDER" $vizCmd
+    return $true
+  } catch {
+    Write-Host "[launch_tabs] WARN: WT launch failed: $($_.Exception.Message)" -ForegroundColor Yellow
+    return $false
+  }
 }
 
+function _invoke_wt([string[]]$wtCliArgs) {
+  & $wt @wtCliArgs | Out-Null
+  $exitCode = $LASTEXITCODE
+  if ($exitCode -ne 0) {
+    throw "wt.exe exited with code $exitCode"
+  }
+}
+
+function _start_wt_tab([string]$windowTarget, [string]$title, [string]$cmd) {
+  $wtCliArgs = @(
+    "-w", $windowTarget,
+    "new-tab", "--title", $title,
+    "cmd", "/k", $cmd
+  )
+  _invoke_wt $wtCliArgs
+}
+
+if (-not (_start_with_tabs)) {
+  Write-Host "[launch_tabs] WARN: Falling back to cmd tabs." -ForegroundColor Yellow
+  _start_fallback_tab "MASTER LOG" $masterCmd
+  _start_fallback_tab "SITL (WSL)" $sitlCmd
+  _start_fallback_tab $brainTitle $brainCmd
+  _start_fallback_tab $eyesTitle $eyesCmd
+  _start_fallback_tab "VIZ RECORDER" $vizCmd
+}

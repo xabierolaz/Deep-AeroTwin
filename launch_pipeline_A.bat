@@ -1,20 +1,10 @@
 @echo off
-TITLE DEEP-AEROTWIN: PIPELINE A (SIMULATION) [TABS]
+TITLE DEEP-AEROTWIN: PIPELINE A (UNIFIED) [TABS]
 echo ======================================================
-echo    LAUNCHING PIPELINE A: AUTONOMOUS SIMULATION (TABS)
+echo    LAUNCHING PIPELINE A: SINGLE OPERATION MODE (TABS)
 echo ======================================================
 echo.
-echo [CONFIG] Setting PORCE_SYSTEM_MODE=SIMULATION
-set "PORCE_SYSTEM_MODE=SIMULATION"
+echo [MODE] Pipeline A (SIMULATION) is the only operational mode.
 
-REM Vision defaults for Unreal PIE (drone camera viewport).
-REM You can override any of these by setting env vars before running this .bat.
-if not defined PORCE_CAPTURE_WINDOW_TITLE set "PORCE_CAPTURE_WINDOW_TITLE=AirTraffic Preview"
-if not defined PORCE_CAPTURE_WINDOW_CLASS set "PORCE_CAPTURE_WINDOW_CLASS=UnrealWindow"
-if not defined PORCE_CAPTURE_EXPECT_WIDTH set "PORCE_CAPTURE_EXPECT_WIDTH=640"
-if not defined PORCE_CAPTURE_EXPECT_HEIGHT set "PORCE_CAPTURE_EXPECT_HEIGHT=640"
-if not defined PORCE_VISION_DEBUG_WINDOW set "PORCE_VISION_DEBUG_WINDOW=1"
-if not defined PORCE_VISION_DEBUG_DOCK set "PORCE_VISION_DEBUG_DOCK=1"
-
-REM Llamar al lanzador maestro (que lee la variable de entorno)
-call "%~dp0launch.bat"
+REM Ejecutar en cmd persistente para que no se cierre la ventana si hay error.
+cmd /k ""%~dp0launch.bat""

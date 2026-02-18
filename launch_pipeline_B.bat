@@ -1,12 +1,10 @@
 @echo off
-TITLE DEEP-AEROTWIN: PIPELINE B (DIGITAL TWIN) [TABS]
+TITLE DEEP-AEROTWIN: PIPELINE B (COMPAT ALIAS)
 echo ======================================================
-echo    LAUNCHING PIPELINE B: REAL-TIME DIGITAL TWIN (TABS)
+echo    PIPELINE B IS DEPRECATED IN THIS REPO
 echo ======================================================
 echo.
-echo [CONFIG] Setting PORCE_SYSTEM_MODE=REAL_TWIN
-set "PORCE_SYSTEM_MODE=REAL_TWIN"
+echo [MODE] Redirecting to unified Pipeline A launcher...
 
-REM Pipeline B uses the same tabbed launcher but skips SITL.
-call "%~dp0launch.bat"
-
+call "%~dp0launch_pipeline_A.bat"
+exit /b %ERRORLEVEL%

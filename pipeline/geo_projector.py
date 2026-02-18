@@ -4,10 +4,18 @@ import math
 from typing import Optional, Tuple
 
 import numpy as np
+from constants import (
+    EARTH_RADIUS_M,
+    GEOMETRY_COS_LAT_EPS,
+    GEOMETRY_EPS,
+    GEOMETRY_UNIT_EPS,
+    GEOMETRY_MIN_AGL_M,
+    GEOMETRY_MIN_VFOV_DEG,
+    GEOMETRY_MAX_VFOV_DEG,
+)
 
 # Keep this module lightweight so unit tests can import it without pulling in
 # Ultralytics/OpenCV/MSS (which have heavier side effects and system deps).
-EARTH_RADIUS_M = 6371000.0
 
 
 class GeoProjector:
@@ -51,7 +59,8 @@ class GeoProjector:
         R = float(EARTH_RADIUS_M)
         lat_rad = math.radians(float(drone_lat))
         dlat = float(north_m) / R
-        denom = R * (math.cos(lat_rad) or 1e-6)
+        cos_lat = float(math.cos(lat_rad)) if math.isfinite(float(math.cos(lat_rad))) else float(GEOMETRY_COS_LAT_EPS)
+        denom = R * (cos_lat if cos_lat > 0 else float(GEOMETRY_COS_LAT_EPS))
         dlon = float(east_m) / denom
         return float(drone_lat) + math.degrees(dlat), float(drone_lon) + math.degrees(dlon)
 
@@ -82,11 +91,11 @@ class GeoProjector:
         v = float(max(0.0, min(float(image_height - 1), float(px_y))))
 
         h = float(alt_agl_m)
-        if not math.isfinite(h) or h < 0.5:
+        if not math.isfinite(h) or h < float(GEOMETRY_MIN_AGL_M):
             return None
 
         vfov_rad = math.radians(float(camera_vfov_deg))
-        if not (0.01 < vfov_rad < math.radians(179.0)):
+        if not (float(GEOMETRY_MIN_VFOV_DEG) < vfov_rad < math.radians(float(GEOMETRY_MAX_VFOV_DEG))):
             return None
 
         # Camera intrinsics from VFOV + aspect ratio.
@@ -103,7 +112,7 @@ class GeoProjector:
         y_cam = (v - cy) / fy
         z_cam = 1.0
         ray_cam = np.array([x_cam, y_cam, z_cam], dtype=float)
-        ray_cam = ray_cam / (np.linalg.norm(ray_cam) + 1e-12)
+        ray_cam = ray_cam / (np.linalg.norm(ray_cam) + float(GEOMETRY_UNIT_EPS))
 
         # camera->body aligned (camera forward == body forward).
         # Body frame (MAVLink): x forward, y right, z down.
@@ -128,7 +137,7 @@ class GeoProjector:
 
         # Intersect with ground plane at z = h (NED down positive).
         down = float(ray_ned[2])
-        if not math.isfinite(down) or down <= 1e-6:
+        if not math.isfinite(down) or down <= float(GEOMETRY_COS_LAT_EPS):
             return None
 
         t = h / down
@@ -144,7 +153,7 @@ class GeoProjector:
         # Clamp to detection range to avoid near-horizon blowups.
         max_r = float(max_range_m)
         if math.isfinite(max_r) and max_r > 0.0 and dist_h > max_r:
-            scale = max_r / (dist_h + 1e-9)
+            scale = max_r / (dist_h + float(GEOMETRY_EPS))
             north_m *= scale
             east_m *= scale
             dist_h = max_r
@@ -193,7 +202,7 @@ class GeoProjector:
         y_cam = (v - cy) / fy
         z_cam = 1.0
         ray_cam = np.array([x_cam, y_cam, z_cam], dtype=float)
-        ray_cam = ray_cam / (np.linalg.norm(ray_cam) + 1e-12)
+        ray_cam = ray_cam / (np.linalg.norm(ray_cam) + float(GEOMETRY_UNIT_EPS))
 
         # camera->body aligned (camera forward == body forward).
         # Body frame (MAVLink): x forward, y right, z down.
@@ -213,6 +222,5 @@ class GeoProjector:
 
         R_ned_body = GeoProjector._ned_from_body(float(drone_yaw_deg), float(drone_pitch_deg), float(drone_roll_deg))
         ray_ned = R_ned_body @ ray_body
-        ray_ned = ray_ned / (np.linalg.norm(ray_ned) + 1e-12)
+        ray_ned = ray_ned / (np.linalg.norm(ray_ned) + float(GEOMETRY_UNIT_EPS))
         return ray_ned
-

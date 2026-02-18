@@ -9,15 +9,15 @@ tee.py - TCP Log Client
 import sys
 import socket
 import argparse
-import time
+from constants import LOG_SERVER_HOST, LOG_SERVER_PORT, TEE_CAP_LINES, TEE_PREFIX_DEFAULT
 
-LOG_HOST = '127.0.0.1'
-LOG_PORT = 9090
+LOG_HOST = str(LOG_SERVER_HOST)
+LOG_PORT = int(LOG_SERVER_PORT)
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--prefix", default="UNK", help="Log prefix (e.g., BRAIN)")
-    parser.add_argument("--cap-lines", type=int, default=200, help="Max lines local terminal")
+    parser.add_argument("--prefix", default=str(TEE_PREFIX_DEFAULT), help="Log prefix (e.g., BRAIN)")
+    parser.add_argument("--cap-lines", type=int, default=int(TEE_CAP_LINES), help="Max lines local terminal")
     args, _ = parser.parse_known_args()
 
     # Intentar conectar al servidor de logs

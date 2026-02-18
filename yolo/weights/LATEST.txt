@@ -1,0 +1,6 @@
+yolo_unreal_unrealScene_v1_best_e23_2026-02-18.pt
+
+# Pipeline suggestions (starting point, zero-trust derived from local sweep on negatives):
+# PORCE_VISION_DET_CONF=0.10
+# PORCE_VISION_PUBLISH_CONF=0.20
+# PORCE_VISION_MIN_SEEN_TO_PUBLISH=2

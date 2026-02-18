@@ -24,8 +24,6 @@ Everything stated here is derived from the code in this repo and/or from runs th
 **Pipeline A (SIMULATION) is operational and validated end-to-end.**
 
 Verified on **2026-02-14** (Windows + WSL2):
-* Unit tests:
-  * `python -m unittest pipeline.test_unreal_api pipeline.test_geo_projector`: PASS
 * E2E matrix (token disabled):
   * `porce_off_no_detections`: PASS
   * `porce_on_no_detections`: PASS
@@ -65,20 +63,18 @@ Vision capture modes (Pipeline A):
 
 Launchers:
 * `launch_pipeline_A.bat` (Windows Terminal tabs, recommended)
-* `launch_pipeline_B.bat` (Windows Terminal tabs)
 * E2E harness: `pipeline/e2e_flight_matrix.py` (recommended for CI-like validation)
 * E2E harness (Unreal+Vision): `pipeline/e2e_unreal_vision.py`
 
 Stop:
 * `powershell -NoProfile -ExecutionPolicy Bypass -File tools/stop_pipeline.ps1` (stops Brain/Vision/Viz/Log + SITL)
 
-### Pipeline B (REAL_TWIN) (Not Validated / Experimental)
+### Single Operational Mode
 
-The repo includes `launch_pipeline_B.bat` and the Brain exposes `/api/unreal/sync`, but **Pipeline B is not yet "real drone + real video"**:
-* The Brain MAVLink connection is still hard-coded to `tcp:127.0.0.1:5760` (`pipeline/flight_controller.py`).
-* Vision currently uses **MSS screen capture** (no RTSP/VideoCapture integration yet) (`pipeline/vision_system.py`).
-
-Treat Pipeline B as a placeholder until those pieces are made configurable and validated.
+This repo now runs in a single operational mode: **Pipeline A (SIMULATION)**.
+* `launch_pipeline_A.bat` is the canonical launcher.
+* `launch_pipeline_B.bat` is kept only as a compatibility alias and redirects to Pipeline A.
+* Security stays hardened (`PORCE_OBSTACLE_TOKEN_REQUIRED=1`) and launchers auto-generate a token when missing.
 
 ## Quick Start (Pipeline A)
 
@@ -222,8 +218,6 @@ Notes:
 
 ## Known Gaps / TODO (Code-Based)
 
-* Make MAVLink connection configurable for a real drone (Brain currently hardcodes SITL TCP).
-* Implement/validate video ingestion for REAL_TWIN (Vision currently uses MSS capture).
 * Add a deterministic Unreal scene/route for CI-like Vision-in-the-loop validation (window capture E2E depends on what the camera sees).
 
 ## License

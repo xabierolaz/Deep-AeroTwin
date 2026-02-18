@@ -11,10 +11,33 @@ from typing import Optional
 
 from e2e_common import (
     get_status as _get_status,
+    ensure_obstacle_token,
+    default_http_host,
+    default_http_port,
     kill_proc as _kill_proc,
     popen as _popen,
     wait_http_ok as _wait_http_ok,
     wslpath as _wslpath,
+)
+from constants import (
+    E2E_ARM_TIMEOUT_S,
+    E2E_DETECTIONS_TIMEOUT_S,
+    E2E_HTTP_READY_TIMEOUT_S,
+    E2E_HTTP_READY_POLL_INTERVAL_S,
+    E2E_POLL_COMPLETION_S,
+    E2E_POLL_TAKEOFF_S,
+    E2E_POLL_TELEMETRY_S,
+    E2E_TAKEOFF_TIMEOUT_S,
+    E2E_SCENARIO_TIMEOUT_S,
+    E2E_TAKEOFF_COMPLETE_WP_IDX,
+    E2E_WSL_KILL_TIMEOUT_S,
+    E2E_VISION_WINDOW_TIMEOUT_S,
+    E2E_NO_DET_MIN_BOX_AREA_FRAC,
+    E2E_NO_DET_MIN_BOX_HEIGHT_PX,
+    VISION_CAPTURE_EXPECT_HEIGHT,
+    VISION_CAPTURE_EXPECT_WIDTH,
+    VISION_CAPTURE_WINDOW_CLASS,
+    VISION_CAPTURE_WINDOW_TITLE,
 )
 
 
@@ -95,7 +118,7 @@ def _wait_for_vision_window_acquired(
     while time.time() < deadline:
         if _file_contains_any(vision_log, needles):
             return
-        time.sleep(0.5)
+        time.sleep(float(E2E_HTTP_READY_POLL_INTERVAL_S))
     raise TimeoutError(
         "vision_window_not_acquired: expected Unreal PIE window visible "
         f"(title contains {window_title!r}, class={window_class!r}). "
@@ -119,7 +142,7 @@ def run_scenario(s: Scenario, args: argparse.Namespace) -> int:
     else:
         log(f"[{s.name}] MOCK SITL enabled (PORCE_MOCK_MAVLINK=1). Not starting WSL SITL.")
 
-    base_url = f"http://127.0.0.1:{args.http_port}"
+    base_url = f"http://{default_http_host()}:{args.http_port}"
 
     brain_env = os.environ.copy()
     brain_env["PORCE_SYSTEM_MODE"] = "SIMULATION"
@@ -128,6 +151,10 @@ def run_scenario(s: Scenario, args: argparse.Namespace) -> int:
         brain_env["PORCE_MOCK_MAVLINK"] = "1"
     if bool(getattr(args, "force_arm", False)):
         brain_env["PORCE_FORCE_ARM"] = "1"
+    token_before = str(brain_env.get("PORCE_OBSTACLE_TOKEN", "")).strip()
+    token = ensure_obstacle_token(brain_env)
+    if token and not token_before:
+        log(f"[{s.name}] Auto-generated obstacle token for this run.")
 
     brain = _popen(
         [sys.executable, "-u", "flight_controller.py"],
@@ -146,11 +173,13 @@ def run_scenario(s: Scenario, args: argparse.Namespace) -> int:
     vision_env["PORCE_CAPTURE_EXPECT_HEIGHT"] = str(int(args.expect_h))
     vision_env["PORCE_VISION_DEBUG_WINDOW"] = "1" if args.debug_window else "0"
     vision_env["PORCE_VISION_DEBUG_DOCK"] = "1" if args.debug_dock else "0"
+    if token:
+        vision_env["PORCE_OBSTACLE_TOKEN"] = token
 
     # In "no detections" scenarios, keep Vision running but block outgoing obstacles.
     if not s.vision_send:
-        vision_env["PORCE_VISION_MIN_BOX_HEIGHT_PX"] = "99999"
-        vision_env["PORCE_VISION_MIN_BOX_AREA_FRAC"] = "1.0"
+        vision_env["PORCE_VISION_MIN_BOX_HEIGHT_PX"] = str(int(E2E_NO_DET_MIN_BOX_HEIGHT_PX))
+        vision_env["PORCE_VISION_MIN_BOX_AREA_FRAC"] = f"{float(E2E_NO_DET_MIN_BOX_AREA_FRAC):.6f}"
 
     vision = _popen(
         [sys.executable, "-u", "vision_system.py"],
@@ -161,7 +190,7 @@ def run_scenario(s: Scenario, args: argparse.Namespace) -> int:
     log(f"[{s.name}] Vision started (send_enabled={int(s.vision_send)} pid={vision.pid}).")
 
     try:
-        _wait_http_ok(f"{base_url}/health", timeout_s=45.0)
+        _wait_http_ok(f"{base_url}/health", timeout_s=E2E_HTTP_READY_TIMEOUT_S)
         log(f"[{s.name}] Brain HTTP ready.")
 
         # Ensure Unreal window is actually acquired for capture.
@@ -180,7 +209,7 @@ def run_scenario(s: Scenario, args: argparse.Namespace) -> int:
             st = _get_status(base_url)
             if st.get("telemetry_active") and st.get("armed"):
                 break
-            time.sleep(0.5)
+            time.sleep(E2E_POLL_TELEMETRY_S)
         if not st.get("telemetry_active"):
             raise TimeoutError("telemetry_inactive_timeout")
         if not st.get("armed"):
@@ -188,14 +217,14 @@ def run_scenario(s: Scenario, args: argparse.Namespace) -> int:
         log(f"[{s.name}] telemetry_active=true armed=true mode={st.get('mode')} wp_idx={st.get('wp_idx')}")
 
         # Confirm takeoff/mission progress.
-        takeoff_timeout = float(getattr(args, "takeoff_timeout", 90.0))
+        takeoff_timeout = float(getattr(args, "takeoff_timeout", E2E_TAKEOFF_TIMEOUT_S))
         deadline = time.time() + takeoff_timeout
         while time.time() < deadline:
             st = _get_status(base_url)
-            if int(st.get("wp_idx") or 0) >= 2:
+            if int(st.get("wp_idx") or 0) >= int(E2E_TAKEOFF_COMPLETE_WP_IDX):
                 break
-            time.sleep(1.0)
-        if int(st.get("wp_idx") or 0) < 2:
+            time.sleep(E2E_POLL_TAKEOFF_S)
+        if int(st.get("wp_idx") or 0) < int(E2E_TAKEOFF_COMPLETE_WP_IDX):
             raise TimeoutError(f"takeoff_timeout_wp_idx={st.get('wp_idx')} mode={st.get('mode')}")
 
         # If we expect real detections, require at least one Vision obstacle POST to the Brain.
@@ -207,7 +236,7 @@ def run_scenario(s: Scenario, args: argparse.Namespace) -> int:
                 posts = int(st.get("inject_posts_total") or 0)
                 if posts > start_posts:
                     break
-                time.sleep(0.5)
+                time.sleep(E2E_POLL_TELEMETRY_S)
             posts = int((_get_status(base_url).get("inject_posts_total") or 0))
             if posts <= start_posts:
                 raise TimeoutError("no_vision_obstacle_posts_detected")
@@ -220,7 +249,7 @@ def run_scenario(s: Scenario, args: argparse.Namespace) -> int:
             final = _get_status(base_url)
             if final.get("mission_state") in ("COMPLETED", "FAILED"):
                 break
-            time.sleep(1.0)
+            time.sleep(E2E_POLL_COMPLETION_S)
 
         if not final:
             raise TimeoutError("no_status")
@@ -252,18 +281,23 @@ def run_scenario(s: Scenario, args: argparse.Namespace) -> int:
             _kill_proc(sitl, "sitl")
         if not bool(getattr(args, "mock_sitl", False)):
             try:
-                subprocess.run(["wsl", "-e", "pkill", "-9", "-f", "arducopter"], timeout=10, check=False)
+                subprocess.run(
+                    ["wsl", "-e", "pkill", "-9", "-f", "arducopter"],
+                    timeout=float(E2E_WSL_KILL_TIMEOUT_S),
+                    check=False,
+                )
             except Exception:
                 pass
 
 
 def parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
+    http_port_default = default_http_port()
     p = argparse.ArgumentParser(description="E2E runner for Pipeline A with Unreal window capture + Vision (YOLO).")
     p.add_argument("--scenario", required=True, choices=sorted(SCENARIOS.keys()))
-    p.add_argument("--scenario-timeout", dest="scenario_timeout", type=float, default=420.0)
-    p.add_argument("--arm-timeout", dest="arm_timeout", type=float, default=240.0)
-    p.add_argument("--takeoff-timeout", dest="takeoff_timeout", type=float, default=180.0)
-    p.add_argument("--http-port", type=int, default=8080)
+    p.add_argument("--scenario-timeout", dest="scenario_timeout", type=float, default=E2E_SCENARIO_TIMEOUT_S)
+    p.add_argument("--arm-timeout", dest="arm_timeout", type=float, default=E2E_ARM_TIMEOUT_S)
+    p.add_argument("--takeoff-timeout", dest="takeoff_timeout", type=float, default=E2E_TAKEOFF_TIMEOUT_S)
+    p.add_argument("--http-port", type=int, default=http_port_default)
     p.add_argument("--force-arm", dest="force_arm", action="store_true", help="Use PORCE_FORCE_ARM for Brain (SIM debug only).")
     p.add_argument(
         "--mock-sitl",
@@ -272,15 +306,23 @@ def parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
         help="Run without WSL/SITL by enabling PORCE_MOCK_MAVLINK in the Brain.",
     )
 
-    p.add_argument("--window-title", dest="window_title", default="AirTraffic Preview")
-    p.add_argument("--window-class", dest="window_class", default="UnrealWindow")
-    p.add_argument("--expect-width", dest="expect_w", type=int, default=640)
-    p.add_argument("--expect-height", dest="expect_h", type=int, default=640)
+    p.add_argument(
+        "--window-title",
+        dest="window_title",
+        default=str(VISION_CAPTURE_WINDOW_TITLE or "AirTraffic Preview"),
+    )
+    p.add_argument(
+        "--window-class",
+        dest="window_class",
+        default=str(VISION_CAPTURE_WINDOW_CLASS or "UnrealWindow"),
+    )
+    p.add_argument("--expect-width", dest="expect_w", type=int, default=VISION_CAPTURE_EXPECT_WIDTH)
+    p.add_argument("--expect-height", dest="expect_h", type=int, default=VISION_CAPTURE_EXPECT_HEIGHT)
     p.add_argument("--debug-window", dest="debug_window", action="store_true", default=False)
     p.add_argument("--debug-dock", dest="debug_dock", action="store_true", default=False)
 
-    p.add_argument("--vision-window-timeout", dest="vision_window_timeout", type=float, default=60.0)
-    p.add_argument("--detections-timeout", dest="detections_timeout", type=float, default=180.0)
+    p.add_argument("--vision-window-timeout", dest="vision_window_timeout", type=float, default=E2E_VISION_WINDOW_TIMEOUT_S)
+    p.add_argument("--detections-timeout", dest="detections_timeout", type=float, default=E2E_DETECTIONS_TIMEOUT_S)
     return p.parse_args(argv)
 
 

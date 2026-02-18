@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Iterable
 
 import torch
+import yaml
 
 # Ultralytics writes settings under %APPDATA% by default, which can be locked down
 # in some Windows environments. It honors YOLO_CONFIG_DIR as an override.
@@ -26,7 +27,73 @@ if "YOLO_CONFIG_DIR" not in os.environ:
 from ultralytics import YOLO
 
 
+def _patch_ultralytics_threadpool_for_windows() -> None:
+    """
+    Some locked-down Windows environments deny the OS primitives used by
+    multiprocessing.pool.ThreadPool (even though it's a thread pool).
+    Ultralytics uses ThreadPool for label caching; replace it with the
+    lightweight multiprocessing.dummy Pool (threads, no pipes).
+    """
+    if os.name != "nt":
+        return
+    try:
+        from concurrent.futures import ThreadPoolExecutor
+
+        import ultralytics.data.dataset as uds
+
+        class _NoPipeThreadPool:
+            def __init__(self, processes=None, initializer=None, initargs=()):
+                _ = initializer, initargs
+                self._executor = ThreadPoolExecutor(max_workers=int(processes) if processes else None)
+
+            def imap(self, func, iterable, chunksize=1):
+                _ = chunksize
+                return self._executor.map(func, iterable)
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                self._executor.shutdown(wait=True)
+                return False
+
+        uds.ThreadPool = _NoPipeThreadPool  # type: ignore[attr-defined]
+    except Exception:
+        # Best-effort; training may still work depending on local policies.
+        return
+
+
 THIS_DIR = Path(__file__).resolve().parent
+
+
+def _resolve_ultralytics_data_yaml(data_yaml: Path, out_dir: Path) -> Path:
+    """
+    Ultralytics resolves relative 'path:' entries against its global datasets_dir setting,
+    not against the YAML file location. To make training reproducible with repo-local datasets,
+    we rewrite the YAML with an absolute 'path:' if needed.
+    """
+    data_yaml = Path(data_yaml)
+    if not data_yaml.exists():
+        raise SystemExit(f"missing_data_yaml:{data_yaml}")
+
+    raw = yaml.safe_load(data_yaml.read_text(encoding="utf-8"))
+    if not isinstance(raw, dict):
+        raise SystemExit(f"invalid_data_yaml:{data_yaml}")
+
+    base = data_yaml.parent
+    path_value = raw.get("path", None)
+    if path_value is None:
+        # Default to the YAML directory (common YOLO convention).
+        raw["path"] = str(base.resolve())
+    else:
+        p = Path(str(path_value))
+        if not p.is_absolute():
+            raw["path"] = str((base / p).resolve())
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / f"{data_yaml.stem}.abs.yaml"
+    out_path.write_text(yaml.safe_dump(raw, sort_keys=False), encoding="utf-8")
+    return out_path
 
 
 def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
@@ -38,6 +105,7 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     p.add_argument("--batch", type=int, default=32)
     p.add_argument("--device", type=str, default="0")
     p.add_argument("--patience", type=int, default=10)
+    p.add_argument("--save-period", type=int, default=0, help="Save checkpoints every N epochs (0 disables).")
     p.add_argument("--workers", type=int, default=0)
     p.add_argument("--seed", type=int, default=1337)
     p.add_argument("--name", type=str, default="yolo_3d_dome")
@@ -66,6 +134,7 @@ def _print_metrics(tag: str, metrics) -> None:
 def main(argv: Iterable[str] | None = None) -> int:
     args = parse_args(argv)
     _print_env()
+    _patch_ultralytics_threadpool_for_windows()
 
     data_path = args.data
     if not data_path.exists():
@@ -75,18 +144,23 @@ def main(argv: Iterable[str] | None = None) -> int:
     project_dir = args.project
     project_dir.mkdir(parents=True, exist_ok=True)
 
+    # Rewrite data YAML to make 'path:' absolute if needed (Ultralytics quirk).
+    data_yaml_abs = _resolve_ultralytics_data_yaml(data_path, out_dir=project_dir)
+    print(f"[train] data_yaml_abs={data_yaml_abs}")
+
     # Allow users to force deterministic behavior if desired.
     os.environ.setdefault("PYTHONHASHSEED", str(int(args.seed)))
 
     model = YOLO(args.model)
     model.train(
-        data=str(data_path),
+        data=str(data_yaml_abs),
         epochs=int(args.epochs),
         imgsz=int(args.imgsz),
         batch=int(args.batch),
         device=str(args.device),
         workers=int(args.workers),
         patience=int(args.patience),
+        save_period=int(args.save_period),
         seed=int(args.seed),
         project=str(project_dir),
         name=str(args.name),
@@ -95,8 +169,9 @@ def main(argv: Iterable[str] | None = None) -> int:
     # Evaluate on val/test (if present).
     try:
         metrics_val = model.val(
-            data=str(data_path),
+            data=str(data_yaml_abs),
             split="val",
+            workers=0,
             project=str(project_dir),
             name=f"{args.name}_val",
         )
@@ -106,8 +181,9 @@ def main(argv: Iterable[str] | None = None) -> int:
 
     try:
         metrics_test = model.val(
-            data=str(data_path),
+            data=str(data_yaml_abs),
             split="test",
+            workers=0,
             project=str(project_dir),
             name=f"{args.name}_test",
         )
