@@ -19,12 +19,12 @@ function _expand_path([string]$value) {
   try { return [System.Environment]::ExpandEnvironmentVariables($value) } catch { return $value }
 }
 
-function _git([string[]]$args) {
+function _git([string[]]$gitArgs) {
   try {
     if ($ProjectRoot) {
-      return (& git -C $ProjectRoot @args 2>$null | Select-Object -First 1)
+      return (& git -C $ProjectRoot @gitArgs 2>$null | Select-Object -First 1)
     }
-    return (& git @args 2>$null | Select-Object -First 1)
+    return (& git @gitArgs 2>$null | Select-Object -First 1)
   } catch {
     return ""
   }
@@ -58,6 +58,8 @@ $keys = @(
   "PORCE_VISION_MAX_BOX_AREA_FRAC_TOWER",
   "PORCE_VISION_IGNORE_BOTTOM_PX",
   "PORCE_VISION_IGNORE_BOTTOM_FRAC",
+  "PORCE_VISION_IGNORE_TOP_PX",
+  "PORCE_VISION_IGNORE_TOP_FRAC",
   "PORCE_CAPTURE_WINDOW_TITLE",
   "PORCE_CAPTURE_WINDOW_CLASS",
   "PORCE_CAPTURE_EXPECT_WIDTH",

@@ -105,6 +105,8 @@ from constants import (
     OBSTACLE_TOKEN_REQUIRED,
     VISION_IGNORE_BOTTOM_PX,
     VISION_IGNORE_BOTTOM_FRAC,
+    VISION_IGNORE_TOP_PX,
+    VISION_IGNORE_TOP_FRAC,
     AUDIT_VISION_FRAME_EVERY_N,
     AUDIT_VISION_ONLY_WITH_DETS,
     AUDIT_VISION_MAX_DET_DETAILS,
@@ -182,6 +184,8 @@ MAX_OBS_PER_FRAME = int(VISION_MAX_OBS_PER_FRAME)
 HEARTBEAT_S = float(VISION_HEARTBEAT_S)
 IGNORE_BOTTOM_PX = int(VISION_IGNORE_BOTTOM_PX)
 IGNORE_BOTTOM_FRAC = float(VISION_IGNORE_BOTTOM_FRAC)
+IGNORE_TOP_PX = int(VISION_IGNORE_TOP_PX)
+IGNORE_TOP_FRAC = float(VISION_IGNORE_TOP_FRAC)
 AUDIT_VISION_FRAME_EVERY_N = int(AUDIT_VISION_FRAME_EVERY_N)
 AUDIT_VISION_ONLY_WITH_DETS = bool(AUDIT_VISION_ONLY_WITH_DETS)
 AUDIT_VISION_MAX_DET_DETAILS = int(AUDIT_VISION_MAX_DET_DETAILS)
@@ -598,6 +602,13 @@ class VisionSystem:
         px = max(int(IGNORE_BOTTOM_PX), int(by_frac))
         return max(0, min(int(image_h - 1), int(px)))
 
+    def _header_ignore_px(self, image_h: int) -> int:
+        if int(image_h) <= int(GEOMETRY_PIXEL_EPS):
+            return 0
+        by_frac = int(round(float(IGNORE_TOP_FRAC) * float(image_h)))
+        px = max(int(IGNORE_TOP_PX), int(by_frac))
+        return max(0, min(int(image_h - 1), int(px)))
+
     @staticmethod
     def _class_name_key(class_name: str) -> str:
         return str(class_name or "").strip().lower()
@@ -801,13 +812,17 @@ class VisionSystem:
             frame_count += 1
 
             H, W = img_bgr.shape[:2]
+            ignore_top_px = self._header_ignore_px(int(H))
             ignore_bottom_px = self._footer_ignore_px(int(H))
             ignore_top_y = int(H - ignore_bottom_px)
             infer_bgr = img_bgr
-            if ignore_bottom_px > 0:
-                # Mask persistent footer UI/logos so YOLO does not learn/detect them.
+            if ignore_top_px > 0 or ignore_bottom_px > 0:
+                # Mask persistent UI (header/footer) so YOLO does not learn/detect them.
                 infer_bgr = img_bgr.copy()
-                infer_bgr[ignore_top_y:int(H), :] = 0
+                if ignore_top_px > 0:
+                    infer_bgr[0:int(ignore_top_px), :] = 0
+                if ignore_bottom_px > 0:
+                    infer_bgr[ignore_top_y:int(H), :] = 0
 
             # 3. Inferencia YOLO
             # Filter by class IDs when available (reduces spurious detections on COCO weights).
@@ -879,6 +894,10 @@ class VisionSystem:
                         # Do not project/send detections whose contact point falls inside ignored footer strip.
                         reject_counts["ignored_footer_strip"] += 1
                         reject_reason = "ignored_footer_strip"
+                    if not reject_reason and ignore_top_px > 0 and y1 < int(ignore_top_px):
+                        # Ignore detections that overlap the top toolbar strip.
+                        reject_counts["ignored_header_strip"] += 1
+                        reject_reason = "ignored_header_strip"
                     if reject_reason:
                         if self._debug_enabled:
                             try:
@@ -1129,6 +1148,45 @@ class VisionSystem:
                 except Exception:
                     pass
 
+            # Visual hint of ignored header area (toolbar strip).
+            if self._debug_enabled and ignore_top_px > 0:
+                try:
+                    y1h = int(max(0, min(int(H - 1), int(ignore_top_px))))
+                    overlay_img = img_bgr.copy()
+                    cv2.rectangle(
+                        overlay_img,
+                        (0, 0),
+                        (int(W - 1), y1h),
+                        tuple(VISION_DEBUG_FOOTER_OVERLAY_COLOR),
+                        thickness=-1,
+                    )
+                    cv2.addWeighted(
+                        overlay_img,
+                        float(VISION_DEBUG_FOOTER_OVERLAY_ALPHA),
+                        img_bgr,
+                        1.0 - float(VISION_DEBUG_FOOTER_OVERLAY_ALPHA),
+                        0.0,
+                        img_bgr,
+                    )
+                    cv2.line(
+                        img_bgr,
+                        (0, y1h),
+                        (int(W - 1), y1h),
+                        tuple(VISION_DEBUG_FOOTER_LINE_COLOR),
+                        int(VISION_DEBUG_FOOTER_LINE_THICKNESS),
+                    )
+                    cv2.putText(
+                        img_bgr,
+                        f"IGNORED HEADER: {ignore_top_px}px",
+                        (int(VISION_DEBUG_FOOTER_LABEL_X0), 22),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        float(VISION_DEBUG_FOOTER_LABEL_SCALE),
+                        tuple(VISION_DEBUG_FOOTER_LINE_COLOR),
+                        int(VISION_DEBUG_FOOTER_LABEL_THICKNESS),
+                    )
+                except Exception:
+                    pass
+
             # 5. Visualizacion (Ventana Debug)
             if self._debug_enabled:
                 try:
@@ -1249,6 +1307,7 @@ class VisionSystem:
                         fps=float(self._fps_ema),
                         capture={"w": int(W), "h": int(H), "mode": str(self._capture_mode)},
                         ignored_footer_px=int(ignore_bottom_px),
+                        ignored_header_px=int(ignore_top_px),
                         telemetry={
                             "lat": float(dron_lat),
                             "lon": float(dron_lon),
