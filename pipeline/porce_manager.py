@@ -12,7 +12,7 @@ from typing import Callable, Iterable, Optional
 from constants import (
     EARTH_RADIUS_M,
     GRID_CELL_SIZE_M,
-    SAFETY_DISTANCE_M,
+    PLANNER_SAFETY_DISTANCE_M,
     GEOMETRY_COS_LAT_EPS,
     PLANNER_BOUNDARY_SEARCH_RANGE_CELLS,
     PLANNER_GRID_RADIUS_CELLS,
@@ -58,7 +58,7 @@ class PorcePlanner:
         log_fn: Optional[Callable[[str], None]] = None,
     ):
         self.cell_size = float(cell_size if cell_size is not None else GRID_CELL_SIZE_M)
-        self.safety_radius_m = float(safety_radius_m if safety_radius_m is not None else SAFETY_DISTANCE_M)
+        self.safety_radius_m = float(safety_radius_m if safety_radius_m is not None else PLANNER_SAFETY_DISTANCE_M)
         self.grid_radius_cells = max(1, int(grid_radius_cells if grid_radius_cells is not None else PLANNER_GRID_RADIUS_CELLS))
         self.max_iterations = max(1, int(max_iterations if max_iterations is not None else PLANNER_MAX_ITERATIONS))
         self.boundary_search_range_cells = max(
@@ -189,60 +189,85 @@ class PorcePlanner:
                 self._log("Sin salida local para meta bloqueada; se cancela plan.")
                 return None
 
-        start_node = Node(0, 0)
-        end_node = Node(goal_x, goal_y)
+        start_pos = (0, 0)
+        goal_pos = (int(goal_x), int(goal_y))
 
-        if (goal_x, goal_y) in grid_obstacles:
+        if goal_pos in grid_obstacles:
             return None
 
-        open_list = []
-        closed_set = set()
-        heapq.heappush(open_list, start_node)
-        iterations = 0
+        goal_tol = max(0, int(PLANNER_GOAL_REACHED_TOLERANCE_CELLS))
+        open_heap: list[tuple[float, int, tuple[int, int]]] = []
+        closed_set: set[tuple[int, int]] = set()
+        came_from: dict[tuple[int, int], tuple[int, int]] = {}
+        g_score: dict[tuple[int, int], float] = {start_pos: 0.0}
 
-        reached = False
-        current_node = start_node
-        while open_list:
+        push_seq = 0
+        start_h = math.hypot(start_pos[0] - goal_pos[0], start_pos[1] - goal_pos[1])
+        heapq.heappush(open_heap, (float(start_h), int(push_seq), start_pos))
+
+        iterations = 0
+        reached_pos: Optional[tuple[int, int]] = None
+        while open_heap:
             iterations += 1
             if iterations > self.max_iterations:
                 self._log("A* timeout: no se encontro ruta.")
                 return None
 
-            current_node = heapq.heappop(open_list)
-            if (current_node.x, current_node.y) == (end_node.x, end_node.y):
-                reached = True
+            _, _, current_pos = heapq.heappop(open_heap)
+            if current_pos in closed_set:
+                continue
+
+            if (
+                abs(int(current_pos[0]) - int(goal_pos[0])) <= goal_tol
+                and abs(int(current_pos[1]) - int(goal_pos[1])) <= goal_tol
+            ):
+                reached_pos = current_pos
                 break
-            goal_tol = max(0, int(PLANNER_GOAL_REACHED_TOLERANCE_CELLS))
-            if abs(current_node.x - end_node.x) <= goal_tol and abs(current_node.y - end_node.y) <= goal_tol:
-                reached = True
-                break
-            closed_set.add((current_node.x, current_node.y))
+
+            closed_set.add(current_pos)
+            current_node = Node(int(current_pos[0]), int(current_pos[1]))
+            current_g = float(g_score.get(current_pos, float("inf")))
+            if not math.isfinite(current_g):
+                continue
 
             for child in self._get_neighbors(current_node, grid_obstacles):
-                if (child.x, child.y) in closed_set:
+                child_pos = (int(child.x), int(child.y))
+                if child_pos in closed_set:
                     continue
-                is_diagonal = (child.x != current_node.x) and (child.y != current_node.y)
-                move_cost = float(PLANNER_MOVE_COST_DIAGONAL if is_diagonal else PLANNER_MOVE_COST_CARDINAL)
-                child.g = current_node.g + move_cost
-                child.h = math.hypot(child.x - end_node.x, child.y - end_node.y)
-                child.f = child.g + child.h
-                heapq.heappush(open_list, child)
 
-        if not open_list:
-            self._log("A* sin nodos abiertos: ruta no encontrada.")
+                is_diagonal = (child_pos[0] != current_pos[0]) and (child_pos[1] != current_pos[1])
+                move_cost = float(PLANNER_MOVE_COST_DIAGONAL if is_diagonal else PLANNER_MOVE_COST_CARDINAL)
+                tentative_g = float(current_g) + float(move_cost)
+                if tentative_g >= float(g_score.get(child_pos, float("inf"))):
+                    continue
+
+                came_from[child_pos] = current_pos
+                g_score[child_pos] = tentative_g
+                child_h = math.hypot(child_pos[0] - goal_pos[0], child_pos[1] - goal_pos[1])
+                child_f = tentative_g + float(child_h)
+                push_seq += 1
+                heapq.heappush(open_heap, (float(child_f), int(push_seq), child_pos))
+
+        if reached_pos is None:
+            self._log("A* sin ruta: no se alcanzo la meta local.")
             return None
-        if not reached:
-            return None
+
+        path_cells = [reached_pos]
+        while path_cells[-1] != start_pos:
+            parent = came_from.get(path_cells[-1])
+            if parent is None:
+                self._log("A* ruta incompleta: falta parent en reconstruccion.")
+                return None
+            path_cells.append(parent)
+        path_cells.reverse()
 
         path = []
-        curr = current_node
-        while curr is not None:
-            east_m = curr.x * self.cell_size
-            north_m = curr.y * self.cell_size
+        for cell_x, cell_y in path_cells:
+            east_m = float(cell_x) * self.cell_size
+            north_m = float(cell_y) * self.cell_size
             lat, lon = self.meters_to_latlon(ref_lat, ref_lon, north_m, east_m)
             path.append({"lat": lat, "lon": lon})
-            curr = curr.parent
-        return list(reversed(path))
+        return path
 
 
 if __name__ == "__main__":

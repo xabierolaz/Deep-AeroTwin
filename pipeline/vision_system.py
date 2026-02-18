@@ -97,9 +97,9 @@ from constants import (
     VISION_TRACK_DENOM_EPS,
     VISION_TRACK_SMOOTH_DENOM_EPS,
     VISION_TRACK_COS_DENOM_EPS,
-    VISION_ID_BUCKET_PX,
-    VISION_ID_CLASS_OFFSET,
-    VISION_ID_COORD_SCALE,
+    VISION_TRACK_MATCH_MAX_PX,
+    VISION_TRACK_MATCH_MAX_DIST_M,
+    VISION_TRACK_MAX_ACTIVE,
     VISION_MAX_OBS_PER_FRAME,
     VISION_HEARTBEAT_S,
     OBSTACLE_TOKEN_REQUIRED,
@@ -179,7 +179,9 @@ MIN_SEEN_TO_PUBLISH_TOWER = int(VISION_MIN_SEEN_TO_PUBLISH_TOWER)
 TRACK_TTL_S = float(VISION_TRACK_TTL_S)
 TRACK_HOLD_S = float(VISION_TRACK_HOLD_S)
 SMOOTH_TAU_S = float(VISION_SMOOTH_TAU_S)
-ID_BUCKET_PX = int(VISION_ID_BUCKET_PX)
+TRACK_MATCH_MAX_PX = float(VISION_TRACK_MATCH_MAX_PX)
+TRACK_MATCH_MAX_DIST_M = float(VISION_TRACK_MATCH_MAX_DIST_M)
+TRACK_MAX_ACTIVE = int(VISION_TRACK_MAX_ACTIVE)
 MAX_OBS_PER_FRAME = int(VISION_MAX_OBS_PER_FRAME)
 HEARTBEAT_S = float(VISION_HEARTBEAT_S)
 IGNORE_BOTTOM_PX = int(VISION_IGNORE_BOTTOM_PX)
@@ -274,6 +276,9 @@ class VisionSystem:
                 f"max_area[cow]={MAX_BOX_AREA_FRAC_COW:.3f} "
                 f"max_area[tower]={MAX_BOX_AREA_FRAC_TOWER:.3f} "
                 f"min_seen_default={MIN_SEEN_TO_PUBLISH} "
+                f"track_match_px={TRACK_MATCH_MAX_PX:.1f} "
+                f"track_match_dist={TRACK_MATCH_MAX_DIST_M:.1f}m "
+                f"track_max_active={int(TRACK_MAX_ACTIVE)} "
                 f"ignore_bottom_px={IGNORE_BOTTOM_PX} "
                 f"ignore_bottom_frac={IGNORE_BOTTOM_FRAC:.3f}"
             )
@@ -391,9 +396,11 @@ class VisionSystem:
 
         # Simple temporal stabilizer (reduces bbox/telemetry jitter in the projected lat/lon).
         self._tracks: dict[int, VisionTrack] = {}
+        self._next_track_id: int = 1
         # Ensure we log once when the PIE window becomes available.
         self._capture_found_logged = bool(self._capture_hwnd and self.monitor)
         self._capture_size_warned: Optional[Tuple[int, int]] = None
+        self._capture_crop_logged: Optional[Tuple[int, int, int, int, int, int]] = None
 
         # Zero-trust audit sink (shared session root via PORCE_AUDIT_ROOT).
         self._audit = ZeroTrustAudit(component="vision")
@@ -412,6 +419,9 @@ class VisionSystem:
                 min_seen_biker=int(MIN_SEEN_TO_PUBLISH_BIKER),
                 min_seen_cow=int(MIN_SEEN_TO_PUBLISH_COW),
                 min_seen_tower=int(MIN_SEEN_TO_PUBLISH_TOWER),
+                track_match_max_px=float(TRACK_MATCH_MAX_PX),
+                track_match_max_dist_m=float(TRACK_MATCH_MAX_DIST_M),
+                track_max_active=int(TRACK_MAX_ACTIVE),
                 ignore_bottom_px=int(IGNORE_BOTTOM_PX),
                 ignore_bottom_frac=float(IGNORE_BOTTOM_FRAC),
                 capture_mode=str(self._capture_mode),
@@ -568,6 +578,50 @@ class VisionSystem:
         except Exception:
             pass
 
+    def _window_capture_region(self) -> Optional[dict]:
+        if not self.monitor:
+            return None
+        region = {
+            "left": int(self.monitor.get("left", 0) or 0),
+            "top": int(self.monitor.get("top", 0) or 0),
+            "width": int(self.monitor.get("width", 0) or 0),
+            "height": int(self.monitor.get("height", 0) or 0),
+        }
+        cur_w = int(region["width"])
+        cur_h = int(region["height"])
+        exp_w = max(1, int(self._expect_w))
+        exp_h = max(1, int(self._expect_h))
+        if cur_w <= 0 or cur_h <= 0:
+            return region
+        if cur_w == exp_w and cur_h == exp_h:
+            return region
+        if cur_w < exp_w or cur_h < exp_h:
+            if self._capture_size_warned != (cur_w, cur_h):
+                log(
+                    f"[WARN] Client area is {cur_w}x{cur_h} but expected {exp_w}x{exp_h}. "
+                    "No crop possible (window smaller than expected)."
+                )
+                self._capture_size_warned = (cur_w, cur_h)
+            return region
+
+        # Strict viewport crop: keep bottom (remove top toolbar overflow), center in X.
+        x_off = max(0, (cur_w - exp_w) // 2)
+        y_off = max(0, cur_h - exp_h)
+        cropped = {
+            "left": int(region["left"]) + int(x_off),
+            "top": int(region["top"]) + int(y_off),
+            "width": int(exp_w),
+            "height": int(exp_h),
+        }
+        sig = (cur_w, cur_h, exp_w, exp_h, x_off, y_off)
+        if self._capture_crop_logged != sig:
+            log(
+                f"[CAPTURE] Cropping client {cur_w}x{cur_h} -> {exp_w}x{exp_h} "
+                f"(x_off={x_off}, y_off={y_off}, y-bottom aligned)."
+            )
+            self._capture_crop_logged = sig
+        return cropped
+
     def get_telemetry(self):
         try:
             r = self.session.get(TELEMETRY_URL, timeout=float(VISION_TELEMETRY_TIMEOUT_S))
@@ -586,14 +640,117 @@ class VisionSystem:
         alpha = 1.0 - math.exp(-dt / tau)
         return max(0.0, min(1.0, float(alpha)))
 
+    def _next_track_obs_id(self) -> int:
+        obs_id = int(self._next_track_id)
+        self._next_track_id = int(self._next_track_id) + 1
+        return int(obs_id)
+
     @staticmethod
-    def _make_obs_id(cls: int, cx: float, cy: float) -> int:
-        bucket = int(ID_BUCKET_PX) if int(ID_BUCKET_PX) > 0 else 64
-        coord_scale = max(1, int(VISION_ID_COORD_SCALE))
-        class_offset = max(1, int(VISION_ID_CLASS_OFFSET))
-        bx = int(max(0.0, float(cx)) // bucket)
-        by = int(max(0.0, float(cy)) // bucket)
-        return int((int(cls) + 1) * int(class_offset) + by * int(coord_scale) + bx)
+    def _track_match_score(det: dict, track: VisionTrack) -> tuple[float, float]:
+        px_d = math.hypot(float(det.get("cx", 0.0)) - float(track.cx), float(det.get("cy", 0.0)) - float(track.cy))
+        dist_d = abs(float(det.get("distance", 0.0)) - float(track.dist))
+        return float(px_d), float(dist_d)
+
+    def _match_track_id(self, det: dict, used_track_ids: set[int]) -> Optional[int]:
+        max_px = float(TRACK_MATCH_MAX_PX)
+        max_dist_m = float(TRACK_MATCH_MAX_DIST_M)
+        if not (math.isfinite(max_px) and max_px > 0.0 and math.isfinite(max_dist_m) and max_dist_m > 0.0):
+            return None
+
+        det_class = self._class_name_key(str(det.get("type", "")))
+        best_id: Optional[int] = None
+        best_score = float("inf")
+        for track_id, track in self._tracks.items():
+            if int(track_id) in used_track_ids:
+                continue
+            if self._class_name_key(str(track.class_name)) != det_class:
+                continue
+            px_d, dist_d = self._track_match_score(det, track)
+            if px_d > max_px or dist_d > max_dist_m:
+                continue
+            score = (float(px_d) / float(max_px)) + (float(dist_d) / float(max_dist_m))
+            if score < best_score:
+                best_score = float(score)
+                best_id = int(track_id)
+        return best_id
+
+    def _trim_tracks_capacity(self) -> None:
+        max_active = int(TRACK_MAX_ACTIVE)
+        if max_active <= 0:
+            return
+        if len(self._tracks) <= max_active:
+            return
+        sorted_tracks = sorted(
+            self._tracks.items(),
+            key=lambda kv: float(getattr(kv[1], "last_seen_ts", 0.0)),
+        )
+        to_remove = len(self._tracks) - max_active
+        for idx in range(max(0, int(to_remove))):
+            track_id = int(sorted_tracks[idx][0])
+            self._tracks.pop(track_id, None)
+
+    def _update_tracks_from_detections(self, frame_dets: list[dict], now_s: float) -> set[int]:
+        seen_ids: set[int] = set()
+        used_track_ids: set[int] = set()
+        if not frame_dets:
+            return seen_ids
+
+        det_order = sorted(
+            range(len(frame_dets)),
+            key=lambda i: float(frame_dets[i].get("confidence", 0.0)),
+            reverse=True,
+        )
+        for det_idx in det_order:
+            d = frame_dets[det_idx]
+            matched_id = self._match_track_id(d, used_track_ids)
+            prev_t = self._tracks.get(int(matched_id)) if matched_id is not None else None
+
+            if prev_t is None:
+                obs_id = int(self._next_track_obs_id())
+                self._tracks[obs_id] = VisionTrack(
+                    obs_id=int(obs_id),
+                    class_name=str(d.get("type")),
+                    lat=float(d.get("lat")),
+                    lon=float(d.get("lon")),
+                    dist=float(d.get("distance")),
+                    conf=float(d.get("confidence")),
+                    bbox=d.get("bbox") or {},
+                    cx=float(d.get("cx")),
+                    cy=float(d.get("cy")),
+                    last_seen_ts=float(now_s),
+                    seen_count=1,
+                )
+                d["id"] = int(obs_id)
+                seen_ids.add(int(obs_id))
+                used_track_ids.add(int(obs_id))
+                continue
+
+            obs_id = int(prev_t.obs_id)
+            dt = float(now_s) - float(prev_t.last_seen_ts)
+            a = self._alpha_from_dt(dt)
+            lat = float(prev_t.lat) + a * (float(d.get("lat")) - float(prev_t.lat))
+            lon = float(prev_t.lon) + a * (float(d.get("lon")) - float(prev_t.lon))
+            dist = float(prev_t.dist) + a * (float(d.get("distance")) - float(prev_t.dist))
+            conf_s = max(float(prev_t.conf), float(d.get("confidence")))
+            self._tracks[obs_id] = VisionTrack(
+                obs_id=int(obs_id),
+                class_name=str(d.get("type")),
+                lat=float(lat),
+                lon=float(lon),
+                dist=float(dist),
+                conf=float(conf_s),
+                bbox=d.get("bbox") or {},
+                cx=float(d.get("cx")),
+                cy=float(d.get("cy")),
+                last_seen_ts=float(now_s),
+                seen_count=int(prev_t.seen_count) + 1,
+            )
+            d["id"] = int(obs_id)
+            seen_ids.add(int(obs_id))
+            used_track_ids.add(int(obs_id))
+
+        self._trim_tracks_capacity()
+        return seen_ids
 
     def _footer_ignore_px(self, image_h: int) -> int:
         if int(image_h) <= int(GEOMETRY_PIXEL_EPS):
@@ -791,13 +948,6 @@ class VisionSystem:
                         )
                     )
 
-                cur_w = int(self.monitor.get("width", 0) or 0)
-                cur_h = int(self.monitor.get("height", 0) or 0)
-                if (cur_w != int(self._expect_w)) or (cur_h != int(self._expect_h)):
-                    if self._capture_size_warned != (cur_w, cur_h):
-                        log(f"[WARN] Client area is {cur_w}x{cur_h} (expected {self._expect_w}x{self._expect_h}). Projection assumes the true camera viewport.")
-                        self._capture_size_warned = (cur_w, cur_h)
-
                 # Keep on top if requested (helps if the window gets covered).
                 self._win32_prepare_window(self._capture_hwnd)
                 self._maybe_dock_debug_window()
@@ -806,7 +956,12 @@ class VisionSystem:
                 time.sleep(float(VISION_SLEEP_NO_MONITOR_S))
                 continue
 
-            screenshot = np.array(self.sct.grab(self.monitor))
+            capture_region = self.monitor
+            if self._capture_mode == "window":
+                region = self._window_capture_region()
+                if region:
+                    capture_region = region
+            screenshot = np.array(self.sct.grab(capture_region))
             # Convertir BGRA a BGR
             img_bgr = cv2.cvtColor(screenshot, cv2.COLOR_BGRA2BGR)
             frame_count += 1
@@ -849,7 +1004,7 @@ class VisionSystem:
                         self._debug_last_size = (dw, dh)
                 except Exception:
                     pass
-            frame_dets: dict[int, dict] = {}
+            frame_dets: list[dict] = []
             raw_boxes_total = 0
             reject_counts: dict[str, int] = defaultdict(int)
             reject_box_color = (0, 165, 255)
@@ -1033,27 +1188,23 @@ class VisionSystem:
                         int(VISION_DEBUG_BBOX_LABEL_THICKNESS),
                     )
                     
-                    # Agregar a lista para enviar al Brain (con ID estable por bucket de pixeles)
-                    obs_id = self._make_obs_id(cls, cx, cy)
-                    prev = frame_dets.get(obs_id)
-                    if (prev is None) or (conf > float(prev.get("confidence", 0.0))):
-                        frame_dets[obs_id] = {
-                            'id': int(obs_id),
-                            'lat': float(obj_lat),
-                            'lon': float(obj_lon),
-                            'alt_msl': float(obj_alt_msl_est),
-                            'distance': float(dist),
-                            'type': str(class_name),
-                            'confidence': float(conf),
-                            'source': 'vision',
-                            'bbox': {'x1': int(x1), 'y1': int(y1), 'x2': int(x2), 'y2': int(y2)},
-                            'cx': float(cx),
-                            'cy': float(cy),
-                            # Debug-only local frame (ENU meters, z=up/height).
-                            'x_m': float(obj_x_m),
-                            'y_m': float(obj_y_m),
-                            'z_m': float(obj_z_m),
-                        }
+                    # Agregar a lista de detecciones candidatas; el ID estable se asigna por asociacion a tracks.
+                    frame_dets.append({
+                        'lat': float(obj_lat),
+                        'lon': float(obj_lon),
+                        'alt_msl': float(obj_alt_msl_est),
+                        'distance': float(dist),
+                        'type': str(class_name),
+                        'confidence': float(conf),
+                        'source': 'vision',
+                        'bbox': {'x1': int(x1), 'y1': int(y1), 'x2': int(x2), 'y2': int(y2)},
+                        'cx': float(cx),
+                        'cy': float(cy),
+                        # Debug-only local frame (ENU meters, z=up/height).
+                        'x_m': float(obj_x_m),
+                        'y_m': float(obj_y_m),
+                        'z_m': float(obj_z_m),
+                    })
 
             # Overlay debug telemetry in the YOLO window (zero-trust: this is the current estimate).
             if self._debug_enabled:
@@ -1072,7 +1223,7 @@ class VisionSystem:
                     if self._origin_lat is None:
                         overlay.append("(waiting for GPS to set local origin...)")
 
-                    dets_sorted = sorted(frame_dets.values(), key=lambda d: float(d.get("distance", float(MAVLINK_UNKNOWN_DISTANCE_M))))
+                    dets_sorted = sorted(frame_dets, key=lambda d: float(d.get("distance", float(MAVLINK_UNKNOWN_DISTANCE_M))))
                     max_n = max(0, int(self._overlay_max_obs))
                     if max_n > 0:
                         dets_sorted = dets_sorted[:max_n]
@@ -1200,44 +1351,7 @@ class VisionSystem:
                     pass
             
             # 6. Enviar al Brain
-            seen_ids = set(frame_dets.keys())
-            for obs_id, d in frame_dets.items():
-                prev_t = self._tracks.get(obs_id)
-                if prev_t is None:
-                    self._tracks[obs_id] = VisionTrack(
-                        obs_id=int(obs_id),
-                        class_name=str(d.get('type')),
-                        lat=float(d.get('lat')),
-                        lon=float(d.get('lon')),
-                        dist=float(d.get('distance')),
-                        conf=float(d.get('confidence')),
-                        bbox=d.get('bbox') or {},
-                        cx=float(d.get('cx')),
-                        cy=float(d.get('cy')),
-                        last_seen_ts=float(now_s),
-                        seen_count=1,
-                    )
-                    continue
-
-                dt = float(now_s) - float(prev_t.last_seen_ts)
-                a = self._alpha_from_dt(dt)
-                lat = float(prev_t.lat) + a * (float(d.get('lat')) - float(prev_t.lat))
-                lon = float(prev_t.lon) + a * (float(d.get('lon')) - float(prev_t.lon))
-                dist = float(prev_t.dist) + a * (float(d.get('distance')) - float(prev_t.dist))
-                conf_s = max(float(prev_t.conf), float(d.get('confidence')))
-                self._tracks[obs_id] = VisionTrack(
-                    obs_id=int(obs_id),
-                    class_name=str(d.get('type')),
-                    lat=float(lat),
-                    lon=float(lon),
-                    dist=float(dist),
-                    conf=float(conf_s),
-                    bbox=d.get('bbox') or {},
-                    cx=float(d.get('cx')),
-                    cy=float(d.get('cy')),
-                    last_seen_ts=float(now_s),
-                    seen_count=int(prev_t.seen_count) + 1,
-                )
+            seen_ids = self._update_tracks_from_detections(frame_dets, float(now_s))
 
             outgoing = []
             hold_s = float(TRACK_HOLD_S)
@@ -1295,7 +1409,7 @@ class VisionSystem:
             # Zero-trust audit stream (frame-by-frame evidence + saved debug frames).
             if self._audit.enabled:
                 try:
-                    dets_for_log = sorted(frame_dets.values(), key=lambda d: float(d.get("distance", float(MAVLINK_UNKNOWN_DISTANCE_M))))
+                    dets_for_log = sorted(frame_dets, key=lambda d: float(d.get("distance", float(MAVLINK_UNKNOWN_DISTANCE_M))))
                     max_det_n = int(AUDIT_VISION_MAX_DET_DETAILS)
                     if max_det_n > 0:
                         dets_for_log = dets_for_log[:max_det_n]

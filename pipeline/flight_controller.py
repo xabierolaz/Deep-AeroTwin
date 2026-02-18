@@ -8,6 +8,7 @@ Actualizado para usar parametros realistas de vision:
 """
 
 import time, math, threading, sys, logging
+from typing import Optional
 from flask import Flask, request, jsonify
 from pymavlink import mavutil
 from porce_manager import PorcePlanner
@@ -29,8 +30,30 @@ from constants import (
     ALTITUDE_TOLERANCE_M,
     HEARTBEAT_TIMEOUT_S,
     OBSTACLE_EXPIRY_S,
+    OBS_STATIC_CLASS_NAMES,
+    OBS_TRACK_TTL_STATIC_S,
+    OBS_TRACK_TTL_DYNAMIC_S,
+    OBS_TRACK_ASSOC_STATIC_M,
+    OBS_TRACK_ASSOC_DYNAMIC_M,
+    OBS_TRACK_MAX,
     EVASION_REPLAN_MIN_INTERVAL_S,
     EVASION_ROUTE_POINT_REACHED_M,
+    EVASION_DYNAMIC_REACTION_ENABLE,
+    EVASION_REACTION_BASE_M,
+    EVASION_REACTION_SPEED_GAIN_S,
+    EVASION_REACTION_MIN_M,
+    EVASION_REACTION_MAX_M,
+    EVASION_ALLOW_REPLAN_WHEN_ACTIVE,
+    EVASION_ACTIVE_REPLAN_DISTANCE_M,
+    EVASION_PLANNER_OBS_MAX_DISTANCE_M,
+    EVASION_PLANNER_OBS_MAX_COUNT,
+    EVASION_FAILSAFE_MIN_DIST_M,
+    EVASION_FAILSAFE_HOLD_S,
+    EVASION_FAILSAFE_ESCALATE_ENABLE,
+    EVASION_FAILSAFE_ESCALATE_FAILS,
+    EVASION_FAILSAFE_ESCALATE_WINDOW_S,
+    EVASION_FAILSAFE_ESCALATE_COOLDOWN_S,
+    EVASION_FAILSAFE_ESCALATE_ACTION,
     LAND_COMPLETED_REL_ALT_M,
     LAND_COMPLETION_GROUNDSPEED_MPS,
     LAND_DISARM_DELAY_S,
@@ -83,6 +106,11 @@ from constants import (
 )
 
 PORCE_ENABLE_EVASION = bool(BRAIN_ENABLE_EVASION)
+STATIC_OBS_CLASS_KEYS = {
+    str(name).strip().lower()
+    for name in OBS_STATIC_CLASS_NAMES
+    if str(name).strip()
+}
 
 WP_TOLERANCE_M = ARRIVAL_TOLERANCE_M
 
@@ -114,6 +142,11 @@ if _audit.enabled:
     _audit.log_event(
         "brain_config",
         reaction_distance_m=float(REACTION_DISTANCE_M),
+        evasion_dynamic_reaction_enable=bool(EVASION_DYNAMIC_REACTION_ENABLE),
+        evasion_reaction_base_m=float(EVASION_REACTION_BASE_M),
+        evasion_reaction_speed_gain_s=float(EVASION_REACTION_SPEED_GAIN_S),
+        evasion_reaction_min_m=float(EVASION_REACTION_MIN_M),
+        evasion_reaction_max_m=float(EVASION_REACTION_MAX_M),
         safety_distance_m=float(SAFETY_DISTANCE_M),
         detection_range_m=float(DETECTION_RANGE_M),
         control_loop_period_s=float(CONTROL_LOOP_PERIOD_S),
@@ -121,8 +154,25 @@ if _audit.enabled:
         control_log_interval_s=float(CONTROL_LOG_INTERVAL_S),
         sitl_conn_string=str(SITL_CONN_STRING),
         obstacle_expiry_s=float(OBSTACLE_EXPIRY_S),
+        obs_static_classes=list(STATIC_OBS_CLASS_KEYS),
+        obs_track_ttl_static_s=float(OBS_TRACK_TTL_STATIC_S),
+        obs_track_ttl_dynamic_s=float(OBS_TRACK_TTL_DYNAMIC_S),
+        obs_track_assoc_static_m=float(OBS_TRACK_ASSOC_STATIC_M),
+        obs_track_assoc_dynamic_m=float(OBS_TRACK_ASSOC_DYNAMIC_M),
+        obs_track_max=int(OBS_TRACK_MAX),
         evasion_replan_min_interval_s=float(EVASION_REPLAN_MIN_INTERVAL_S),
         evasion_route_point_reached_m=float(EVASION_ROUTE_POINT_REACHED_M),
+        evasion_allow_replan_when_active=bool(EVASION_ALLOW_REPLAN_WHEN_ACTIVE),
+        evasion_active_replan_distance_m=float(EVASION_ACTIVE_REPLAN_DISTANCE_M),
+        evasion_planner_obs_max_distance_m=float(EVASION_PLANNER_OBS_MAX_DISTANCE_M),
+        evasion_planner_obs_max_count=int(EVASION_PLANNER_OBS_MAX_COUNT),
+        evasion_failsafe_min_dist_m=float(EVASION_FAILSAFE_MIN_DIST_M),
+        evasion_failsafe_hold_s=float(EVASION_FAILSAFE_HOLD_S),
+        evasion_failsafe_escalate_enable=bool(EVASION_FAILSAFE_ESCALATE_ENABLE),
+        evasion_failsafe_escalate_fails=int(EVASION_FAILSAFE_ESCALATE_FAILS),
+        evasion_failsafe_escalate_window_s=float(EVASION_FAILSAFE_ESCALATE_WINDOW_S),
+        evasion_failsafe_escalate_cooldown_s=float(EVASION_FAILSAFE_ESCALATE_COOLDOWN_S),
+        evasion_failsafe_escalate_action=str(EVASION_FAILSAFE_ESCALATE_ACTION),
         porce_enable_evasion=bool(PORCE_ENABLE_EVASION),
         obstacle_token_required=bool(OBSTACLE_TOKEN_REQUIRED),
         obstacle_token_enabled=bool(OBSTACLE_TOKEN),
@@ -156,12 +206,19 @@ state = {
     'mission_loaded': False,
     'obstacles': [],
     'last_obstacle_update': 0,
+    'last_obstacle_track_seen': 0.0,
+    'obstacle_tracks': {},
+    'next_obstacle_track_id': 1,
     'evasion_active': False,
     'evasion_path': [],
     'evasion_grid_origin': None, # NUEVO: Centro del grid A*
     'path_index': 0,
     'evasion_last_replan_ts': 0.0,
     'evasion_replans': 0,
+    'failsafe_hold_until_ts': 0.0,
+    'failsafe_recent_route_fail_ts': [],
+    'failsafe_last_escalate_ts': 0.0,
+    'failsafe_action_active': '',
     'takeoff_initiated': False,
     # E2E / observability flags
     'saw_evasion': False,
@@ -415,31 +472,360 @@ def haversine(lat1, lon1, lat2, lon2):
     return EARTH_RADIUS_M * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
 
 
+def _obs_class_key(class_name) -> str:
+    return str(class_name or "").strip().lower()
+
+
+def _obs_is_static(class_name) -> bool:
+    return _obs_class_key(class_name) in STATIC_OBS_CLASS_KEYS
+
+
+def _obs_track_ttl_s(class_name) -> float:
+    if _obs_is_static(class_name):
+        return float(OBS_TRACK_TTL_STATIC_S)
+    return float(OBS_TRACK_TTL_DYNAMIC_S)
+
+
+def _obs_assoc_distance_m(class_name) -> float:
+    if _obs_is_static(class_name):
+        return float(OBS_TRACK_ASSOC_STATIC_M)
+    return float(OBS_TRACK_ASSOC_DYNAMIC_M)
+
+
+def _clean_obs_distance(raw_value) -> float:
+    return _clean_float(raw_value, float(MAVLINK_UNKNOWN_DISTANCE_M))
+
+
+def _clean_float(raw_value, default_value: float) -> float:
+    try:
+        value = float(raw_value)
+    except Exception:
+        value = float(default_value)
+    if not math.isfinite(value):
+        value = float(default_value)
+    return float(value)
+
+
+def _obs_distance_from_tel_m(tel_lat: float, tel_lon: float, obs: dict) -> float:
+    d = _clean_obs_distance(obs.get("distance", float(MAVLINK_UNKNOWN_DISTANCE_M)))
+    try:
+        lat = obs.get("lat")
+        lon = obs.get("lon")
+        if lat is not None and lon is not None:
+            d = haversine(float(tel_lat), float(tel_lon), float(lat), float(lon))
+    except Exception:
+        pass
+    if not math.isfinite(d):
+        d = float(MAVLINK_UNKNOWN_DISTANCE_M)
+    return float(d)
+
+
+def _obs_track_distance_m(obs: dict, track: dict) -> float:
+    try:
+        o_lat = obs.get("lat")
+        o_lon = obs.get("lon")
+        t_lat = track.get("lat")
+        t_lon = track.get("lon")
+        if o_lat is not None and o_lon is not None and t_lat is not None and t_lon is not None:
+            return float(haversine(float(o_lat), float(o_lon), float(t_lat), float(t_lon)))
+    except Exception:
+        pass
+    obs_dist = _clean_obs_distance(obs.get("distance", float(MAVLINK_UNKNOWN_DISTANCE_M)))
+    track_dist = _clean_obs_distance(track.get("distance", float(MAVLINK_UNKNOWN_DISTANCE_M)))
+    return float(abs(float(obs_dist) - float(track_dist)))
+
+
+def _blend_float(prev, new, alpha: float):
+    try:
+        prev_f = float(prev)
+        new_f = float(new)
+    except Exception:
+        return new
+    if not math.isfinite(prev_f):
+        return new_f
+    if not math.isfinite(new_f):
+        return prev_f
+    a = min(1.0, max(0.0, float(alpha)))
+    return float((1.0 - a) * prev_f + a * new_f)
+
+
+def _evict_stalest_track_locked() -> None:
+    tracks = state.get("obstacle_tracks")
+    if not isinstance(tracks, dict) or not tracks:
+        return
+    stale_id = None
+    stale_seen = float("inf")
+    for track_id, track in tracks.items():
+        try:
+            seen = float(track.get("last_seen_ts", 0.0))
+        except Exception:
+            seen = 0.0
+        if seen < stale_seen:
+            stale_seen = float(seen)
+            stale_id = track_id
+    if stale_id is not None:
+        tracks.pop(stale_id, None)
+
+
+def _prune_obstacle_tracks_locked(now_ts: float) -> None:
+    tracks = state.get("obstacle_tracks")
+    if not isinstance(tracks, dict):
+        state["obstacle_tracks"] = {}
+        return
+    dead_ids = []
+    for track_id, track in tracks.items():
+        class_name = track.get("type")
+        ttl_s = _obs_track_ttl_s(class_name)
+        try:
+            age_s = float(now_ts) - float(track.get("last_seen_ts", 0.0))
+        except Exception:
+            age_s = float(ttl_s) + 1.0
+        if age_s > float(ttl_s):
+            dead_ids.append(track_id)
+    for track_id in dead_ids:
+        tracks.pop(track_id, None)
+
+
+def _rebuild_active_obstacles_locked(now_ts: float) -> list[dict]:
+    _prune_obstacle_tracks_locked(float(now_ts))
+    tracks = state.get("obstacle_tracks")
+    if not isinstance(tracks, dict):
+        state["obstacle_tracks"] = {}
+        state["obstacles"] = []
+        state["last_obstacle_track_seen"] = 0.0
+        return []
+
+    active = []
+    max_seen_ts = 0.0
+    for track in tracks.values():
+        try:
+            last_seen = float(track.get("last_seen_ts", 0.0))
+        except Exception:
+            last_seen = 0.0
+        if last_seen > max_seen_ts:
+            max_seen_ts = float(last_seen)
+        active.append(
+            {
+                "id": int(track.get("track_id", track.get("id", 0)) or 0),
+                "distance": _clean_obs_distance(track.get("distance", float(MAVLINK_UNKNOWN_DISTANCE_M))),
+                "lat": track.get("lat"),
+                "lon": track.get("lon"),
+                "type": track.get("type"),
+                "confidence": track.get("confidence"),
+                "source": track.get("source"),
+                "bbox": track.get("bbox"),
+                "track_age_s": max(0.0, float(now_ts) - float(last_seen)),
+                "track_seen_count": int(track.get("seen_count", 1) or 1),
+                "track_static": bool(track.get("is_static", False)),
+            }
+        )
+
+    active.sort(key=lambda o: _clean_obs_distance(o.get("distance", float(MAVLINK_UNKNOWN_DISTANCE_M))))
+    state["obstacles"] = active
+    state["last_obstacle_track_seen"] = float(max_seen_ts)
+    return active
+
+
+def _ingest_obstacles_locked(obs_list: list[dict], now_ts: float) -> list[dict]:
+    tracks = state.get("obstacle_tracks")
+    if not isinstance(tracks, dict):
+        tracks = {}
+        state["obstacle_tracks"] = tracks
+
+    next_track_id = int(state.get("next_obstacle_track_id", 1) or 1)
+    max_tracks = max(1, int(OBS_TRACK_MAX))
+
+    for obs in obs_list:
+        class_name = str(obs.get("type") or "unknown")
+        class_key = _obs_class_key(class_name)
+        assoc_m = float(_obs_assoc_distance_m(class_name))
+        ttl_s = float(_obs_track_ttl_s(class_name))
+
+        best_track_id = None
+        best_dist_m = float("inf")
+        for track_id, track in tracks.items():
+            if _obs_class_key(track.get("type")) != class_key:
+                continue
+            try:
+                age_s = float(now_ts) - float(track.get("last_seen_ts", 0.0))
+            except Exception:
+                age_s = float(ttl_s) + 1.0
+            if age_s > float(ttl_s):
+                continue
+            dist_m = _obs_track_distance_m(obs, track)
+            if dist_m < best_dist_m:
+                best_dist_m = float(dist_m)
+                best_track_id = track_id
+
+        if best_track_id is not None and best_dist_m <= assoc_m:
+            track = tracks.get(best_track_id, {})
+            alpha = 0.25 if _obs_is_static(class_name) else 0.65
+            lat_new = obs.get("lat")
+            lon_new = obs.get("lon")
+            if lat_new is not None and lon_new is not None:
+                track["lat"] = _blend_float(track.get("lat"), lat_new, alpha)
+                track["lon"] = _blend_float(track.get("lon"), lon_new, alpha)
+            track["distance"] = _blend_float(track.get("distance"), obs.get("distance"), alpha)
+            track["confidence"] = max(
+                _clean_float(track.get("confidence", 0.0), 0.0),
+                _clean_float(obs.get("confidence", 0.0), 0.0),
+            )
+            track["bbox"] = obs.get("bbox")
+            track["source"] = obs.get("source")
+            track["type"] = class_name
+            track["last_seen_ts"] = float(now_ts)
+            track["seen_count"] = int(track.get("seen_count", 1) or 1) + 1
+            track["is_static"] = bool(_obs_is_static(class_name))
+            tracks[best_track_id] = track
+            continue
+
+        while len(tracks) >= max_tracks:
+            _evict_stalest_track_locked()
+        track_id = int(next_track_id)
+        next_track_id = int(next_track_id) + 1
+        tracks[track_id] = {
+            "track_id": int(track_id),
+            "lat": obs.get("lat"),
+            "lon": obs.get("lon"),
+            "distance": _clean_obs_distance(obs.get("distance", float(MAVLINK_UNKNOWN_DISTANCE_M))),
+            "type": class_name,
+            "confidence": _clean_float(obs.get("confidence", 0.0), 0.0),
+            "source": obs.get("source"),
+            "bbox": obs.get("bbox"),
+            "first_seen_ts": float(now_ts),
+            "last_seen_ts": float(now_ts),
+            "seen_count": 1,
+            "is_static": bool(_obs_is_static(class_name)),
+        }
+
+    state["next_obstacle_track_id"] = int(next_track_id)
+    return _rebuild_active_obstacles_locked(float(now_ts))
+
+
 def nearest_obstacle_info(tel, obstacles):
     nearest_obs = None
     min_dist = float("inf")
     tel_lat = float(tel.get("lat", 0.0) or 0.0)
     tel_lon = float(tel.get("lon", 0.0) or 0.0)
     for o in obstacles:
-        d_reported = o.get("distance", float(MAVLINK_UNKNOWN_DISTANCE_M))
-        try:
-            d_reported = float(d_reported)
-        except Exception:
-            d_reported = float(MAVLINK_UNKNOWN_DISTANCE_M)
-        if not math.isfinite(d_reported):
-            d_reported = float(MAVLINK_UNKNOWN_DISTANCE_M)
-        d = d_reported
-        try:
-            if o.get("lat") is not None and o.get("lon") is not None:
-                d = haversine(tel_lat, tel_lon, float(o["lat"]), float(o["lon"]))
-        except Exception:
-            d = d_reported
+        d = _obs_distance_from_tel_m(float(tel_lat), float(tel_lon), o)
         if d < min_dist:
             min_dist = float(d)
             nearest_obs = o
     if nearest_obs is None:
         return None, None
     return nearest_obs, float(min_dist)
+
+
+def planner_obstacle_subset(tel, obstacles):
+    max_count = max(1, int(EVASION_PLANNER_OBS_MAX_COUNT))
+    max_dist_m = float(EVASION_PLANNER_OBS_MAX_DISTANCE_M)
+    tel_lat = float(tel.get("lat", 0.0) or 0.0)
+    tel_lon = float(tel.get("lon", 0.0) or 0.0)
+
+    ranked = []
+    for o in obstacles:
+        dist_m = _obs_distance_from_tel_m(float(tel_lat), float(tel_lon), o)
+        if math.isfinite(max_dist_m) and max_dist_m > 0.0 and float(dist_m) > float(max_dist_m):
+            continue
+        ranked.append((float(dist_m), o))
+
+    ranked.sort(key=lambda item: float(item[0]))
+    return [item[1] for item in ranked[:max_count]]
+
+
+def adaptive_reaction_distance_m(tel) -> tuple[float, float]:
+    base_m = float(EVASION_REACTION_BASE_M)
+    min_m = float(EVASION_REACTION_MIN_M)
+    max_m = float(EVASION_REACTION_MAX_M)
+    if not math.isfinite(min_m):
+        min_m = float(base_m)
+    if not math.isfinite(max_m):
+        max_m = float(min_m)
+    if max_m < min_m:
+        max_m = float(min_m)
+
+    speed_mps = _clean_float(tel.get("groundspeed", tel.get("airspeed", 0.0)), 0.0)
+    speed_mps = max(0.0, float(speed_mps))
+    if not bool(EVASION_DYNAMIC_REACTION_ENABLE):
+        reaction_m = float(base_m)
+    else:
+        reaction_m = float(base_m) + float(speed_mps) * float(EVASION_REACTION_SPEED_GAIN_S)
+    reaction_m = max(float(min_m), min(float(max_m), float(reaction_m)))
+    return float(reaction_m), float(speed_mps)
+
+
+def _failsafe_escalation_action() -> str:
+    action = str(EVASION_FAILSAFE_ESCALATE_ACTION).strip().upper()
+    if action in {"RTL", "LAND", "HOLD"}:
+        return action
+    return "RTL"
+
+
+def _record_route_fail_for_failsafe_locked(now_ts: float) -> int:
+    raw = state.get("failsafe_recent_route_fail_ts", [])
+    if not isinstance(raw, list):
+        raw = []
+    window_s = float(EVASION_FAILSAFE_ESCALATE_WINDOW_S)
+    kept = []
+    for value in raw:
+        ts = _clean_float(value, -1.0)
+        if ts <= 0.0:
+            continue
+        if (float(now_ts) - float(ts)) <= float(window_s):
+            kept.append(float(ts))
+    kept.append(float(now_ts))
+    state["failsafe_recent_route_fail_ts"] = kept
+    return int(len(kept))
+
+
+def _maybe_escalate_failsafe_locked(
+    now_ts: float,
+    *,
+    wp_idx: int,
+    nearest_distance_m: Optional[float],
+    nearest_type: Optional[str],
+) -> tuple[str, int]:
+    fail_count = int(_record_route_fail_for_failsafe_locked(float(now_ts)))
+    if not bool(EVASION_FAILSAFE_ESCALATE_ENABLE):
+        return "", int(fail_count)
+    if int(fail_count) < int(EVASION_FAILSAFE_ESCALATE_FAILS):
+        return "", int(fail_count)
+
+    last_escalate_ts = _clean_float(state.get("failsafe_last_escalate_ts", 0.0), 0.0)
+    if (float(now_ts) - float(last_escalate_ts)) < float(EVASION_FAILSAFE_ESCALATE_COOLDOWN_S):
+        return "", int(fail_count)
+
+    action = _failsafe_escalation_action()
+    state["failsafe_last_escalate_ts"] = float(now_ts)
+    state["failsafe_action_active"] = str(action)
+    state["evasion_path"] = []
+    state["path_index"] = 0
+    state["evasion_active"] = False
+    state["evasion_grid_origin"] = None
+    state["failsafe_hold_until_ts"] = 0.0
+    if str(action) in {"RTL", "LAND"}:
+        state["mission_state"] = "FAILED"
+        state["last_error"] = (
+            f"failsafe_escalation_{str(action).lower()}_"
+            f"fails={int(fail_count)}_window={float(EVASION_FAILSAFE_ESCALATE_WINDOW_S):.1f}s"
+        )
+    else:
+        state["last_error"] = f"failsafe_escalation_hold_fails={int(fail_count)}"
+
+    if _audit.enabled:
+        _audit.log_event(
+            "failsafe_escalation_triggered",
+            action=str(action),
+            fail_count=int(fail_count),
+            threshold=int(EVASION_FAILSAFE_ESCALATE_FAILS),
+            window_s=float(EVASION_FAILSAFE_ESCALATE_WINDOW_S),
+            cooldown_s=float(EVASION_FAILSAFE_ESCALATE_COOLDOWN_S),
+            nearest_distance_m=None if nearest_distance_m is None else float(nearest_distance_m),
+            nearest_type=None if nearest_type is None else str(nearest_type),
+            wp_idx=int(wp_idx),
+        )
+    return str(action), int(fail_count)
 
 def load_mission():
     wps = []
@@ -544,6 +930,13 @@ def rx_obstacles():
                 distance = float(distance)
             except Exception:
                 distance = float(MAVLINK_UNKNOWN_DISTANCE_M)
+            confidence = o.get('confidence', 0.0)
+            try:
+                confidence = float(confidence)
+            except Exception:
+                confidence = 0.0
+            if not math.isfinite(confidence):
+                confidence = 0.0
 
             clean_obs.append({
                 'id': o.get('id', 0),
@@ -552,23 +945,25 @@ def rx_obstacles():
                 'lon': lon,
                 # Optional metadata (kept for future audit/debug; ignored by planner for now)
                 'type': o.get('type'),
-                'confidence': o.get('confidence'),
+                'confidence': confidence,
                 'source': o.get('source'),
                 'bbox': o.get('bbox'),
             })
         with state_lock:
             state['inject_posts_total'] = int(state.get('inject_posts_total', 0)) + 1
-            state['obstacles'] = clean_obs
-            state['last_obstacle_update'] = time.time()
+            ingest_now = time.time()
+            active_obs = _ingest_obstacles_locked(clean_obs, ingest_now)
+            state['last_obstacle_update'] = float(ingest_now)
             total_posts = int(state.get('inject_posts_total', 0))
             unauthorized_posts = int(state.get('inject_posts_unauthorized', 0))
         if _audit.enabled:
-            sample_n = min(int(AUDIT_BRAIN_MAX_OBS_IN_EVENT), len(clean_obs))
+            sample_n = min(int(AUDIT_BRAIN_MAX_OBS_IN_EVENT), len(active_obs))
             _audit.log_event(
                 "obstacle_ingest",
                 count=int(len(clean_obs)),
-                sample=clean_obs[:sample_n],
-                sample_truncated=bool(len(clean_obs) > sample_n),
+                active_count=int(len(active_obs)),
+                sample=active_obs[:sample_n],
+                sample_truncated=bool(len(active_obs) > sample_n),
                 posts_total=int(total_posts),
                 unauthorized_total=int(unauthorized_posts),
                 remote_addr=str(request.remote_addr or ""),
@@ -591,6 +986,8 @@ def status():
             'wp_idx': state['current_wp_idx'],
             'evasion': state['evasion_active'],
             'obstacles_count': len(state['obstacles']),
+            'obstacle_tracks_count': len(state.get('obstacle_tracks', {})),
+            'failsafe_action_active': str(state.get('failsafe_action_active', '') or ''),
             'saw_evasion': bool(state.get('saw_evasion', False)),
             'mission_state': state.get('mission_state', 'UNKNOWN'),
             'last_error': state.get('last_error'),
@@ -751,14 +1148,16 @@ def control_loop():
     last_takeoff_status_log_ts = 0.0
     last_evasion_status_log_ts = 0.0
     last_nav_status_log_ts = 0.0
+    last_failsafe_status_log_ts = 0.0
     last_evasion_active = False
     while True:
         time.sleep(float(CONTROL_LOOP_PERIOD_S))
         now_loop = time.time()
         with state_lock:
+            obs = list(_rebuild_active_obstacles_locked(now_loop))
             tel = state['telemetry'].copy()
-            obs = list(state['obstacles'])
-            obs_ts = state['last_obstacle_update']
+            obs_ts = float(state.get('last_obstacle_track_seen', 0.0) or 0.0)
+            obs_ingest_ts = float(state.get('last_obstacle_update', 0.0) or 0.0)
             current_idx = state['current_wp_idx']
             wps = state['waypoints']
             home = state['home']
@@ -766,10 +1165,12 @@ def control_loop():
             evasion_path_len_now = int(len(state['evasion_path']))
             evasion_path_idx_now = int(state['path_index'])
             mission_state_now = str(state.get('mission_state', 'UNKNOWN'))
+            failsafe_hold_until_ts = float(state.get('failsafe_hold_until_ts', 0.0) or 0.0)
+            failsafe_action_active_now = str(state.get('failsafe_action_active', '') or '').strip().upper()
 
         nearest_obs = None
         nearest_dist = None
-        if (now_loop - float(obs_ts)) < float(OBSTACLE_EXPIRY_S):
+        if obs:
             nearest_obs, nearest_dist = nearest_obstacle_info(tel, obs)
 
         if (now_loop - float(last_status_log_ts)) >= float(CONTROL_LOG_INTERVAL_S):
@@ -811,6 +1212,35 @@ def control_loop():
         with state_lock:
             if state.get('mission_state') == 'BOOTING':
                 state['mission_state'] = 'RUNNING'
+
+        if failsafe_action_active_now:
+            action = str(failsafe_action_active_now)
+            if action == "HOLD":
+                if tel.get('armed', False):
+                    hold_alt_rel = float(tel.get('rel_alt', 0.0) or 0.0)
+                    master.mav.set_position_target_global_int_send(
+                        0, master.target_system, master.target_component,
+                        mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT,
+                        MAVLINK_SET_POSITION_TARGET_INT_IGNORE_MASK,
+                        int(float(tel['lat']) * 1e7), int(float(tel['lon']) * 1e7),
+                        hold_alt_rel,
+                        0, 0, 0, 0, 0, 0, 0, 0
+                    )
+                if (now_loop - float(last_failsafe_status_log_ts)) >= float(CONTROL_LOG_INTERVAL_S):
+                    last_failsafe_status_log_ts = now_loop
+                    log.error("[FAILSAFE] HOLD activo por escalado de seguridad.")
+                continue
+
+            if action in {"RTL", "LAND"}:
+                if str(tel.get('mode', '')) != action:
+                    master.set_mode(action)
+                if (now_loop - float(last_failsafe_status_log_ts)) >= float(CONTROL_LOG_INTERVAL_S):
+                    last_failsafe_status_log_ts = now_loop
+                    log.error(f"[FAILSAFE] {action} activo por escalado de seguridad.")
+                continue
+
+            with state_lock:
+                state['failsafe_action_active'] = ''
 
         # --- ARM + TAKEOFF STATE MACHINE (WP1) ---
         if current_idx == 1:
@@ -903,76 +1333,145 @@ def control_loop():
         decision_route_points = 0
         decision_nearest_type = nearest_obs.get("type") if nearest_obs else None
         decision_replan_blocked = False
+        decision_hold_active = False
+        decision_failsafe_action = str(failsafe_action_active_now)
         evasion_last_replan_ts = 0.0
-        obs_fresh = (now_loop - float(obs_ts)) < float(OBSTACLE_EXPIRY_S)
+        obs_fresh = bool(obs)
+        reaction_distance_eval_m, speed_eval_mps = adaptive_reaction_distance_m(tel)
         nearest_eval = None
         min_dist_eval = None
+        planner_obs_count = 0
+        can_replan_now = False
         with state_lock:
-            active_path = state['evasion_path']
-            path_idx = state['path_index']
+            active_path = list(state['evasion_path'])
+            path_idx = int(state['path_index'])
             evasion_last_replan_ts = float(state.get('evasion_last_replan_ts', 0.0))
-
-            if not active_path:
-                can_replan_now = True
-            else:
-                can_replan_now = (now_loop - float(evasion_last_replan_ts)) >= float(EVASION_REPLAN_MIN_INTERVAL_S)
+            failsafe_hold_until_ts = float(state.get('failsafe_hold_until_ts', 0.0) or 0.0)
+            decision_failsafe_action = str(state.get('failsafe_action_active', '') or '').strip().upper()
+            hold_active = float(now_loop) < float(failsafe_hold_until_ts)
+            decision_hold_active = bool(hold_active)
+            interval_ok = (now_loop - float(evasion_last_replan_ts)) >= float(EVASION_REPLAN_MIN_INTERVAL_S)
 
             if obs_fresh:
                 nearest_eval, min_dist_eval = nearest_obstacle_info(tel, obs)
                 decision_nearest_type = nearest_eval.get("type") if nearest_eval else decision_nearest_type
 
-                if nearest_eval is None:
+                if hold_active:
+                    decision_reason = "failsafe_hold_active"
+                elif nearest_eval is None:
                     decision_reason = "no_obstacles"
                 elif not PORCE_ENABLE_EVASION:
                     decision_reason = "evasion_disabled"
-                elif float(min_dist_eval) >= float(REACTION_DISTANCE_M):
+                elif float(min_dist_eval) >= float(reaction_distance_eval_m):
                     decision_reason = "distance_above_reaction"
-                elif not can_replan_now:
-                    decision_reason = "replan_blocked"
-                    decision_replan_blocked = True
                 else:
-                    decision_reason = "trigger_plan_route"
-                    decision_triggered = True
-                    log.warning(f"[PORCE] Obstaculo detectado a {float(min_dist_eval):.1f}m. Planificando ruta A*...")
-                    if len(wps) > 0:
-                        target_wp = wps[current_idx] if current_idx < len(wps) else wps[-1]
+                    can_replan_now = bool(interval_ok)
+                    if active_path and not bool(EVASION_ALLOW_REPLAN_WHEN_ACTIVE):
+                        decision_reason = "replan_disabled_active_path"
+                        decision_replan_blocked = True
+                        can_replan_now = False
+                    elif active_path and float(min_dist_eval) > float(EVASION_ACTIVE_REPLAN_DISTANCE_M):
+                        decision_reason = "active_replan_distance_gate"
+                        decision_replan_blocked = True
+                        can_replan_now = False
+                    elif not interval_ok:
+                        decision_reason = "replan_blocked"
+                        decision_replan_blocked = True
+                        can_replan_now = False
                     else:
-                        target_wp = {'lat': tel['lat'], 'lon': tel['lon']}
+                        decision_reason = "trigger_plan_route"
+                        decision_triggered = True
+                        log.warning(f"[PORCE] Obstaculo detectado a {float(min_dist_eval):.1f}m. Planificando ruta A*...")
+                        if len(wps) > 0:
+                            target_wp = wps[current_idx] if current_idx < len(wps) else wps[-1]
+                        else:
+                            target_wp = {'lat': tel['lat'], 'lon': tel['lon']}
 
-                    new_route = planner.plan_route(tel['lat'], tel['lon'], target_wp['lat'], target_wp['lon'], obs)
-                    if new_route:
-                        state['evasion_path'] = new_route
-                        state['evasion_grid_origin'] = {'lat': tel['lat'], 'lon': tel['lon']}
-                        state['path_index'] = 0
-                        state['evasion_active'] = True
-                        state['saw_evasion'] = True
-                        state['evasion_last_replan_ts'] = now_loop
-                        state['evasion_replans'] = int(state.get('evasion_replans', 0)) + 1
-                        active_path = new_route
-                        path_idx = 0
-                        decision_route_points = int(len(new_route))
-                        decision_reason = "route_generated"
-                        if _audit.enabled:
-                            _audit.log_event(
-                                "evasion_route_generated",
-                                nearest_distance_m=float(min_dist_eval),
-                                nearest_type=str(decision_nearest_type),
-                                route_points=int(len(new_route)),
-                                wp_idx=int(current_idx),
-                                can_replan_now=bool(can_replan_now),
-                            )
-                        log.info(f"[PORCE] Ruta generada: {len(new_route)} sub-puntos.")
-                    else:
-                        log.error("[PORCE] A* fallo. Manteniendo curso (Riesgo de colision).")
-                        decision_reason = "route_failed"
-                        if _audit.enabled:
-                            _audit.log_event(
-                                "evasion_route_failed",
-                                nearest_distance_m=float(min_dist_eval),
-                                nearest_type=str(decision_nearest_type),
-                                wp_idx=int(current_idx),
-                            )
-                        state['evasion_last_replan_ts'] = now_loop
+                        planner_obs = planner_obstacle_subset(tel, obs)
+                        planner_obs_count = int(len(planner_obs))
+                        new_route = planner.plan_route(
+                            tel['lat'],
+                            tel['lon'],
+                            target_wp['lat'],
+                            target_wp['lon'],
+                            planner_obs,
+                        )
+                        if new_route:
+                            state['evasion_path'] = new_route
+                            state['evasion_grid_origin'] = {'lat': tel['lat'], 'lon': tel['lon']}
+                            state['path_index'] = 0
+                            state['evasion_active'] = True
+                            state['saw_evasion'] = True
+                            state['evasion_last_replan_ts'] = now_loop
+                            state['evasion_replans'] = int(state.get('evasion_replans', 0)) + 1
+                            state['failsafe_hold_until_ts'] = 0.0
+                            active_path = list(new_route)
+                            path_idx = 0
+                            decision_route_points = int(len(new_route))
+                            decision_reason = "route_generated"
+                            if _audit.enabled:
+                                _audit.log_event(
+                                    "evasion_route_generated",
+                                    nearest_distance_m=float(min_dist_eval),
+                                    nearest_type=str(decision_nearest_type),
+                                    route_points=int(len(new_route)),
+                                    planner_obs_count=int(planner_obs_count),
+                                    wp_idx=int(current_idx),
+                                    can_replan_now=bool(can_replan_now),
+                                )
+                            log.info(f"[PORCE] Ruta generada: {len(new_route)} sub-puntos.")
+                        else:
+                            decision_reason = "route_failed"
+                            state['evasion_last_replan_ts'] = now_loop
+                            if (
+                                min_dist_eval is not None
+                                and float(min_dist_eval) <= float(EVASION_FAILSAFE_MIN_DIST_M)
+                            ):
+                                escalated_action, fail_count = _maybe_escalate_failsafe_locked(
+                                    float(now_loop),
+                                    wp_idx=int(current_idx),
+                                    nearest_distance_m=float(min_dist_eval),
+                                    nearest_type=None if decision_nearest_type is None else str(decision_nearest_type),
+                                )
+                                if escalated_action:
+                                    decision_failsafe_action = str(escalated_action)
+                                    decision_reason = f"failsafe_escalated_{str(escalated_action).lower()}"
+                                    decision_hold_active = bool(str(escalated_action) == "HOLD")
+                                    if str(escalated_action) == "HOLD":
+                                        hold_until = float(now_loop) + float(EVASION_FAILSAFE_HOLD_S)
+                                        state['failsafe_hold_until_ts'] = float(hold_until)
+                                        failsafe_hold_until_ts = float(hold_until)
+                                    log.error(
+                                        f"[PORCE] Escalado failsafe activado ({str(escalated_action)}) "
+                                        f"tras {int(fail_count)} fallos de ruta en ventana."
+                                    )
+                                elif float(EVASION_FAILSAFE_HOLD_S) > 0.0:
+                                    hold_until = float(now_loop) + float(EVASION_FAILSAFE_HOLD_S)
+                                    state['failsafe_hold_until_ts'] = float(hold_until)
+                                    failsafe_hold_until_ts = float(hold_until)
+                                    decision_reason = "route_failed_hold"
+                                    decision_hold_active = True
+                                    log.error("[PORCE] A* fallo cerca de obstaculo. Activando hold de seguridad.")
+                                    if _audit.enabled:
+                                        _audit.log_event(
+                                            "evasion_route_failed_hold",
+                                            nearest_distance_m=float(min_dist_eval),
+                                            nearest_type=str(decision_nearest_type),
+                                            hold_s=float(EVASION_FAILSAFE_HOLD_S),
+                                            planner_obs_count=int(planner_obs_count),
+                                            failsafe_fail_count=int(fail_count),
+                                            wp_idx=int(current_idx),
+                                        )
+                            else:
+                                log.error("[PORCE] A* fallo. Manteniendo curso (Riesgo de colision).")
+                                if _audit.enabled:
+                                    _audit.log_event(
+                                        "evasion_route_failed",
+                                        nearest_distance_m=float(min_dist_eval),
+                                        nearest_type=str(decision_nearest_type),
+                                        planner_obs_count=int(planner_obs_count),
+                                        wp_idx=int(current_idx),
+                                    )
             elif active_path:
                 decision_reason = "evasion_in_progress"
             else:
@@ -991,9 +1490,12 @@ def control_loop():
                 armed=bool(tel.get("armed", False)),
                 obs_count=int(len(obs)),
                 obs_age_s=float(max(0.0, now_loop - float(obs_ts))),
+                obs_ingest_age_s=float(max(0.0, now_loop - float(obs_ingest_ts))) if float(obs_ingest_ts) > 0.0 else None,
                 nearest_distance_m=None if audit_min_dist is None else float(audit_min_dist),
                 nearest_type=None if audit_nearest_type is None else str(audit_nearest_type),
-                reaction_distance_m=float(REACTION_DISTANCE_M),
+                reaction_distance_base_m=float(EVASION_REACTION_BASE_M),
+                reaction_distance_eval_m=float(reaction_distance_eval_m),
+                speed_mps=float(speed_eval_mps),
                 porce_enable_evasion=bool(PORCE_ENABLE_EVASION),
                 evasion_active=bool(evasion_active_now),
                 decision_reason=str(decision_reason),
@@ -1001,7 +1503,11 @@ def control_loop():
                 decision_route_points=int(decision_route_points),
                 obs_fresh=bool(obs_fresh),
                 replan_blocked=bool(decision_replan_blocked),
-                can_replan_now=bool((not active_path) or ((now_loop - float(evasion_last_replan_ts)) >= float(EVASION_REPLAN_MIN_INTERVAL_S))),
+                can_replan_now=bool(can_replan_now),
+                planner_obs_count=int(planner_obs_count),
+                failsafe_hold_active=bool(decision_hold_active),
+                failsafe_hold_remaining_s=float(max(0.0, float(failsafe_hold_until_ts) - float(now_loop))),
+                failsafe_action_active=str(decision_failsafe_action),
                 obs_sample=obs[:sample_n],
                 obs_sample_truncated=bool(len(obs) > sample_n),
             )
@@ -1016,6 +1522,28 @@ def control_loop():
                 nearest_type=str(decision_nearest_type) if decision_nearest_type is not None else None,
             )
             last_evasion_active = bool(evasion_flag)
+
+        hold_remaining_s = float(max(0.0, float(failsafe_hold_until_ts) - float(now_loop)))
+        if (not active_path) and hold_remaining_s > 0.0:
+            if current_idx < len(wps):
+                target_alt_rel = wps[current_idx]['alt'] - (home['alt'] if home else 0)
+            else:
+                target_alt_rel = float(tel.get('rel_alt', 0.0) or 0.0)
+            master.mav.set_position_target_global_int_send(
+                0, master.target_system, master.target_component,
+                mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT,
+                MAVLINK_SET_POSITION_TARGET_INT_IGNORE_MASK,
+                int(float(tel['lat']) * 1e7), int(float(tel['lon']) * 1e7),
+                target_alt_rel,
+                0, 0, 0, 0, 0, 0, 0, 0
+            )
+            if (now_loop - float(last_failsafe_status_log_ts)) >= max(
+                float(CONTROL_LOG_INTERVAL_S),
+                float(EVASION_FAILSAFE_HOLD_S) / 2.0 if float(EVASION_FAILSAFE_HOLD_S) > 0.0 else float(CONTROL_LOG_INTERVAL_S),
+            ):
+                last_failsafe_status_log_ts = now_loop
+                log.warning(f"[PORCE] Hold de seguridad activo ({hold_remaining_s:.1f}s restantes).")
+            continue
 
         if active_path:
             if path_idx < len(active_path):
@@ -1059,6 +1587,7 @@ def control_loop():
                     state['path_index'] = 0
                     state['evasion_active'] = False
                     state['evasion_grid_origin'] = None
+                    state['failsafe_hold_until_ts'] = 0.0
                 if _audit.enabled:
                     _audit.log_event("evasion_completed", wp_idx=int(current_idx))
 
@@ -1133,16 +1662,43 @@ def ui_data_endpoint():
             'home': state['home'],
             'waypoints': state['waypoints'],
             'obstacles': state['obstacles'],
+            'obstacle_tracks_count': len(state.get('obstacle_tracks', {})),
             'evasion': {
                 'active': state['evasion_active'], 
                 'path': state['evasion_path'],
-                'grid_origin': state['evasion_grid_origin']
+                'grid_origin': state['evasion_grid_origin'],
+                'failsafe_hold_until_ts': float(state.get('failsafe_hold_until_ts', 0.0) or 0.0),
+                'failsafe_action_active': str(state.get('failsafe_action_active', '') or ''),
+                'failsafe_recent_fail_count': int(len(state.get('failsafe_recent_route_fail_ts', []))),
             },
             'params': {
                 'safety_dist': SAFETY_DISTANCE_M, 
                 'detection_dist': DETECTION_RANGE_M,
+                'reaction_distance_m': REACTION_DISTANCE_M,
+                'evasion_dynamic_reaction_enable': EVASION_DYNAMIC_REACTION_ENABLE,
+                'evasion_reaction_base_m': EVASION_REACTION_BASE_M,
+                'evasion_reaction_speed_gain_s': EVASION_REACTION_SPEED_GAIN_S,
+                'evasion_reaction_min_m': EVASION_REACTION_MIN_M,
+                'evasion_reaction_max_m': EVASION_REACTION_MAX_M,
                 'evasion_replan_min_interval_s': EVASION_REPLAN_MIN_INTERVAL_S,
                 'evasion_route_point_reached_m': EVASION_ROUTE_POINT_REACHED_M,
+                'evasion_allow_replan_when_active': EVASION_ALLOW_REPLAN_WHEN_ACTIVE,
+                'evasion_active_replan_distance_m': EVASION_ACTIVE_REPLAN_DISTANCE_M,
+                'evasion_planner_obs_max_distance_m': EVASION_PLANNER_OBS_MAX_DISTANCE_M,
+                'evasion_planner_obs_max_count': EVASION_PLANNER_OBS_MAX_COUNT,
+                'evasion_failsafe_min_dist_m': EVASION_FAILSAFE_MIN_DIST_M,
+                'evasion_failsafe_hold_s': EVASION_FAILSAFE_HOLD_S,
+                'evasion_failsafe_escalate_enable': EVASION_FAILSAFE_ESCALATE_ENABLE,
+                'evasion_failsafe_escalate_fails': EVASION_FAILSAFE_ESCALATE_FAILS,
+                'evasion_failsafe_escalate_window_s': EVASION_FAILSAFE_ESCALATE_WINDOW_S,
+                'evasion_failsafe_escalate_cooldown_s': EVASION_FAILSAFE_ESCALATE_COOLDOWN_S,
+                'evasion_failsafe_escalate_action': EVASION_FAILSAFE_ESCALATE_ACTION,
+                'obs_static_classes': list(STATIC_OBS_CLASS_KEYS),
+                'obs_track_ttl_static_s': OBS_TRACK_TTL_STATIC_S,
+                'obs_track_ttl_dynamic_s': OBS_TRACK_TTL_DYNAMIC_S,
+                'obs_track_assoc_static_m': OBS_TRACK_ASSOC_STATIC_M,
+                'obs_track_assoc_dynamic_m': OBS_TRACK_ASSOC_DYNAMIC_M,
+                'obs_track_max': OBS_TRACK_MAX,
                 'land_completed_rel_alt_m': LAND_COMPLETED_REL_ALT_M,
                 'land_completion_groundspeed_mps': LAND_COMPLETION_GROUNDSPEED_MPS,
                 'evasion_replans': int(state.get('evasion_replans', 0)),

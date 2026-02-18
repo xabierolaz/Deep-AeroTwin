@@ -97,6 +97,7 @@ echo.
 echo [OK] Tabs launched.
 echo  - Master log: %PORCE_LOG_SERVER_FILE%
 echo  - Viz frames: pipeline\\logs\\viz_frames
+echo  - Validate latest run: tools\\validate_latest_run.bat
 echo  - Stop everything: powershell -NoProfile -ExecutionPolicy Bypass -File tools\\stop_pipeline.ps1
 echo.
 exit /b 0
