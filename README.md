@@ -123,7 +123,8 @@ Config minima en Unreal:
 
 Auth/flags:
 
-- Activar twin: `PORCE_UNREAL_TWIN_ENABLE=1`
+- Activar twin: `bEnabled=true` en el componente (suficiente por defecto)
+- Override por entorno: `PORCE_UNREAL_TWIN_ENABLE=0/1` (si existe, fuerza disable/enable)
 - Token por prioridad: `AuthToken` (componente) -> `PORCE_UNREAL_TWIN_TOKEN` -> `PORCE_OBSTACLE_TOKEN`
 
 Georreferenciacion (componente):

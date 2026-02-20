@@ -47,7 +47,7 @@ void UPorceTelemetryComponent::BeginPlay()
     Super::BeginPlay();
     LastPollTs = FPlatformTime::Seconds();
 
-    if (!IsTwinConsumerEnabled())
+    if (bEnabled && !IsTwinConsumerEnabled())
     {
         UE_LOG(
             LogPorceTelemetry,
@@ -133,11 +133,20 @@ void UPorceTelemetryComponent::SendNow()
 
 bool UPorceTelemetryComponent::IsTwinConsumerEnabled() const
 {
-    if (ParseEnvBool(TEXT("PORCE_UNREAL_TWIN_ENABLE")))
+    const FString TwinRaw = FPlatformMisc::GetEnvironmentVariable(TEXT("PORCE_UNREAL_TWIN_ENABLE")).TrimStartAndEnd();
+    if (!TwinRaw.IsEmpty())
     {
-        return true;
+        return ParseEnvBool(TEXT("PORCE_UNREAL_TWIN_ENABLE"));
     }
-    return ParseEnvBool(TEXT("PORCE_UNREAL_TELEMETRY_ENABLE"));
+
+    const FString LegacyRaw = FPlatformMisc::GetEnvironmentVariable(TEXT("PORCE_UNREAL_TELEMETRY_ENABLE")).TrimStartAndEnd();
+    if (!LegacyRaw.IsEmpty())
+    {
+        return ParseEnvBool(TEXT("PORCE_UNREAL_TELEMETRY_ENABLE"));
+    }
+
+    // Backward-compatible default: when no env flag is defined, honor component-level enable switch.
+    return true;
 }
 
 double UPorceTelemetryComponent::ResolvePollPeriodS() const
