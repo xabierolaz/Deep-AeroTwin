@@ -117,7 +117,9 @@ Config minima en Unreal:
 - `PollRateHz=5`
 - `DespawnAfterS=3`
 - `ConfirmedConfidenceThreshold=0.65`
-- Asignar clases: `TowerActorClass`, `CowActorClass`, `BikerActorClass` (opcional `DefaultObstacleActorClass`)
+- Blueprints canonicos en `/Game`: `BP_Tower`, `BP_Cow`, `BP_Biker`
+- Asignar clases: `TowerActorClass=BP_Tower`, `CowActorClass=BP_Cow`, `BikerActorClass=BP_Biker` (opcional `DefaultObstacleActorClass`)
+- Fallback en C++: si no asignas clases manualmente, el plugin intenta cargar `/Game/BP_Tower` (y variantes lowercase `/Game/bp_tower`, `/Game/bp_cow`, `/Game/bp_biker`) al iniciar
 
 Auth/flags:
 

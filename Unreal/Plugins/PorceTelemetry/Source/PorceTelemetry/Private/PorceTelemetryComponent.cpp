@@ -1,12 +1,14 @@
 #include "PorceTelemetryComponent.h"
 
 #include "Engine/World.h"
+#include "GameFramework/Actor.h"
 #include "Dom/JsonObject.h"
 #include "HAL/PlatformMisc.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Serialization/JsonSerializer.h"
+#include "UObject/UObjectGlobals.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogPorceTelemetry, Log, All);
 
@@ -62,6 +64,31 @@ void UPorceTelemetryComponent::BeginPlay()
             EndpointUrl = FPlatformMisc::GetEnvironmentVariable(TEXT("PORCE_UNREAL_TELEMETRY_URL"));
         }
     }
+
+    auto EnsureClassLoaded = [this](TSubclassOf<AActor>& Slot, const TCHAR* ClassPath, const TCHAR* Label) -> void
+    {
+        if (Slot != nullptr)
+        {
+            return;
+        }
+        UClass* LoadedClass = StaticLoadClass(AActor::StaticClass(), nullptr, ClassPath);
+        if (LoadedClass != nullptr)
+        {
+            Slot = LoadedClass;
+            UE_LOG(LogPorceTelemetry, Log, TEXT("PORCE Twin default class loaded: %s -> %s"), Label, ClassPath);
+        }
+        else
+        {
+            UE_LOG(LogPorceTelemetry, Verbose, TEXT("PORCE Twin default class not found: %s (%s)"), Label, ClassPath);
+        }
+    };
+
+    EnsureClassLoaded(TowerActorClass, TEXT("/Game/BP_Tower.BP_Tower_C"), TEXT("tower"));
+    EnsureClassLoaded(CowActorClass, TEXT("/Game/BP_Cow.BP_Cow_C"), TEXT("cow"));
+    EnsureClassLoaded(BikerActorClass, TEXT("/Game/BP_Biker.BP_Biker_C"), TEXT("biker"));
+    EnsureClassLoaded(TowerActorClass, TEXT("/Game/bp_tower.bp_tower_C"), TEXT("tower"));
+    EnsureClassLoaded(CowActorClass, TEXT("/Game/bp_cow.bp_cow_C"), TEXT("cow"));
+    EnsureClassLoaded(BikerActorClass, TEXT("/Game/bp_biker.bp_biker_C"), TEXT("biker"));
 }
 
 void UPorceTelemetryComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
