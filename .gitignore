@@ -23,6 +23,7 @@ env/
 .vscode/
 .idea/
 .vs/
+.claude/
 .fleet/
 .spyproject/
 .ropeproject/
@@ -86,14 +87,7 @@ yolo/runs/
 yolo/venv/
 yolo/labels_backup_*/
 
-# YOLO weights: ignore by default; allow committing a curated final weight in pipeline/weights.
+# YOLO weights: ignore by default; allow committing only the canonical runtime weight.
 *.pt
-!pipeline/weights/
-pipeline/weights/*.pt
-!pipeline/weights/yolo_3d_dome_v1_best.pt
-
-# Allow committing curated final weights under yolo/weights/.
 !yolo/weights/
-!yolo/weights/*.pt
-# Keep local convenience alias out of git to avoid duplicate large blobs.
-yolo/weights/final.pt
+!yolo/weights/yolo_unreal_unrealScene_v1_best_e23_2026-02-18.pt

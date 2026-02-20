@@ -82,6 +82,8 @@ class GeoProjector:
         mount_pitch_deg: float,
         mount_yaw_deg: float,
         max_range_m: float,
+        clamp_to_max_range: bool = False,
+        max_range_margin_m: float = 0.0,
     ) -> Optional[Tuple[float, float, float]]:
         if image_height <= 0 or image_width <= 0:
             return None
@@ -150,9 +152,12 @@ class GeoProjector:
         if not math.isfinite(dist_h):
             return None
 
-        # Clamp to detection range to avoid near-horizon blowups.
+        # Range gating to avoid near-horizon blowups.
         max_r = float(max_range_m)
-        if math.isfinite(max_r) and max_r > 0.0 and dist_h > max_r:
+        margin_m = max(0.0, float(max_range_margin_m))
+        if math.isfinite(max_r) and max_r > 0.0 and dist_h > (max_r + margin_m):
+            if not bool(clamp_to_max_range):
+                return None
             scale = max_r / (dist_h + float(GEOMETRY_EPS))
             north_m *= scale
             east_m *= scale

@@ -1,0 +1,18 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0.0",
+  "FriendlyName": "PORCE Telemetry",
+  "Description": "Consumes PORCE Brain obstacle entities and syncs spawn/update/despawn actors in Unreal.",
+  "Category": "Networking",
+  "EnabledByDefault": true,
+  "CanContainContent": false,
+  "IsBetaVersion": false,
+  "Modules": [
+    {
+      "Name": "PorceTelemetry",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ]
+}

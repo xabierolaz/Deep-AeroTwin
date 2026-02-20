@@ -68,9 +68,25 @@ function _read_text_env([string]$name, [string]$default) {
   return $raw
 }
 
+function _read_bool_env([string]$name, [bool]$default) {
+  $raw = [System.Environment]::GetEnvironmentVariable($name)
+  if ([string]::IsNullOrWhiteSpace($raw)) {
+    return $default
+  }
+  $normalized = $raw.Trim().ToLowerInvariant()
+  if ($normalized -in @("1", "true", "yes", "on")) {
+    return $true
+  }
+  if ($normalized -in @("0", "false", "no", "off")) {
+    return $false
+  }
+  return $default
+}
+
 $teeCapLines = _read_int_env "PORCE_TEE_CAP_LINES" 200
 $brainPrefix = _read_text_env "PORCE_TEE_PREFIX_BRAIN" "BRAIN"
 $eyesPrefix = _read_text_env "PORCE_TEE_PREFIX_EYES" "EYES"
+$forceCmdWindows = _read_bool_env "PORCE_FORCE_CMD_WINDOWS" $false
 
 function _cdPipe([string]$cmd) {
   return "cd /d $pipelineDir && $pyenv$cmd"
@@ -125,6 +141,16 @@ function _start_with_tabs() {
   }
 }
 
+function _start_fallback_all() {
+  $ok = $true
+  $ok = (_start_fallback_tab "MASTER LOG" $masterCmd) -and $ok
+  $ok = (_start_fallback_tab "SITL (WSL)" $sitlCmd) -and $ok
+  $ok = (_start_fallback_tab $brainTitle $brainCmd) -and $ok
+  $ok = (_start_fallback_tab $eyesTitle $eyesCmd) -and $ok
+  $ok = (_start_fallback_tab "VIZ RECORDER" $vizCmd) -and $ok
+  return $ok
+}
+
 function _invoke_wt([string[]]$wtCliArgs) {
   & $wt @wtCliArgs | Out-Null
   $exitCode = $LASTEXITCODE
@@ -142,11 +168,14 @@ function _start_wt_tab([string]$windowTarget, [string]$title, [string]$cmd) {
   _invoke_wt $wtCliArgs
 }
 
-if (-not (_start_with_tabs)) {
+if ($forceCmdWindows) {
+  Write-Host "[launch_tabs] INFO: PORCE_FORCE_CMD_WINDOWS=1 -> forcing cmd fallback tabs."
+  if (-not (_start_fallback_all)) {
+    _fail "fallback tab creation failed"
+  }
+} elseif (-not (_start_with_tabs)) {
   Write-Host "[launch_tabs] WARN: Falling back to cmd tabs." -ForegroundColor Yellow
-  _start_fallback_tab "MASTER LOG" $masterCmd
-  _start_fallback_tab "SITL (WSL)" $sitlCmd
-  _start_fallback_tab $brainTitle $brainCmd
-  _start_fallback_tab $eyesTitle $eyesCmd
-  _start_fallback_tab "VIZ RECORDER" $vizCmd
+  if (-not (_start_fallback_all)) {
+    _fail "fallback tab creation failed"
+  }
 }

@@ -16,7 +16,7 @@ _log "[stop_pipeline] Stopping Deep-AeroTwin pipeline processes..."
 # Match by command line so this works for:
 # - separate cmd.exe windows started by launch.bat
 # - Windows Terminal tabs (cmd.exe hosted by wt.exe)
-$regex = '(?i)(flight_controller\.py|vision_system\.py|viz_recorder\.py|log_server\.py|tee\.py|e2e_flight_matrix\.py)'
+$regex = '(?i)(flight_controller\.py|vision_system\.py|viz_recorder\.py|log_server\.py|tee\.py)'
 
 function _self_parent_pid() {
   try {

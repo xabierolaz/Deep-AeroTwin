@@ -3,7 +3,7 @@
 """
 VISION SYSTEM (The Eyes) v3.0 - YOLO11 INTEGRATION
 --------------------------------------------------
-- Real-time Screen Capture (MSS)
+- Real-time capture (MSS screen or video file/stream)
 - YOLOv11 Inference (Ultralytics)
 - GPS Projection (Pixel -> GeoCoords)
 - Debug Visualization Window
@@ -63,6 +63,10 @@ from constants import (
     VISION_CAPTURE_TOP,
     VISION_CAPTURE_WIDTH,
     VISION_CAPTURE_HEIGHT,
+    VISION_SOURCE,
+    VISION_VIDEO_PATH,
+    VISION_VIDEO_LOOP,
+    VISION_VIDEO_REOPEN_SLEEP_S,
     VISION_DEBUG_TITLE,
     VISION_DEBUG_WINDOW,
     VISION_DEBUG_SCALE,
@@ -87,9 +91,8 @@ from constants import (
     VISION_MIN_SEEN_TO_PUBLISH_TOWER,
     VISION_TARGET_CLASS_NAMES,
     VISION_TARGET_CLASS_FALLBACK_NAMES,
+    OBS_STATIC_CLASS_NAMES,
     VISION_YOLO_MODEL,
-    VISION_MODEL_FALLBACK_COCO,
-    VISION_MODEL_FALLBACK_SYNTH,
     OBSTACLE_TOKEN,
     VISION_TRACK_TTL_S,
     VISION_TRACK_HOLD_S,
@@ -99,6 +102,9 @@ from constants import (
     VISION_TRACK_COS_DENOM_EPS,
     VISION_TRACK_MATCH_MAX_PX,
     VISION_TRACK_MATCH_MAX_DIST_M,
+    VISION_STATIC_TRACK_MATCH_MAX_DIST_M,
+    VISION_STATIC_DIST_MAX_STEP_M,
+    VISION_STATIC_DIST_RATE_MPS,
     VISION_TRACK_MAX_ACTIVE,
     VISION_MAX_OBS_PER_FRAME,
     VISION_HEARTBEAT_S,
@@ -152,11 +158,18 @@ from constants import (
     GEOMETRY_UNIT_EPS,
     GEOMETRY_PIXEL_EPS,
     VISION_HEIGHT_DIST_FLOOR_M,
+    VISION_PROJECT_CLAMP_TO_MAX_RANGE,
+    VISION_PROJECT_MAX_RANGE_MARGIN_M,
 )
 from zero_trust_audit import ZeroTrustAudit
 
 # --- CONSTANTES DE VISION ---
 TARGET_CLASS_NAMES = list(VISION_TARGET_CLASS_NAMES)
+STATIC_CLASS_KEYS = {
+    str(name).strip().lower()
+    for name in OBS_STATIC_CLASS_NAMES
+    if str(name).strip()
+}
 
 # Split detection threshold (model output) and publish threshold (what is sent to Brain).
 DETECTION_CONFIDENCE_THRESHOLD = float(VISION_DET_CONF)
@@ -181,6 +194,11 @@ TRACK_HOLD_S = float(VISION_TRACK_HOLD_S)
 SMOOTH_TAU_S = float(VISION_SMOOTH_TAU_S)
 TRACK_MATCH_MAX_PX = float(VISION_TRACK_MATCH_MAX_PX)
 TRACK_MATCH_MAX_DIST_M = float(VISION_TRACK_MATCH_MAX_DIST_M)
+STATIC_TRACK_MATCH_MAX_DIST_M = float(VISION_STATIC_TRACK_MATCH_MAX_DIST_M)
+STATIC_DIST_MAX_STEP_M = float(VISION_STATIC_DIST_MAX_STEP_M)
+STATIC_DIST_RATE_MPS = float(VISION_STATIC_DIST_RATE_MPS)
+PROJECT_CLAMP_TO_MAX_RANGE = bool(VISION_PROJECT_CLAMP_TO_MAX_RANGE)
+PROJECT_MAX_RANGE_MARGIN_M = float(VISION_PROJECT_MAX_RANGE_MARGIN_M)
 TRACK_MAX_ACTIVE = int(VISION_TRACK_MAX_ACTIVE)
 MAX_OBS_PER_FRAME = int(VISION_MAX_OBS_PER_FRAME)
 HEARTBEAT_S = float(VISION_HEARTBEAT_S)
@@ -194,13 +212,6 @@ AUDIT_VISION_MAX_DET_DETAILS = int(AUDIT_VISION_MAX_DET_DETAILS)
 AUDIT_VISION_JPEG_QUALITY = int(AUDIT_VISION_JPEG_QUALITY)
 
 MODEL_PATH = str(VISION_YOLO_MODEL)
-
-# Back-compat fallbacks (older docs referenced COCO weights).
-if not os.path.exists(MODEL_PATH):
-    if os.path.exists(str(VISION_MODEL_FALLBACK_COCO)):
-        MODEL_PATH = str(VISION_MODEL_FALLBACK_COCO)
-    elif os.path.exists(str(VISION_MODEL_FALLBACK_SYNTH)):
-        MODEL_PATH = str(VISION_MODEL_FALLBACK_SYNTH)
 
 BRAIN_URL = f"http://{BRAIN_HTTP_HOST}:{MAVLINK_HUB_HTTP_PORT}"
 TELEMETRY_URL = f"{BRAIN_URL}/api/state/latest"
@@ -278,6 +289,11 @@ class VisionSystem:
                 f"min_seen_default={MIN_SEEN_TO_PUBLISH} "
                 f"track_match_px={TRACK_MATCH_MAX_PX:.1f} "
                 f"track_match_dist={TRACK_MATCH_MAX_DIST_M:.1f}m "
+                f"track_match_dist_static={STATIC_TRACK_MATCH_MAX_DIST_M:.1f}m "
+                f"static_dist_step={STATIC_DIST_MAX_STEP_M:.1f}m "
+                f"static_dist_rate={STATIC_DIST_RATE_MPS:.1f}mps "
+                f"project_clamp={int(PROJECT_CLAMP_TO_MAX_RANGE)} "
+                f"project_range_margin={PROJECT_MAX_RANGE_MARGIN_M:.1f}m "
                 f"track_max_active={int(TRACK_MAX_ACTIVE)} "
                 f"ignore_bottom_px={IGNORE_BOTTOM_PX} "
                 f"ignore_bottom_frac={IGNORE_BOTTOM_FRAC:.3f}"
@@ -293,11 +309,19 @@ class VisionSystem:
         self._mount_pitch_deg = float(VISION_CAMERA_MOUNT_PITCH_DEG)
         self._mount_yaw_deg = float(VISION_CAMERA_MOUNT_YAW_DEG)
         self.projector = GeoProjector()
-        self.sct = mss.mss()
+        self.sct = None
         self.session = requests.Session()
         self._obstacle_token = str(OBSTACLE_TOKEN)
         if OBSTACLE_TOKEN_REQUIRED and not self._obstacle_token:
             log("[WARN] PORCE_OBSTACLE_TOKEN_REQUIRED=1 pero PORCE_OBSTACLE_TOKEN no esta definido; Brain rechazara /api/obstacles.")
+
+        self._vision_source = str(VISION_SOURCE or "").strip().upper()
+        if not self._vision_source:
+            self._vision_source = "SCREEN_CAPTURE"
+        self._video_capture = None
+        self._video_path = str(VISION_VIDEO_PATH or "").strip()
+        self._video_loop = bool(VISION_VIDEO_LOOP)
+        self._video_reopen_sleep_s = max(0.05, float(VISION_VIDEO_REOPEN_SLEEP_S))
 
         # --- Capture configuration ---
         # Pipeline A expectation: Unreal "Play In New Window" renders the drone camera at 640x640.
@@ -312,44 +336,65 @@ class VisionSystem:
         self._capture_window_topmost = _truthy(VISION_CAPTURE_WINDOW_TOPMOST)
         self._capture_hwnd = None
 
-        if self._capture_window_title:
-            self._capture_mode = "window"
-            self._capture_hwnd = self._win32_find_window()
-            if self._capture_hwnd:
-                self._win32_prepare_window(self._capture_hwnd)
-                self.monitor = self._win32_client_region(self._capture_hwnd)
-            else:
-                self.monitor = None
-            log(f"Zona de captura (window): title={self._capture_window_title!r} exact={self._capture_window_exact} class={self._capture_window_class!r}")
-            if self._capture_hwnd and self.monitor:
+        if self._vision_source in {"VIDEO", "VIDEO_FILE", "VIDEO_STREAM"}:
+            self._capture_mode = "video"
+            self.monitor = None
+            if not self._video_path:
                 log(
-                    "[CAPTURE] Window ready hwnd={hwnd} client={w}x{h} at ({l},{t})".format(
-                        hwnd=int(self._capture_hwnd),
-                        w=int(self.monitor.get("width", 0) or 0),
-                        h=int(self.monitor.get("height", 0) or 0),
-                        l=int(self.monitor.get("left", 0) or 0),
-                        t=int(self.monitor.get("top", 0) or 0),
-                    )
+                    "[ERROR] VISION_SOURCE requiere video pero PORCE_VISION_VIDEO_PATH esta vacio. "
+                    "Ejemplo: set PORCE_VISION_VIDEO_PATH=D:\\ruta\\video.mp4"
                 )
-            else:
-                log("[CAPTURE] Window not found yet; will retry in run loop.")
+                sys.exit(2)
+            if not self._open_video_capture():
+                sys.exit(2)
+            log(
+                "Zona de captura (video): "
+                f"path={self._video_path!r} loop={int(self._video_loop)}"
+            )
+            cap_w = int(self._video_capture.get(cv2.CAP_PROP_FRAME_WIDTH) or 0)
+            cap_h = int(self._video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT) or 0)
+            if cap_w > 0 and cap_h > 0:
+                log(f"[CAPTURE] Video ready {cap_w}x{cap_h}")
         else:
-            # Fallback: monitor capture, optionally with ROI override (match Unreal camera viewport for correct geometry).
-            monitor_idx = int(VISION_CAPTURE_MONITOR)
-            self.monitor = self.sct.monitors[monitor_idx]
-            roi_left = VISION_CAPTURE_LEFT
-            roi_top = VISION_CAPTURE_TOP
-            roi_w = VISION_CAPTURE_WIDTH
-            roi_h = VISION_CAPTURE_HEIGHT
-            if roi_left and roi_top and roi_w and roi_h:
-                self.monitor = {
-                    "left": int(roi_left),
-                    "top": int(roi_top),
-                    "width": int(roi_w),
-                    "height": int(roi_h),
-                }
-            self._capture_mode = "roi_or_monitor"
-            log(f"Zona de captura: {self.monitor}")
+            self.sct = mss.mss()
+            if self._capture_window_title:
+                self._capture_mode = "window"
+                self._capture_hwnd = self._win32_find_window()
+                if self._capture_hwnd:
+                    self._win32_prepare_window(self._capture_hwnd)
+                    self.monitor = self._win32_client_region(self._capture_hwnd)
+                else:
+                    self.monitor = None
+                log(f"Zona de captura (window): title={self._capture_window_title!r} exact={self._capture_window_exact} class={self._capture_window_class!r}")
+                if self._capture_hwnd and self.monitor:
+                    log(
+                        "[CAPTURE] Window ready hwnd={hwnd} client={w}x{h} at ({l},{t})".format(
+                            hwnd=int(self._capture_hwnd),
+                            w=int(self.monitor.get("width", 0) or 0),
+                            h=int(self.monitor.get("height", 0) or 0),
+                            l=int(self.monitor.get("left", 0) or 0),
+                            t=int(self.monitor.get("top", 0) or 0),
+                        )
+                    )
+                else:
+                    log("[CAPTURE] Window not found yet; will retry in run loop.")
+            else:
+                # Fallback: monitor capture, optionally with ROI override (match Unreal camera viewport for correct geometry).
+                monitor_idx = int(VISION_CAPTURE_MONITOR)
+                self.monitor = self.sct.monitors[monitor_idx]
+                roi_left = VISION_CAPTURE_LEFT
+                roi_top = VISION_CAPTURE_TOP
+                roi_w = VISION_CAPTURE_WIDTH
+                roi_h = VISION_CAPTURE_HEIGHT
+                if roi_left and roi_top and roi_w and roi_h:
+                    self.monitor = {
+                        "left": int(roi_left),
+                        "top": int(roi_top),
+                        "width": int(roi_w),
+                        "height": int(roi_h),
+                    }
+                self._capture_mode = "roi_or_monitor"
+                log(f"Zona de captura: {self.monitor}")
 
         # --- Debug window (YOLO overlay) ---
         # Default: enabled, and when capturing a window we "dock" the debug view next to it.
@@ -421,12 +466,21 @@ class VisionSystem:
                 min_seen_tower=int(MIN_SEEN_TO_PUBLISH_TOWER),
                 track_match_max_px=float(TRACK_MATCH_MAX_PX),
                 track_match_max_dist_m=float(TRACK_MATCH_MAX_DIST_M),
+                static_track_match_max_dist_m=float(STATIC_TRACK_MATCH_MAX_DIST_M),
+                static_dist_max_step_m=float(STATIC_DIST_MAX_STEP_M),
+                static_dist_rate_mps=float(STATIC_DIST_RATE_MPS),
+                static_classes=list(STATIC_CLASS_KEYS),
+                project_clamp_to_max_range=bool(PROJECT_CLAMP_TO_MAX_RANGE),
+                project_max_range_margin_m=float(PROJECT_MAX_RANGE_MARGIN_M),
                 track_max_active=int(TRACK_MAX_ACTIVE),
                 ignore_bottom_px=int(IGNORE_BOTTOM_PX),
                 ignore_bottom_frac=float(IGNORE_BOTTOM_FRAC),
+                vision_source=str(self._vision_source),
                 capture_mode=str(self._capture_mode),
                 capture_title=str(self._capture_window_title),
                 capture_class=str(self._capture_window_class),
+                video_path=str(self._video_path),
+                video_loop=bool(self._video_loop),
                 expect_w=int(self._expect_w),
                 expect_h=int(self._expect_h),
                 target_fps=float(self._target_fps),
@@ -622,6 +676,79 @@ class VisionSystem:
             self._capture_crop_logged = sig
         return cropped
 
+    def _open_video_capture(self) -> bool:
+        try:
+            if self._video_capture is not None:
+                self._video_capture.release()
+        except Exception:
+            pass
+
+        source_raw = str(self._video_path or "").strip()
+        source_obj = int(source_raw) if source_raw.isdigit() else source_raw
+        cap = cv2.VideoCapture(source_obj)
+        if not cap or not cap.isOpened():
+            log(f"[ERROR] No se pudo abrir video fuente: {source_raw!r}")
+            try:
+                if cap:
+                    cap.release()
+            except Exception:
+                pass
+            self._video_capture = None
+            return False
+
+        self._video_capture = cap
+        return True
+
+    def _read_video_frame(self) -> Optional[np.ndarray]:
+        if self._video_capture is None:
+            if not self._open_video_capture():
+                return None
+
+        ok = False
+        frame = None
+        try:
+            ok, frame = self._video_capture.read()
+        except Exception:
+            ok, frame = False, None
+
+        if not ok or frame is None:
+            if not self._video_loop:
+                return None
+
+            reopened = False
+            try:
+                if self._video_capture is not None:
+                    self._video_capture.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                    ok2, frame2 = self._video_capture.read()
+                    if ok2 and frame2 is not None:
+                        reopened = True
+                        frame = frame2
+            except Exception:
+                reopened = False
+
+            if not reopened:
+                if not self._open_video_capture():
+                    return None
+                try:
+                    ok3, frame3 = self._video_capture.read()
+                except Exception:
+                    ok3, frame3 = False, None
+                if not ok3 or frame3 is None:
+                    return None
+                frame = frame3
+
+            log("[CAPTURE] EOF video detectado; reiniciando desde el inicio.")
+
+        if frame is None:
+            return None
+
+        if frame.ndim == 2:
+            frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+        elif frame.ndim == 3 and frame.shape[2] == 4:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
+
+        return frame
+
     def get_telemetry(self):
         try:
             r = self.session.get(TELEMETRY_URL, timeout=float(VISION_TELEMETRY_TIMEOUT_S))
@@ -640,6 +767,278 @@ class VisionSystem:
         alpha = 1.0 - math.exp(-dt / tau)
         return max(0.0, min(1.0, float(alpha)))
 
+    @staticmethod
+    def _safe_float(raw_value, default: float = float("nan")) -> float:
+        try:
+            return float(raw_value)
+        except (TypeError, ValueError):
+            return float(default)
+
+    @staticmethod
+    def _haversine_m(lat1, lon1, lat2, lon2) -> float:
+        lat1_f = VisionSystem._safe_float(lat1)
+        lon1_f = VisionSystem._safe_float(lon1)
+        lat2_f = VisionSystem._safe_float(lat2)
+        lon2_f = VisionSystem._safe_float(lon2)
+        if not (
+            math.isfinite(lat1_f) and math.isfinite(lon1_f)
+            and math.isfinite(lat2_f) and math.isfinite(lon2_f)
+        ):
+            return float("inf")
+        dlat = math.radians(float(lat2_f) - float(lat1_f))
+        dlon = math.radians(float(lon2_f) - float(lon1_f))
+        a = (
+            math.sin(dlat / 2.0) ** 2
+            + math.cos(math.radians(float(lat1_f)))
+            * math.cos(math.radians(float(lat2_f)))
+            * (math.sin(dlon / 2.0) ** 2)
+        )
+        c = 2.0 * math.atan2(math.sqrt(max(0.0, a)), math.sqrt(max(0.0, 1.0 - a)))
+        return float(EARTH_RADIUS_M) * float(c)
+
+    @staticmethod
+    def _bbox_iou(box_a: dict, box_b: dict) -> float:
+        if not isinstance(box_a, dict) or not isinstance(box_b, dict):
+            return 0.0
+        ax1 = VisionSystem._safe_float(box_a.get("x1"))
+        ay1 = VisionSystem._safe_float(box_a.get("y1"))
+        ax2 = VisionSystem._safe_float(box_a.get("x2"))
+        ay2 = VisionSystem._safe_float(box_a.get("y2"))
+        bx1 = VisionSystem._safe_float(box_b.get("x1"))
+        by1 = VisionSystem._safe_float(box_b.get("y1"))
+        bx2 = VisionSystem._safe_float(box_b.get("x2"))
+        by2 = VisionSystem._safe_float(box_b.get("y2"))
+        values = [ax1, ay1, ax2, ay2, bx1, by1, bx2, by2]
+        if not all(math.isfinite(v) for v in values):
+            return 0.0
+        if ax2 <= ax1 or ay2 <= ay1 or bx2 <= bx1 or by2 <= by1:
+            return 0.0
+        inter_x1 = max(ax1, bx1)
+        inter_y1 = max(ay1, by1)
+        inter_x2 = min(ax2, bx2)
+        inter_y2 = min(ay2, by2)
+        if inter_x2 <= inter_x1 or inter_y2 <= inter_y1:
+            return 0.0
+        inter_area = (inter_x2 - inter_x1) * (inter_y2 - inter_y1)
+        area_a = (ax2 - ax1) * (ay2 - ay1)
+        area_b = (bx2 - bx1) * (by2 - by1)
+        union = max(float(GEOMETRY_EPS), float(area_a + area_b - inter_area))
+        return max(0.0, min(1.0, float(inter_area) / float(union)))
+
+    def _temporal_match_gate_s(self, class_name: str) -> float:
+        ttl_s = max(0.05, float(TRACK_TTL_S))
+        hold_s = max(0.05, float(TRACK_HOLD_S))
+        if self._is_static_class(class_name):
+            return min(float(ttl_s), max(float(hold_s) * 3.0, 2.0))
+        return min(float(ttl_s), max(float(hold_s), 0.6))
+
+    def _static_dedupe_gates(self, class_name: str) -> tuple[float, float, float, float]:
+        class_key = self._class_name_key(class_name)
+        base_px = max(6.0, float(TRACK_MATCH_MAX_PX))
+        base_dist = max(0.5, float(TRACK_MATCH_MAX_DIST_M))
+        if class_key == "cow":
+            px_gate = max(6.0, min(float(base_px) * 0.25, 18.0))
+            dist_gate = max(0.8, min(float(base_dist) * 0.18, 3.0))
+            geo_gate = max(0.8, min(float(base_dist) * 0.14, 2.5))
+            iou_gate = 0.38
+            return float(px_gate), float(dist_gate), float(geo_gate), float(iou_gate)
+        if class_key == "tower":
+            px_gate = max(8.0, min(float(base_px) * 0.35, 24.0))
+            dist_gate = max(1.0, min(float(base_dist) * 0.25, 4.5))
+            geo_gate = max(1.0, min(float(base_dist) * 0.20, 4.0))
+            iou_gate = 0.32
+            return float(px_gate), float(dist_gate), float(geo_gate), float(iou_gate)
+        px_gate = max(6.0, min(float(base_px) * 0.30, 20.0))
+        dist_gate = max(0.8, min(float(base_dist) * 0.20, 3.5))
+        geo_gate = max(0.8, min(float(base_dist) * 0.16, 3.0))
+        iou_gate = 0.35
+        return float(px_gate), float(dist_gate), float(geo_gate), float(iou_gate)
+
+    def _static_outlier_link_gates(self, class_name: str) -> tuple[float, float, float, float]:
+        class_key = self._class_name_key(class_name)
+        if class_key == "cow":
+            return 10.0, 2.0, 0.45, 30.0
+        if class_key == "tower":
+            return 14.0, 3.5, 0.40, 45.0
+        return 12.0, 2.5, 0.42, 35.0
+
+    def _is_same_static_detection(self, det_a: dict, det_b: dict) -> bool:
+        class_a = self._class_name_key(str(det_a.get("type", "")))
+        class_b = self._class_name_key(str(det_b.get("type", "")))
+        if class_a != class_b:
+            return False
+        if not self._is_static_class(class_a):
+            return False
+
+        iou = self._bbox_iou(det_a.get("bbox") or {}, det_b.get("bbox") or {})
+        cx_a = self._safe_float(det_a.get("cx"))
+        cy_a = self._safe_float(det_a.get("cy"))
+        cx_b = self._safe_float(det_b.get("cx"))
+        cy_b = self._safe_float(det_b.get("cy"))
+        if not all(math.isfinite(v) for v in [cx_a, cy_a, cx_b, cy_b]):
+            return False
+        px_d = math.hypot(float(cx_a) - float(cx_b), float(cy_a) - float(cy_b))
+        dist_a = self._safe_float(det_a.get("distance"))
+        dist_b = self._safe_float(det_b.get("distance"))
+        if not (math.isfinite(dist_a) and math.isfinite(dist_b)):
+            return False
+        dist_d = abs(float(dist_a) - float(dist_b))
+        geo_d = self._haversine_m(
+            det_a.get("lat"),
+            det_a.get("lon"),
+            det_b.get("lat"),
+            det_b.get("lon"),
+        )
+        if not math.isfinite(geo_d):
+            return False
+
+        px_gate, dist_gate, geo_gate, iou_gate = self._static_dedupe_gates(class_a)
+
+        px_ok = (float(px_d) <= float(px_gate)) or (float(iou) >= float(iou_gate))
+        dist_ok = float(dist_d) <= float(dist_gate)
+        geo_ok = float(geo_d) <= float(geo_gate)
+        return bool(px_ok and dist_ok and geo_ok)
+
+    def _merge_duplicate_det_inplace(self, primary: dict, duplicate: dict) -> None:
+        conf_a = max(0.0, self._safe_float(primary.get("confidence"), 0.0))
+        conf_b = max(0.0, self._safe_float(duplicate.get("confidence"), 0.0))
+        denom = max(float(GEOMETRY_EPS), float(conf_a + conf_b))
+        wa = float(conf_a) / float(denom)
+        wb = float(conf_b) / float(denom)
+
+        for key in ("lat", "lon", "distance", "cx", "cy", "x_m", "y_m", "z_m", "alt_msl"):
+            a = self._safe_float(primary.get(key))
+            b = self._safe_float(duplicate.get(key))
+            if not (math.isfinite(a) and math.isfinite(b)):
+                continue
+            primary[key] = float(a) * float(wa) + float(b) * float(wb)
+
+        primary["confidence"] = max(float(conf_a), float(conf_b))
+        if float(conf_b) > float(conf_a) and isinstance(duplicate.get("bbox"), dict):
+            primary["bbox"] = dict(duplicate.get("bbox") or {})
+
+    def _dedupe_frame_detections(self, frame_dets: list[dict]) -> list[dict]:
+        if len(frame_dets) <= 1:
+            return frame_dets
+        deduped: list[dict] = []
+        det_order = sorted(
+            range(len(frame_dets)),
+            key=lambda i: float(frame_dets[i].get("confidence", 0.0)),
+            reverse=True,
+        )
+        for det_idx in det_order:
+            det = frame_dets[det_idx]
+            det_class = self._class_name_key(str(det.get("type", "")))
+            if not self._is_static_class(det_class):
+                deduped.append(det)
+                continue
+            merged = False
+            for kept in deduped:
+                if self._class_name_key(str(kept.get("type", ""))) != det_class:
+                    continue
+                if self._is_same_static_detection(det, kept):
+                    self._merge_duplicate_det_inplace(kept, det)
+                    merged = True
+                    break
+            if not merged:
+                deduped.append(det)
+        return deduped
+
+    @staticmethod
+    def _outgoing_numeric_id(out_item: dict) -> Optional[int]:
+        for key in ("source_id", "id"):
+            try:
+                value = int(out_item.get(key))
+            except (TypeError, ValueError):
+                continue
+            if value >= 0:
+                return int(value)
+        return None
+
+    def _is_same_static_outgoing(self, a: dict, b: dict) -> bool:
+        class_a = self._class_name_key(str(a.get("type", "")))
+        class_b = self._class_name_key(str(b.get("type", "")))
+        if class_a != class_b:
+            return False
+        if not self._is_static_class(class_a):
+            return False
+
+        _, dist_gate, geo_gate, _ = self._static_dedupe_gates(class_a)
+        merge_geo_gate = max(float(geo_gate) * 1.4, float(geo_gate) + 0.6)
+        merge_dist_gate = max(float(dist_gate) * 2.0, float(dist_gate) + 1.5)
+
+        geo_d = self._haversine_m(
+            a.get("lat"),
+            a.get("lon"),
+            b.get("lat"),
+            b.get("lon"),
+        )
+        if not math.isfinite(geo_d) or float(geo_d) > float(merge_geo_gate):
+            return False
+
+        dist_a = self._safe_float(a.get("distance"))
+        dist_b = self._safe_float(b.get("distance"))
+        if not (math.isfinite(dist_a) and math.isfinite(dist_b)):
+            return False
+        if abs(float(dist_a) - float(dist_b)) > float(merge_dist_gate):
+            return False
+        return True
+
+    def _merge_static_outgoing_inplace(self, primary: dict, duplicate: dict) -> None:
+        conf_a = max(0.0, self._safe_float(primary.get("confidence"), 0.0))
+        conf_b = max(0.0, self._safe_float(duplicate.get("confidence"), 0.0))
+        denom = max(float(GEOMETRY_EPS), float(conf_a + conf_b))
+        wa = float(conf_a) / float(denom)
+        wb = float(conf_b) / float(denom)
+
+        for key in ("lat", "lon", "distance"):
+            a = self._safe_float(primary.get(key))
+            b = self._safe_float(duplicate.get(key))
+            if math.isfinite(a) and math.isfinite(b):
+                primary[key] = float(a) * float(wa) + float(b) * float(wb)
+            elif math.isfinite(b):
+                primary[key] = float(b)
+
+        primary["confidence"] = max(float(conf_a), float(conf_b))
+
+        if float(conf_b) > float(conf_a) and isinstance(duplicate.get("bbox"), dict):
+            primary["bbox"] = dict(duplicate.get("bbox") or {})
+
+        id_a = self._outgoing_numeric_id(primary)
+        id_b = self._outgoing_numeric_id(duplicate)
+        if id_a is None and id_b is not None:
+            primary["id"] = int(id_b)
+            primary["source_id"] = int(id_b)
+            return
+        if id_b is None:
+            return
+        if id_a is None or int(id_b) < int(id_a):
+            primary["id"] = int(id_b)
+            primary["source_id"] = int(id_b)
+
+    def _collapse_static_outgoing(self, outgoing: list[dict]) -> list[dict]:
+        if len(outgoing) <= 1:
+            return outgoing
+
+        dynamic_items: list[dict] = []
+        merged_static: list[dict] = []
+        for item in outgoing:
+            class_key = self._class_name_key(str(item.get("type", "")))
+            if not self._is_static_class(class_key):
+                dynamic_items.append(dict(item))
+                continue
+
+            merged = False
+            for existing in merged_static:
+                if self._is_same_static_outgoing(item, existing):
+                    self._merge_static_outgoing_inplace(existing, item)
+                    merged = True
+                    break
+            if not merged:
+                merged_static.append(dict(item))
+
+        return dynamic_items + merged_static
+
     def _next_track_obs_id(self) -> int:
         obs_id = int(self._next_track_id)
         self._next_track_id = int(self._next_track_id) + 1
@@ -651,13 +1050,34 @@ class VisionSystem:
         dist_d = abs(float(det.get("distance", 0.0)) - float(track.dist))
         return float(px_d), float(dist_d)
 
-    def _match_track_id(self, det: dict, used_track_ids: set[int]) -> Optional[int]:
+    def _match_track_id(self, det: dict, used_track_ids: set[int], now_s: float) -> Optional[int]:
         max_px = float(TRACK_MATCH_MAX_PX)
         max_dist_m = float(TRACK_MATCH_MAX_DIST_M)
         if not (math.isfinite(max_px) and max_px > 0.0 and math.isfinite(max_dist_m) and max_dist_m > 0.0):
             return None
 
         det_class = self._class_name_key(str(det.get("type", "")))
+        det_is_static = bool(self._is_static_class(det_class))
+        dist_gate_m = float(max_dist_m)
+        geo_gate_m = max(
+            1.0,
+            min(
+                10.0 if det_is_static else 6.0,
+                float(TRACK_MATCH_MAX_DIST_M) * (0.55 if det_is_static else 0.35),
+            ),
+        )
+        iou_gate = 0.20 if det_is_static else 0.10
+        if det_is_static:
+            dist_gate_m = max(float(max_dist_m), float(STATIC_TRACK_MATCH_MAX_DIST_M))
+            if det_class == "cow":
+                dist_gate_m = min(float(dist_gate_m), max(1.5, min(float(max_dist_m) * 0.35, 6.0)))
+                geo_gate_m = max(1.0, min(float(max_dist_m) * 0.22, 4.0))
+                iou_gate = 0.24
+            elif det_class == "tower":
+                dist_gate_m = min(float(dist_gate_m), max(2.0, min(float(max_dist_m) * 0.55, 10.0)))
+                geo_gate_m = max(1.5, min(float(max_dist_m) * 0.45, 8.0))
+                iou_gate = 0.20
+        temporal_gate_s = float(self._temporal_match_gate_s(det_class))
         best_id: Optional[int] = None
         best_score = float("inf")
         for track_id, track in self._tracks.items():
@@ -665,10 +1085,42 @@ class VisionSystem:
                 continue
             if self._class_name_key(str(track.class_name)) != det_class:
                 continue
-            px_d, dist_d = self._track_match_score(det, track)
-            if px_d > max_px or dist_d > max_dist_m:
+            age_s = max(0.0, float(now_s) - float(track.last_seen_ts))
+            if float(age_s) > float(temporal_gate_s):
                 continue
-            score = (float(px_d) / float(max_px)) + (float(dist_d) / float(max_dist_m))
+            px_d, dist_d = self._track_match_score(det, track)
+            iou = self._bbox_iou(det.get("bbox") or {}, track.bbox or {})
+            geo_d = self._haversine_m(
+                det.get("lat"),
+                det.get("lon"),
+                track.lat,
+                track.lon,
+            )
+            px_ok = float(px_d) <= float(max_px) or float(iou) >= float(iou_gate)
+            if not px_ok:
+                continue
+            if not math.isfinite(geo_d) or float(geo_d) > float(geo_gate_m):
+                continue
+            allow_outlier_link = False
+            if float(dist_d) > float(dist_gate_m):
+                if det_is_static:
+                    strict_px_gate, strict_geo_gate, strict_iou_gate, outlier_dist_gate = self._static_outlier_link_gates(det_class)
+                    close_visual = float(px_d) <= float(strict_px_gate) or float(iou) >= float(strict_iou_gate)
+                    close_geo = float(geo_d) <= float(strict_geo_gate)
+                    recent_track = float(age_s) <= min(1.2, float(temporal_gate_s))
+                    if close_visual and close_geo and recent_track and float(dist_d) <= float(outlier_dist_gate):
+                        allow_outlier_link = True
+                if not allow_outlier_link:
+                    continue
+            score = (
+                (float(px_d) / max(float(max_px), float(GEOMETRY_EPS)))
+                + (float(dist_d) / max(float(dist_gate_m), float(GEOMETRY_EPS)))
+                + (float(geo_d) / max(float(geo_gate_m), float(GEOMETRY_EPS)))
+                + (float(age_s) / max(float(temporal_gate_s), float(GEOMETRY_EPS)))
+                - (0.20 * float(iou))
+            )
+            if allow_outlier_link:
+                score += 0.8
             if score < best_score:
                 best_score = float(score)
                 best_id = int(track_id)
@@ -702,7 +1154,7 @@ class VisionSystem:
         )
         for det_idx in det_order:
             d = frame_dets[det_idx]
-            matched_id = self._match_track_id(d, used_track_ids)
+            matched_id = self._match_track_id(d, used_track_ids, float(now_s))
             prev_t = self._tracks.get(int(matched_id)) if matched_id is not None else None
 
             if prev_t is None:
@@ -730,7 +1182,44 @@ class VisionSystem:
             a = self._alpha_from_dt(dt)
             lat = float(prev_t.lat) + a * (float(d.get("lat")) - float(prev_t.lat))
             lon = float(prev_t.lon) + a * (float(d.get("lon")) - float(prev_t.lon))
-            dist = float(prev_t.dist) + a * (float(d.get("distance")) - float(prev_t.dist))
+            dist_meas = float(d.get("distance"))
+            if self._is_static_class(str(prev_t.class_name)):
+                class_key = self._class_name_key(str(prev_t.class_name))
+                max_step_m = max(
+                    float(STATIC_DIST_MAX_STEP_M),
+                    float(STATIC_DIST_RATE_MPS) * max(0.0, float(dt)),
+                )
+                px_d = math.hypot(float(d.get("cx")) - float(prev_t.cx), float(d.get("cy")) - float(prev_t.cy))
+                dist_jump = abs(float(dist_meas) - float(prev_t.dist))
+                geo_jump = self._haversine_m(
+                    d.get("lat"),
+                    d.get("lon"),
+                    prev_t.lat,
+                    prev_t.lon,
+                )
+                if class_key == "cow":
+                    jitter_px_gate = 8.0
+                    jitter_dist_gate = max(2.0, float(max_step_m) * 1.5)
+                    jitter_geo_gate = 2.0
+                elif class_key == "tower":
+                    jitter_px_gate = 12.0
+                    jitter_dist_gate = max(3.0, float(max_step_m) * 2.0)
+                    jitter_geo_gate = 3.5
+                else:
+                    jitter_px_gate = 10.0
+                    jitter_dist_gate = max(2.5, float(max_step_m) * 1.8)
+                    jitter_geo_gate = 2.5
+                if (
+                    math.isfinite(px_d)
+                    and math.isfinite(geo_jump)
+                    and float(px_d) <= float(jitter_px_gate)
+                    and float(geo_jump) <= float(jitter_geo_gate)
+                    and float(dist_jump) > float(jitter_dist_gate)
+                ):
+                    dist_meas = float(prev_t.dist)
+                else:
+                    dist_meas = max(float(prev_t.dist) - float(max_step_m), min(float(prev_t.dist) + float(max_step_m), float(dist_meas)))
+            dist = float(prev_t.dist) + a * (float(dist_meas) - float(prev_t.dist))
             conf_s = max(float(prev_t.conf), float(d.get("confidence")))
             self._tracks[obs_id] = VisionTrack(
                 obs_id=int(obs_id),
@@ -769,6 +1258,9 @@ class VisionSystem:
     @staticmethod
     def _class_name_key(class_name: str) -> str:
         return str(class_name or "").strip().lower()
+
+    def _is_static_class(self, class_name: str) -> bool:
+        return self._class_name_key(class_name) in STATIC_CLASS_KEYS
 
     def _max_box_area_frac_for_class(self, class_name: str) -> float:
         k = self._class_name_key(class_name)
@@ -901,6 +1393,7 @@ class VisionSystem:
                 dron_alt_agl = float(dron_alt_msl) - float(TERRAIN_ELEVATION_MSL)
             dron_alt_agl = float(dron_alt_agl or 0.0)
             dron_hdg = telemetry.get('heading', 0)
+            telemetry_source = str(telemetry.get("telemetry_source", "mavlink") or "mavlink").strip().lower()
             dron_yaw = float(telemetry.get('yaw', dron_hdg) or 0.0)
             dron_pitch = float(telemetry.get('pitch', 0) or 0.0)
             dron_roll = float(telemetry.get('roll', 0) or 0.0)
@@ -920,50 +1413,59 @@ class VisionSystem:
                 drone_x_m, drone_y_m = self._enu_xy_m(self._origin_lat, self._origin_lon, float(dron_lat), float(dron_lon))
             drone_z_m = float(dron_alt_agl)  # "up" meters above local ground
 
-            # 2. Captura de Pantalla
-            if self._capture_mode == "window":
-                if not self._capture_hwnd:
-                    self._capture_hwnd = self._win32_find_window()
-                    if self._capture_hwnd:
-                        self._win32_prepare_window(self._capture_hwnd)
-                if not self._capture_hwnd:
-                    # No window yet (Unreal PIE not started?)
-                    time.sleep(float(VISION_SLEEP_NO_WINDOW_S))
+            # 2. Captura de imagen (pantalla o video).
+            if self._capture_mode == "video":
+                img_bgr = self._read_video_frame()
+                if img_bgr is None:
+                    if self._video_loop:
+                        time.sleep(float(self._video_reopen_sleep_s))
+                    else:
+                        time.sleep(float(VISION_SLEEP_NO_MONITOR_S))
                     continue
+            else:
+                if self._capture_mode == "window":
+                    if not self._capture_hwnd:
+                        self._capture_hwnd = self._win32_find_window()
+                        if self._capture_hwnd:
+                            self._win32_prepare_window(self._capture_hwnd)
+                    if not self._capture_hwnd:
+                        # No window yet (Unreal PIE not started?)
+                        time.sleep(float(VISION_SLEEP_NO_WINDOW_S))
+                        continue
 
-                self.monitor = self._win32_client_region(self._capture_hwnd)
-                if not self.monitor:
-                    time.sleep(float(VISION_SLEEP_INVALID_MONITOR_S))
-                    continue
+                    self.monitor = self._win32_client_region(self._capture_hwnd)
+                    if not self.monitor:
+                        time.sleep(float(VISION_SLEEP_INVALID_MONITOR_S))
+                        continue
 
-                if not self._capture_found_logged:
-                    self._capture_found_logged = True
-                    log(
-                        "[CAPTURE] Window acquired hwnd={hwnd} client={w}x{h} at ({l},{t})".format(
-                            hwnd=int(self._capture_hwnd),
-                            w=int(self.monitor.get("width", 0) or 0),
-                            h=int(self.monitor.get("height", 0) or 0),
-                            l=int(self.monitor.get("left", 0) or 0),
-                            t=int(self.monitor.get("top", 0) or 0),
+                    if not self._capture_found_logged:
+                        self._capture_found_logged = True
+                        log(
+                            "[CAPTURE] Window acquired hwnd={hwnd} client={w}x{h} at ({l},{t})".format(
+                                hwnd=int(self._capture_hwnd),
+                                w=int(self.monitor.get("width", 0) or 0),
+                                h=int(self.monitor.get("height", 0) or 0),
+                                l=int(self.monitor.get("left", 0) or 0),
+                                t=int(self.monitor.get("top", 0) or 0),
+                            )
                         )
-                    )
 
-                # Keep on top if requested (helps if the window gets covered).
-                self._win32_prepare_window(self._capture_hwnd)
-                self._maybe_dock_debug_window()
+                    # Keep on top if requested (helps if the window gets covered).
+                    self._win32_prepare_window(self._capture_hwnd)
+                    self._maybe_dock_debug_window()
 
-            if not self.monitor:
-                time.sleep(float(VISION_SLEEP_NO_MONITOR_S))
-                continue
+                if not self.monitor:
+                    time.sleep(float(VISION_SLEEP_NO_MONITOR_S))
+                    continue
 
-            capture_region = self.monitor
-            if self._capture_mode == "window":
-                region = self._window_capture_region()
-                if region:
-                    capture_region = region
-            screenshot = np.array(self.sct.grab(capture_region))
-            # Convertir BGRA a BGR
-            img_bgr = cv2.cvtColor(screenshot, cv2.COLOR_BGRA2BGR)
+                capture_region = self.monitor
+                if self._capture_mode == "window":
+                    region = self._window_capture_region()
+                    if region:
+                        capture_region = region
+                screenshot = np.array(self.sct.grab(capture_region))
+                # Convertir BGRA a BGR
+                img_bgr = cv2.cvtColor(screenshot, cv2.COLOR_BGRA2BGR)
             frame_count += 1
 
             H, W = img_bgr.shape[:2]
@@ -1099,6 +1601,8 @@ class VisionSystem:
                         mount_pitch_deg=float(self._mount_pitch_deg),
                         mount_yaw_deg=float(self._mount_yaw_deg),
                         max_range_m=float(DETECTION_RANGE_M),
+                        clamp_to_max_range=bool(PROJECT_CLAMP_TO_MAX_RANGE),
+                        max_range_margin_m=float(PROJECT_MAX_RANGE_MARGIN_M),
                     )
                     if not projected:
                         reject_counts["projection_failed"] += 1
@@ -1216,6 +1720,7 @@ class VisionSystem:
                     overlay.append(
                         f"DRONE lat={float(dron_lat):.6f} lon={float(dron_lon):.6f} alt_msl={float(dron_alt_msl):.1f}m agl={float(dron_alt_agl):.1f}m"
                     )
+                    overlay.append(f"TELEMETRY source={telemetry_source}")
                     overlay.append(
                         f"DRONE RPY deg: roll={float(dron_roll):.1f} pitch={float(dron_pitch):.1f} yaw={float(dron_yaw):.1f}"
                     )
@@ -1351,6 +1856,7 @@ class VisionSystem:
                     pass
             
             # 6. Enviar al Brain
+            frame_dets = self._dedupe_frame_detections(frame_dets)
             seen_ids = self._update_tracks_from_detections(frame_dets, float(now_s))
 
             outgoing = []
@@ -1374,6 +1880,7 @@ class VisionSystem:
 
                 outgoing.append({
                     'id': int(t.obs_id),
+                    'source_id': int(t.obs_id),
                     'lat': float(t.lat),
                     'lon': float(t.lon),
                     'distance': float(t.dist),
@@ -1383,6 +1890,7 @@ class VisionSystem:
                     'bbox': t.bbox,
                 })
 
+            outgoing = self._collapse_static_outgoing(outgoing)
             outgoing.sort(key=lambda o: float(o.get("distance", float(MAVLINK_UNKNOWN_DISTANCE_M))))
             max_out = int(MAX_OBS_PER_FRAME) if int(MAX_OBS_PER_FRAME) > 0 else len(outgoing)
             outgoing = outgoing[:max_out]
@@ -1433,6 +1941,7 @@ class VisionSystem:
                             "drone_x_m": float(drone_x_m),
                             "drone_y_m": float(drone_y_m),
                             "drone_z_m": float(drone_z_m),
+                            "source": str(telemetry_source),
                         },
                         counts={
                             "raw_boxes": int(raw_boxes_total),
@@ -1480,7 +1989,8 @@ class VisionSystem:
                     try:
                         log(
                             f"[HB] fps={self._fps_ema:.1f} frame={frame_count} "
-                            f"capture={W}x{H} dets={last_dets} tracks={len(self._tracks)} send={last_send}"
+                            f"capture={W}x{H} dets={last_dets} tracks={len(self._tracks)} send={last_send} "
+                            f"tel={telemetry_source}"
                         )
                     except Exception:
                         pass
@@ -1498,6 +2008,11 @@ class VisionSystem:
             # log(f"Ciclo Vision: {time.perf_counter() - frame_now:.3f}s")
 
         cv2.destroyAllWindows()
+        try:
+            if self._video_capture is not None:
+                self._video_capture.release()
+        except Exception:
+            pass
         try:
             self._audit.close()
         except Exception:

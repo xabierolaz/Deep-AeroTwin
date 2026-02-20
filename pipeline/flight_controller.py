@@ -8,7 +8,7 @@ Actualizado para usar parametros realistas de vision:
 """
 
 import time, math, threading, sys, logging
-from typing import Optional
+from typing import Optional, Any
 from flask import Flask, request, jsonify
 from pymavlink import mavutil
 from porce_manager import PorcePlanner
@@ -31,6 +31,8 @@ from constants import (
     HEARTBEAT_TIMEOUT_S,
     OBSTACLE_EXPIRY_S,
     OBS_STATIC_CLASS_NAMES,
+    OBS_SOURCE_FILTER_ENABLE,
+    OBS_ALLOWED_SOURCES,
     OBS_TRACK_TTL_STATIC_S,
     OBS_TRACK_TTL_DYNAMIC_S,
     OBS_TRACK_ASSOC_STATIC_M,
@@ -38,6 +40,7 @@ from constants import (
     OBS_TRACK_MAX,
     EVASION_REPLAN_MIN_INTERVAL_S,
     EVASION_ROUTE_POINT_REACHED_M,
+    EVASION_ROUTE_MIN_POINTS,
     EVASION_DYNAMIC_REACTION_ENABLE,
     EVASION_REACTION_BASE_M,
     EVASION_REACTION_SPEED_GAIN_S,
@@ -48,11 +51,21 @@ from constants import (
     EVASION_PLANNER_OBS_MAX_DISTANCE_M,
     EVASION_PLANNER_OBS_MAX_COUNT,
     EVASION_FAILSAFE_MIN_DIST_M,
+    EVASION_WP_ADVANCE_MIN_OBS_DIST_M,
+    EVASION_WP_BLOCK_CORRIDOR_HALF_WIDTH_M,
+    EVASION_WP_BLOCK_FORCE_ADVANCE_ENABLE,
+    EVASION_WP_BLOCK_MAX_HOLD_S,
     EVASION_FAILSAFE_HOLD_S,
     EVASION_FAILSAFE_ESCALATE_ENABLE,
     EVASION_FAILSAFE_ESCALATE_FAILS,
+    EVASION_FAILSAFE_STAGE1_FAILS,
+    EVASION_FAILSAFE_STAGE2_FAILS,
+    EVASION_FAILSAFE_STAGE3_FAILS,
     EVASION_FAILSAFE_ESCALATE_WINDOW_S,
     EVASION_FAILSAFE_ESCALATE_COOLDOWN_S,
+    EVASION_FAILSAFE_LATERAL_OFFSET_M,
+    EVASION_FAILSAFE_LATERAL_FORWARD_GAIN,
+    EVASION_FAILSAFE_LATERAL_MIN_INTERVAL_S,
     EVASION_FAILSAFE_ESCALATE_ACTION,
     LAND_COMPLETED_REL_ALT_M,
     LAND_COMPLETION_GROUNDSPEED_MPS,
@@ -98,6 +111,12 @@ from constants import (
     AUDIT_BRAIN_DECISION_EVERY_S,
     AUDIT_BRAIN_MAX_OBS_IN_EVENT,
     OBSTACLE_TOKEN_REQUIRED,
+    UNREAL_TELEMETRY_INGEST_ENABLE,
+    UNREAL_TELEMETRY_TOKEN,
+    UNREAL_TELEMETRY_TOKEN_REQUIRED,
+    UNREAL_TELEMETRY_ACTIVE_TIMEOUT_S,
+    UNREAL_TELEMETRY_MAX_LOOKBACK_S,
+    UNREAL_TELEMETRY_MAX_FUTURE_S,
     BRAIN_ENABLE_EVASION,
     BRAIN_MOCK_MAVLINK,
     BRAIN_FORCE_ARM,
@@ -111,6 +130,13 @@ STATIC_OBS_CLASS_KEYS = {
     for name in OBS_STATIC_CLASS_NAMES
     if str(name).strip()
 }
+ALLOWED_OBS_SOURCE_KEYS = {
+    str(name).strip().lower()
+    for name in OBS_ALLOWED_SOURCES
+    if str(name).strip()
+}
+if not ALLOWED_OBS_SOURCE_KEYS:
+    ALLOWED_OBS_SOURCE_KEYS = {"vision"}
 
 WP_TOLERANCE_M = ARRIVAL_TOLERANCE_M
 
@@ -136,9 +162,27 @@ AUDIT_BRAIN_TRAJECTORY_HEADERS = [
     "evasion_path_len",
     "evasion_path_idx",
 ]
+AUDIT_BRAIN_UNREAL_TRUTH_CSV = "unreal_truth.csv"
+AUDIT_BRAIN_UNREAL_TRUTH_HEADERS = [
+    "ts",
+    "ue_ts",
+    "lat",
+    "lon",
+    "alt_msl",
+    "rel_alt",
+    "yaw",
+    "pitch",
+    "roll",
+    "x_m",
+    "y_m",
+    "z_m",
+    "frame",
+    "source",
+]
 _audit = ZeroTrustAudit(component="brain")
 if _audit.enabled:
     _audit.init_csv(AUDIT_BRAIN_TRAJECTORY_CSV, AUDIT_BRAIN_TRAJECTORY_HEADERS)
+    _audit.init_csv(AUDIT_BRAIN_UNREAL_TRUTH_CSV, AUDIT_BRAIN_UNREAL_TRUTH_HEADERS)
     _audit.log_event(
         "brain_config",
         reaction_distance_m=float(REACTION_DISTANCE_M),
@@ -155,6 +199,8 @@ if _audit.enabled:
         sitl_conn_string=str(SITL_CONN_STRING),
         obstacle_expiry_s=float(OBSTACLE_EXPIRY_S),
         obs_static_classes=list(STATIC_OBS_CLASS_KEYS),
+        obs_source_filter_enable=bool(OBS_SOURCE_FILTER_ENABLE),
+        obs_allowed_sources=list(ALLOWED_OBS_SOURCE_KEYS),
         obs_track_ttl_static_s=float(OBS_TRACK_TTL_STATIC_S),
         obs_track_ttl_dynamic_s=float(OBS_TRACK_TTL_DYNAMIC_S),
         obs_track_assoc_static_m=float(OBS_TRACK_ASSOC_STATIC_M),
@@ -162,20 +208,37 @@ if _audit.enabled:
         obs_track_max=int(OBS_TRACK_MAX),
         evasion_replan_min_interval_s=float(EVASION_REPLAN_MIN_INTERVAL_S),
         evasion_route_point_reached_m=float(EVASION_ROUTE_POINT_REACHED_M),
+        evasion_route_min_points=int(EVASION_ROUTE_MIN_POINTS),
         evasion_allow_replan_when_active=bool(EVASION_ALLOW_REPLAN_WHEN_ACTIVE),
         evasion_active_replan_distance_m=float(EVASION_ACTIVE_REPLAN_DISTANCE_M),
         evasion_planner_obs_max_distance_m=float(EVASION_PLANNER_OBS_MAX_DISTANCE_M),
         evasion_planner_obs_max_count=int(EVASION_PLANNER_OBS_MAX_COUNT),
         evasion_failsafe_min_dist_m=float(EVASION_FAILSAFE_MIN_DIST_M),
+        evasion_wp_advance_min_obs_dist_m=float(EVASION_WP_ADVANCE_MIN_OBS_DIST_M),
+        evasion_wp_block_corridor_half_width_m=float(EVASION_WP_BLOCK_CORRIDOR_HALF_WIDTH_M),
+        evasion_wp_block_force_advance_enable=bool(EVASION_WP_BLOCK_FORCE_ADVANCE_ENABLE),
+        evasion_wp_block_max_hold_s=float(EVASION_WP_BLOCK_MAX_HOLD_S),
         evasion_failsafe_hold_s=float(EVASION_FAILSAFE_HOLD_S),
         evasion_failsafe_escalate_enable=bool(EVASION_FAILSAFE_ESCALATE_ENABLE),
         evasion_failsafe_escalate_fails=int(EVASION_FAILSAFE_ESCALATE_FAILS),
+        evasion_failsafe_stage1_fails=int(EVASION_FAILSAFE_STAGE1_FAILS),
+        evasion_failsafe_stage2_fails=int(EVASION_FAILSAFE_STAGE2_FAILS),
+        evasion_failsafe_stage3_fails=int(EVASION_FAILSAFE_STAGE3_FAILS),
         evasion_failsafe_escalate_window_s=float(EVASION_FAILSAFE_ESCALATE_WINDOW_S),
         evasion_failsafe_escalate_cooldown_s=float(EVASION_FAILSAFE_ESCALATE_COOLDOWN_S),
+        evasion_failsafe_lateral_offset_m=float(EVASION_FAILSAFE_LATERAL_OFFSET_M),
+        evasion_failsafe_lateral_forward_gain=float(EVASION_FAILSAFE_LATERAL_FORWARD_GAIN),
+        evasion_failsafe_lateral_min_interval_s=float(EVASION_FAILSAFE_LATERAL_MIN_INTERVAL_S),
         evasion_failsafe_escalate_action=str(EVASION_FAILSAFE_ESCALATE_ACTION),
         porce_enable_evasion=bool(PORCE_ENABLE_EVASION),
         obstacle_token_required=bool(OBSTACLE_TOKEN_REQUIRED),
         obstacle_token_enabled=bool(OBSTACLE_TOKEN),
+        unreal_telemetry_ingest_enabled=bool(UNREAL_TELEMETRY_INGEST_ENABLE),
+        unreal_telemetry_token_required=bool(UNREAL_TELEMETRY_TOKEN_REQUIRED),
+        unreal_telemetry_token_enabled=bool(UNREAL_TELEMETRY_TOKEN),
+        unreal_telemetry_active_timeout_s=float(UNREAL_TELEMETRY_ACTIVE_TIMEOUT_S),
+        unreal_telemetry_max_lookback_s=float(UNREAL_TELEMETRY_MAX_LOOKBACK_S),
+        unreal_telemetry_max_future_s=float(UNREAL_TELEMETRY_MAX_FUTURE_S),
         planner_grid_radius_cells=int(PLANNER_GRID_RADIUS_CELLS),
         planner_max_iterations=int(PLANNER_MAX_ITERATIONS),
         planner_boundary_search_range_cells=int(PLANNER_BOUNDARY_SEARCH_RANGE_CELLS),
@@ -218,7 +281,10 @@ state = {
     'failsafe_hold_until_ts': 0.0,
     'failsafe_recent_route_fail_ts': [],
     'failsafe_last_escalate_ts': 0.0,
+    'failsafe_last_lateral_replan_ts': 0.0,
     'failsafe_action_active': '',
+    'wp_block_wp_idx': -1,
+    'wp_block_since_ts': 0.0,
     'takeoff_initiated': False,
     # E2E / observability flags
     'saw_evasion': False,
@@ -226,7 +292,12 @@ state = {
     'last_error': None,
     # Zero-trust / observability counters (do not affect flight logic)
     'inject_posts_unauthorized': 0,
-    'inject_posts_total': 0
+    'inject_posts_total': 0,
+    'unreal_truth': {},
+    'unreal_truth_last_update': 0.0,
+    'unreal_truth_posts_total': 0,
+    'unreal_truth_posts_unauthorized': 0,
+    'unreal_truth_last_error': '',
 }
 
 state_lock = threading.Lock()
@@ -496,6 +567,18 @@ def _clean_obs_distance(raw_value) -> float:
     return _clean_float(raw_value, float(MAVLINK_UNKNOWN_DISTANCE_M))
 
 
+def _clean_obs_source_id(raw_value):
+    if raw_value is None:
+        return None
+    try:
+        source_id = int(raw_value)
+    except Exception:
+        return None
+    if source_id < 0:
+        return None
+    return int(source_id)
+
+
 def _clean_float(raw_value, default_value: float) -> float:
     try:
         value = float(raw_value)
@@ -504,6 +587,125 @@ def _clean_float(raw_value, default_value: float) -> float:
     if not math.isfinite(value):
         value = float(default_value)
     return float(value)
+
+
+def _as_map(value: Any) -> dict:
+    if isinstance(value, dict):
+        return value
+    return {}
+
+
+def _pick_raw(maps: list[dict], keys: list[str]) -> Any:
+    for mp in maps:
+        if not isinstance(mp, dict):
+            continue
+        for key in keys:
+            if key in mp:
+                value = mp.get(key)
+                if value is None:
+                    continue
+                if isinstance(value, str) and not value.strip():
+                    continue
+                return value
+    return None
+
+
+def _pick_float_from_maps(maps: list[dict], keys: list[str]) -> Optional[float]:
+    raw = _pick_raw(maps, keys)
+    if raw is None:
+        return None
+    try:
+        value = float(raw)
+    except Exception:
+        return None
+    if not math.isfinite(value):
+        return None
+    return float(value)
+
+
+def _pick_int_from_maps(maps: list[dict], keys: list[str]) -> Optional[int]:
+    raw = _pick_raw(maps, keys)
+    if raw is None:
+        return None
+    try:
+        return int(float(raw))
+    except Exception:
+        return None
+
+
+def _parse_unreal_truth_payload(payload: Any, now_ts: float) -> tuple[Optional[dict], Optional[str]]:
+    root = _as_map(payload)
+    if not root:
+        return None, "payload_not_object"
+
+    telemetry = _as_map(root.get("telemetry"))
+    drone = _as_map(root.get("drone"))
+    state_map = _as_map(root.get("state"))
+    geo = _as_map(root.get("geo"))
+    transform = _as_map(root.get("transform"))
+    location = _as_map(transform.get("location"))
+    rotation = _as_map(transform.get("rotation"))
+    pose = _as_map(root.get("pose"))
+    pose_location = _as_map(pose.get("location"))
+    pose_rotation = _as_map(pose.get("rotation"))
+
+    maps_geo = [root, telemetry, drone, state_map, geo, transform, location, pose, pose_location]
+    maps_att = [root, telemetry, drone, state_map, transform, rotation, pose, pose_rotation]
+    maps_xyz = [root, telemetry, drone, state_map, transform, location, pose, pose_location]
+
+    lat = _pick_float_from_maps(maps_geo, ["lat", "latitude", "lat_deg", "geo_lat"])
+    lon = _pick_float_from_maps(maps_geo, ["lon", "lng", "longitude", "lon_deg", "geo_lon"])
+    alt_msl = _pick_float_from_maps(maps_geo, ["alt_msl", "alt", "altitude_msl", "z_msl", "height_msl"])
+    rel_alt = _pick_float_from_maps(maps_geo, ["rel_alt", "agl", "alt_agl", "height_agl"])
+
+    yaw = _pick_float_from_maps(maps_att, ["yaw", "heading", "hdg"])
+    pitch = _pick_float_from_maps(maps_att, ["pitch"])
+    roll = _pick_float_from_maps(maps_att, ["roll"])
+
+    x_m = _pick_float_from_maps(maps_xyz, ["x_m", "x", "ue_x", "east_m"])
+    y_m = _pick_float_from_maps(maps_xyz, ["y_m", "y", "ue_y", "north_m"])
+    z_m = _pick_float_from_maps(maps_xyz, ["z_m", "z", "ue_z", "up_m"])
+
+    ue_ts = _pick_float_from_maps(
+        [root, telemetry, drone, state_map],
+        ["ue_ts", "ts_ue", "timestamp_ue", "ue_time_s", "sim_time_s", "time_s", "timestamp"],
+    )
+    if ue_ts is None:
+        ue_ts = float(now_ts)
+
+    frame = _pick_int_from_maps([root, telemetry, drone, state_map], ["frame", "frame_idx", "tick", "seq", "sequence"])
+    source_raw = _pick_raw([root, telemetry, drone, state_map], ["source", "origin", "sender"])
+    source = str(source_raw).strip() if source_raw is not None else "unreal"
+    if not source:
+        source = "unreal"
+
+    if lat is None or lon is None:
+        return None, "missing_lat_lon"
+    if alt_msl is None and rel_alt is None:
+        return None, "missing_altitude"
+
+    age_s = float(now_ts) - float(ue_ts)
+    if age_s > float(UNREAL_TELEMETRY_MAX_LOOKBACK_S):
+        return None, f"ue_timestamp_too_old:{age_s:.3f}s"
+    if age_s < -float(UNREAL_TELEMETRY_MAX_FUTURE_S):
+        return None, f"ue_timestamp_in_future:{age_s:.3f}s"
+
+    return {
+        "ts": float(now_ts),
+        "ue_ts": float(ue_ts),
+        "lat": float(lat),
+        "lon": float(lon),
+        "alt_msl": None if alt_msl is None else float(alt_msl),
+        "rel_alt": None if rel_alt is None else float(rel_alt),
+        "yaw": None if yaw is None else float(yaw),
+        "pitch": None if pitch is None else float(pitch),
+        "roll": None if roll is None else float(roll),
+        "x_m": None if x_m is None else float(x_m),
+        "y_m": None if y_m is None else float(y_m),
+        "z_m": None if z_m is None else float(z_m),
+        "frame": None if frame is None else int(frame),
+        "source": str(source),
+    }, None
 
 
 def _obs_distance_from_tel_m(tel_lat: float, tel_lon: float, obs: dict) -> float:
@@ -607,6 +809,8 @@ def _rebuild_active_obstacles_locked(now_ts: float) -> list[dict]:
         active.append(
             {
                 "id": int(track.get("track_id", track.get("id", 0)) or 0),
+                "entity_id": str(track.get("entity_id") or f"brain:{int(track.get('track_id', 0) or 0)}"),
+                "source_id": _clean_obs_source_id(track.get("source_id")),
                 "distance": _clean_obs_distance(track.get("distance", float(MAVLINK_UNKNOWN_DISTANCE_M))),
                 "lat": track.get("lat"),
                 "lon": track.get("lon"),
@@ -638,9 +842,14 @@ def _ingest_obstacles_locked(obs_list: list[dict], now_ts: float) -> list[dict]:
     for obs in obs_list:
         class_name = str(obs.get("type") or "unknown")
         class_key = _obs_class_key(class_name)
+        obs_source = str(obs.get("source") or "").strip().lower()
+        obs_source_id = _clean_obs_source_id(obs.get("source_id"))
+        obs_entity_id = f"{obs_source}:{obs_source_id}" if obs_source and obs_source_id is not None else None
         assoc_m = float(_obs_assoc_distance_m(class_name))
         ttl_s = float(_obs_track_ttl_s(class_name))
+        is_static_class = bool(_obs_is_static(class_name))
 
+        same_source_id_track_id = None
         best_track_id = None
         best_dist_m = float("inf")
         for track_id, track in tracks.items():
@@ -652,10 +861,23 @@ def _ingest_obstacles_locked(obs_list: list[dict], now_ts: float) -> list[dict]:
                 age_s = float(ttl_s) + 1.0
             if age_s > float(ttl_s):
                 continue
+            track_source = str(track.get("source") or "").strip().lower()
+            track_source_id = _clean_obs_source_id(track.get("source_id"))
+            if obs_source and obs_source_id is not None:
+                if track_source == obs_source and track_source_id == obs_source_id:
+                    same_source_id_track_id = track_id
+                    break
+                if track_source == obs_source and track_source_id is not None and track_source_id != obs_source_id:
+                    if not is_static_class:
+                        continue
             dist_m = _obs_track_distance_m(obs, track)
             if dist_m < best_dist_m:
                 best_dist_m = float(dist_m)
                 best_track_id = track_id
+
+        if same_source_id_track_id is not None:
+            best_track_id = same_source_id_track_id
+            best_dist_m = 0.0
 
         if best_track_id is not None and best_dist_m <= assoc_m:
             track = tracks.get(best_track_id, {})
@@ -672,6 +894,10 @@ def _ingest_obstacles_locked(obs_list: list[dict], now_ts: float) -> list[dict]:
             )
             track["bbox"] = obs.get("bbox")
             track["source"] = obs.get("source")
+            if obs_source_id is not None:
+                track["source_id"] = int(obs_source_id)
+            if obs_entity_id:
+                track["entity_id"] = str(obs_entity_id)
             track["type"] = class_name
             track["last_seen_ts"] = float(now_ts)
             track["seen_count"] = int(track.get("seen_count", 1) or 1) + 1
@@ -691,6 +917,8 @@ def _ingest_obstacles_locked(obs_list: list[dict], now_ts: float) -> list[dict]:
             "type": class_name,
             "confidence": _clean_float(obs.get("confidence", 0.0), 0.0),
             "source": obs.get("source"),
+            "source_id": obs_source_id,
+            "entity_id": str(obs_entity_id) if obs_entity_id else f"brain:{int(track_id)}",
             "bbox": obs.get("bbox"),
             "first_seen_ts": float(now_ts),
             "last_seen_ts": float(now_ts),
@@ -755,11 +983,11 @@ def adaptive_reaction_distance_m(tel) -> tuple[float, float]:
     return float(reaction_m), float(speed_mps)
 
 
-def _failsafe_escalation_action() -> str:
+def _failsafe_terminal_action() -> str:
     action = str(EVASION_FAILSAFE_ESCALATE_ACTION).strip().upper()
-    if action in {"RTL", "LAND", "HOLD"}:
+    if action in {"RTL", "LAND"}:
         return action
-    return "RTL"
+    return "LAND"
 
 
 def _record_route_fail_for_failsafe_locked(now_ts: float) -> int:
@@ -779,53 +1007,235 @@ def _record_route_fail_for_failsafe_locked(now_ts: float) -> int:
     return int(len(kept))
 
 
-def _maybe_escalate_failsafe_locked(
+def _failsafe_stage_for_fail_count(fail_count: int) -> str:
+    count = int(fail_count)
+    if count >= int(EVASION_FAILSAFE_STAGE3_FAILS):
+        return str(_failsafe_terminal_action())
+    if count >= int(EVASION_FAILSAFE_STAGE2_FAILS):
+        return "REPLAN_LATERAL"
+    if count >= int(EVASION_FAILSAFE_STAGE1_FAILS):
+        return "HOLD"
+    return ""
+
+
+def _activate_terminal_failsafe_locked(
     now_ts: float,
     *,
+    action: str,
+    fail_count: int,
     wp_idx: int,
     nearest_distance_m: Optional[float],
     nearest_type: Optional[str],
-) -> tuple[str, int]:
-    fail_count = int(_record_route_fail_for_failsafe_locked(float(now_ts)))
-    if not bool(EVASION_FAILSAFE_ESCALATE_ENABLE):
-        return "", int(fail_count)
-    if int(fail_count) < int(EVASION_FAILSAFE_ESCALATE_FAILS):
-        return "", int(fail_count)
-
+) -> bool:
+    terminal_action = str(action).strip().upper()
+    if terminal_action not in {"RTL", "LAND"}:
+        return False
     last_escalate_ts = _clean_float(state.get("failsafe_last_escalate_ts", 0.0), 0.0)
     if (float(now_ts) - float(last_escalate_ts)) < float(EVASION_FAILSAFE_ESCALATE_COOLDOWN_S):
-        return "", int(fail_count)
-
-    action = _failsafe_escalation_action()
+        return False
     state["failsafe_last_escalate_ts"] = float(now_ts)
-    state["failsafe_action_active"] = str(action)
+    state["failsafe_action_active"] = str(terminal_action)
     state["evasion_path"] = []
     state["path_index"] = 0
     state["evasion_active"] = False
     state["evasion_grid_origin"] = None
     state["failsafe_hold_until_ts"] = 0.0
-    if str(action) in {"RTL", "LAND"}:
-        state["mission_state"] = "FAILED"
-        state["last_error"] = (
-            f"failsafe_escalation_{str(action).lower()}_"
-            f"fails={int(fail_count)}_window={float(EVASION_FAILSAFE_ESCALATE_WINDOW_S):.1f}s"
-        )
-    else:
-        state["last_error"] = f"failsafe_escalation_hold_fails={int(fail_count)}"
+    state["mission_state"] = "FAILED"
+    state["last_error"] = (
+        f"failsafe_escalation_{str(terminal_action).lower()}_"
+        f"fails={int(fail_count)}_window={float(EVASION_FAILSAFE_ESCALATE_WINDOW_S):.1f}s"
+    )
 
     if _audit.enabled:
         _audit.log_event(
             "failsafe_escalation_triggered",
-            action=str(action),
+            action=str(terminal_action),
             fail_count=int(fail_count),
-            threshold=int(EVASION_FAILSAFE_ESCALATE_FAILS),
+            threshold=int(EVASION_FAILSAFE_STAGE3_FAILS),
+            stage1_fails=int(EVASION_FAILSAFE_STAGE1_FAILS),
+            stage2_fails=int(EVASION_FAILSAFE_STAGE2_FAILS),
+            stage3_fails=int(EVASION_FAILSAFE_STAGE3_FAILS),
             window_s=float(EVASION_FAILSAFE_ESCALATE_WINDOW_S),
             cooldown_s=float(EVASION_FAILSAFE_ESCALATE_COOLDOWN_S),
             nearest_distance_m=None if nearest_distance_m is None else float(nearest_distance_m),
             nearest_type=None if nearest_type is None else str(nearest_type),
             wp_idx=int(wp_idx),
         )
-    return str(action), int(fail_count)
+    return True
+
+
+def _latlon_to_local_ne_m(lat_ref: float, lon_ref: float, lat: float, lon: float) -> tuple[float, float]:
+    dlat = math.radians(float(lat) - float(lat_ref))
+    dlon = math.radians(float(lon) - float(lon_ref))
+    north_m = dlat * float(EARTH_RADIUS_M)
+    east_m = dlon * float(EARTH_RADIUS_M) * (math.cos(math.radians(float(lat_ref))) or float(GEOMETRY_COS_LAT_EPS))
+    return float(north_m), float(east_m)
+
+
+def _offset_latlon_ne_m(lat_ref: float, lon_ref: float, north_m: float, east_m: float) -> tuple[float, float]:
+    dlat = float(north_m) / float(EARTH_RADIUS_M)
+    cos_lat = math.cos(math.radians(float(lat_ref))) or float(GEOMETRY_COS_LAT_EPS)
+    dlon = float(east_m) / (float(EARTH_RADIUS_M) * float(cos_lat))
+    return float(lat_ref) + math.degrees(float(dlat)), float(lon_ref) + math.degrees(float(dlon))
+
+
+def waypoint_blocking_obstacle_info(tel: dict, target_wp: dict, obstacles: list[dict]) -> tuple[Optional[dict], Optional[float]]:
+    tel_lat = float(tel.get("lat", 0.0) or 0.0)
+    tel_lon = float(tel.get("lon", 0.0) or 0.0)
+    target_lat = target_wp.get("lat")
+    target_lon = target_wp.get("lon")
+    if target_lat is None or target_lon is None:
+        return None, None
+
+    seg_n, seg_e = _latlon_to_local_ne_m(float(tel_lat), float(tel_lon), float(target_lat), float(target_lon))
+    seg_len = math.hypot(float(seg_n), float(seg_e))
+    if not math.isfinite(seg_len) or seg_len <= float(GEOMETRY_UNIT_EPS):
+        return None, None
+
+    seg_inv = 1.0 / max(float(seg_len), float(GEOMETRY_UNIT_EPS))
+    corridor_half_w_m = float(EVASION_WP_BLOCK_CORRIDOR_HALF_WIDTH_M)
+    max_obs_dist_m = float(EVASION_WP_ADVANCE_MIN_OBS_DIST_M)
+    best_obs = None
+    best_dist = float("inf")
+
+    for obs in obstacles:
+        lat = obs.get("lat")
+        lon = obs.get("lon")
+        if lat is None or lon is None:
+            continue
+        try:
+            obs_n, obs_e = _latlon_to_local_ne_m(float(tel_lat), float(tel_lon), float(lat), float(lon))
+        except Exception:
+            continue
+
+        along_m = ((float(obs_n) * float(seg_n)) + (float(obs_e) * float(seg_e))) * float(seg_inv)
+        if along_m < 0.0:
+            continue
+        if along_m > (float(seg_len) + float(corridor_half_w_m)):
+            continue
+
+        cross_m = abs((float(seg_n) * float(obs_e)) - (float(seg_e) * float(obs_n))) * float(seg_inv)
+        if cross_m > float(corridor_half_w_m):
+            continue
+
+        obs_dist = math.hypot(float(obs_n), float(obs_e))
+        if obs_dist > float(max_obs_dist_m):
+            continue
+
+        if obs_dist < best_dist:
+            best_dist = float(obs_dist)
+            best_obs = obs
+
+    if best_obs is None:
+        return None, None
+    return best_obs, float(best_dist)
+
+
+def _choose_lateral_sign_order(
+    nearest_north_m: Optional[float],
+    nearest_east_m: Optional[float],
+    lateral_north_unit: float,
+    lateral_east_unit: float,
+    offset_m: float,
+    forward_north_unit: float,
+    forward_east_unit: float,
+    forward_gain: float,
+) -> list[float]:
+    signs = [1.0, -1.0]
+    if nearest_north_m is None or nearest_east_m is None:
+        return signs
+    cand = []
+    for sign in signs:
+        cand_n = (float(forward_north_unit) * forward_gain + float(sign) * float(lateral_north_unit)) * float(offset_m)
+        cand_e = (float(forward_east_unit) * forward_gain + float(sign) * float(lateral_east_unit)) * float(offset_m)
+        clear_m = math.hypot(float(nearest_north_m) - float(cand_n), float(nearest_east_m) - float(cand_e))
+        cand.append((float(clear_m), float(sign)))
+    cand.sort(reverse=True)
+    return [float(item[1]) for item in cand]
+
+
+def build_lateral_replan_route(
+    tel: dict,
+    target_wp: dict,
+    obstacles: list[dict],
+    nearest_obs: Optional[dict],
+) -> tuple[Optional[list[dict]], dict]:
+    tel_lat = float(tel.get("lat", 0.0) or 0.0)
+    tel_lon = float(tel.get("lon", 0.0) or 0.0)
+    target_lat = target_wp.get("lat", tel_lat)
+    target_lon = target_wp.get("lon", tel_lon)
+
+    forward_n, forward_e = _latlon_to_local_ne_m(float(tel_lat), float(tel_lon), float(target_lat), float(target_lon))
+    forward_norm = math.hypot(float(forward_n), float(forward_e))
+
+    nearest_n = None
+    nearest_e = None
+    if nearest_obs is not None and nearest_obs.get("lat") is not None and nearest_obs.get("lon") is not None:
+        try:
+            nearest_n, nearest_e = _latlon_to_local_ne_m(
+                float(tel_lat),
+                float(tel_lon),
+                float(nearest_obs.get("lat")),
+                float(nearest_obs.get("lon")),
+            )
+        except Exception:
+            nearest_n = None
+            nearest_e = None
+
+    if not math.isfinite(forward_norm) or forward_norm <= float(GEOMETRY_UNIT_EPS):
+        if nearest_n is None or nearest_e is None:
+            return None, {"reason": "no_direction_vector"}
+        forward_n = -float(nearest_n)
+        forward_e = -float(nearest_e)
+        forward_norm = math.hypot(float(forward_n), float(forward_e))
+        if not math.isfinite(forward_norm) or forward_norm <= float(GEOMETRY_UNIT_EPS):
+            return None, {"reason": "degenerate_direction_vector"}
+
+    forward_n_unit = float(forward_n) / float(forward_norm)
+    forward_e_unit = float(forward_e) / float(forward_norm)
+    lateral_n_unit = -float(forward_e_unit)
+    lateral_e_unit = float(forward_n_unit)
+    offset_m = float(EVASION_FAILSAFE_LATERAL_OFFSET_M)
+    forward_gain = max(0.0, float(EVASION_FAILSAFE_LATERAL_FORWARD_GAIN))
+    min_points = max(1, int(EVASION_ROUTE_MIN_POINTS))
+    planner_obs = planner_obstacle_subset(tel, obstacles)
+    planner_obs_count = int(len(planner_obs))
+
+    signs = _choose_lateral_sign_order(
+        nearest_north_m=None if nearest_n is None else float(nearest_n),
+        nearest_east_m=None if nearest_e is None else float(nearest_e),
+        lateral_north_unit=float(lateral_n_unit),
+        lateral_east_unit=float(lateral_e_unit),
+        offset_m=float(offset_m),
+        forward_north_unit=float(forward_n_unit),
+        forward_east_unit=float(forward_e_unit),
+        forward_gain=float(forward_gain),
+    )
+    for sign in signs:
+        cand_n = (float(forward_n_unit) * float(forward_gain) + float(sign) * float(lateral_n_unit)) * float(offset_m)
+        cand_e = (float(forward_e_unit) * float(forward_gain) + float(sign) * float(lateral_e_unit)) * float(offset_m)
+        cand_lat, cand_lon = _offset_latlon_ne_m(float(tel_lat), float(tel_lon), float(cand_n), float(cand_e))
+        route = planner.plan_route(
+            float(tel_lat),
+            float(tel_lon),
+            float(cand_lat),
+            float(cand_lon),
+            planner_obs,
+        )
+        route_len = 0 if route is None else int(len(route))
+        if route and int(route_len) >= int(min_points):
+            return route, {
+                "planner_obs_count": int(planner_obs_count),
+                "route_points": int(route_len),
+                "sign": float(sign),
+                "target_lat": float(cand_lat),
+                "target_lon": float(cand_lon),
+            }
+
+    return None, {
+        "reason": "lateral_route_failed",
+        "planner_obs_count": int(planner_obs_count),
+    }
 
 def load_mission():
     wps = []
@@ -852,22 +1262,97 @@ def load_mission():
         log.error(f"Error cargando mision: {e}")
     return False
 
+
+def _merged_telemetry_for_vision_locked(now_ts: float) -> tuple[dict, bool, float]:
+    t = state["telemetry"]
+    merged = {
+        "lat": float(t.get("lat", 0.0) or 0.0),
+        "lon": float(t.get("lon", 0.0) or 0.0),
+        "alt": float(t.get("alt", 0.0) or 0.0),
+        "rel_alt": float(t.get("rel_alt", 0.0) or 0.0),
+        "heading": float(t.get("heading", 0.0) or 0.0),
+        "yaw": float(t.get("yaw", t.get("heading", 0.0)) or t.get("heading", 0.0) or 0.0),
+        "pitch": float(t.get("pitch", 0.0) or 0.0),
+        "roll": float(t.get("roll", 0.0) or 0.0),
+        "armed": bool(t.get("armed", False)),
+        "mode": str(t.get("mode", "UNKNOWN")),
+        "last_update": float(t.get("last_update", 0.0) or 0.0),
+    }
+
+    if not bool(UNREAL_TELEMETRY_INGEST_ENABLE):
+        return merged, False, float("inf")
+
+    unreal_last_update = _clean_float(state.get("unreal_truth_last_update", 0.0), 0.0)
+    unreal_age_s = float("inf")
+    use_unreal_truth = False
+    if unreal_last_update > 0.0:
+        unreal_age_s = float(now_ts) - float(unreal_last_update)
+    if (
+        unreal_last_update > 0.0
+        and math.isfinite(unreal_age_s)
+        and unreal_age_s <= float(UNREAL_TELEMETRY_ACTIVE_TIMEOUT_S)
+    ):
+        truth = state.get("unreal_truth", {})
+        if isinstance(truth, dict):
+            lat = truth.get("lat")
+            lon = truth.get("lon")
+            try:
+                lat_f = float(lat)
+                lon_f = float(lon)
+                if math.isfinite(lat_f) and math.isfinite(lon_f):
+                    use_unreal_truth = True
+                    merged["lat"] = float(lat_f)
+                    merged["lon"] = float(lon_f)
+            except Exception:
+                use_unreal_truth = False
+        if use_unreal_truth:
+            truth = state.get("unreal_truth", {})
+            alt_truth = truth.get("alt_msl", None)
+            rel_alt_truth = truth.get("rel_alt", None)
+            yaw_truth = truth.get("yaw", None)
+            pitch_truth = truth.get("pitch", None)
+            roll_truth = truth.get("roll", None)
+
+            if alt_truth is not None:
+                merged["alt"] = _clean_float(alt_truth, float(merged["alt"]))
+            if rel_alt_truth is not None:
+                merged["rel_alt"] = _clean_float(rel_alt_truth, float(merged["rel_alt"]))
+            if yaw_truth is not None:
+                merged["yaw"] = _clean_float(yaw_truth, float(merged["yaw"]))
+                merged["heading"] = float(merged["yaw"])
+            if pitch_truth is not None:
+                merged["pitch"] = _clean_float(pitch_truth, float(merged["pitch"]))
+            if roll_truth is not None:
+                merged["roll"] = _clean_float(roll_truth, float(merged["roll"]))
+
+    return merged, bool(use_unreal_truth), float(unreal_age_s)
+
+
 @app.route('/api/state/latest', methods=['GET'])
 def get_telemetry():
     with state_lock:
+        now_ts = float(time.time())
         t = state['telemetry']
-        active = (time.time() - t['last_update']) < HEARTBEAT_TIMEOUT_S
+        active = (now_ts - float(t.get('last_update', 0.0) or 0.0)) < HEARTBEAT_TIMEOUT_S
+        merged, use_unreal_truth, unreal_age_s = _merged_telemetry_for_vision_locked(now_ts)
         return jsonify({
-            "ts": time.time(),
-            "active": active,
-            "lat": t['lat'], "lon": t['lon'], "alt": t['alt'],
+            "ts": now_ts,
+            "active": bool(active),
+            "lat": float(merged["lat"]),
+            "lon": float(merged["lon"]),
+            "alt": float(merged["alt"]),
             # rel_alt is used by vision for pixel->ground projection (AGL approx in SIM).
-            "rel_alt": float(t.get('rel_alt', 0.0) or 0.0),
-            "heading": t['heading'],
+            "rel_alt": float(merged["rel_alt"]),
+            "heading": float(merged["heading"]),
             # Prefer attitude yaw (ATTITUDE) if available; fall back to heading.
-            "yaw": float(t.get('yaw', t['heading']) or t['heading']),
-            "roll": t['roll'], "pitch": t['pitch'],
-            "armed": t['armed'], "mode": t['mode']
+            "yaw": float(merged["yaw"]),
+            "roll": float(merged["roll"]),
+            "pitch": float(merged["pitch"]),
+            "armed": bool(merged["armed"]),
+            "mode": str(merged["mode"]),
+            "telemetry_source": "unreal_truth" if bool(use_unreal_truth) else "mavlink",
+            "unreal_truth_active": bool(use_unreal_truth),
+            "unreal_truth_age_s": None if not math.isfinite(unreal_age_s) else float(unreal_age_s),
         })
 
 @app.route('/api/states', methods=['GET'])
@@ -914,9 +1399,15 @@ def rx_obstacles():
         data = request.get_json(force=True)
         obs_list = data.get('obstacles', [])
         clean_obs = []
+        rejected_by_source = 0
         for o in obs_list:
             if not isinstance(o, dict):
                 continue
+            source_raw = str(o.get('source', '') or '').strip().lower()
+            if bool(OBS_SOURCE_FILTER_ENABLE):
+                if not source_raw or source_raw not in ALLOWED_OBS_SOURCE_KEYS:
+                    rejected_by_source += 1
+                    continue
             lat = o.get('lat')
             lon = o.get('lon')
             try:
@@ -940,13 +1431,14 @@ def rx_obstacles():
 
             clean_obs.append({
                 'id': o.get('id', 0),
+                'source_id': _clean_obs_source_id(o.get('source_id', o.get('id'))),
                 'distance': distance,
                 'lat': lat,
                 'lon': lon,
                 # Optional metadata (kept for future audit/debug; ignored by planner for now)
                 'type': o.get('type'),
                 'confidence': confidence,
-                'source': o.get('source'),
+                'source': source_raw or o.get('source'),
                 'bbox': o.get('bbox'),
             })
         with state_lock:
@@ -966,6 +1458,9 @@ def rx_obstacles():
                 sample_truncated=bool(len(active_obs) > sample_n),
                 posts_total=int(total_posts),
                 unauthorized_total=int(unauthorized_posts),
+                rejected_by_source=int(rejected_by_source),
+                source_filter_enable=bool(OBS_SOURCE_FILTER_ENABLE),
+                allowed_sources=list(ALLOWED_OBS_SOURCE_KEYS),
                 remote_addr=str(request.remote_addr or ""),
             )
         return jsonify(status="ok")
@@ -974,15 +1469,140 @@ def rx_obstacles():
             _audit.log_event("obstacle_ingest_error", error=str(e))
         return jsonify(error=str(e)), 400
 
+
+@app.route('/api/unreal/telemetry', methods=['POST'])
+def rx_unreal_telemetry():
+    if not bool(UNREAL_TELEMETRY_INGEST_ENABLE):
+        with state_lock:
+            state['unreal_truth_last_error'] = 'ingest_disabled'
+        if _audit.enabled:
+            _audit.log_event("unreal_truth_rejected", reason="ingest_disabled")
+        return jsonify(error="unreal_telemetry_ingest_disabled"), 403
+
+    expected_token = str(UNREAL_TELEMETRY_TOKEN)
+    if UNREAL_TELEMETRY_TOKEN_REQUIRED and not expected_token:
+        with state_lock:
+            state['unreal_truth_last_error'] = 'token_required_but_not_configured'
+        if _audit.enabled:
+            _audit.log_event("unreal_truth_rejected", reason="token_required_but_not_configured")
+        return jsonify(error="server_misconfigured_missing_unreal_token"), 503
+
+    if expected_token:
+        got = request.headers.get('X-PORCE-Token', '')
+        if got != expected_token:
+            with state_lock:
+                state['unreal_truth_posts_unauthorized'] = int(state.get('unreal_truth_posts_unauthorized', 0)) + 1
+                state['unreal_truth_last_error'] = 'unauthorized_token'
+            if _audit.enabled:
+                _audit.log_event(
+                    "unreal_truth_rejected",
+                    reason="unauthorized_token",
+                    remote_addr=str(request.remote_addr or ""),
+                )
+            return jsonify(error="unauthorized"), 401
+
+    try:
+        data = request.get_json(force=True)
+        now_ts = float(time.time())
+        parsed, err = _parse_unreal_truth_payload(data, now_ts)
+        if parsed is None:
+            reason = str(err or "invalid_payload")
+            with state_lock:
+                state['unreal_truth_last_error'] = reason
+            if _audit.enabled:
+                _audit.log_event(
+                    "unreal_truth_rejected",
+                    reason=reason,
+                    remote_addr=str(request.remote_addr or ""),
+                )
+            return jsonify(error=reason), 400
+
+        with state_lock:
+            home = state.get('home') or {}
+            home_alt = _clean_float(home.get('alt', 0.0), 0.0)
+
+            alt_msl = parsed.get('alt_msl', None)
+            rel_alt = parsed.get('rel_alt', None)
+            if alt_msl is None and rel_alt is not None:
+                alt_msl = float(home_alt) + float(rel_alt)
+            if rel_alt is None and alt_msl is not None:
+                rel_alt = float(alt_msl) - float(home_alt)
+            parsed['alt_msl'] = None if alt_msl is None else float(alt_msl)
+            parsed['rel_alt'] = None if rel_alt is None else float(rel_alt)
+
+            state['unreal_truth'] = dict(parsed)
+            state['unreal_truth_last_update'] = float(now_ts)
+            state['unreal_truth_last_error'] = ''
+            state['unreal_truth_posts_total'] = int(state.get('unreal_truth_posts_total', 0)) + 1
+            posts_total = int(state.get('unreal_truth_posts_total', 0))
+            unauthorized_total = int(state.get('unreal_truth_posts_unauthorized', 0))
+
+        if _audit.enabled:
+            _audit.append_csv_row(
+                AUDIT_BRAIN_UNREAL_TRUTH_CSV,
+                AUDIT_BRAIN_UNREAL_TRUTH_HEADERS,
+                {
+                    "ts": float(parsed.get("ts", now_ts)),
+                    "ue_ts": float(parsed.get("ue_ts", now_ts)),
+                    "lat": float(parsed.get("lat", 0.0) or 0.0),
+                    "lon": float(parsed.get("lon", 0.0) or 0.0),
+                    "alt_msl": "" if parsed.get("alt_msl", None) is None else float(parsed.get("alt_msl")),
+                    "rel_alt": "" if parsed.get("rel_alt", None) is None else float(parsed.get("rel_alt")),
+                    "yaw": "" if parsed.get("yaw", None) is None else float(parsed.get("yaw")),
+                    "pitch": "" if parsed.get("pitch", None) is None else float(parsed.get("pitch")),
+                    "roll": "" if parsed.get("roll", None) is None else float(parsed.get("roll")),
+                    "x_m": "" if parsed.get("x_m", None) is None else float(parsed.get("x_m")),
+                    "y_m": "" if parsed.get("y_m", None) is None else float(parsed.get("y_m")),
+                    "z_m": "" if parsed.get("z_m", None) is None else float(parsed.get("z_m")),
+                    "frame": "" if parsed.get("frame", None) is None else int(parsed.get("frame")),
+                    "source": str(parsed.get("source", "unreal")),
+                },
+            )
+            _audit.log_event(
+                "unreal_truth_ingest",
+                posts_total=int(posts_total),
+                unauthorized_total=int(unauthorized_total),
+                remote_addr=str(request.remote_addr or ""),
+                sample={
+                    "lat": float(parsed.get("lat", 0.0) or 0.0),
+                    "lon": float(parsed.get("lon", 0.0) or 0.0),
+                    "alt_msl": parsed.get("alt_msl", None),
+                    "rel_alt": parsed.get("rel_alt", None),
+                    "yaw": parsed.get("yaw", None),
+                    "pitch": parsed.get("pitch", None),
+                    "roll": parsed.get("roll", None),
+                    "ue_ts": float(parsed.get("ue_ts", now_ts)),
+                },
+            )
+        return jsonify(status="ok")
+    except Exception as e:
+        with state_lock:
+            state['unreal_truth_last_error'] = str(e)
+        if _audit.enabled:
+            _audit.log_event("unreal_truth_error", error=str(e))
+        return jsonify(error=str(e)), 400
+
+
 @app.route('/api/status', methods=['GET'])
 def status():
     with state_lock:
         t = state['telemetry']
         telemetry_active = (time.time() - t['last_update']) < HEARTBEAT_TIMEOUT_S
+        now_ts = float(time.time())
+        unreal_last_update = float(state.get('unreal_truth_last_update', 0.0) or 0.0)
+        unreal_age_s = float(now_ts - unreal_last_update) if unreal_last_update > 0.0 else float('inf')
+        unreal_active = bool(
+            bool(UNREAL_TELEMETRY_INGEST_ENABLE)
+            and unreal_last_update > 0.0
+            and unreal_age_s <= float(UNREAL_TELEMETRY_ACTIVE_TIMEOUT_S)
+        )
         return jsonify({
             'mode': state['telemetry']['mode'],
             'armed': bool(state['telemetry']['armed']),
             'telemetry_active': bool(telemetry_active),
+            'unreal_telemetry_ingest_enabled': bool(UNREAL_TELEMETRY_INGEST_ENABLE),
+            'unreal_truth_active': bool(unreal_active),
+            'unreal_truth_age_s': None if not math.isfinite(unreal_age_s) else float(unreal_age_s),
             'wp_idx': state['current_wp_idx'],
             'evasion': state['evasion_active'],
             'obstacles_count': len(state['obstacles']),
@@ -996,20 +1616,9 @@ def status():
             'token_enabled': bool(OBSTACLE_TOKEN),
             'inject_posts_total': int(state.get('inject_posts_total', 0)),
             'inject_posts_unauthorized': int(state.get('inject_posts_unauthorized', 0)),
-        })
-
-# --- PIPELINE B: UNREAL SYNC ENDPOINT ---
-@app.route('/api/unreal/sync', methods=['GET'])
-def unreal_sync():
-    """
-    Endpoint especifico para que Unreal Engine (VaRest) consulte
-    que objetos debe spawnear en el Gemelo Digital.
-    """
-    with state_lock:
-        # Formato simplificado para Blueprint
-        return jsonify({
-            "timestamp": time.time(),
-            "obstacles": state['obstacles']
+            'unreal_truth_posts_total': int(state.get('unreal_truth_posts_total', 0)),
+            'unreal_truth_posts_unauthorized': int(state.get('unreal_truth_posts_unauthorized', 0)),
+            'unreal_truth_last_error': str(state.get('unreal_truth_last_error', '') or ''),
         })
 
 def mavlink_loop():
@@ -1149,6 +1758,7 @@ def control_loop():
     last_evasion_status_log_ts = 0.0
     last_nav_status_log_ts = 0.0
     last_failsafe_status_log_ts = 0.0
+    last_wp_block_status_log_ts = 0.0
     last_evasion_active = False
     while True:
         time.sleep(float(CONTROL_LOOP_PERIOD_S))
@@ -1158,6 +1768,10 @@ def control_loop():
             tel = state['telemetry'].copy()
             obs_ts = float(state.get('last_obstacle_track_seen', 0.0) or 0.0)
             obs_ingest_ts = float(state.get('last_obstacle_update', 0.0) or 0.0)
+            unreal_last_update_ts = float(state.get('unreal_truth_last_update', 0.0) or 0.0)
+            unreal_posts_total = int(state.get('unreal_truth_posts_total', 0) or 0)
+            unreal_posts_unauthorized = int(state.get('unreal_truth_posts_unauthorized', 0) or 0)
+            unreal_last_error = str(state.get('unreal_truth_last_error', '') or '')
             current_idx = state['current_wp_idx']
             wps = state['waypoints']
             home = state['home']
@@ -1181,7 +1795,19 @@ def control_loop():
             rel_alt = tel.get('rel_alt', 0.0)
             mode = tel.get('mode', 'UNK')
             obs_count = len(obs)
-            log.info(f"[STATUS] Mode: {mode} | GPS: {lat:.6f}, {lon:.6f} Alt: {alt:.1f}m (rel {rel_alt:.1f}m) | WP: {current_idx} | Obs: {obs_count}")
+            unreal_age_s = float(now_loop - unreal_last_update_ts) if unreal_last_update_ts > 0.0 else float('inf')
+            unreal_active = bool(
+                bool(UNREAL_TELEMETRY_INGEST_ENABLE)
+                and unreal_last_update_ts > 0.0
+                and unreal_age_s <= float(UNREAL_TELEMETRY_ACTIVE_TIMEOUT_S)
+            )
+            unreal_age_txt = "n/a" if not math.isfinite(unreal_age_s) else f"{unreal_age_s:.2f}s"
+            unreal_err_txt = unreal_last_error if unreal_last_error else "-"
+            log.info(
+                f"[STATUS] Mode: {mode} | GPS: {lat:.6f}, {lon:.6f} Alt: {alt:.1f}m (rel {rel_alt:.1f}m) "
+                f"| WP: {current_idx} | Obs: {obs_count} "
+                f"| UE: active={int(unreal_active)} age={unreal_age_txt} posts={unreal_posts_total} unauth={unreal_posts_unauthorized} err={unreal_err_txt}"
+            )
 
         if _audit.enabled and (now_loop - last_traj_audit_ts) >= float(AUDIT_BRAIN_TRAJ_EVERY_S):
             last_traj_audit_ts = now_loop
@@ -1325,6 +1951,50 @@ def control_loop():
                     log.info(f"[TAKEOFF] Esperando altitud de despegue: {target_takeoff_alt_msl:.1f}m (Actual: {tel['alt']:.1f}m)")
                 continue
 
+        wp_target = None
+        wp_dist_m = None
+        wp_block_obs = None
+        wp_block_dist = None
+        wp_block_in_tolerance = False
+        wp_block_elapsed_s = 0.0
+        wp_block_timeout_ready = False
+
+        if current_idx < len(wps):
+            wp_target = wps[current_idx]
+            wp_dist_m = haversine(tel['lat'], tel['lon'], wp_target['lat'], wp_target['lon'])
+            if float(wp_dist_m) < float(WP_TOLERANCE_M):
+                wp_block_obs, wp_block_dist = waypoint_blocking_obstacle_info(tel, wp_target, obs)
+                if wp_block_obs is None:
+                    near_obs_gate, near_obs_gate_dist = nearest_obstacle_info(tel, obs)
+                    if (
+                        near_obs_gate is not None
+                        and near_obs_gate_dist is not None
+                        and float(near_obs_gate_dist) <= float(EVASION_WP_ADVANCE_MIN_OBS_DIST_M)
+                    ):
+                        wp_block_obs = near_obs_gate
+                        wp_block_dist = float(near_obs_gate_dist)
+                wp_block_in_tolerance = bool(wp_block_obs is not None)
+
+        with state_lock:
+            if wp_block_in_tolerance:
+                tracked_wp_idx = int(state.get('wp_block_wp_idx', -1) or -1)
+                block_since_ts = float(state.get('wp_block_since_ts', 0.0) or 0.0)
+                if tracked_wp_idx != int(current_idx) or block_since_ts <= 0.0:
+                    block_since_ts = float(now_loop)
+                    state['wp_block_wp_idx'] = int(current_idx)
+                    state['wp_block_since_ts'] = float(block_since_ts)
+                wp_block_elapsed_s = max(0.0, float(now_loop) - float(block_since_ts))
+            else:
+                state['wp_block_wp_idx'] = -1
+                state['wp_block_since_ts'] = 0.0
+
+        if (
+            wp_block_in_tolerance
+            and float(EVASION_WP_BLOCK_MAX_HOLD_S) > 0.0
+            and float(wp_block_elapsed_s) >= float(EVASION_WP_BLOCK_MAX_HOLD_S)
+        ):
+            wp_block_timeout_ready = True
+
         # --- ALGORITMO PORCE (EVASION) ---
         active_path = []
         path_idx = 0
@@ -1335,6 +2005,7 @@ def control_loop():
         decision_replan_blocked = False
         decision_hold_active = False
         decision_failsafe_action = str(failsafe_action_active_now)
+        decision_terminal_escalated = False
         evasion_last_replan_ts = 0.0
         obs_fresh = bool(obs)
         reaction_distance_eval_m, speed_eval_mps = adaptive_reaction_distance_m(tel)
@@ -1342,15 +2013,38 @@ def control_loop():
         min_dist_eval = None
         planner_obs_count = 0
         can_replan_now = False
-        with state_lock:
-            active_path = list(state['evasion_path'])
-            path_idx = int(state['path_index'])
-            evasion_last_replan_ts = float(state.get('evasion_last_replan_ts', 0.0))
-            failsafe_hold_until_ts = float(state.get('failsafe_hold_until_ts', 0.0) or 0.0)
-            decision_failsafe_action = str(state.get('failsafe_action_active', '') or '').strip().upper()
-            hold_active = float(now_loop) < float(failsafe_hold_until_ts)
-            decision_hold_active = bool(hold_active)
-            interval_ok = (now_loop - float(evasion_last_replan_ts)) >= float(EVASION_REPLAN_MIN_INTERVAL_S)
+        if True:
+            with state_lock:
+                active_path = list(state['evasion_path'])
+                path_idx = int(state['path_index'])
+                evasion_last_replan_ts = float(state.get('evasion_last_replan_ts', 0.0))
+                failsafe_hold_until_ts = float(state.get('failsafe_hold_until_ts', 0.0) or 0.0)
+                decision_failsafe_action = str(state.get('failsafe_action_active', '') or '').strip().upper()
+                hold_active = float(now_loop) < float(failsafe_hold_until_ts)
+                decision_hold_active = bool(hold_active)
+                interval_ok = (now_loop - float(evasion_last_replan_ts)) >= float(EVASION_REPLAN_MIN_INTERVAL_S)
+
+            if (
+                current_idx < len(wps)
+                and wp_dist_m is not None
+                and float(wp_dist_m) < float(WP_TOLERANCE_M)
+                and wp_block_obs is None
+                and not active_path
+            ):
+                log.info(f"[REACHED] WP{current_idx} alcanzado (pre-PORCE). Siguiente.")
+                with state_lock:
+                    state['current_wp_idx'] += 1
+                    state['wp_block_wp_idx'] = -1
+                    state['wp_block_since_ts'] = 0.0
+                    state['failsafe_recent_route_fail_ts'] = []
+                    state['failsafe_hold_until_ts'] = 0.0
+                if _audit.enabled:
+                    _audit.log_event(
+                        "waypoint_advance_pre_porce",
+                        wp_idx=int(current_idx),
+                        wp_distance_m=float(wp_dist_m),
+                    )
+                continue
 
             if obs_fresh:
                 nearest_eval, min_dist_eval = nearest_obstacle_info(tel, obs)
@@ -1358,6 +2052,10 @@ def control_loop():
 
                 if hold_active:
                     decision_reason = "failsafe_hold_active"
+                elif wp_block_in_tolerance:
+                    decision_reason = "wp_blocked_in_tolerance"
+                    decision_replan_blocked = True
+                    can_replan_now = False
                 elif nearest_eval is None:
                     decision_reason = "no_obstacles"
                 elif not PORCE_ENABLE_EVASION:
@@ -1366,14 +2064,29 @@ def control_loop():
                     decision_reason = "distance_above_reaction"
                 else:
                     can_replan_now = bool(interval_ok)
-                    if active_path and not bool(EVASION_ALLOW_REPLAN_WHEN_ACTIVE):
-                        decision_reason = "replan_disabled_active_path"
-                        decision_replan_blocked = True
-                        can_replan_now = False
-                    elif active_path and float(min_dist_eval) > float(EVASION_ACTIVE_REPLAN_DISTANCE_M):
-                        decision_reason = "active_replan_distance_gate"
-                        decision_replan_blocked = True
-                        can_replan_now = False
+                    should_plan_route = False
+                    if active_path:
+                        if not bool(EVASION_ALLOW_REPLAN_WHEN_ACTIVE):
+                            decision_reason = "evasion_in_progress"
+                            decision_replan_blocked = True
+                            can_replan_now = False
+                        elif min_dist_eval is None:
+                            decision_reason = "replan_blocked_active_no_distance"
+                            decision_replan_blocked = True
+                            can_replan_now = False
+                        elif float(min_dist_eval) > float(EVASION_ACTIVE_REPLAN_DISTANCE_M):
+                            decision_reason = "replan_blocked_active_distance"
+                            decision_replan_blocked = True
+                            can_replan_now = False
+                        elif not interval_ok:
+                            decision_reason = "replan_blocked_active_interval"
+                            decision_replan_blocked = True
+                            can_replan_now = False
+                        else:
+                            decision_reason = "trigger_plan_route_active"
+                            decision_triggered = True
+                            should_plan_route = True
+                            can_replan_now = True
                     elif not interval_ok:
                         decision_reason = "replan_blocked"
                         decision_replan_blocked = True
@@ -1381,6 +2094,10 @@ def control_loop():
                     else:
                         decision_reason = "trigger_plan_route"
                         decision_triggered = True
+                        should_plan_route = True
+                        can_replan_now = True
+
+                    if should_plan_route:
                         log.warning(f"[PORCE] Obstaculo detectado a {float(min_dist_eval):.1f}m. Planificando ruta A*...")
                         if len(wps) > 0:
                             target_wp = wps[current_idx] if current_idx < len(wps) else wps[-1]
@@ -1396,7 +2113,12 @@ def control_loop():
                             target_wp['lon'],
                             planner_obs,
                         )
-                        if new_route:
+                        min_route_points = max(1, int(EVASION_ROUTE_MIN_POINTS))
+                        route_len = 0 if new_route is None else int(len(new_route))
+                        route_valid = bool(new_route) and int(route_len) >= int(min_route_points)
+                        route_single_point = bool(new_route) and int(route_len) == 1
+                        route_degenerate = bool(new_route) and not bool(route_valid)
+                        if route_valid:
                             state['evasion_path'] = new_route
                             state['evasion_grid_origin'] = {'lat': tel['lat'], 'lon': tel['lon']}
                             state['path_index'] = 0
@@ -1405,46 +2127,230 @@ def control_loop():
                             state['evasion_last_replan_ts'] = now_loop
                             state['evasion_replans'] = int(state.get('evasion_replans', 0)) + 1
                             state['failsafe_hold_until_ts'] = 0.0
+                            state['failsafe_recent_route_fail_ts'] = []
                             active_path = list(new_route)
                             path_idx = 0
-                            decision_route_points = int(len(new_route))
+                            decision_route_points = int(route_len)
                             decision_reason = "route_generated"
                             if _audit.enabled:
                                 _audit.log_event(
                                     "evasion_route_generated",
                                     nearest_distance_m=float(min_dist_eval),
                                     nearest_type=str(decision_nearest_type),
-                                    route_points=int(len(new_route)),
+                                    route_points=int(route_len),
                                     planner_obs_count=int(planner_obs_count),
                                     wp_idx=int(current_idx),
                                     can_replan_now=bool(can_replan_now),
                                 )
-                            log.info(f"[PORCE] Ruta generada: {len(new_route)} sub-puntos.")
-                        else:
-                            decision_reason = "route_failed"
+                            log.info(f"[PORCE] Ruta generada: {route_len} sub-puntos.")
+                        elif route_single_point:
                             state['evasion_last_replan_ts'] = now_loop
+                            state['failsafe_hold_until_ts'] = 0.0
+                            failsafe_hold_until_ts = 0.0
+                            decision_reason = "route_single_point"
+                            log.warning(
+                                "[PORCE] Ruta A* de 1 punto (objetivo en misma celda). "
+                                "No se activa hold; continuando navegacion."
+                            )
+                            if _audit.enabled:
+                                _audit.log_event(
+                                    "evasion_route_single_point",
+                                    nearest_distance_m=float(min_dist_eval),
+                                    nearest_type=str(decision_nearest_type),
+                                    route_points=int(route_len),
+                                    route_min_points=int(min_route_points),
+                                    planner_obs_count=int(planner_obs_count),
+                                    wp_idx=int(current_idx),
+                                )
+                        else:
+                            state['evasion_last_replan_ts'] = now_loop
+                            decision_reason = "route_failed"
+                            if route_degenerate:
+                                decision_reason = "route_degenerate"
+                                log.error(
+                                    f"[PORCE] Ruta A* degenerada ({route_len} puntos). "
+                                    f"Minimo requerido={min_route_points}. Tratando como fallo."
+                                )
+                                if _audit.enabled:
+                                    _audit.log_event(
+                                        "evasion_route_degenerate",
+                                        nearest_distance_m=float(min_dist_eval),
+                                        nearest_type=str(decision_nearest_type),
+                                        route_points=int(route_len),
+                                        route_min_points=int(min_route_points),
+                                        planner_obs_count=int(planner_obs_count),
+                                        wp_idx=int(current_idx),
+                                    )
                             if (
                                 min_dist_eval is not None
                                 and float(min_dist_eval) <= float(EVASION_FAILSAFE_MIN_DIST_M)
                             ):
-                                escalated_action, fail_count = _maybe_escalate_failsafe_locked(
-                                    float(now_loop),
-                                    wp_idx=int(current_idx),
-                                    nearest_distance_m=float(min_dist_eval),
-                                    nearest_type=None if decision_nearest_type is None else str(decision_nearest_type),
-                                )
-                                if escalated_action:
-                                    decision_failsafe_action = str(escalated_action)
-                                    decision_reason = f"failsafe_escalated_{str(escalated_action).lower()}"
-                                    decision_hold_active = bool(str(escalated_action) == "HOLD")
-                                    if str(escalated_action) == "HOLD":
+                                fail_count = int(_record_route_fail_for_failsafe_locked(float(now_loop)))
+                                stage_action = "HOLD_ONLY"
+                                if bool(EVASION_FAILSAFE_ESCALATE_ENABLE):
+                                    stage_action = str(_failsafe_stage_for_fail_count(fail_count) or "HOLD").upper()
+                                if _audit.enabled:
+                                    _audit.log_event(
+                                        "failsafe_stage_action",
+                                        stage_action=str(stage_action),
+                                        fail_count=int(fail_count),
+                                        stage1_fails=int(EVASION_FAILSAFE_STAGE1_FAILS),
+                                        stage2_fails=int(EVASION_FAILSAFE_STAGE2_FAILS),
+                                        stage3_fails=int(EVASION_FAILSAFE_STAGE3_FAILS),
+                                        nearest_distance_m=float(min_dist_eval),
+                                        nearest_type=str(decision_nearest_type),
+                                        planner_obs_count=int(planner_obs_count),
+                                        wp_idx=int(current_idx),
+                                    )
+
+                                if stage_action == "REPLAN_LATERAL":
+                                    last_lateral_replan_ts = _clean_float(
+                                        state.get("failsafe_last_lateral_replan_ts", 0.0),
+                                        0.0,
+                                    )
+                                    lateral_interval_ok = (
+                                        float(now_loop) - float(last_lateral_replan_ts)
+                                    ) >= float(EVASION_FAILSAFE_LATERAL_MIN_INTERVAL_S)
+                                    lateral_meta = {}
+                                    lateral_route = None
+                                    if lateral_interval_ok:
+                                        lateral_route, lateral_meta = build_lateral_replan_route(
+                                            tel,
+                                            target_wp,
+                                            obs,
+                                            nearest_eval,
+                                        )
+                                        state["failsafe_last_lateral_replan_ts"] = float(now_loop)
+                                    else:
+                                        lateral_meta = {"reason": "cooldown"}
+
+                                    if lateral_route and int(len(lateral_route)) >= int(min_route_points):
+                                        state['evasion_path'] = list(lateral_route)
+                                        state['evasion_grid_origin'] = {'lat': tel['lat'], 'lon': tel['lon']}
+                                        state['path_index'] = 0
+                                        state['evasion_active'] = True
+                                        state['saw_evasion'] = True
+                                        state['evasion_last_replan_ts'] = now_loop
+                                        state['evasion_replans'] = int(state.get('evasion_replans', 0)) + 1
+                                        state['failsafe_hold_until_ts'] = 0.0
+                                        state['failsafe_recent_route_fail_ts'] = []
+                                        failsafe_hold_until_ts = 0.0
+                                        active_path = list(lateral_route)
+                                        path_idx = 0
+                                        decision_route_points = int(len(lateral_route))
+                                        decision_reason = "failsafe_lateral_replan"
+                                        decision_triggered = True
+                                        decision_hold_active = False
+                                        can_replan_now = True
+                                        log.warning(
+                                            f"[PORCE] Failsafe etapa 2: ruta lateral generada ({len(lateral_route)} puntos)."
+                                        )
+                                        if _audit.enabled:
+                                            _audit.log_event(
+                                                "failsafe_lateral_replan",
+                                                success=True,
+                                                route_points=int(len(lateral_route)),
+                                                fail_count=int(fail_count),
+                                                nearest_distance_m=float(min_dist_eval),
+                                                nearest_type=str(decision_nearest_type),
+                                                planner_obs_count=int(planner_obs_count),
+                                                wp_idx=int(current_idx),
+                                            )
+                                    else:
+                                        if float(EVASION_FAILSAFE_HOLD_S) > 0.0:
+                                            hold_until = float(now_loop) + float(EVASION_FAILSAFE_HOLD_S)
+                                            state['failsafe_hold_until_ts'] = float(hold_until)
+                                            failsafe_hold_until_ts = float(hold_until)
+                                            decision_reason = "route_failed_hold"
+                                            decision_hold_active = True
+                                            log.error(
+                                                "[PORCE] Failsafe etapa 2: no se pudo generar ruta lateral. "
+                                                "Aplicando hold de seguridad."
+                                            )
+                                            if _audit.enabled:
+                                                _audit.log_event(
+                                                    "evasion_route_failed_hold",
+                                                    nearest_distance_m=float(min_dist_eval),
+                                                    nearest_type=str(decision_nearest_type),
+                                                    hold_s=float(EVASION_FAILSAFE_HOLD_S),
+                                                    planner_obs_count=int(planner_obs_count),
+                                                    failsafe_fail_count=int(fail_count),
+                                                    stage_action="REPLAN_LATERAL_FALLBACK_HOLD",
+                                                    wp_idx=int(current_idx),
+                                                )
+                                        else:
+                                            decision_reason = "route_failed_no_hold"
+                                            log.error(
+                                                "[PORCE] Failsafe etapa 2: no se pudo generar ruta lateral "
+                                                "y hold deshabilitado."
+                                            )
+                                            if _audit.enabled:
+                                                _audit.log_event(
+                                                    "evasion_route_failed",
+                                                    nearest_distance_m=float(min_dist_eval),
+                                                    nearest_type=str(decision_nearest_type),
+                                                    planner_obs_count=int(planner_obs_count),
+                                                    failsafe_fail_count=int(fail_count),
+                                                    stage_action="REPLAN_LATERAL_FAILED",
+                                                    wp_idx=int(current_idx),
+                                                )
+                                        if _audit.enabled:
+                                            _audit.log_event(
+                                                "failsafe_lateral_replan",
+                                                success=False,
+                                                fail_count=int(fail_count),
+                                                reason=str(lateral_meta.get("reason", "unknown")),
+                                                nearest_distance_m=float(min_dist_eval),
+                                                nearest_type=str(decision_nearest_type),
+                                                planner_obs_count=int(planner_obs_count),
+                                                wp_idx=int(current_idx),
+                                            )
+                                elif stage_action in {"LAND", "RTL"}:
+                                    terminal_activated = _activate_terminal_failsafe_locked(
+                                        float(now_loop),
+                                        action=str(stage_action),
+                                        fail_count=int(fail_count),
+                                        wp_idx=int(current_idx),
+                                        nearest_distance_m=float(min_dist_eval),
+                                        nearest_type=None if decision_nearest_type is None else str(decision_nearest_type),
+                                    )
+                                    if terminal_activated:
+                                        decision_reason = "failsafe_terminal_action"
+                                        decision_terminal_escalated = True
+                                        decision_failsafe_action = str(stage_action)
+                                        log.error(
+                                            f"[PORCE] Failsafe terminal activado ({stage_action}) "
+                                            f"tras {fail_count} fallos en ventana."
+                                        )
+                                        if str(tel.get('mode', '')).upper() != str(stage_action):
+                                            master.set_mode(str(stage_action))
+                                        if _audit.enabled:
+                                            _audit.log_event(
+                                                "failsafe_terminal_action",
+                                                action=str(stage_action),
+                                                fail_count=int(fail_count),
+                                                nearest_distance_m=float(min_dist_eval),
+                                                nearest_type=str(decision_nearest_type),
+                                                planner_obs_count=int(planner_obs_count),
+                                                wp_idx=int(current_idx),
+                                            )
+                                    elif float(EVASION_FAILSAFE_HOLD_S) > 0.0:
                                         hold_until = float(now_loop) + float(EVASION_FAILSAFE_HOLD_S)
                                         state['failsafe_hold_until_ts'] = float(hold_until)
                                         failsafe_hold_until_ts = float(hold_until)
-                                    log.error(
-                                        f"[PORCE] Escalado failsafe activado ({str(escalated_action)}) "
-                                        f"tras {int(fail_count)} fallos de ruta en ventana."
-                                    )
+                                        decision_reason = "route_failed_hold"
+                                        decision_hold_active = True
+                                        if _audit.enabled:
+                                            _audit.log_event(
+                                                "evasion_route_failed_hold",
+                                                nearest_distance_m=float(min_dist_eval),
+                                                nearest_type=str(decision_nearest_type),
+                                                hold_s=float(EVASION_FAILSAFE_HOLD_S),
+                                                planner_obs_count=int(planner_obs_count),
+                                                failsafe_fail_count=int(fail_count),
+                                                stage_action=f"{stage_action}_COOLDOWN_HOLD",
+                                                wp_idx=int(current_idx),
+                                            )
                                 elif float(EVASION_FAILSAFE_HOLD_S) > 0.0:
                                     hold_until = float(now_loop) + float(EVASION_FAILSAFE_HOLD_S)
                                     state['failsafe_hold_until_ts'] = float(hold_until)
@@ -1460,18 +2366,56 @@ def control_loop():
                                             hold_s=float(EVASION_FAILSAFE_HOLD_S),
                                             planner_obs_count=int(planner_obs_count),
                                             failsafe_fail_count=int(fail_count),
+                                            stage_action=str(stage_action),
+                                            wp_idx=int(current_idx),
+                                        )
+                                else:
+                                    decision_reason = "route_failed_no_hold"
+                                    log.error(
+                                        "[PORCE] A* fallo cerca de obstaculo sin hold configurado."
+                                    )
+                                    if _audit.enabled:
+                                        _audit.log_event(
+                                            "evasion_route_failed",
+                                            nearest_distance_m=float(min_dist_eval),
+                                            nearest_type=str(decision_nearest_type),
+                                            planner_obs_count=int(planner_obs_count),
+                                            failsafe_fail_count=int(fail_count),
+                                            stage_action=str(stage_action),
                                             wp_idx=int(current_idx),
                                         )
                             else:
-                                log.error("[PORCE] A* fallo. Manteniendo curso (Riesgo de colision).")
-                                if _audit.enabled:
-                                    _audit.log_event(
-                                        "evasion_route_failed",
-                                        nearest_distance_m=float(min_dist_eval),
-                                        nearest_type=str(decision_nearest_type),
-                                        planner_obs_count=int(planner_obs_count),
-                                        wp_idx=int(current_idx),
+                                if float(EVASION_FAILSAFE_HOLD_S) > 0.0:
+                                    hold_until = float(now_loop) + float(EVASION_FAILSAFE_HOLD_S)
+                                    state['failsafe_hold_until_ts'] = float(hold_until)
+                                    failsafe_hold_until_ts = float(hold_until)
+                                    decision_reason = "route_failed_hold_caution"
+                                    decision_hold_active = True
+                                    log.error(
+                                        "[PORCE] A* fallo en zona de reaccion. Activando hold preventivo."
                                     )
+                                    if _audit.enabled:
+                                        _audit.log_event(
+                                            "evasion_route_failed_hold_caution",
+                                            nearest_distance_m=float(min_dist_eval),
+                                            nearest_type=str(decision_nearest_type),
+                                            hold_s=float(EVASION_FAILSAFE_HOLD_S),
+                                            planner_obs_count=int(planner_obs_count),
+                                            wp_idx=int(current_idx),
+                                        )
+                                else:
+                                    decision_reason = "route_failed_no_hold"
+                                    log.error(
+                                        "[PORCE] A* fallo en zona de reaccion sin hold configurado."
+                                    )
+                                    if _audit.enabled:
+                                        _audit.log_event(
+                                            "evasion_route_failed",
+                                            nearest_distance_m=float(min_dist_eval),
+                                            nearest_type=str(decision_nearest_type),
+                                            planner_obs_count=int(planner_obs_count),
+                                            wp_idx=int(current_idx),
+                                        )
             elif active_path:
                 decision_reason = "evasion_in_progress"
             else:
@@ -1522,6 +2466,9 @@ def control_loop():
                 nearest_type=str(decision_nearest_type) if decision_nearest_type is not None else None,
             )
             last_evasion_active = bool(evasion_flag)
+
+        if decision_terminal_escalated:
+            continue
 
         hold_remaining_s = float(max(0.0, float(failsafe_hold_until_ts) - float(now_loop)))
         if (not active_path) and hold_remaining_s > 0.0:
@@ -1593,12 +2540,111 @@ def control_loop():
 
         # --- NAVEGACION ESTANDAR ---
         if current_idx < len(wps):
-            target = wps[current_idx]
-            dist = haversine(tel['lat'], tel['lon'], target['lat'], target['lon'])
+            target = wp_target if wp_target is not None else wps[current_idx]
+            dist = float(wp_dist_m) if wp_dist_m is not None else haversine(
+                tel['lat'], tel['lon'], target['lat'], target['lon']
+            )
+
             if dist < WP_TOLERANCE_M:
-                log.info(f"[REACHED] WP{current_idx} alcanzado. Siguiente.")
-                with state_lock:
-                    state['current_wp_idx'] += 1
+                if wp_block_obs is None:
+                    log.info(f"[REACHED] WP{current_idx} alcanzado. Siguiente.")
+                    with state_lock:
+                        state['current_wp_idx'] += 1
+                        state['wp_block_wp_idx'] = -1
+                        state['wp_block_since_ts'] = 0.0
+                        state['failsafe_recent_route_fail_ts'] = []
+                        state['failsafe_hold_until_ts'] = 0.0
+                    continue
+
+                if wp_block_timeout_ready:
+                    if bool(EVASION_WP_BLOCK_FORCE_ADVANCE_ENABLE):
+                        log.warning(
+                            f"[NAV] WP{current_idx} bloqueado {float(wp_block_elapsed_s):.1f}s; "
+                            f"avance forzado al siguiente waypoint para evitar deadlock."
+                        )
+                        with state_lock:
+                            state['current_wp_idx'] += 1
+                            state['wp_block_wp_idx'] = -1
+                            state['wp_block_since_ts'] = 0.0
+                            state['failsafe_recent_route_fail_ts'] = []
+                            state['failsafe_hold_until_ts'] = 0.0
+                        if _audit.enabled:
+                            _audit.log_event(
+                                "waypoint_force_advance_blocked",
+                                wp_idx=int(current_idx),
+                                wp_distance_m=float(dist),
+                                nearest_distance_m=None if wp_block_dist is None else float(wp_block_dist),
+                                nearest_type=str(wp_block_obs.get("type", "unknown")),
+                                blocked_elapsed_s=float(wp_block_elapsed_s),
+                                max_hold_s=float(EVASION_WP_BLOCK_MAX_HOLD_S),
+                                corridor_half_width_m=float(EVASION_WP_BLOCK_CORRIDOR_HALF_WIDTH_M),
+                                min_obs_dist_m=float(EVASION_WP_ADVANCE_MIN_OBS_DIST_M),
+                            )
+                        continue
+
+                    log.error(
+                        f"[FAILSAFE] WP{current_idx} bloqueado {float(wp_block_elapsed_s):.1f}s; "
+                        "activando LAND en sitio (sin RTL)."
+                    )
+                    with state_lock:
+                        state['failsafe_action_active'] = 'LAND'
+                        state['mission_state'] = 'FAILED'
+                        state['last_error'] = (
+                            f"waypoint_block_timeout_land_wp={int(current_idx)}_"
+                            f"elapsed={float(wp_block_elapsed_s):.1f}s"
+                        )
+                        state['evasion_path'] = []
+                        state['path_index'] = 0
+                        state['evasion_active'] = False
+                        state['evasion_grid_origin'] = None
+                        state['failsafe_hold_until_ts'] = 0.0
+                        state['failsafe_recent_route_fail_ts'] = []
+                        state['wp_block_wp_idx'] = -1
+                        state['wp_block_since_ts'] = 0.0
+                    if str(tel.get('mode', '')) != 'LAND':
+                        master.set_mode('LAND')
+                    if _audit.enabled:
+                        _audit.log_event(
+                            "waypoint_block_timeout_land",
+                            wp_idx=int(current_idx),
+                            wp_distance_m=float(dist),
+                            nearest_distance_m=None if wp_block_dist is None else float(wp_block_dist),
+                            nearest_type=str(wp_block_obs.get("type", "unknown")),
+                            blocked_elapsed_s=float(wp_block_elapsed_s),
+                            max_hold_s=float(EVASION_WP_BLOCK_MAX_HOLD_S),
+                            corridor_half_width_m=float(EVASION_WP_BLOCK_CORRIDOR_HALF_WIDTH_M),
+                            min_obs_dist_m=float(EVASION_WP_ADVANCE_MIN_OBS_DIST_M),
+                        )
+                    continue
+
+                target_alt_rel = target['alt'] - (home['alt'] if home else 0)
+                master.mav.set_position_target_global_int_send(
+                    0, master.target_system, master.target_component,
+                    mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT,
+                    MAVLINK_SET_POSITION_TARGET_INT_IGNORE_MASK,
+                    int(float(tel['lat']) * 1e7), int(float(tel['lon']) * 1e7),
+                    target_alt_rel,
+                    0, 0, 0, 0, 0, 0, 0, 0
+                )
+                if (now_loop - float(last_wp_block_status_log_ts)) >= float(CONTROL_LOG_INTERVAL_S):
+                    last_wp_block_status_log_ts = now_loop
+                    wp_block_dist_txt = "n/a" if wp_block_dist is None else f"{float(wp_block_dist):.1f}m"
+                    log.warning(
+                        f"[NAV] WP{current_idx} dentro de tolerancia pero bloqueado "
+                        f"(obs={str(wp_block_obs.get('type', 'unknown'))}, d={wp_block_dist_txt}, "
+                        f"bloqueado={float(wp_block_elapsed_s):.1f}s)."
+                    )
+                if _audit.enabled:
+                    _audit.log_event(
+                        "waypoint_reach_blocked",
+                        wp_idx=int(current_idx),
+                        wp_distance_m=float(dist),
+                        nearest_distance_m=None if wp_block_dist is None else float(wp_block_dist),
+                        nearest_type=str(wp_block_obs.get("type", "unknown")),
+                        blocked_elapsed_s=float(wp_block_elapsed_s),
+                        corridor_half_width_m=float(EVASION_WP_BLOCK_CORRIDOR_HALF_WIDTH_M),
+                        min_obs_dist_m=float(EVASION_WP_ADVANCE_MIN_OBS_DIST_M),
+                    )
                 continue
             home_alt = home['alt'] if home else 0
             alt_rel = target['alt'] - home_alt
@@ -1659,6 +2705,7 @@ def ui_data_endpoint():
     with state_lock:
         return jsonify({
             'telemetry': state['telemetry'],
+            'unreal_truth': state.get('unreal_truth', {}),
             'home': state['home'],
             'waypoints': state['waypoints'],
             'obstacles': state['obstacles'],
@@ -1682,16 +2729,27 @@ def ui_data_endpoint():
                 'evasion_reaction_max_m': EVASION_REACTION_MAX_M,
                 'evasion_replan_min_interval_s': EVASION_REPLAN_MIN_INTERVAL_S,
                 'evasion_route_point_reached_m': EVASION_ROUTE_POINT_REACHED_M,
+                'evasion_route_min_points': EVASION_ROUTE_MIN_POINTS,
                 'evasion_allow_replan_when_active': EVASION_ALLOW_REPLAN_WHEN_ACTIVE,
                 'evasion_active_replan_distance_m': EVASION_ACTIVE_REPLAN_DISTANCE_M,
                 'evasion_planner_obs_max_distance_m': EVASION_PLANNER_OBS_MAX_DISTANCE_M,
                 'evasion_planner_obs_max_count': EVASION_PLANNER_OBS_MAX_COUNT,
                 'evasion_failsafe_min_dist_m': EVASION_FAILSAFE_MIN_DIST_M,
+                'evasion_wp_advance_min_obs_dist_m': EVASION_WP_ADVANCE_MIN_OBS_DIST_M,
+                'evasion_wp_block_corridor_half_width_m': EVASION_WP_BLOCK_CORRIDOR_HALF_WIDTH_M,
+                'evasion_wp_block_force_advance_enable': EVASION_WP_BLOCK_FORCE_ADVANCE_ENABLE,
+                'evasion_wp_block_max_hold_s': EVASION_WP_BLOCK_MAX_HOLD_S,
                 'evasion_failsafe_hold_s': EVASION_FAILSAFE_HOLD_S,
                 'evasion_failsafe_escalate_enable': EVASION_FAILSAFE_ESCALATE_ENABLE,
                 'evasion_failsafe_escalate_fails': EVASION_FAILSAFE_ESCALATE_FAILS,
+                'evasion_failsafe_stage1_fails': EVASION_FAILSAFE_STAGE1_FAILS,
+                'evasion_failsafe_stage2_fails': EVASION_FAILSAFE_STAGE2_FAILS,
+                'evasion_failsafe_stage3_fails': EVASION_FAILSAFE_STAGE3_FAILS,
                 'evasion_failsafe_escalate_window_s': EVASION_FAILSAFE_ESCALATE_WINDOW_S,
                 'evasion_failsafe_escalate_cooldown_s': EVASION_FAILSAFE_ESCALATE_COOLDOWN_S,
+                'evasion_failsafe_lateral_offset_m': EVASION_FAILSAFE_LATERAL_OFFSET_M,
+                'evasion_failsafe_lateral_forward_gain': EVASION_FAILSAFE_LATERAL_FORWARD_GAIN,
+                'evasion_failsafe_lateral_min_interval_s': EVASION_FAILSAFE_LATERAL_MIN_INTERVAL_S,
                 'evasion_failsafe_escalate_action': EVASION_FAILSAFE_ESCALATE_ACTION,
                 'obs_static_classes': list(STATIC_OBS_CLASS_KEYS),
                 'obs_track_ttl_static_s': OBS_TRACK_TTL_STATIC_S,
@@ -1699,6 +2757,14 @@ def ui_data_endpoint():
                 'obs_track_assoc_static_m': OBS_TRACK_ASSOC_STATIC_M,
                 'obs_track_assoc_dynamic_m': OBS_TRACK_ASSOC_DYNAMIC_M,
                 'obs_track_max': OBS_TRACK_MAX,
+                'obs_source_filter_enable': OBS_SOURCE_FILTER_ENABLE,
+                'obs_allowed_sources': list(ALLOWED_OBS_SOURCE_KEYS),
+                'unreal_telemetry_ingest_enabled': bool(UNREAL_TELEMETRY_INGEST_ENABLE),
+                'unreal_telemetry_token_required': UNREAL_TELEMETRY_TOKEN_REQUIRED,
+                'unreal_telemetry_token_enabled': bool(UNREAL_TELEMETRY_TOKEN),
+                'unreal_telemetry_active_timeout_s': UNREAL_TELEMETRY_ACTIVE_TIMEOUT_S,
+                'unreal_telemetry_max_lookback_s': UNREAL_TELEMETRY_MAX_LOOKBACK_S,
+                'unreal_telemetry_max_future_s': UNREAL_TELEMETRY_MAX_FUTURE_S,
                 'land_completed_rel_alt_m': LAND_COMPLETED_REL_ALT_M,
                 'land_completion_groundspeed_mps': LAND_COMPLETION_GROUNDSPEED_MPS,
                 'evasion_replans': int(state.get('evasion_replans', 0)),

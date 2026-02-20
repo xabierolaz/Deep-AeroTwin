@@ -10,9 +10,16 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 SITL_DIR="$PROJECT_ROOT/ardupilot"
 DEFAULT_BINARY="$SITL_DIR/build/sitl/bin/arducopter"
 BINARY="${ARDUPILOT_SITL_BIN:-$DEFAULT_BINARY}"
+ALLOW_HOME_FALLBACK_RAW="${PORCE_SITL_ALLOW_HOME_FALLBACK:-0}"
+ALLOW_HOME_FALLBACK="$(printf '%s' "$ALLOW_HOME_FALLBACK_RAW" | tr '[:upper:]' '[:lower:]')"
+if [ "$ALLOW_HOME_FALLBACK" = "1" ] || [ "$ALLOW_HOME_FALLBACK" = "true" ] || [ "$ALLOW_HOME_FALLBACK" = "yes" ] || [ "$ALLOW_HOME_FALLBACK" = "on" ]; then
+    ALLOW_HOME_FALLBACK="1"
+else
+    ALLOW_HOME_FALLBACK="0"
+fi
 
 # Fallback to a WSL-home clone if the repo submodule is not initialized/built.
-if [ ! -f "$BINARY" ] && [ -f "$HOME/ardupilot/build/sitl/bin/arducopter" ]; then
+if [ "$ALLOW_HOME_FALLBACK" = "1" ] && [ ! -f "$BINARY" ] && [ -f "$HOME/ardupilot/build/sitl/bin/arducopter" ]; then
     BINARY="$HOME/ardupilot/build/sitl/bin/arducopter"
     SITL_DIR="$HOME/ardupilot"
 fi
@@ -57,6 +64,7 @@ if [ ! -f "$BINARY" ]; then
     echo "[ERROR] Binario SITL no encontrado en: $BINARY"
     echo "[HINT] Opcion 1 (reproducible): inicializa el submodulo y compila SITL en WSL bajo $PROJECT_ROOT/ardupilot"
     echo "[HINT] Opcion 2 (override): export ARDUPILOT_SITL_BIN=/path/to/arducopter"
+    echo "[HINT] Opcion 3 (fallback no reproducible): export PORCE_SITL_ALLOW_HOME_FALLBACK=1"
     exit 1
 fi
 
@@ -67,6 +75,7 @@ echo "=========================================="
 echo " Model: $MODEL"
 echo " Serial0: $SERIAL0"
 echo " Wipe: $WIPE"
+echo " Home fallback: $ALLOW_HOME_FALLBACK"
 if [ ${#DEFAULTS_FILES[@]} -gt 0 ]; then
   echo " Defaults: $(IFS=,; echo "${DEFAULTS_FILES[*]}")"
 else
