@@ -853,22 +853,30 @@ def _ingest_obstacles_locked(obs_list: list[dict], now_ts: float) -> list[dict]:
         best_track_id = None
         best_dist_m = float("inf")
         for track_id, track in tracks.items():
-            if _obs_class_key(track.get("type")) != class_key:
-                continue
+            track_class_name = str(track.get("type") or "")
+            track_class_key = _obs_class_key(track_class_name)
+            track_is_static = bool(track.get("is_static", _obs_is_static(track_class_name)))
+            track_ttl_s = float(_obs_track_ttl_s(track_class_name))
+            track_source = str(track.get("source") or "").strip().lower()
+            track_source_id = _clean_obs_source_id(track.get("source_id"))
             try:
                 age_s = float(now_ts) - float(track.get("last_seen_ts", 0.0))
             except Exception:
-                age_s = float(ttl_s) + 1.0
-            if age_s > float(ttl_s):
+                age_s = float(track_ttl_s) + 1.0
+            if age_s > float(track_ttl_s):
                 continue
-            track_source = str(track.get("source") or "").strip().lower()
-            track_source_id = _clean_obs_source_id(track.get("source_id"))
+
             if obs_source and obs_source_id is not None:
                 if track_source == obs_source and track_source_id == obs_source_id:
                     same_source_id_track_id = track_id
                     break
+
+            if track_class_key != class_key:
+                continue
+
+            if obs_source and obs_source_id is not None:
                 if track_source == obs_source and track_source_id is not None and track_source_id != obs_source_id:
-                    if not is_static_class:
+                    if not is_static_class and not track_is_static:
                         continue
             dist_m = _obs_track_distance_m(obs, track)
             if dist_m < best_dist_m:
@@ -882,6 +890,11 @@ def _ingest_obstacles_locked(obs_list: list[dict], now_ts: float) -> list[dict]:
         if best_track_id is not None and best_dist_m <= assoc_m:
             track = tracks.get(best_track_id, {})
             alpha = 0.25 if _obs_is_static(class_name) else 0.65
+            prev_type = str(track.get("type") or class_name)
+            prev_is_static = bool(track.get("is_static", _obs_is_static(prev_type)))
+            merged_type = class_name
+            if prev_is_static and not is_static_class and prev_type:
+                merged_type = prev_type
             lat_new = obs.get("lat")
             lon_new = obs.get("lon")
             if lat_new is not None and lon_new is not None:
@@ -898,10 +911,10 @@ def _ingest_obstacles_locked(obs_list: list[dict], now_ts: float) -> list[dict]:
                 track["source_id"] = int(obs_source_id)
             if obs_entity_id:
                 track["entity_id"] = str(obs_entity_id)
-            track["type"] = class_name
+            track["type"] = str(merged_type)
             track["last_seen_ts"] = float(now_ts)
             track["seen_count"] = int(track.get("seen_count", 1) or 1) + 1
-            track["is_static"] = bool(_obs_is_static(class_name))
+            track["is_static"] = bool(_obs_is_static(merged_type))
             tracks[best_track_id] = track
             continue
 
@@ -2703,12 +2716,76 @@ def ui_data_endpoint():
     Expone el estado interno sin bloquear el bucle de control.
     """
     with state_lock:
+        telemetry_out = dict(state['telemetry'])
+        home_out = dict(state['home'])
+        home_lat = home_out.get("lat")
+        home_lon = home_out.get("lon")
+        home_alt = home_out.get("alt")
+
+        tel_lat = telemetry_out.get("lat")
+        tel_lon = telemetry_out.get("lon")
+        tel_rel_alt = telemetry_out.get("rel_alt")
+        tel_alt = telemetry_out.get("alt")
+        if home_lat is not None and home_lon is not None and tel_lat is not None and tel_lon is not None:
+            tel_north_m, tel_east_m = _latlon_to_local_ne_m(
+                float(home_lat),
+                float(home_lon),
+                float(tel_lat),
+                float(tel_lon),
+            )
+            tel_up_m = None
+            if tel_rel_alt is not None:
+                try:
+                    tel_up_m = float(tel_rel_alt)
+                except Exception:
+                    tel_up_m = None
+            elif tel_alt is not None and home_alt is not None:
+                try:
+                    tel_up_m = float(tel_alt) - float(home_alt)
+                except Exception:
+                    tel_up_m = None
+            telemetry_out["world_m"] = {
+                "north": float(tel_north_m),
+                "east": float(tel_east_m),
+                "up": None if tel_up_m is None else float(tel_up_m),
+            }
+
+        obstacles_out = []
+        for idx, obs in enumerate(state['obstacles']):
+            obs_payload = dict(obs)
+            obs_entity_id = str(
+                obs_payload.get("entity_id")
+                or f"obs:{int(obs_payload.get('source_id', obs_payload.get('id', idx)) or idx)}"
+            )
+            obs_payload["object_id"] = obs_entity_id
+            obs_payload["object_type"] = str(obs_payload.get("type") or "unknown")
+            obs_payload["entity_id"] = obs_entity_id
+
+            obs_lat = obs_payload.get("lat")
+            obs_lon = obs_payload.get("lon")
+            if home_lat is not None and home_lon is not None and obs_lat is not None and obs_lon is not None:
+                try:
+                    obs_north_m, obs_east_m = _latlon_to_local_ne_m(
+                        float(home_lat),
+                        float(home_lon),
+                        float(obs_lat),
+                        float(obs_lon),
+                    )
+                    obs_payload["world_m"] = {
+                        "north": float(obs_north_m),
+                        "east": float(obs_east_m),
+                        "up": None,
+                    }
+                except Exception:
+                    pass
+            obstacles_out.append(obs_payload)
+
         return jsonify({
-            'telemetry': state['telemetry'],
+            'telemetry': telemetry_out,
             'unreal_truth': state.get('unreal_truth', {}),
-            'home': state['home'],
+            'home': home_out,
             'waypoints': state['waypoints'],
-            'obstacles': state['obstacles'],
+            'obstacles': obstacles_out,
             'obstacle_tracks_count': len(state.get('obstacle_tracks', {})),
             'evasion': {
                 'active': state['evasion_active'], 

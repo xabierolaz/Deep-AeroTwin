@@ -1710,61 +1710,6 @@ class VisionSystem:
                         'z_m': float(obj_z_m),
                     })
 
-            # Overlay debug telemetry in the YOLO window (zero-trust: this is the current estimate).
-            if self._debug_enabled:
-                try:
-                    overlay = []
-                    overlay.append(f"FPS: {self._fps_ema:.1f}  Dets: {len(frame_dets)}  Tracks: {len(self._tracks)}")
-                    overlay.append(f"Raw boxes: {int(raw_boxes_total)}  Rej: {int(sum(reject_counts.values()))}")
-                    overlay.append("XYZ frame: ENU meters (x=East, y=North, z=Up/height)")
-                    overlay.append(
-                        f"DRONE lat={float(dron_lat):.6f} lon={float(dron_lon):.6f} alt_msl={float(dron_alt_msl):.1f}m agl={float(dron_alt_agl):.1f}m"
-                    )
-                    overlay.append(f"TELEMETRY source={telemetry_source}")
-                    overlay.append(
-                        f"DRONE RPY deg: roll={float(dron_roll):.1f} pitch={float(dron_pitch):.1f} yaw={float(dron_yaw):.1f}"
-                    )
-                    overlay.append(f"DRONE XYZ[m]: x={float(drone_x_m):.1f} y={float(drone_y_m):.1f} z={float(drone_z_m):.1f}")
-                    if self._origin_lat is None:
-                        overlay.append("(waiting for GPS to set local origin...)")
-
-                    dets_sorted = sorted(frame_dets, key=lambda d: float(d.get("distance", float(MAVLINK_UNKNOWN_DISTANCE_M))))
-                    max_n = max(0, int(self._overlay_max_obs))
-                    if max_n > 0:
-                        dets_sorted = dets_sorted[:max_n]
-                    for i, d in enumerate(dets_sorted, 1):
-                        overlay.append(
-                            f"{i}) {d.get('type')} conf={float(d.get('confidence', 0.0)):.2f} d={float(d.get('distance', 0.0)):.1f}m "
-                            f"XYZ=({float(d.get('x_m', 0.0)):.1f},{float(d.get('y_m', 0.0)):.1f},{float(d.get('z_m', 0.0)):.1f}) "
-                            f"lat={float(d.get('lat', 0.0)):.6f} lon={float(d.get('lon', 0.0)):.6f} alt~{float(d.get('alt_msl', 0.0)):.1f}m"
-                        )
-
-                    x0, y0 = int(VISION_DEBUG_OVERLAY_X0), int(VISION_DEBUG_OVERLAY_Y0)
-                    dy = int(VISION_DEBUG_OVERLAY_LINE_STEP)
-                    for idx, text in enumerate(overlay):
-                        y = y0 + idx * dy
-                        # Outline for readability
-                        cv2.putText(
-                            img_bgr,
-                            text,
-                            (x0, y),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            float(VISION_DEBUG_OVERLAY_TEXT_SCALE),
-                            tuple(VISION_DEBUG_OVERLAY_OUTLINE_COLOR),
-                            int(VISION_DEBUG_OVERLAY_OUTLINE_THICKNESS),
-                        )
-                        cv2.putText(
-                            img_bgr,
-                            text,
-                            (x0, y),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            float(VISION_DEBUG_OVERLAY_TEXT_SCALE),
-                            tuple(VISION_DEBUG_OVERLAY_TEXT_COLOR),
-                            int(VISION_DEBUG_OVERLAY_TEXT_THICKNESS),
-                        )
-                except Exception:
-                    pass
-
             # Visual hint of ignored footer area (zero-trust auditability in debug view).
             if self._debug_enabled and ignore_bottom_px > 0:
                 try:
@@ -1913,6 +1858,89 @@ class VisionSystem:
                     post_ok = bool(200 <= post_status < 300)
                 except Exception as e:
                     post_error = str(e)
+
+            # Minimal overlay for live debugging (keep detailed forensics in JSONL audit).
+            if self._debug_enabled:
+                try:
+                    overlay = []
+                    rej_total = int(sum(reject_counts.values()))
+                    overlay.append(
+                        f"FPS {self._fps_ema:.1f} | RAW {int(raw_boxes_total)} ACC {int(len(frame_dets))} "
+                        f"TRK {int(len(self._tracks))} OUT {int(len(outgoing))} REJ {rej_total}"
+                    )
+                    post_label = "IDLE"
+                    if post_attempted:
+                        if post_ok:
+                            post_label = f"OK:{int(post_status) if post_status is not None else 200}"
+                        elif post_status is not None:
+                            post_label = f"HTTP:{int(post_status)}"
+                        else:
+                            post_label = "ERR"
+                    overlay.append(
+                        f"POST {post_label} | TEL {telemetry_source} | AGL {float(dron_alt_agl):.1f}m | YAW {float(dron_yaw):.1f}deg"
+                    )
+                    overlay.append(f"MASK top={int(ignore_top_px)}px bottom={int(ignore_bottom_px)}px")
+                    if post_error:
+                        msg = str(post_error).replace("\n", " ").strip()
+                        overlay.append(f"POST_ERR {msg[:96]}")
+
+                    outgoing_ids = {int(o.get("id")) for o in outgoing if o.get("id") is not None}
+                    tracks_sorted = sorted(
+                        self._tracks.values(),
+                        key=lambda t: float(getattr(t, "dist", float(MAVLINK_UNKNOWN_DISTANCE_M))),
+                    )
+                    max_n = max(0, min(3, int(self._overlay_max_obs)))
+                    if max_n > 0:
+                        tracks_sorted = tracks_sorted[:max_n]
+                    else:
+                        tracks_sorted = []
+
+                    hold_s = float(TRACK_HOLD_S)
+                    for i, track in enumerate(tracks_sorted, 1):
+                        track_id = int(track.obs_id)
+                        seen_req = int(self._min_seen_to_publish_for_class(str(track.class_name)))
+                        seen_now = track_id in seen_ids
+                        conf_ok = float(track.conf) >= float(PUBLISH_CONFIDENCE_THRESHOLD)
+                        age_s = max(0.0, float(now_s) - float(track.last_seen_ts))
+                        if track_id in outgoing_ids:
+                            state = "pub" if seen_now else "hold"
+                        elif not conf_ok:
+                            state = "lowconf"
+                        elif int(track.seen_count) < seen_req:
+                            state = "warmup"
+                        elif (not seen_now) and (age_s > hold_s):
+                            state = "drop"
+                        else:
+                            state = "ready"
+                        overlay.append(
+                            f"{i}) id={track_id} {str(track.class_name)} d={float(track.dist):.1f}m "
+                            f"c={float(track.conf):.2f} seen={int(track.seen_count)}/{seen_req} age={age_s:.1f}s {state}"
+                        )
+
+                    x0, y0 = int(VISION_DEBUG_OVERLAY_X0), int(VISION_DEBUG_OVERLAY_Y0)
+                    dy = int(VISION_DEBUG_OVERLAY_LINE_STEP)
+                    for idx, text in enumerate(overlay):
+                        y = y0 + idx * dy
+                        cv2.putText(
+                            img_bgr,
+                            text,
+                            (x0, y),
+                            cv2.FONT_HERSHEY_SIMPLEX,
+                            float(VISION_DEBUG_OVERLAY_TEXT_SCALE),
+                            tuple(VISION_DEBUG_OVERLAY_OUTLINE_COLOR),
+                            int(VISION_DEBUG_OVERLAY_OUTLINE_THICKNESS),
+                        )
+                        cv2.putText(
+                            img_bgr,
+                            text,
+                            (x0, y),
+                            cv2.FONT_HERSHEY_SIMPLEX,
+                            float(VISION_DEBUG_OVERLAY_TEXT_SCALE),
+                            tuple(VISION_DEBUG_OVERLAY_TEXT_COLOR),
+                            int(VISION_DEBUG_OVERLAY_TEXT_THICKNESS),
+                        )
+                except Exception:
+                    pass
 
             # Zero-trust audit stream (frame-by-frame evidence + saved debug frames).
             if self._audit.enabled:

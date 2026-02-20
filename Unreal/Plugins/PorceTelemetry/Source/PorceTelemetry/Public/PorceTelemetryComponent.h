@@ -114,6 +114,7 @@ private:
     bool IsTwinConsumerEnabled() const;
     double ResolvePollPeriodS() const;
     FString ResolveToken() const;
+    bool TryNEDToWorldCm(double NorthM, double EastM, double UpM, FVector& OutWorldCm) const;
     bool TryLatLonToWorldCm(double LatDeg, double LonDeg, FVector& OutWorldCm) const;
     TSubclassOf<AActor> ResolveActorClassForType(const FString& RawType) const;
     void StartPollRequest(double NowTs);
@@ -122,8 +123,13 @@ private:
     void UpsertObstacle(
         const FString& EntityId,
         const FString& ClassName,
+        bool bHasLatLon,
         double LatDeg,
         double LonDeg,
+        bool bHasWorldNed,
+        double WorldNorthM,
+        double WorldEastM,
+        double WorldUpM,
         float Confidence,
         double NowTs
     );

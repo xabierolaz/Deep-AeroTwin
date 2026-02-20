@@ -104,6 +104,12 @@ Cada sesion escribe en `pipeline\logs\zero_trust\<timestamp>\`:
 - Modo actual: consume entidades del Brain por `GET /api/ui/data` y hace `spawn/update/despawn`.
 - Ya no publica telemetria del dron.
 
+Contrato de payload (mismo mensaje):
+
+- `telemetry`: incluye posicion del dron (`lat`, `lon`, `alt`, `rel_alt`) y `world_m` (`north`, `east`, `up`) relativo a `home`.
+- `obstacles[]`: cada obstaculo incluye `entity_id` (id unico), `object_id` (alias), `type`/`object_type`, `confidence`, `lat`, `lon`, y `world_m` (`north`, `east`, `up`).
+- El componente C++ prioriza `world_m` para posicionar actores; si no viene, usa `lat/lon` para convertir a mundo y hacer spawn/update/despawn.
+
 Config minima en Unreal:
 
 - `bEnabled=true`

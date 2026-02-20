@@ -20,6 +20,9 @@ if errorlevel 1 (
 set "PORCE_UNREAL_TELEMETRY_INGEST_ENABLE=0"
 set "PORCE_UNREAL_TELEMETRY_ENABLE=0"
 set "PORCE_SITL_ALLOW_HOME_FALLBACK=0"
+if not defined PORCE_WSL_PRECHECK_ENABLE set "PORCE_WSL_PRECHECK_ENABLE=1"
+if not defined PORCE_WSL_AUTO_RECOVER set "PORCE_WSL_AUTO_RECOVER=1"
+if not defined PORCE_WSL_AUTO_RECOVER_ON_STOP set "PORCE_WSL_AUTO_RECOVER_ON_STOP=1"
 
 if not exist "%PROJECT_ROOT%\pipeline\logs\zero_trust" mkdir "%PROJECT_ROOT%\pipeline\logs\zero_trust" >nul 2>&1
 set "PORCE_OBSTACLE_TOKEN_FILE=%PROJECT_ROOT%\pipeline\logs\zero_trust\OBSTACLE_TOKEN.txt"
@@ -78,9 +81,22 @@ echo [AUDIT] PORCE_AUDIT_ROOT=%PORCE_AUDIT_ROOT%
 echo.
 
 REM ============================================================================
-REM 0. CLEANUP (SAFE)
+REM 0. WSL PRECHECK (SAFE)
 REM ============================================================================
-echo [0/2] Cleaning previous pipeline processes...
+if /I "%PORCE_WSL_PRECHECK_ENABLE%"=="1" (
+  echo [0/3] Checking WSL health...
+  call :precheck_wsl
+  if errorlevel 1 (
+    echo [ERROR] WSL is not healthy. Abort launch.
+    echo [HINT] Try: wsl --shutdown
+    exit /b 6
+  )
+)
+
+REM ============================================================================
+REM 1. CLEANUP (SAFE)
+REM ============================================================================
+echo [1/3] Cleaning previous pipeline processes...
 powershell -NoProfile -ExecutionPolicy Bypass -File "%PROJECT_ROOT%\tools\stop_pipeline.ps1" -Quiet >nul 2>&1
 
 if not exist "%LOGS_DIR%" mkdir "%LOGS_DIR%"
@@ -93,9 +109,9 @@ echo [OK] Cleanup done.
 echo.
 
 REM ============================================================================
-REM 1. WINDOWS TERMINAL (TABS)
+REM 2. WINDOWS TERMINAL (TABS)
 REM ============================================================================
-echo [1/2] Opening tabs in Windows Terminal...
+echo [2/3] Opening tabs in Windows Terminal...
 powershell -NoProfile -ExecutionPolicy Bypass -File "%PROJECT_ROOT%\tools\launch_tabs.ps1" -ProjectRoot "%PROJECT_ROOT%"
 if errorlevel 1 (
   echo [ERROR] Failed to launch component windows via tools\launch_tabs.ps1
@@ -109,3 +125,22 @@ echo  - Viz frames: pipeline\\logs\\viz_frames
 echo  - Stop everything: powershell -NoProfile -ExecutionPolicy Bypass -File tools\\stop_pipeline.ps1
 echo.
 exit /b 0
+
+:precheck_wsl
+wsl -e sh -lc "echo WSL_OK" >nul 2>&1
+if not errorlevel 1 (
+  echo [OK] WSL ready.
+  exit /b 0
+)
+echo [WARN] WSL precheck failed.
+if /I "%PORCE_WSL_AUTO_RECOVER%"=="1" (
+  echo [INFO] Trying WSL recover with wsl --shutdown...
+  wsl --shutdown >nul 2>&1
+  powershell -NoProfile -Command "Start-Sleep -Milliseconds 800" >nul 2>&1
+  wsl -e sh -lc "echo WSL_OK" >nul 2>&1
+  if not errorlevel 1 (
+    echo [OK] WSL recovered.
+    exit /b 0
+  )
+)
+exit /b 1

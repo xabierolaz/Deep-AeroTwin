@@ -145,6 +145,41 @@ FString UPorceTelemetryComponent::ResolveToken() const
     return Token;
 }
 
+bool UPorceTelemetryComponent::TryNEDToWorldCm(double NorthM, double EastM, double UpM, FVector& OutWorldCm) const
+{
+    const double A = static_cast<double>(EastFromLocalX);
+    const double B = static_cast<double>(EastFromLocalY);
+    const double C = static_cast<double>(NorthFromLocalX);
+    const double D = static_cast<double>(NorthFromLocalY);
+    const double Det = (A * D) - (B * C);
+
+    double LocalXM = 0.0;
+    double LocalYM = 0.0;
+    if (FMath::Abs(Det) > 1e-6)
+    {
+        LocalXM = ((EastM * D) - (B * NorthM)) / Det;
+        LocalYM = ((A * NorthM) - (EastM * C)) / Det;
+    }
+    else
+    {
+        LocalXM = NorthM;
+        LocalYM = EastM;
+    }
+
+    const double ScaleMPerCm = FMath::Max(FMath::Abs(static_cast<double>(CmToMScale)), 1e-6);
+    const FVector OriginCm = IsValid(OriginActor) ? OriginActor->GetActorLocation() : FVector::ZeroVector;
+
+    OutWorldCm = OriginCm;
+    OutWorldCm.X += static_cast<float>(LocalXM / ScaleMPerCm);
+    OutWorldCm.Y += static_cast<float>(LocalYM / ScaleMPerCm);
+    OutWorldCm.Z += static_cast<float>(ObstacleZOffsetCm);
+    if (FMath::IsFinite(UpM))
+    {
+        OutWorldCm.Z += static_cast<float>(UpM / ScaleMPerCm);
+    }
+    return true;
+}
+
 bool UPorceTelemetryComponent::TryLatLonToWorldCm(double LatDeg, double LonDeg, FVector& OutWorldCm) const
 {
     const double BaseLatDeg = static_cast<double>(HomeLatDeg);
@@ -162,35 +197,7 @@ bool UPorceTelemetryComponent::TryLatLonToWorldCm(double LatDeg, double LonDeg, 
 
     const double NorthM = DeltaLatRad * EarthRadiusM;
     const double EastM = DeltaLonRad * EarthRadiusM * CosLat;
-
-    const double A = static_cast<double>(EastFromLocalX);
-    const double B = static_cast<double>(EastFromLocalY);
-    const double C = static_cast<double>(NorthFromLocalX);
-    const double D = static_cast<double>(NorthFromLocalY);
-    const double Det = (A * D) - (B * C);
-    double LocalXM = 0.0;
-    double LocalYM = 0.0;
-    if (FMath::Abs(Det) > 1e-6)
-    {
-        LocalXM = ((EastM * D) - (B * NorthM)) / Det;
-        LocalYM = ((A * NorthM) - (EastM * C)) / Det;
-    }
-    else
-    {
-        LocalXM = NorthM;
-        LocalYM = EastM;
-    }
-
-    const double ScaleMPerCm = FMath::Max(FMath::Abs(static_cast<double>(CmToMScale)), 1e-6);
-    const FVector LocalCm(
-        static_cast<float>(LocalXM / ScaleMPerCm),
-        static_cast<float>(LocalYM / ScaleMPerCm),
-        0.0f
-    );
-    const FVector OriginCm = IsValid(OriginActor) ? OriginActor->GetActorLocation() : FVector::ZeroVector;
-    OutWorldCm = OriginCm + LocalCm;
-    OutWorldCm.Z = OriginCm.Z + static_cast<float>(ObstacleZOffsetCm);
-    return true;
+    return TryNEDToWorldCm(NorthM, EastM, 0.0, OutWorldCm);
 }
 
 TSubclassOf<AActor> UPorceTelemetryComponent::ResolveActorClassForType(const FString& RawType) const
@@ -299,7 +306,10 @@ void UPorceTelemetryComponent::ApplyObstacleBatch(const TArray<TSharedPtr<FJsonV
         }
 
         FString EntityId;
-        Obj->TryGetStringField(TEXT("entity_id"), EntityId);
+        if (!Obj->TryGetStringField(TEXT("entity_id"), EntityId))
+        {
+            Obj->TryGetStringField(TEXT("object_id"), EntityId);
+        }
         EntityId = EntityId.TrimStartAndEnd();
         if (EntityId.IsEmpty())
         {
@@ -314,25 +324,91 @@ void UPorceTelemetryComponent::ApplyObstacleBatch(const TArray<TSharedPtr<FJsonV
             continue;
         }
 
-        double LatDeg = 0.0;
-        double LonDeg = 0.0;
-        if (!Obj->TryGetNumberField(TEXT("lat"), LatDeg) || !Obj->TryGetNumberField(TEXT("lon"), LonDeg))
+        FString ClassName = TEXT("unknown");
+        if (!Obj->TryGetStringField(TEXT("object_type"), ClassName))
         {
-            continue;
-        }
-        if (!FMath::IsFinite(LatDeg) || !FMath::IsFinite(LonDeg))
-        {
-            continue;
+            Obj->TryGetStringField(TEXT("type"), ClassName);
         }
 
-        FString ClassName = TEXT("unknown");
-        Obj->TryGetStringField(TEXT("type"), ClassName);
+        if (ClassName.TrimStartAndEnd().IsEmpty())
+        {
+            ClassName = TEXT("unknown");
+        }
+
+        double LatDeg = 0.0;
+        double LonDeg = 0.0;
+        const bool bHasLatLon = (
+            Obj->TryGetNumberField(TEXT("lat"), LatDeg)
+            && Obj->TryGetNumberField(TEXT("lon"), LonDeg)
+            && FMath::IsFinite(LatDeg)
+            && FMath::IsFinite(LonDeg)
+        );
+
+        double WorldNorthM = 0.0;
+        double WorldEastM = 0.0;
+        double WorldUpM = 0.0;
+        bool bHasWorldNed = false;
+        const TSharedPtr<FJsonObject>* WorldObj = nullptr;
+        if (Obj->TryGetObjectField(TEXT("world_m"), WorldObj) && WorldObj != nullptr && WorldObj->IsValid())
+        {
+            const bool bHasNorth = (*WorldObj)->TryGetNumberField(TEXT("north"), WorldNorthM);
+            const bool bHasEast = (*WorldObj)->TryGetNumberField(TEXT("east"), WorldEastM);
+            double UpCandidate = 0.0;
+            const bool bHasUp = (
+                (*WorldObj)->TryGetNumberField(TEXT("up"), UpCandidate)
+                || (*WorldObj)->TryGetNumberField(TEXT("z"), UpCandidate)
+            );
+            if (bHasNorth && bHasEast && FMath::IsFinite(WorldNorthM) && FMath::IsFinite(WorldEastM))
+            {
+                bHasWorldNed = true;
+                if (bHasUp && FMath::IsFinite(UpCandidate))
+                {
+                    WorldUpM = UpCandidate;
+                }
+            }
+        }
+
+        if (!bHasWorldNed)
+        {
+            double NorthCandidate = 0.0;
+            double EastCandidate = 0.0;
+            const bool bHasNorthCandidate = Obj->TryGetNumberField(TEXT("world_north_m"), NorthCandidate);
+            const bool bHasEastCandidate = Obj->TryGetNumberField(TEXT("world_east_m"), EastCandidate);
+            if (bHasNorthCandidate && bHasEastCandidate && FMath::IsFinite(NorthCandidate) && FMath::IsFinite(EastCandidate))
+            {
+                bHasWorldNed = true;
+                WorldNorthM = NorthCandidate;
+                WorldEastM = EastCandidate;
+                double UpCandidate = 0.0;
+                if (Obj->TryGetNumberField(TEXT("world_up_m"), UpCandidate) && FMath::IsFinite(UpCandidate))
+                {
+                    WorldUpM = UpCandidate;
+                }
+            }
+        }
+
+        if (!bHasLatLon && !bHasWorldNed)
+        {
+            continue;
+        }
 
         double ConfidenceD = 0.0;
         Obj->TryGetNumberField(TEXT("confidence"), ConfidenceD);
         const float Confidence = Clamp01(static_cast<float>(ConfidenceD));
 
-        UpsertObstacle(EntityId, ClassName, LatDeg, LonDeg, Confidence, NowTs);
+        UpsertObstacle(
+            EntityId,
+            ClassName,
+            bHasLatLon,
+            LatDeg,
+            LonDeg,
+            bHasWorldNed,
+            WorldNorthM,
+            WorldEastM,
+            WorldUpM,
+            Confidence,
+            NowTs
+        );
     }
 
     PruneStaleEntities(NowTs);
@@ -341,14 +417,28 @@ void UPorceTelemetryComponent::ApplyObstacleBatch(const TArray<TSharedPtr<FJsonV
 void UPorceTelemetryComponent::UpsertObstacle(
     const FString& EntityId,
     const FString& ClassName,
+    bool bHasLatLon,
     double LatDeg,
     double LonDeg,
+    bool bHasWorldNed,
+    double WorldNorthM,
+    double WorldEastM,
+    double WorldUpM,
     float Confidence,
     double NowTs
 )
 {
     FVector MeasuredWorldCm = FVector::ZeroVector;
-    if (!TryLatLonToWorldCm(LatDeg, LonDeg, MeasuredWorldCm))
+    bool bHasWorld = false;
+    if (bHasWorldNed)
+    {
+        bHasWorld = TryNEDToWorldCm(WorldNorthM, WorldEastM, WorldUpM, MeasuredWorldCm);
+    }
+    if (!bHasWorld && bHasLatLon)
+    {
+        bHasWorld = TryLatLonToWorldCm(LatDeg, LonDeg, MeasuredWorldCm);
+    }
+    if (!bHasWorld)
     {
         return;
     }
