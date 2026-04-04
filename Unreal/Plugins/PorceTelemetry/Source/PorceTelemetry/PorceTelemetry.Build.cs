@@ -14,7 +14,8 @@ public class PorceTelemetry : ModuleRules
                 "Engine",
                 "HTTP",
                 "Json",
-                "JsonUtilities"
+                "JsonUtilities",
+                "CesiumRuntime"
             }
         );
     }

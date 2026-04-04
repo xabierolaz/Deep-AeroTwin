@@ -9,6 +9,7 @@
 #include "Interfaces/IHttpResponse.h"
 #include "Serialization/JsonSerializer.h"
 #include "UObject/UObjectGlobals.h"
+#include "CesiumGlobeAnchorComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogPorceTelemetry, Log, All);
 
@@ -34,6 +35,40 @@ float Clamp01(float Value)
 {
     return FMath::Max(0.0f, FMath::Min(1.0f, Value));
 }
+
+UCesiumGlobeAnchorComponent* FindOrCreateGlobeAnchor(AActor* Actor)
+{
+    if (!IsValid(Actor))
+    {
+        return nullptr;
+    }
+
+    if (UCesiumGlobeAnchorComponent* Existing = Actor->FindComponentByClass<UCesiumGlobeAnchorComponent>())
+    {
+        return Existing;
+    }
+
+    const FName ComponentName = MakeUniqueObjectName(
+        Actor,
+        UCesiumGlobeAnchorComponent::StaticClass(),
+        TEXT("PORCE_TwinAnchor")
+    );
+
+    UCesiumGlobeAnchorComponent* Created = NewObject<UCesiumGlobeAnchorComponent>(
+        Actor,
+        UCesiumGlobeAnchorComponent::StaticClass(),
+        ComponentName
+    );
+    if (!IsValid(Created))
+    {
+        return nullptr;
+    }
+
+    Actor->AddInstanceComponent(Created);
+    Created->RegisterComponent();
+    Created->SetTeleportWhenUpdatingTransform(true);
+    return Created;
+}
 }
 
 UPorceTelemetryComponent::UPorceTelemetryComponent()
@@ -52,7 +87,7 @@ void UPorceTelemetryComponent::BeginPlay()
         UE_LOG(
             LogPorceTelemetry,
             Warning,
-            TEXT("PORCE Twin consumer disabled (set PORCE_UNREAL_TWIN_ENABLE=1 to enable).")
+            TEXT("PORCE Twin V2 consumer disabled (set PORCE_UNREAL_TWIN_ENABLE=1 to enable).")
         );
     }
 
@@ -65,6 +100,23 @@ void UPorceTelemetryComponent::BeginPlay()
         }
     }
 
+    const FString EndpointNormalized = EndpointUrl.TrimStartAndEnd().ToLower();
+    if (EndpointNormalized.Contains(TEXT("/api/unreal/telemetry")))
+    {
+        EndpointUrl = TEXT("http://127.0.0.1:8080/api/ui/data");
+        UE_LOG(
+            LogPorceTelemetry,
+            Warning,
+            TEXT("PORCE Twin V2 migrated legacy endpoint to %s"),
+            *EndpointUrl
+        );
+    }
+
+    if (PollRateHz <= 0.0f)
+    {
+        PollRateHz = 5.0f;
+    }
+
     auto EnsureClassLoaded = [this](TSubclassOf<AActor>& Slot, const TCHAR* ClassPath, const TCHAR* Label) -> void
     {
         if (Slot != nullptr)
@@ -75,11 +127,11 @@ void UPorceTelemetryComponent::BeginPlay()
         if (LoadedClass != nullptr)
         {
             Slot = LoadedClass;
-            UE_LOG(LogPorceTelemetry, Log, TEXT("PORCE Twin default class loaded: %s -> %s"), Label, ClassPath);
+            UE_LOG(LogPorceTelemetry, Log, TEXT("PORCE Twin V2 default class loaded: %s -> %s"), Label, ClassPath);
         }
         else
         {
-            UE_LOG(LogPorceTelemetry, Verbose, TEXT("PORCE Twin default class not found: %s (%s)"), Label, ClassPath);
+            UE_LOG(LogPorceTelemetry, Verbose, TEXT("PORCE Twin V2 default class not found: %s (%s)"), Label, ClassPath);
         }
     };
 
@@ -291,7 +343,7 @@ void UPorceTelemetryComponent::OnPollResponse(FHttpRequestPtr Request, FHttpResp
     bRequestInFlight = false;
     if (!bConnectedSuccessfully || !Response.IsValid())
     {
-        UE_LOG(LogPorceTelemetry, Verbose, TEXT("PORCE Twin poll failed (connection)."));
+        UE_LOG(LogPorceTelemetry, Verbose, TEXT("PORCE Twin V2 poll failed (connection)."));
         return;
     }
 
@@ -299,7 +351,7 @@ void UPorceTelemetryComponent::OnPollResponse(FHttpRequestPtr Request, FHttpResp
     TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
     if (!FJsonSerializer::Deserialize(Reader, Root) || !Root.IsValid())
     {
-        UE_LOG(LogPorceTelemetry, Verbose, TEXT("PORCE Twin poll invalid JSON response."));
+        UE_LOG(LogPorceTelemetry, Verbose, TEXT("PORCE Twin V2 poll invalid JSON response."));
         return;
     }
 
@@ -309,7 +361,7 @@ void UPorceTelemetryComponent::OnPollResponse(FHttpRequestPtr Request, FHttpResp
         UE_LOG(
             LogPorceTelemetry,
             Warning,
-            TEXT("PORCE Twin poll status=%d url=%s body=%s"),
+            TEXT("PORCE Twin V2 poll status=%d url=%s body=%s"),
             StatusCode,
             Request.IsValid() ? *Request->GetURL() : TEXT(""),
             *Response->GetContentAsString()
@@ -320,7 +372,7 @@ void UPorceTelemetryComponent::OnPollResponse(FHttpRequestPtr Request, FHttpResp
     const TArray<TSharedPtr<FJsonValue>>* Obstacles = nullptr;
     if (!Root->TryGetArrayField(TEXT("obstacles"), Obstacles) || Obstacles == nullptr)
     {
-        UE_LOG(LogPorceTelemetry, Verbose, TEXT("PORCE Twin poll response has no obstacles array."));
+        UE_LOG(LogPorceTelemetry, Verbose, TEXT("PORCE Twin V2 poll response has no obstacles array."));
         return;
     }
 
@@ -464,6 +516,11 @@ void UPorceTelemetryComponent::UpsertObstacle(
     double NowTs
 )
 {
+    const bool bCanUseLatLonForAnchor =
+        bHasLatLon && FMath::IsFinite(LatDeg) && FMath::IsFinite(LonDeg);
+    const double UpForAnchorM =
+        (bHasWorldNed && FMath::IsFinite(WorldUpM)) ? WorldUpM : 0.0;
+
     FVector MeasuredWorldCm = FVector::ZeroVector;
     bool bHasWorld = false;
     if (bHasWorldNed)
@@ -525,13 +582,60 @@ void UPorceTelemetryComponent::UpsertObstacle(
             if (IsValid(Spawned))
             {
                 Existing->SpawnedActor = Spawned;
+                UE_LOG(
+                    LogPorceTelemetry,
+                    Log,
+                    TEXT(
+                        "PORCE Twin V2 SPAWN entity=%s type=%s conf=%.3f world_cm=(%.1f, %.1f, %.1f) "
+                        "src_ned_m=(%s, %s, %s) src_latlon=(%s, %s) mode=%s"
+                    ),
+                    *EntityId,
+                    *ClassName,
+                    static_cast<double>(Confidence),
+                    static_cast<double>(Existing->SmoothedWorldLocation.X),
+                    static_cast<double>(Existing->SmoothedWorldLocation.Y),
+                    static_cast<double>(Existing->SmoothedWorldLocation.Z),
+                    bHasWorldNed ? *FString::SanitizeFloat(WorldNorthM) : TEXT("-"),
+                    bHasWorldNed ? *FString::SanitizeFloat(WorldEastM) : TEXT("-"),
+                    bHasWorldNed ? *FString::SanitizeFloat(WorldUpM) : TEXT("-"),
+                    bHasLatLon ? *FString::SanitizeFloat(LatDeg) : TEXT("-"),
+                    bHasLatLon ? *FString::SanitizeFloat(LonDeg) : TEXT("-"),
+                    bCanUseLatLonForAnchor ? TEXT("cesium") : TEXT("local")
+                );
             }
         }
     }
 
     if (Existing->SpawnedActor.IsValid())
     {
-        Existing->SpawnedActor->SetActorLocation(Existing->SmoothedWorldLocation, false, nullptr, ETeleportType::TeleportPhysics);
+        bool bMovedByCesium = false;
+        if (bCanUseLatLonForAnchor)
+        {
+            if (UCesiumGlobeAnchorComponent* GlobeAnchor = FindOrCreateGlobeAnchor(Existing->SpawnedActor.Get()))
+            {
+                if (!Existing->bCesiumBaseHeightInitialized)
+                {
+                    const FVector CurrentLLH = GlobeAnchor->GetLongitudeLatitudeHeight();
+                    Existing->CesiumBaseHeightM = FMath::IsFinite(CurrentLLH.Z) ? static_cast<double>(CurrentLLH.Z) : 0.0;
+                    Existing->bCesiumBaseHeightInitialized = true;
+                }
+
+                const double TargetHeightM = Existing->CesiumBaseHeightM + UpForAnchorM;
+                const FVector TargetLLH(
+                    static_cast<float>(LonDeg),
+                    static_cast<float>(LatDeg),
+                    static_cast<float>(TargetHeightM)
+                );
+                GlobeAnchor->MoveToLongitudeLatitudeHeight(TargetLLH);
+                bMovedByCesium = true;
+                Existing->SmoothedWorldLocation = Existing->SpawnedActor->GetActorLocation();
+            }
+        }
+
+        if (!bMovedByCesium)
+        {
+            Existing->SpawnedActor->SetActorLocation(Existing->SmoothedWorldLocation, false, nullptr, ETeleportType::TeleportPhysics);
+        }
         Existing->SpawnedActor->SetActorHiddenInGame(bHideUnconfirmedActors && !Existing->bConfirmed);
         Existing->SpawnedActor->SetActorEnableCollision(Existing->bConfirmed);
     }

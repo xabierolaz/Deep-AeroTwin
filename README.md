@@ -11,6 +11,21 @@ Repositorio para ejecutar PORCE en Windows + WSL2 con un flujo principal:
 - Pipeline + Spawner (test Unreal + auditoría automática): `launch_spawner.bat`
 - Stop global: `powershell -NoProfile -ExecutionPolicy Bypass -File tools\stop_pipeline.ps1`
 
+## Bootstrap reproducible (zero-trust)
+
+Preparación recomendada para clonado limpio:
+
+1. `powershell -NoProfile -ExecutionPolicy Bypass -File tools\bootstrap.ps1`
+2. `powershell -NoProfile -ExecutionPolicy Bypass -File tools\preflight_zero_trust.ps1`
+3. Si falta SITL: `powershell -NoProfile -ExecutionPolicy Bypass -File tools\build_sitl_wsl.ps1`
+4. Arranque: `launch.bat`
+
+Notas:
+
+- Dependencias Python fijadas en `pipeline\requirements.lock.txt`.
+- `launch.bat` no persiste token por defecto (`PORCE_OBSTACLE_TOKEN_PERSIST=0`).
+- El proyecto Unreal requiere `CesiumForUnreal` y `VaRest` (plugins externos a este repo).
+
 ## Pipeline (flujo real)
 
 `launch.bat` carga defaults y levanta:

@@ -302,7 +302,7 @@ class VisionSystem:
             log(f"ERROR CRITICO cargando modelo: {e}")
             sys.exit(1)
 
-        # Projection config (defaults tuned for Pipeline A SIM).
+        # Projection config (defaults tuned for SIM mode).
         # Camera tilt: 30deg down from horizon => mount_pitch=-30deg unless overridden.
         self._camera_vfov_deg = float(VISION_CAMERA_VFOV_DEG)
         self._mount_roll_deg = float(VISION_CAMERA_MOUNT_ROLL_DEG)
@@ -324,7 +324,7 @@ class VisionSystem:
         self._video_reopen_sleep_s = max(0.05, float(VISION_VIDEO_REOPEN_SLEEP_S))
 
         # --- Capture configuration ---
-        # Pipeline A expectation: Unreal "Play In New Window" renders the drone camera at 640x640.
+        # Expected capture in SIM: Unreal "Play In New Window" at 640x640.
         self._expect_w = int(VISION_CAPTURE_EXPECT_WIDTH)
         self._expect_h = int(VISION_CAPTURE_EXPECT_HEIGHT)
 
@@ -1672,7 +1672,12 @@ class VisionSystem:
                     except Exception:
                         pass
                      
-                    label = f"{class_name} {conf:.2f} | {dist:.1f}m z={obj_z_m:.1f}m"
+                    label_main = f"{class_name} c={conf:.2f} d={dist:.1f}m z={obj_z_m:.1f}m"
+                    label_geo = (
+                        f"px=({int(cx)},{int(cy)}) "
+                        f"gps=({float(obj_lat):.6f},{float(obj_lon):.6f}) "
+                        f"enu=({float(obj_x_m):.1f},{float(obj_y_m):.1f})"
+                    )
                      
                     # Dibujar en Debug
                     cv2.rectangle(
@@ -1682,15 +1687,28 @@ class VisionSystem:
                         tuple(VISION_DEBUG_BBOX_COLOR),
                         int(VISION_DEBUG_BBOX_THICKNESS),
                     )
-                    cv2.putText(
-                        img_bgr,
-                        label,
-                        (x1, y1 - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        float(VISION_DEBUG_BBOX_LABEL_SCALE),
-                        tuple(VISION_DEBUG_BBOX_LABEL_COLOR),
-                        int(VISION_DEBUG_BBOX_LABEL_THICKNESS),
-                    )
+                    label_x = int(max(0, x1))
+                    label_y_main = int(max(14, y1 - 10))
+                    label_y_geo = int(min(int(H - 4), label_y_main + 14))
+                    for text, y in ((label_main, label_y_main), (label_geo, label_y_geo)):
+                        cv2.putText(
+                            img_bgr,
+                            text,
+                            (label_x, y),
+                            cv2.FONT_HERSHEY_SIMPLEX,
+                            float(VISION_DEBUG_BBOX_LABEL_SCALE),
+                            tuple(VISION_DEBUG_BBOX_BASE_OUTLINE_COLOR),
+                            int(VISION_DEBUG_BBOX_BASE_OUTLINE_THICKNESS),
+                        )
+                        cv2.putText(
+                            img_bgr,
+                            text,
+                            (label_x, y),
+                            cv2.FONT_HERSHEY_SIMPLEX,
+                            float(VISION_DEBUG_BBOX_LABEL_SCALE),
+                            tuple(VISION_DEBUG_BBOX_LABEL_COLOR),
+                            int(VISION_DEBUG_BBOX_LABEL_THICKNESS),
+                        )
                     
                     # Agregar a lista de detecciones candidatas; el ID estable se asigna por asociacion a tracks.
                     frame_dets.append({
@@ -1915,6 +1933,10 @@ class VisionSystem:
                         overlay.append(
                             f"{i}) id={track_id} {str(track.class_name)} d={float(track.dist):.1f}m "
                             f"c={float(track.conf):.2f} seen={int(track.seen_count)}/{seen_req} age={age_s:.1f}s {state}"
+                        )
+                        overlay.append(
+                            f"   px=({int(track.cx)},{int(track.cy)}) "
+                            f"gps=({float(track.lat):.6f},{float(track.lon):.6f})"
                         )
 
                     x0, y0 = int(VISION_DEBUG_OVERLAY_X0), int(VISION_DEBUG_OVERLAY_Y0)

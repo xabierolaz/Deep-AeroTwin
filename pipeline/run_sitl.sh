@@ -27,7 +27,7 @@ fi
 # 3. Parametros
 HOME_LOC="${SITL_HOME:-42.229695,-1.235085,500,147}"
 MODEL="${SITL_MODEL:-x}"
-SERIAL0="${SITL_SERIAL0:-tcp:0.0.0.0:5760}"
+SERIAL0="${SITL_SERIAL0:-tcp:127.0.0.1:5760}"
 WIPE="${SITL_WIPE:-1}"
 
 # Load ArduPilot defaults. For Copter, we want a base file + an optional frame override.

@@ -63,7 +63,7 @@ def _env_mode_int(name: str, sim_default: int, real_default: int) -> int:
 # ============================================================================
 # 1. SELECTOR DE MODO (MASTER SWITCH)
 # ============================================================================
-# Opciones: 'SIMULATION' (Pipeline A) | 'REAL_TWIN' (Pipeline B)
+# Opciones: 'SIMULATION' (flujo principal) | 'REAL_TWIN' (perfil twin)
 SYSTEM_MODE = os.environ.get("PORCE_SYSTEM_MODE", "SIMULATION").upper().strip()
 
 if os.environ.get("PORCE_CONFIG_BANNER", "").strip() in ("1", "true", "True"):
@@ -350,7 +350,7 @@ VISION_MAX_OBS_PER_FRAME = _env_int("PORCE_VISION_MAX_OBS_PER_FRAME", 25)
 VISION_HEARTBEAT_S = _env_float("PORCE_VISION_HEARTBEAT_S", 5.0)
 VISION_IGNORE_BOTTOM_PX = max(0, _env_int("PORCE_VISION_IGNORE_BOTTOM_PX", 40))
 VISION_IGNORE_BOTTOM_FRAC = max(0.0, min(0.5, _env_float("PORCE_VISION_IGNORE_BOTTOM_FRAC", 0.0)))
-VISION_IGNORE_TOP_PX = max(0, _env_int("PORCE_VISION_IGNORE_TOP_PX", 50))
+VISION_IGNORE_TOP_PX = max(0, _env_int("PORCE_VISION_IGNORE_TOP_PX", 0))
 VISION_IGNORE_TOP_FRAC = max(0.0, min(0.5, _env_float("PORCE_VISION_IGNORE_TOP_FRAC", 0.0)))
 VISION_MIN_DT_S_FOR_FPS = max(0.0, _env_float("PORCE_VISION_MIN_DT_S_FOR_FPS", 1e-6))
 VISION_TRACK_DENOM_EPS = max(0.0, _env_float("PORCE_VISION_TRACK_DENOM_EPS", 1e-12))

@@ -17,9 +17,11 @@ struct FPorceTwinEntityState
     double LastSeenTs = 0.0;
     FVector SmoothedWorldLocation = FVector::ZeroVector;
     TWeakObjectPtr<AActor> SpawnedActor;
+    bool bCesiumBaseHeightInitialized = false;
+    double CesiumBaseHeightM = 0.0;
 };
 
-UCLASS(ClassGroup=(PORCE), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(PORCEV2), meta=(BlueprintSpawnableComponent, DisplayName="PORCE Twin V2 Component"))
 class PORCETELEMETRY_API UPorceTelemetryComponent : public UActorComponent
 {
     GENERATED_BODY()
@@ -31,79 +33,79 @@ public:
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-    UFUNCTION(BlueprintCallable, Category="PORCE Twin")
+    UFUNCTION(BlueprintCallable, Category="PORCE Twin V2")
     void PollNow();
 
-    UFUNCTION(BlueprintCallable, Category="PORCE Twin")
+    UFUNCTION(BlueprintCallable, Category="PORCE Twin V2")
     void SendNow();
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Endpoint")
-    bool bEnabled = false;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Endpoint")
+    bool bEnabled = true;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Endpoint")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Endpoint")
     FString EndpointUrl = TEXT("http://127.0.0.1:8080/api/ui/data");
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Endpoint")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Endpoint")
     FString AuthToken;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Endpoint")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Endpoint")
     float PollRateHz = 5.0f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Endpoint")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Endpoint")
     float RequestTimeoutS = 0.35f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Lifecycle")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Lifecycle")
     float DespawnAfterS = 3.0f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Lifecycle")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Lifecycle")
     float ConfirmedConfidenceThreshold = 0.65f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Lifecycle")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Lifecycle")
     float TentativeSmoothingAlpha = 0.20f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Lifecycle")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Lifecycle")
     float ConfirmedSmoothingAlpha = 0.55f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Lifecycle")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Lifecycle")
     bool bHideUnconfirmedActors = false;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Lifecycle")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Lifecycle")
     float ObstacleZOffsetCm = 0.0f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Spawn")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Spawn")
     TSubclassOf<AActor> DefaultObstacleActorClass;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Spawn")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Spawn")
     TSubclassOf<AActor> BikerActorClass;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Spawn")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Spawn")
     TSubclassOf<AActor> CowActorClass;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Spawn")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Spawn")
     TSubclassOf<AActor> TowerActorClass;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Frame")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Frame")
     AActor* OriginActor = nullptr;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Frame")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Frame")
     float CmToMScale = 0.01f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Frame")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Frame")
     float EastFromLocalX = 0.0f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Frame")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Frame")
     float EastFromLocalY = 1.0f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Frame")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Frame")
     float NorthFromLocalX = 1.0f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Frame")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Frame")
     float NorthFromLocalY = 0.0f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Geodesy")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Geodesy")
     double HomeLatDeg = 42.229695;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin|Geodesy")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Geodesy")
     double HomeLonDeg = -1.235085;
 
 private:

@@ -13,7 +13,7 @@
 	"Plugins": [
 		{
 			"Name": "PorceTelemetry",
-			"Enabled": false
+			"Enabled": true
 		},
 		{
 			"Name": "ModelingToolsEditorMode",

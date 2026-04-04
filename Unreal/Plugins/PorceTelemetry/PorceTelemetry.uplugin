@@ -2,12 +2,18 @@
   "FileVersion": 3,
   "Version": 1,
   "VersionName": "1.0.0",
-  "FriendlyName": "PORCE Telemetry",
-  "Description": "Consumes PORCE Brain obstacle entities and syncs spawn/update/despawn actors in Unreal.",
+  "FriendlyName": "PORCE Telemetry V2",
+  "Description": "PORCE Twin V2 consumer: syncs spawn/update/despawn actors from Brain /api/ui/data.",
   "Category": "Networking",
   "EnabledByDefault": true,
   "CanContainContent": false,
   "IsBetaVersion": false,
+  "Plugins": [
+    {
+      "Name": "CesiumForUnreal",
+      "Enabled": true
+    }
+  ],
   "Modules": [
     {
       "Name": "PorceTelemetry",
