@@ -1589,6 +1589,15 @@ class VisionSystem:
                     img_bgr = cv2.cvtColor(screenshot, cv2.COLOR_BGRA2BGR)
             frame_count += 1
 
+            # Pristine copy for the audit archive BEFORE any debug annotation is
+            # drawn onto img_bgr (bbox/labels below write into the same buffer).
+            audit_frame_bgr = None
+            if self._audit.enabled and int(frame_count) % int(AUDIT_VISION_FRAME_EVERY_N) == 0:
+                try:
+                    audit_frame_bgr = img_bgr.copy()
+                except Exception:
+                    audit_frame_bgr = None
+
             H, W = img_bgr.shape[:2]
             ignore_top_px = self._header_ignore_px(int(H))
             ignore_bottom_px = self._footer_ignore_px(int(H))
@@ -2139,7 +2148,7 @@ class VisionSystem:
                 if should_save_frame:
                     saved = self._audit.save_frame(
                         frame_index=int(frame_count),
-                        image_bgr=img_bgr,
+                        image_bgr=audit_frame_bgr if audit_frame_bgr is not None else img_bgr,
                         prefix="yolo",
                         jpeg_quality=int(AUDIT_VISION_JPEG_QUALITY),
                     )

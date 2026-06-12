@@ -59,7 +59,7 @@
 \begin{abstract}
 Autonomous UAV obstacle avoidance is not new, but most existing algorithms focus on collision-free flight, geometric efficiency, or dynamic feasibility. Much less work addresses the European regulatory logic that an autonomous route should avoid exposing uninvolved people and other protected ground parties to unnecessary overflight risk. This paper presents Path Planning and Obstacle Avoidance Real-Time Collision Evasion, a deterministic real-time local replanning method for waypoint-preserving obstacle avoidance in autonomous power-line inspection missions. The method is implemented and evaluated inside Pipeline A, the validated \texttt{SIMULATION} workflow of the Deep-AeroTwin project, where it operates together with a waypoint-driven flight controller, a YOLO-based perception front-end, monocular obstacle geopositioning, and zero-trust audit logging. In the current implementation, civilian-like detections and nearby entities are converted into protected local no-fly regions that trigger conservative detours instead of nominal overflight. Based on the literature reviewed for 2024--2026, we are not aware of a published method that combines this EASA-motivated no-overflight objective with deterministic online local replanning and autonomous power-line inspection integration in the same way.
 
-Controlled E2E experiments over ten or more runs per scenario show that the method changes the vehicle trajectory only when detections are present and the avoidance module is enabled; under that condition, mission path length increases from $1455.5 \pm 0.2$ to $1463.8 \pm 1.4$ meters (\SI{0.57}{\percent}) and mission time from $205.0 \pm 0.0$ to $207.1 \pm 0.3$ seconds (\SI{1.0}{\percent}), with every mission completed. In the audited zero-trust case study, executed against a live Unreal Engine 5.7 digital twin with a cycling peloton crossing the inspection corridor, the method triggers at \SI{37.74}{\meter} on fifteen concurrently published \texttt{biker} tracks, records the sixteen planner obstacle identities in the route event, completes the maneuver in \SI{70.22}{\second}, and maintains a minimum time-synchronized separation of \SI{31.61}{\meter} from the tracked obstacles, i.e. \SI{19.61}{\meter} above the configured \SI{12}{\meter} safety radius. These results support the method as a reproducible, low-overhead, and auditable local replanning method that operationalizes part of the European ground-risk logic at the online controller level, while Pipeline A provides the integration and validation environment used to characterize its behavior.
+Controlled E2E experiments over ten or more runs per scenario show that the method changes the vehicle trajectory only when detections are present and the avoidance module is enabled; under that condition, mission path length increases from $1455.5 \pm 0.2$ to $1463.8 \pm 1.4$ meters (\SI{0.57}{\percent}) and mission time from $205.0 \pm 0.0$ to $207.1 \pm 0.3$ seconds (\SI{1.0}{\percent}), with every mission completed. In the audited zero-trust case study, executed against a live Unreal Engine 5.7 digital twin with a sixteen-rider cycling peloton crossing the inspection corridor at a realistic \SI{23}{\kilo\meter\per\hour}, the method triggers at \SI{35.11}{\meter} on fifteen concurrently published \texttt{biker} tracks, records the sixteen planner obstacle identities in the route event, completes the maneuver in \SI{19.48}{\second} with a local detour of only \SI{3.42}{\meter} over the straight segment, and maintains a minimum time-synchronized separation of \SI{34.27}{\meter} from the tracked obstacles, i.e. \SI{22.27}{\meter} above the configured \SI{12}{\meter} safety radius. These results support the method as a reproducible, low-overhead, and auditable local replanning method that operationalizes part of the European ground-risk logic at the online controller level, while Pipeline A provides the integration and validation environment used to characterize its behavior.
 \end{abstract}
 
 \noindent\textbf{Keywords:} local replanning, UAV inspection, obstacle avoidance, ground risk, uninvolved people, SORA, A* replanning, safety-critical navigation
@@ -301,7 +301,7 @@ If no valid local route is found, the Brain does not continue nominal flight bli
 The paper uses three complementary evidence sources present in the repository.
 \begin{itemize}[leftmargin=1.3em]
     \item \textbf{Controlled E2E ablations:} a statistical campaign of 40+ mission logs from \texttt{pipeline/logs/e2e/} (ten or more runs per scenario) comparing the replanning module enabled or disabled, with and without detections, plus the four original representative logs.
-    \item \textbf{Audited case study:} one clean zero-trust run (\texttt{20260612\_214341}) executed against the live Unreal Engine 5.7 digital-twin viewer, with trajectory logs, Brain events, per-frame vision audit payloads, and archived viewer frames.
+    \item \textbf{Audited case study:} one clean zero-trust run (\texttt{20260612\_233504}) executed against the live Unreal Engine 5.7 digital-twin viewer, with trajectory logs, Brain events, per-frame vision audit payloads, and pristine archived viewer frames.
 \end{itemize}
 
 The E2E ablation isolates the behavioral effect of enabling the method under detections. The zero-trust run provides richer observability: trigger distance, generated route length, evasion duration, obstacle tracks, and the complete time evolution of the maneuver. The event \texttt{evasion\_route\_generated} now serializes both \texttt{planner\_obs\_count} and the exact obstacle identities (\texttt{planner\_obs\_ids}) passed to the planner, so the clearance analysis in this paper is computed against the audited planner subset itself rather than a proxy. Because the trigger-side obstacles in the case study are moving cyclists, clearance is evaluated against the concurrently published track positions at each instant of the maneuver, as recorded by the perception audit stream.
@@ -357,7 +357,7 @@ Beyond aggregate cost, the campaign verifies an operationally important property
 
 \subsection{Audited Collision-Evasion Maneuver}
 
-The selected zero-trust maneuver comes from run \texttt{20260612\_214341}, executed against the live Unreal Engine 5.7 digital twin with a parametric cycling peloton crossing the inspection corridor. It is intentionally stricter than tower/cattle-like cases because the trigger-side detections are \texttt{biker} tracks, i.e. the human-adjacent obstacle family that most directly supports the no-overflight claim of the proposed method. At the trigger instant (vision frame 4258 at \(t=-\SI{0.024}{\second}\)), fifteen \texttt{biker} tracks are concurrently published by the perception stream, and the route event records sixteen planner obstacles together with their serialized identities (\texttt{planner\_obs\_ids}), so the planner subset used for the analysis is the audited one, not a reconstruction.
+The selected zero-trust maneuver comes from run \texttt{20260612\_233504}, executed against the live Unreal Engine 5.7 digital twin with a parametric sixteen-rider cycling peloton crossing the inspection corridor at \SI{23}{\kilo\meter\per\hour}. It is intentionally stricter than tower/cattle-like cases because the trigger-side detections are \texttt{biker} tracks, i.e. the human-adjacent obstacle family that most directly supports the no-overflight claim of the proposed method. At the trigger instant (vision frame 5728 at \(t=+\SI{0.032}{\second}\)), fifteen \texttt{biker} tracks are concurrently published by the perception stream, and the route event records sixteen planner obstacles together with their serialized identities (\texttt{planner\_obs\_ids}), so the planner subset used for the analysis is the audited one, not a reconstruction.
 
 Figure~\ref{fig:yolo_future_overlay} gives the perceptual reading of the same event. The left panel shows the archived viewer frame captured at the trigger instant directly from the Unreal window, with the logged YOLO bounding boxes drawn on top from \texttt{events.jsonl}; boxes, track IDs, confidences, distances, frame counters, route length, and altitude values are all read back from the zero-trust logs. The right-hand panel reconstructs the ground-projected \texttt{biker} trace and a short linear forecast from logged detections rather than from generated imagery.
 
@@ -386,7 +386,7 @@ The perception-to-planner audit chain is shown in Figure~\ref{fig:porce_detectio
     \label{fig:porce_detection_montage}
 \end{figure}
 
-The geometric effect of the method in a local ENU frame centered on the trigger-side telemetry state is shown in Figure~\ref{fig:porce_case_trajectory}. The background lattice matches the real \SI{6}{\meter} planner discretization, while the shaded occupied cells correspond to the sixteen audited planner obstacles (serialized in \texttt{planner\_obs\_ids}) inflated with the configured \SI{12}{\meter} safety radius. Because the peloton rides in a compact formation, several tracks quantize to adjacent or shared seed cells, so the merged occupied blocks are a genuine property of the planner discretization rather than a drawing artifact. The vehicle departs from the nominal mission corridor, executes a bounded bypass around the moving group, and rejoins the original path before continuing toward WP5.
+The geometric effect of the method in a local ENU frame centered on the trigger-side telemetry state is shown in Figure~\ref{fig:porce_case_trajectory}. The background lattice matches the real \SI{6}{\meter} planner discretization, while the shaded occupied cells correspond to the sixteen audited planner obstacles (serialized in \texttt{planner\_obs\_ids}) inflated with the configured \SI{12}{\meter} safety radius. Because the peloton rides in a compact formation, several tracks quantize to adjacent or shared seed cells, so the merged occupied blocks are a genuine property of the planner discretization rather than a drawing artifact. The vehicle departs from the nominal mission corridor, executes a bounded bypass around the moving group, and rejoins the original path before continuing toward WP6.
 
 \begin{figure}[p]
     \centering
@@ -395,7 +395,7 @@ The geometric effect of the method in a local ENU frame centered on the trigger-
     \label{fig:porce_case_trajectory}
 \end{figure}
 
-The geometric view is complemented by Figure~\ref{fig:porce_case_timeseries}. Because the trigger-side obstacles are moving cyclists, the clearance signal is computed against the concurrently published track positions at each vision frame rather than against frozen trigger seeds. The reaction horizon remains active throughout the event, and the time-synchronized clearance never drops below \SI{31.6}{\meter}: the maneuver keeps the vehicle not only outside the hard \SI{12}{\meter} safety radius but also above the \SI{22}{\meter} failsafe threshold for the entire \SI{70}{\second} engagement with the peloton.
+The geometric view is complemented by Figure~\ref{fig:porce_case_timeseries}. Because the trigger-side obstacles are moving cyclists, the clearance signal is computed against the concurrently published track positions at each vision frame rather than against frozen trigger seeds. The reaction horizon remains active throughout the event, and the time-synchronized clearance never drops below \SI{34.3}{\meter}: the maneuver keeps the vehicle not only outside the hard \SI{12}{\meter} safety radius but also above the \SI{22}{\meter} failsafe threshold for the entire \SI{19.5}{\second} engagement with the peloton.
 
 \begin{figure}[p]
     \centering
@@ -404,28 +404,28 @@ The geometric view is complemented by Figure~\ref{fig:porce_case_timeseries}. Be
     \label{fig:porce_case_timeseries}
 \end{figure}
 
-Table~\ref{tab:case} summarizes the main metrics derived from the audited run. The method is triggered at \SI{37.74}{\meter}, well inside the observed reaction horizon. It computes a 21-point local route and completes the maneuver in \SI{70.22}{\second}, during which the planner is re-seeded online as the peloton advances. The evasion path length is \SI{186.03}{\meter}; the equivalent straight-line segment between the first and last evasion points is \SI{135.04}{\meter}, so the local safety maneuver introduces a detour of \SI{50.99}{\meter}. Most importantly, the minimum time-synchronized separation to the concurrently tracked \texttt{biker} positions is \SI{31.61}{\meter}, i.e. \SI{19.61}{\meter} of margin above the configured safety radius, sustained against a moving group of fifteen published human-adjacent tracks.
+Table~\ref{tab:case} summarizes the main metrics derived from the audited run. The method is triggered at \SI{35.11}{\meter}, well inside the observed reaction horizon. It computes an 11-point local route and completes the maneuver in \SI{19.48}{\second}, during which the planner is re-seeded online as the peloton advances. The evasion path length is \SI{59.17}{\meter}; the equivalent straight-line segment between the first and last evasion points is \SI{55.75}{\meter}, so the local safety maneuver introduces a detour of only \SI{3.42}{\meter}. Most importantly, the minimum time-synchronized separation to the concurrently tracked \texttt{biker} positions is \SI{34.27}{\meter}, i.e. \SI{22.27}{\meter} of margin above the configured safety radius, sustained against a moving group of fifteen published human-adjacent tracks.
 
 \begin{table}[t]
     \centering
-    \caption{Main audited metrics for run \texttt{20260612\_214341}.}
+    \caption{Main audited metrics for run \texttt{20260612\_233504}.}
     \label{tab:case}
     \small
     \begin{tabularx}{\linewidth}{@{}Y S[table-format=3.2]@{}}
         \toprule
         \textbf{Metric} & {\textbf{Value}} \\
         \midrule
-        Trigger distance (m) & 37.74 \\
+        Trigger distance (m) & 35.11 \\
         Published \texttt{biker} tracks in pre-trigger frame & 15 \\
         Audited planner obstacles (\texttt{planner\_obs\_ids}) & 16 \\
-        Local route points & 21 \\
-        Evasion duration (s) & 70.22 \\
-        Maximum reaction distance during maneuver (m) & 52.71 \\
-        Minimum concurrent clearance to tracked \texttt{biker}s (m) & 31.61 \\
-        Clearance above safety radius (m) & 19.61 \\
-        Evasion path length (m) & 186.03 \\
-        Straight-line equivalent (m) & 135.04 \\
-        Local detour over straight segment (m) & 50.99 \\
+        Local route points & 11 \\
+        Evasion duration (s) & 19.48 \\
+        Maximum reaction distance during maneuver (m) & 52.73 \\
+        Minimum concurrent clearance to tracked \texttt{biker}s (m) & 34.27 \\
+        Clearance above safety radius (m) & 22.27 \\
+        Evasion path length (m) & 59.17 \\
+        Straight-line equivalent (m) & 55.75 \\
+        Local detour over straight segment (m) & 3.42 \\
         \bottomrule
     \end{tabularx}
 \end{table}

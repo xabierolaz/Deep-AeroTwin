@@ -26,10 +26,10 @@ E2E_ROOT = PIPELINE_DIR / "logs" / "e2e"
 
 # Case study run (2026-06-12: real SITL + live UE5.7 viewer + PrintWindow capture;
 # planner_obs_ids serialized by the D3 audit patch).
-CASE_RUN = ZERO_TRUST_ROOT / "20260612_214341"
-# WP5 trigger with the UE5.7 peloton crossing the corridor: 16 planner obstacles,
-# nearest 37.7 m, 21 route points, completion +70.2 s.
-CASE_ROUTE_TS = 1781293720.29
+CASE_RUN = ZERO_TRUST_ROOT / "20260612_233504"
+# WP6 trigger with the UE5.7 peloton (16 riders @23 km/h) crossing the corridor:
+# 16 planner obstacles, nearest 35.1 m, pristine archived viewer frames.
+CASE_ROUTE_TS = 1781300494.3
 CASE_BRAIN_EVENTS = CASE_RUN / "brain" / "events.jsonl"
 CASE_TRAJECTORY = CASE_RUN / "brain" / "trajectory.csv"
 CASE_VISION_EVENTS = CASE_RUN / "vision" / "events.jsonl"
