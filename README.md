@@ -1,15 +1,32 @@
 ﻿# Deep-AeroTwin (PORCE)
 
-Repositorio para ejecutar PORCE en Windows + WSL2 con un flujo principal:
+Repositorio para ejecutar PORCE en Windows + WSL2 con dos workflows distintos:
 
-- Pipeline (SIMULATION): SITL + Brain + Vision + Viz.
-- Unreal Twin (opcional): consumidor de `GET /api/ui/data` para `spawn/update/despawn`.
+- `SIMULATION`: SITL + Brain + Vision + Viz + twin Unreal opcional. Es el flujo autónomo con misión, waypoints y evasión.
+- `DIGITAL TWIN` / `REAL_TWIN`: vuelo real con piloto humano usando Unreal como interfaz principal. No hay misión ni waypoints; Unreal representa entidades reales con `spawn/update/despawn`.
+
+## Workflows del repo
+
+Resumen corto:
+
+| Workflow | Propósito | Control del dron | Papel de Unreal | Estado actual |
+|---|---|---|---|---|
+| `SIMULATION` | Validar pipeline completo en entorno simulado | Autónomo, con misión y evasión PORCE | Consumidor opcional de `GET /api/ui/data` | Cerrado y validado |
+| `DIGITAL TWIN` / `REAL_TWIN` | Soporte visual al piloto en vuelo real | Piloto humano, sin ruta automática | Interfaz operativa principal; representa entidades reales | Implementado con launcher y runtime pasivo dedicados |
+
+Documento dedicado en raíz: [`WORKFLOWS.md`](WORKFLOWS.md)
 
 ## Lanzadores
 
-- Pipeline: `launch.bat`
-- Pipeline + Spawner (test Unreal + auditoría automática): `launch_spawner.bat`
+- `launch.bat`: arranque del workflow `SIMULATION`
+- `launch_digital_twin.bat`: arranque del workflow `DIGITAL TWIN` / `REAL_TWIN`
+- `launch_spawner.bat`: `SIMULATION` + spawner sintético para probar Unreal
 - Stop global: `powershell -NoProfile -ExecutionPolicy Bypass -File tools\stop_pipeline.ps1`
+
+Nota:
+
+- Hoy el launcher de raíz validado es `launch.bat`, que fuerza `PORCE_SYSTEM_MODE=SIMULATION`.
+- `launch_digital_twin.bat` levanta el perfil pasivo `REAL_TWIN` sin SITL ni `vision_system.py` local.
 
 ## Bootstrap reproducible (zero-trust)
 
@@ -26,7 +43,7 @@ Notas:
 - `launch.bat` no persiste token por defecto (`PORCE_OBSTACLE_TOKEN_PERSIST=0`).
 - El proyecto Unreal requiere `CesiumForUnreal` y `VaRest` (plugins externos a este repo).
 
-## Pipeline (flujo real)
+## Workflow 1: SIMULATION (flujo validado)
 
 `launch.bat` carga defaults y levanta:
 
@@ -38,7 +55,41 @@ Notas:
 
 Fuente de verdad runtime: `pipeline\porce_defaults.env` + `pipeline\constants.py`.
 
-## TL;DR rápido
+## Workflow 2: DIGITAL TWIN / REAL_TWIN
+
+Objetivo operativo:
+
+- No hay ruta automática, waypoints ni evasión como centro del sistema.
+- El dron vuela en entorno real con piloto humano.
+- Unreal es la interfaz visual principal del piloto.
+- El sistema recibe detecciones reales y publica entidades hacia Unreal con identidad estable y posición georreferenciada.
+- Unreal hace `spawn/update/despawn` de actores para que el piloto vea en escena los objetos reales aunque no dependa del vídeo del dron.
+
+Cadena funcional esperada:
+
+1. Detección real.
+2. Normalización de entidad con `entity_id` estable, `type`, `confidence` y `lat/lon` y/o `world_m`.
+3. Publicación del estado al Brain.
+4. Exposición por `GET /api/ui/data`.
+5. Consumo desde Unreal por `UPorceTelemetryComponent`.
+6. `spawn/update/despawn` en la escena.
+
+Conjunto de entidades objetivo del workflow `DIGITAL TWIN`:
+
+- `bike`
+- `cow`
+- `tower`
+
+Estado actual del repo para este workflow:
+
+- El perfil `REAL_TWIN` arranca sin misión y sin `control_loop()` autónomo.
+- El launcher de raíz dedicado es `launch_digital_twin.bat`.
+- En este workflow no se levanta `vision_system.py`; el YOLO real del dron publica a `POST /api/obstacles`.
+- `GET /api/ui/data` mantiene el mismo shape que en `SIMULATION`, pero en `REAL_TWIN` devuelve `waypoints: []` y un bloque `evasion` inerte.
+- El Brain normaliza `biker` / `person` / `bicycle` a `bike` y reemite solo tipos canónicos.
+- El consumidor Unreal resuelve `bike`, `cow` y `tower`; `bike` reutiliza el actor actual de biker.
+
+## TL;DR rápido del workflow SIMULATION
 
 1. Vision detecta objetos, los proyecta a GPS y los envía al Brain por `POST /api/obstacles`.
 2. Brain decide con el obstáculo más cercano: si entra en distancia de reacción, intenta evasión con A*.
@@ -47,7 +98,7 @@ Fuente de verdad runtime: `pipeline\porce_defaults.env` + `pipeline\constants.py
 5. Si A* falla cerca (`<=22m`), activa failsafe por etapas: `HOLD -> REPLAN_LATERAL -> LAND/RTL`.
 6. El dron vuela subpuntos `lat/lon` (no celdas), y vuelve a misión normal al terminar evasión.
 
-## Cómo funciona PORCE (detalle completo, paso a paso)
+## Cómo funciona PORCE en SIMULATION (detalle completo, paso a paso)
 
 ### 1) Entradas y salidas exactas
 
@@ -234,7 +285,7 @@ Cada sesión escribe en `pipeline\logs\zero_trust\<timestamp>\`:
 
 `LATEST_RUN.txt` apunta a la última sesión.
 
-## Runbook rápido
+## Runbook rapido del workflow SIMULATION
 
 - Cargar y arrancar: `launch.bat`
 - Parar todo: `powershell -NoProfile -ExecutionPolicy Bypass -File tools\stop_pipeline.ps1`
@@ -243,7 +294,7 @@ Cada sesión escribe en `pipeline\logs\zero_trust\<timestamp>\`:
 - `cd pipeline`
 - `python flight_controller.py`
 
-## Unreal Twin C++ (estado actual)
+## Unreal Twin C++ (estado actual, compartido y crítico para DIGITAL TWIN)
 
 - Plugin runtime: `Unreal\Plugins\PorceTelemetry`
 - Componente C++: `UPorceTelemetryComponent` (en Unreal se muestra como `PORCE Twin V2 Component`)

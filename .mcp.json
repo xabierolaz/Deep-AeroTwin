@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "deep-aerotwin-unreal": {
+      "type": "url",
+      "url": "http://localhost:3000/mcp"
+    }
+  }
+}

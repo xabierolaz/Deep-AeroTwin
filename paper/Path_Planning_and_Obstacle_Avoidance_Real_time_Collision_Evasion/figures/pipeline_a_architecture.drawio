@@ -1,0 +1,172 @@
+<mxfile host="app.diagrams.net" modified="2026-04-14T00:00:00.000Z" agent="Codex" version="24.7.17">
+  <diagram id="pipeline-a-architecture" name="Pipeline A Architecture">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="inputsLabel" value="&lt;b&gt;INPUTS&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#6b7580;fontSize=22;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="25" width="150" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="runtimeLabel" value="&lt;b&gt;RUNTIME&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#6b7580;fontSize=22;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="420" y="25" width="180" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="auditLabel" value="&lt;b&gt;AUDIT&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#6b7580;fontSize=22;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="25" width="150" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="mission" value="Mission file&lt;br&gt;pipeline/ejea_default.waypoints" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;strokeColor=#5f6c78;strokeWidth=2;fillColor=#f8fafc;fontColor=#24303d;fontSize=18;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="120" width="260" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="video" value="Viewport or video source&lt;br&gt;Cesium / Unreal capture" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;strokeColor=#5f6c78;strokeWidth=2;fillColor=#f8fafc;fontColor=#24303d;fontSize=18;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="360" width="260" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="mavlink" value="MAVLink telemetry&lt;br&gt;SITL vehicle state" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;strokeColor=#5f6c78;strokeWidth=2;fillColor=#f8fafc;fontColor=#24303d;fontSize=18;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="610" width="260" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="brain" value="Brain&lt;br&gt;flight_controller.py&lt;br&gt;Waypoint logic, obstacle tracks,&lt;br&gt;dynamic reaction horizon, and failsafe" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;strokeColor=#5f6c78;strokeWidth=2;fillColor=#eaf1f7;fontColor=#24303d;fontSize=18;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="420" y="170" width="420" height="210" as="geometry"/>
+        </mxCell>
+        <mxCell id="vision" value="Vision system&lt;br&gt;vision_system.py + GeoProjector&lt;br&gt;YOLO detections and ground projection" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;strokeColor=#5f6c78;strokeWidth=2;fillColor=#eaf1f7;fontColor=#24303d;fontSize=18;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="420" y="540" width="420" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="planner" value="PORCE planner&lt;br&gt;porce_manager.py&lt;br&gt;Bounded local A*" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;strokeColor=#5f6c78;strokeWidth=2;fillColor=#f4efe6;fontColor=#24303d;fontSize=18;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="930" y="210" width="310" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="autopilot" value="Autopilot and SITL&lt;br&gt;mission execution" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;strokeColor=#5f6c78;strokeWidth=2;fillColor=#f8fafc;fontColor=#24303d;fontSize=18;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="930" y="540" width="310" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="api" value="Shared state API&lt;br&gt;/api/state/latest and UI status" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;strokeColor=#5f6c78;strokeWidth=2;fillColor=#f8fafc;fontColor=#24303d;fontSize=18;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1310" y="170" width="360" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="auditBox" value="Zero-trust artifacts&lt;br&gt;vision events.jsonl + saved frames&lt;br&gt;brain events.jsonl + trajectory.csv" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;strokeColor=#5f6c78;strokeWidth=2;fillColor=#f8fafc;fontColor=#24303d;fontSize=18;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1310" y="510" width="360" height="170" as="geometry"/>
+        </mxCell>
+        <mxCell id="lblActiveWaypoint" value="active waypoint" style="text;html=1;strokeColor=none;fillColor=#ffffff;fillOpacity=85;fontColor=#24303d;fontSize=16;align=center;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="305" y="188" width="110" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="lblImageStream" value="image stream" style="text;html=1;strokeColor=none;fillColor=#ffffff;fillOpacity=85;fontColor=#24303d;fontSize=16;align=center;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="305" y="315" width="105" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="lblTelemetryInput" value="telemetry" style="text;html=1;strokeColor=none;fillColor=#ffffff;fillOpacity=85;fontColor=#24303d;fontSize=16;align=center;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="310" y="470" width="90" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="lblFusedState" value="fused state" style="text;html=1;strokeColor=none;fillColor=#ffffff;fillOpacity=85;fontColor=#24303d;fontSize=16;align=center;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="495" y="490" width="120" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="lblPublishedTracks" value="published tracks" style="text;html=1;strokeColor=none;fillColor=#ffffff;fillOpacity=85;fontColor=#24303d;fontSize=16;align=center;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="585" y="490" width="150" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="lblRouteRequest" value="route request" style="text;html=1;strokeColor=none;fillColor=#ffffff;fillOpacity=85;fontColor=#24303d;fontSize=16;align=center;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="805" y="145" width="120" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="lblLocalRoute" value="local route" style="text;html=1;strokeColor=none;fillColor=#ffffff;fillOpacity=85;fontColor=#24303d;fontSize=16;align=center;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="780" y="286" width="110" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="lblSetpoints" value="setpoints" style="text;html=1;strokeColor=none;fillColor=#ffffff;fillOpacity=85;fontColor=#24303d;fontSize=16;align=center;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="844" y="398" width="92" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="lblTelemetryReturn" value="telemetry" style="text;html=1;strokeColor=none;fillColor=#ffffff;fillOpacity=85;fontColor=#24303d;fontSize=16;align=center;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="846" y="468" width="88" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="lblUiState" value="UI state" style="text;html=1;strokeColor=none;fillColor=#ffffff;fillOpacity=85;fontColor=#24303d;fontSize=16;align=center;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="980" y="178" width="100" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="lblBrainAudit" value="brain audit" style="text;html=1;strokeColor=none;fillColor=#ffffff;fillOpacity=85;fontColor=#24303d;fontSize=16;align=center;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="376" width="130" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="lblVisionAudit" value="vision audit" style="text;html=1;strokeColor=none;fillColor=#ffffff;fillOpacity=85;fontColor=#24303d;fontSize=16;align=center;verticalAlign=middle;spacing=4;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="699" width="130" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="edgeMissionBrain" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#5f6c78;strokeWidth=2;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;labelBorderColor=none;fontSize=16;exitX=1;exitY=0.5;entryX=0;entryY=0.28;" edge="1" parent="1" source="mission" target="brain">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="340" y="240"/>
+              <mxPoint x="340" y="228"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edgeVideoBrain" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#5f6c78;strokeWidth=2;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;labelBorderColor=none;fontSize=16;exitX=1;exitY=0.52;entryX=0;entryY=0.7;" edge="1" parent="1" source="video" target="brain">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="350" y="430"/>
+              <mxPoint x="350" y="317"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edgeMavlinkBrain" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#5f6c78;strokeWidth=2;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;labelBorderColor=none;fontSize=16;exitX=1;exitY=0.5;entryX=0;entryY=0.8;" edge="1" parent="1" source="mavlink" target="brain">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="350" y="670"/>
+              <mxPoint x="350" y="338"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edgeBrainVision" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#5f6c78;strokeWidth=2;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;labelBorderColor=none;fontSize=16;exitX=0.42;exitY=1;entryX=0.42;entryY=0;" edge="1" parent="1" source="brain" target="vision">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edgeVisionBrain" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#5f6c78;strokeWidth=2;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;labelBorderColor=none;fontSize=16;exitX=0.58;exitY=0;entryX=0.58;entryY=1;" edge="1" parent="1" source="vision" target="brain">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edgeBrainPlanner" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#5f6c78;strokeWidth=2;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;labelBorderColor=none;fontSize=16;exitX=1;exitY=0.22;entryX=0;entryY=0.25;" edge="1" parent="1" source="brain" target="planner">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="880" y="200"/>
+              <mxPoint x="900" y="200"/>
+              <mxPoint x="900" y="248"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edgePlannerBrain" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#5f6c78;strokeWidth=2;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;labelBorderColor=none;fontSize=16;exitX=0;exitY=0.62;entryX=1;entryY=0.62;" edge="1" parent="1" source="planner" target="brain">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="900" y="318"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edgeBrainAutopilot" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#5f6c78;strokeWidth=2;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;labelBorderColor=none;fontSize=16;exitX=1;exitY=0.78;entryX=0.12;entryY=0;" edge="1" parent="1" source="brain" target="autopilot">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="880" y="430"/>
+              <mxPoint x="980" y="430"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edgeAutopilotBrain" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#5f6c78;strokeWidth=2;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;labelBorderColor=none;fontSize=16;exitX=0.12;exitY=0;entryX=1;entryY=0.45;" edge="1" parent="1" source="autopilot" target="brain">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="980" y="480"/>
+              <mxPoint x="880" y="480"/>
+              <mxPoint x="880" y="264"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edgeBrainApi" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#5f6c78;strokeWidth=2;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;labelBorderColor=none;fontSize=16;exitX=1;exitY=0.15;entryX=0;entryY=0.5;" edge="1" parent="1" source="brain" target="api">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="890" y="142"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edgeBrainAudit" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#5f6c78;strokeWidth=2;dashed=1;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;labelBorderColor=none;fontSize=16;exitX=1;exitY=0.52;entryX=0;entryY=0.32;" edge="1" parent="1" source="brain" target="auditBox">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="860" y="279"/>
+              <mxPoint x="860" y="390"/>
+              <mxPoint x="1260" y="390"/>
+              <mxPoint x="1260" y="564"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edgeVisionAudit" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#5f6c78;strokeWidth=2;dashed=1;endArrow=block;endFill=1;labelBackgroundColor=#ffffff;labelBorderColor=none;fontSize=16;exitX=1;exitY=0.68;entryX=0;entryY=0.68;" edge="1" parent="1" source="vision" target="auditBox">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="900" y="640"/>
+              <mxPoint x="900" y="720"/>
+              <mxPoint x="1260" y="720"/>
+              <mxPoint x="1260" y="626"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

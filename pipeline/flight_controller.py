@@ -14,6 +14,7 @@ from pymavlink import mavutil
 from porce_manager import PorcePlanner
 from zero_trust_audit import ZeroTrustAudit
 from constants import (
+    SYSTEM_MODE,
     MAVLINK_HUB_HTTP_PORT,
     BRAIN_APP_BIND_HOST,
     SITL_CONN_STRING,
@@ -124,11 +125,28 @@ from constants import (
     MOCK_MOVE_MIN_DIST_M,
 )
 
-PORCE_ENABLE_EVASION = bool(BRAIN_ENABLE_EVASION)
+def _canonical_obs_class_name(class_name) -> str:
+    key = str(class_name or "").strip().lower()
+    if key in {"bike", "biker", "bicycle", "person"}:
+        return "bike"
+    if key == "cow":
+        return "cow"
+    if key == "tower":
+        return "tower"
+    return key
+
+
+WORKFLOW_MODE = str(SYSTEM_MODE or "SIMULATION").strip().upper() or "SIMULATION"
+if WORKFLOW_MODE not in {"SIMULATION", "REAL_TWIN"}:
+    WORKFLOW_MODE = "SIMULATION"
+IS_REAL_TWIN = WORKFLOW_MODE == "REAL_TWIN"
+CONTROL_MODE = "PASSIVE_TWIN" if IS_REAL_TWIN else "AUTONOMOUS"
+MISSION_REQUIRED = not IS_REAL_TWIN
+PORCE_ENABLE_EVASION = bool(BRAIN_ENABLE_EVASION) and not IS_REAL_TWIN
 STATIC_OBS_CLASS_KEYS = {
-    str(name).strip().lower()
+    _canonical_obs_class_name(name)
     for name in OBS_STATIC_CLASS_NAMES
-    if str(name).strip()
+    if _canonical_obs_class_name(name)
 }
 ALLOWED_OBS_SOURCE_KEYS = {
     str(name).strip().lower()
@@ -244,6 +262,9 @@ if _audit.enabled:
         planner_boundary_search_range_cells=int(PLANNER_BOUNDARY_SEARCH_RANGE_CELLS),
         traj_every_s=float(AUDIT_BRAIN_TRAJ_EVERY_S),
         decision_every_s=float(AUDIT_BRAIN_DECISION_EVERY_S),
+        workflow=str(WORKFLOW_MODE),
+        control_mode=str(CONTROL_MODE),
+        mission_required=bool(MISSION_REQUIRED),
     )
     log.info(
         "[AUDIT] Brain audit enabled: "
@@ -265,7 +286,7 @@ state = {
     },
     'home': None,
     'waypoints': [],
-    'current_wp_idx': 1,
+    'current_wp_idx': 0 if IS_REAL_TWIN else 1,
     'mission_loaded': False,
     'obstacles': [],
     'last_obstacle_update': 0,
@@ -288,7 +309,7 @@ state = {
     'takeoff_initiated': False,
     # E2E / observability flags
     'saw_evasion': False,
-    'mission_state': 'BOOTING',  # BOOTING -> RUNNING -> COMPLETED
+    'mission_state': 'PASSIVE_TWIN' if IS_REAL_TWIN else 'BOOTING',  # BOOTING -> RUNNING -> COMPLETED
     'last_error': None,
     # Zero-trust / observability counters (do not affect flight logic)
     'inject_posts_unauthorized': 0,
@@ -309,6 +330,29 @@ planner = PorcePlanner(
     allow_diagonal=PLANNER_ALLOW_DIAGONAL,
     log_fn=lambda m: log.debug(f"[PORCE-PLANNER] {m}"),
 )
+
+
+def _maybe_seed_home_from_telemetry_locked(lat, lon, alt, *, source: str) -> bool:
+    if bool(state.get("mission_loaded")):
+        return False
+    if state.get("home"):
+        return False
+    try:
+        lat_f = float(lat)
+        lon_f = float(lon)
+        alt_f = float(alt)
+    except Exception:
+        return False
+    if not (math.isfinite(lat_f) and math.isfinite(lon_f) and math.isfinite(alt_f)):
+        return False
+    state["home"] = {
+        "seq": 0,
+        "lat": float(lat_f),
+        "lon": float(lon_f),
+        "alt": float(alt_f),
+        "source": str(source or "telemetry"),
+    }
+    return True
 
 # -----------------------------------------------------------------------------
 # MOCK MAVLINK BACKEND (for environments where SITL/WSL is unavailable)
@@ -525,6 +569,15 @@ def _mock_vehicle_loop():
             state['telemetry']['heading'] = 0.0
             state['telemetry']['yaw'] = 0.0
             state['telemetry']['last_update'] = now
+            seeded_home = _maybe_seed_home_from_telemetry_locked(
+                cur_lat,
+                cur_lon,
+                home_alt,
+                source='mock_mavlink',
+            )
+
+        if seeded_home:
+            log.info(f"[HOME] Seeded home from mock telemetry: {cur_lat:.6f}, {cur_lon:.6f}")
 
         time.sleep(max(0.0, float(MOCK_LOOP_MIN_DT_S)))
 
@@ -544,7 +597,7 @@ def haversine(lat1, lon1, lat2, lon2):
 
 
 def _obs_class_key(class_name) -> str:
-    return str(class_name or "").strip().lower()
+    return _canonical_obs_class_name(class_name)
 
 
 def _obs_is_static(class_name) -> bool:
@@ -840,7 +893,7 @@ def _ingest_obstacles_locked(obs_list: list[dict], now_ts: float) -> list[dict]:
     max_tracks = max(1, int(OBS_TRACK_MAX))
 
     for obs in obs_list:
-        class_name = str(obs.get("type") or "unknown")
+        class_name = _canonical_obs_class_name(obs.get("type") or "unknown") or "unknown"
         class_key = _obs_class_key(class_name)
         obs_source = str(obs.get("source") or "").strip().lower()
         obs_source_id = _clean_obs_source_id(obs.get("source_id"))
@@ -973,6 +1026,23 @@ def planner_obstacle_subset(tel, obstacles):
 
     ranked.sort(key=lambda item: float(item[0]))
     return [item[1] for item in ranked[:max_count]]
+
+
+def planner_obs_ids(planner_obs) -> list[str]:
+    """Stable obstacle identifiers for audit serialization (D3 patch 2026-06-12)."""
+    ids = []
+    for o in planner_obs:
+        try:
+            eid = str(o.get("entity_id") or "").strip()
+        except Exception:
+            eid = ""
+        if not eid:
+            try:
+                eid = f"track:{int(o.get('id', 0) or 0)}"
+            except Exception:
+                eid = "track:0"
+        ids.append(eid)
+    return ids
 
 
 def adaptive_reaction_distance_m(tel) -> tuple[float, float]:
@@ -1239,6 +1309,7 @@ def build_lateral_replan_route(
         if route and int(route_len) >= int(min_points):
             return route, {
                 "planner_obs_count": int(planner_obs_count),
+                "planner_obs_ids": planner_obs_ids(planner_obs),
                 "route_points": int(route_len),
                 "sign": float(sign),
                 "target_lat": float(cand_lat),
@@ -1248,6 +1319,7 @@ def build_lateral_replan_route(
     return None, {
         "reason": "lateral_route_failed",
         "planner_obs_count": int(planner_obs_count),
+        "planner_obs_ids": planner_obs_ids(planner_obs),
     }
 
 def load_mission():
@@ -1441,6 +1513,7 @@ def rx_obstacles():
                 confidence = 0.0
             if not math.isfinite(confidence):
                 confidence = 0.0
+            canonical_type = _canonical_obs_class_name(o.get('type') or "unknown") or "unknown"
 
             clean_obs.append({
                 'id': o.get('id', 0),
@@ -1449,7 +1522,7 @@ def rx_obstacles():
                 'lat': lat,
                 'lon': lon,
                 # Optional metadata (kept for future audit/debug; ignored by planner for now)
-                'type': o.get('type'),
+                'type': canonical_type,
                 'confidence': confidence,
                 'source': source_raw or o.get('source'),
                 'bbox': o.get('bbox'),
@@ -1600,8 +1673,9 @@ def rx_unreal_telemetry():
 def status():
     with state_lock:
         t = state['telemetry']
-        telemetry_active = (time.time() - t['last_update']) < HEARTBEAT_TIMEOUT_S
         now_ts = float(time.time())
+        active_obstacles = _rebuild_active_obstacles_locked(now_ts)
+        telemetry_active = (now_ts - t['last_update']) < HEARTBEAT_TIMEOUT_S
         unreal_last_update = float(state.get('unreal_truth_last_update', 0.0) or 0.0)
         unreal_age_s = float(now_ts - unreal_last_update) if unreal_last_update > 0.0 else float('inf')
         unreal_active = bool(
@@ -1609,16 +1683,20 @@ def status():
             and unreal_last_update > 0.0
             and unreal_age_s <= float(UNREAL_TELEMETRY_ACTIVE_TIMEOUT_S)
         )
+        wp_idx_out = 0 if IS_REAL_TWIN else int(state['current_wp_idx'])
+        evasion_active = False if IS_REAL_TWIN else bool(state['evasion_active'])
         return jsonify({
+            'workflow': str(WORKFLOW_MODE),
+            'control_mode': str(CONTROL_MODE),
             'mode': state['telemetry']['mode'],
             'armed': bool(state['telemetry']['armed']),
             'telemetry_active': bool(telemetry_active),
             'unreal_telemetry_ingest_enabled': bool(UNREAL_TELEMETRY_INGEST_ENABLE),
             'unreal_truth_active': bool(unreal_active),
             'unreal_truth_age_s': None if not math.isfinite(unreal_age_s) else float(unreal_age_s),
-            'wp_idx': state['current_wp_idx'],
-            'evasion': state['evasion_active'],
-            'obstacles_count': len(state['obstacles']),
+            'wp_idx': int(wp_idx_out),
+            'evasion': bool(evasion_active),
+            'obstacles_count': len(active_obstacles),
             'obstacle_tracks_count': len(state.get('obstacle_tracks', {})),
             'failsafe_action_active': str(state.get('failsafe_action_active', '') or ''),
             'saw_evasion': bool(state.get('saw_evasion', False)),
@@ -1676,6 +1754,9 @@ def mavlink_loop():
                     if not msg: continue
                     time.sleep(float(MAVLINK_LOOP_SLEEP_S))
                     msg_type = msg.get_type()
+                    seeded_home = False
+                    seeded_home_lat = None
+                    seeded_home_lon = None
                     with state_lock:
                         if msg_type == 'GLOBAL_POSITION_INT':
                             state['telemetry']['lat'] = msg.lat / 1e7
@@ -1685,6 +1766,14 @@ def mavlink_loop():
                             state['telemetry']['rel_alt'] = getattr(msg, 'relative_alt', 0) / float(MAVLINK_ALTITUDE_SCALE_M)
                             state['telemetry']['heading'] = msg.hdg / float(MAVLINK_HEADING_SCALE)
                             state['telemetry']['last_update'] = time.time()
+                            seeded_home = _maybe_seed_home_from_telemetry_locked(
+                                state['telemetry']['lat'],
+                                state['telemetry']['lon'],
+                                state['telemetry']['alt'],
+                                source='mavlink',
+                            )
+                            seeded_home_lat = float(state['telemetry']['lat'])
+                            seeded_home_lon = float(state['telemetry']['lon'])
                         elif msg_type == 'ATTITUDE':
                             state['telemetry']['roll'] = msg.roll * float(MAVLINK_ATTITUDE_RAD_TO_DEG)
                             state['telemetry']['pitch'] = msg.pitch * float(MAVLINK_ATTITUDE_RAD_TO_DEG)
@@ -1716,6 +1805,12 @@ def mavlink_loop():
                             cmd = getattr(msg, 'command', None)
                             res = getattr(msg, 'result', None)
                             state['telemetry']['last_command_ack'] = {'command': cmd, 'result': res, 'ts': time.time()}
+
+                    if seeded_home:
+                        log.info(
+                            f"[HOME] Seeded home from telemetry: "
+                            f"{float(seeded_home_lat):.6f}, {float(seeded_home_lon):.6f}"
+                        )
 
                     # Also log key ACKs outside the lock to avoid blocking.
                     if msg_type == 'COMMAND_ACK':
@@ -2152,6 +2247,7 @@ def control_loop():
                                     nearest_type=str(decision_nearest_type),
                                     route_points=int(route_len),
                                     planner_obs_count=int(planner_obs_count),
+                                    planner_obs_ids=planner_obs_ids(planner_obs),
                                     wp_idx=int(current_idx),
                                     can_replan_now=bool(can_replan_now),
                                 )
@@ -2173,6 +2269,7 @@ def control_loop():
                                     route_points=int(route_len),
                                     route_min_points=int(min_route_points),
                                     planner_obs_count=int(planner_obs_count),
+                                    planner_obs_ids=planner_obs_ids(planner_obs),
                                     wp_idx=int(current_idx),
                                 )
                         else:
@@ -2192,6 +2289,7 @@ def control_loop():
                                         route_points=int(route_len),
                                         route_min_points=int(min_route_points),
                                         planner_obs_count=int(planner_obs_count),
+                                        planner_obs_ids=planner_obs_ids(planner_obs),
                                         wp_idx=int(current_idx),
                                     )
                             if (
@@ -2267,6 +2365,7 @@ def control_loop():
                                                 nearest_distance_m=float(min_dist_eval),
                                                 nearest_type=str(decision_nearest_type),
                                                 planner_obs_count=int(planner_obs_count),
+                                                planner_obs_ids=list(lateral_meta.get("planner_obs_ids", []) or []),
                                                 wp_idx=int(current_idx),
                                             )
                                     else:
@@ -2716,11 +2815,22 @@ def ui_data_endpoint():
     Expone el estado interno sin bloquear el bucle de control.
     """
     with state_lock:
+        now_ts = float(time.time())
+        active_obstacles = list(_rebuild_active_obstacles_locked(now_ts))
         telemetry_out = dict(state['telemetry'])
-        home_out = dict(state['home'])
+        home_out = dict(state['home'] or {})
         home_lat = home_out.get("lat")
         home_lon = home_out.get("lon")
         home_alt = home_out.get("alt")
+        waypoints_out = [] if IS_REAL_TWIN else list(state['waypoints'])
+        evasion_out = {
+            'active': False if IS_REAL_TWIN else bool(state['evasion_active']),
+            'path': [] if IS_REAL_TWIN else list(state['evasion_path']),
+            'grid_origin': None if IS_REAL_TWIN else state['evasion_grid_origin'],
+            'failsafe_hold_until_ts': 0.0 if IS_REAL_TWIN else float(state.get('failsafe_hold_until_ts', 0.0) or 0.0),
+            'failsafe_action_active': '' if IS_REAL_TWIN else str(state.get('failsafe_action_active', '') or ''),
+            'failsafe_recent_fail_count': 0 if IS_REAL_TWIN else int(len(state.get('failsafe_recent_route_fail_ts', []))),
+        }
 
         tel_lat = telemetry_out.get("lat")
         tel_lon = telemetry_out.get("lon")
@@ -2751,7 +2861,7 @@ def ui_data_endpoint():
             }
 
         obstacles_out = []
-        for idx, obs in enumerate(state['obstacles']):
+        for idx, obs in enumerate(active_obstacles):
             obs_payload = dict(obs)
             obs_entity_id = str(
                 obs_payload.get("entity_id")
@@ -2784,17 +2894,10 @@ def ui_data_endpoint():
             'telemetry': telemetry_out,
             'unreal_truth': state.get('unreal_truth', {}),
             'home': home_out,
-            'waypoints': state['waypoints'],
+            'waypoints': waypoints_out,
             'obstacles': obstacles_out,
             'obstacle_tracks_count': len(state.get('obstacle_tracks', {})),
-            'evasion': {
-                'active': state['evasion_active'], 
-                'path': state['evasion_path'],
-                'grid_origin': state['evasion_grid_origin'],
-                'failsafe_hold_until_ts': float(state.get('failsafe_hold_until_ts', 0.0) or 0.0),
-                'failsafe_action_active': str(state.get('failsafe_action_active', '') or ''),
-                'failsafe_recent_fail_count': int(len(state.get('failsafe_recent_route_fail_ts', []))),
-            },
+            'evasion': evasion_out,
             'params': {
                 'safety_dist': SAFETY_DISTANCE_M, 
                 'detection_dist': DETECTION_RANGE_M,
@@ -2849,16 +2952,23 @@ def ui_data_endpoint():
         })
 
 if __name__ == '__main__':
-    if not load_mission():
-        log.error("No se pudo cargar la mision. Saliendo.")
-        sys.exit(1)
+    if MISSION_REQUIRED:
+        if not load_mission():
+            log.error("No se pudo cargar la mision. Saliendo.")
+            sys.exit(1)
+    else:
+        log.info("[WORKFLOW] Starting REAL_TWIN passive runtime without mission or autonomous control.")
+
     if _MOCK_MAVLINK:
         _start_mock_mavlink()
     else:
         t_mav = threading.Thread(target=mavlink_loop, daemon=True)
         t_mav.start()
-    t_ctrl = threading.Thread(target=control_loop, daemon=True)
-    t_ctrl.start()
+
+    if MISSION_REQUIRED:
+        t_ctrl = threading.Thread(target=control_loop, daemon=True)
+        t_ctrl.start()
+
     log.info(f"Iniciando CEREBRO en http://{BRAIN_APP_BIND_HOST}:{MAVLINK_HUB_HTTP_PORT}...")
     app.run(host=BRAIN_APP_BIND_HOST, port=MAVLINK_HUB_HTTP_PORT, use_reloader=False, threaded=True)
 

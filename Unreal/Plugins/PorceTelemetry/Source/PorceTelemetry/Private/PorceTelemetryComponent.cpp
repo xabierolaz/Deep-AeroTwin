@@ -11,6 +11,10 @@
 #include "UObject/UObjectGlobals.h"
 #include "CesiumGlobeAnchorComponent.h"
 
+#ifdef GetEnvironmentVariable
+#undef GetEnvironmentVariable
+#endif
+
 DEFINE_LOG_CATEGORY_STATIC(LogPorceTelemetry, Log, All);
 
 namespace
@@ -299,7 +303,7 @@ TSubclassOf<AActor> UPorceTelemetryComponent::ResolveActorClassForType(const FSt
     {
         return CowActorClass ? CowActorClass : DefaultObstacleActorClass;
     }
-    if (TypeKey == TEXT("biker") || TypeKey == TEXT("person") || TypeKey == TEXT("bicycle"))
+    if (TypeKey == TEXT("bike") || TypeKey == TEXT("biker") || TypeKey == TEXT("person") || TypeKey == TEXT("bicycle"))
     {
         return BikerActorClass ? BikerActorClass : DefaultObstacleActorClass;
     }

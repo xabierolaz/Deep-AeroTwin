@@ -365,6 +365,11 @@ VISION_CAPTURE_WINDOW_CLASS = os.environ.get("PORCE_CAPTURE_WINDOW_CLASS", "").s
 VISION_CAPTURE_WINDOW_EXACT = _env_bool("PORCE_CAPTURE_WINDOW_EXACT", False)
 VISION_CAPTURE_WINDOW_FOCUS = _env_bool("PORCE_CAPTURE_WINDOW_FOCUS", True)
 VISION_CAPTURE_WINDOW_TOPMOST = _env_bool("PORCE_CAPTURE_WINDOW_TOPMOST", False)
+# "mss" (screen region, legacy) or "printwindow" (per-window DWM capture; robust
+# against occlusion by other windows). Only applies to window capture mode.
+VISION_CAPTURE_WINDOW_METHOD = (
+    os.environ.get("PORCE_CAPTURE_WINDOW_METHOD", "mss").strip().lower() or "mss"
+)
 VISION_CAPTURE_LEFT = os.environ.get("PORCE_CAPTURE_LEFT")
 VISION_CAPTURE_TOP = os.environ.get("PORCE_CAPTURE_TOP")
 VISION_CAPTURE_WIDTH = os.environ.get("PORCE_CAPTURE_WIDTH")

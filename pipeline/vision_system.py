@@ -58,6 +58,7 @@ from constants import (
     VISION_CAPTURE_WINDOW_EXACT,
     VISION_CAPTURE_WINDOW_FOCUS,
     VISION_CAPTURE_WINDOW_TOPMOST,
+    VISION_CAPTURE_WINDOW_METHOD,
     VISION_CAPTURE_MONITOR,
     VISION_CAPTURE_LEFT,
     VISION_CAPTURE_TOP,
@@ -334,7 +335,9 @@ class VisionSystem:
         self._capture_window_exact = _truthy(VISION_CAPTURE_WINDOW_EXACT)
         self._capture_window_focus = _truthy(VISION_CAPTURE_WINDOW_FOCUS)
         self._capture_window_topmost = _truthy(VISION_CAPTURE_WINDOW_TOPMOST)
+        self._capture_window_method = str(VISION_CAPTURE_WINDOW_METHOD).strip().lower() or "mss"
         self._capture_hwnd = None
+        self._printwindow_warned = False
 
         if self._vision_source in {"VIDEO", "VIDEO_FILE", "VIDEO_STREAM"}:
             self._capture_mode = "video"
@@ -606,6 +609,117 @@ class VisionSystem:
 
         region = {"left": int(pt.x), "top": int(pt.y), "width": int(w), "height": int(h)}
         return region
+
+    def _printwindow_grab(self, hwnd):
+        """Capture the window's client area via PrintWindow(PW_RENDERFULLCONTENT).
+
+        Unlike MSS screen-region capture, this reads the window's own DWM
+        surface, so frames stay clean even when other windows cover it.
+        Returns a BGR ndarray (already cropped to expected size if larger),
+        or None on failure.
+        """
+        if os.name != "nt" or not hwnd:
+            return None
+        user32 = ctypes.windll.user32
+        gdi32 = ctypes.windll.gdi32
+        PW_RENDERFULLCONTENT = 0x00000002
+
+        wrect = wintypes.RECT()
+        if not user32.GetWindowRect(hwnd, ctypes.byref(wrect)):
+            return None
+        ww = int(wrect.right - wrect.left)
+        wh = int(wrect.bottom - wrect.top)
+        crect = wintypes.RECT()
+        if not user32.GetClientRect(hwnd, ctypes.byref(crect)):
+            return None
+        cw = int(crect.right - crect.left)
+        ch = int(crect.bottom - crect.top)
+        if ww <= 0 or wh <= 0 or cw <= 0 or ch <= 0:
+            return None
+        pt = wintypes.POINT(0, 0)
+        if not user32.ClientToScreen(hwnd, ctypes.byref(pt)):
+            return None
+        off_x = int(pt.x - wrect.left)
+        off_y = int(pt.y - wrect.top)
+
+        hdc_win = user32.GetWindowDC(hwnd)
+        if not hdc_win:
+            return None
+
+        # PrintWindow paints at the target window's own DPI scale, while this
+        # process (if per-monitor aware) sees physical metrics. Rescale all
+        # geometry by win_dpi/dc_dpi so the bitmap matches the painted size.
+        try:
+            win_dpi = int(user32.GetDpiForWindow(hwnd)) or 96
+        except Exception:
+            win_dpi = 96
+        try:
+            LOGPIXELSX = 88
+            dc_dpi = int(ctypes.windll.gdi32.GetDeviceCaps(hdc_win, LOGPIXELSX)) or 96
+        except Exception:
+            dc_dpi = 96
+        if win_dpi != dc_dpi and win_dpi > 0 and dc_dpi > 0:
+            f = float(win_dpi) / float(dc_dpi)
+            ww = max(1, int(round(ww * f)))
+            wh = max(1, int(round(wh * f)))
+            cw = max(1, int(round(cw * f)))
+            ch = max(1, int(round(ch * f)))
+            off_x = int(round(off_x * f))
+            off_y = int(round(off_y * f))
+        img = None
+        hdc_mem = gdi32.CreateCompatibleDC(hdc_win)
+        hbmp = gdi32.CreateCompatibleBitmap(hdc_win, ww, wh)
+        old_bmp = None
+        try:
+            old_bmp = gdi32.SelectObject(hdc_mem, hbmp)
+            if not user32.PrintWindow(hwnd, hdc_mem, PW_RENDERFULLCONTENT):
+                return None
+
+            class _BMIH(ctypes.Structure):
+                _fields_ = [
+                    ("biSize", wintypes.DWORD),
+                    ("biWidth", ctypes.c_long),
+                    ("biHeight", ctypes.c_long),
+                    ("biPlanes", wintypes.WORD),
+                    ("biBitCount", wintypes.WORD),
+                    ("biCompression", wintypes.DWORD),
+                    ("biSizeImage", wintypes.DWORD),
+                    ("biXPelsPerMeter", ctypes.c_long),
+                    ("biYPelsPerMeter", ctypes.c_long),
+                    ("biClrUsed", wintypes.DWORD),
+                    ("biClrImportant", wintypes.DWORD),
+                ]
+
+            bmi = _BMIH()
+            bmi.biSize = ctypes.sizeof(_BMIH)
+            bmi.biWidth = ww
+            bmi.biHeight = -wh  # top-down rows
+            bmi.biPlanes = 1
+            bmi.biBitCount = 32
+            bmi.biCompression = 0
+            buf = ctypes.create_string_buffer(ww * wh * 4)
+            if not gdi32.GetDIBits(hdc_mem, hbmp, 0, wh, buf, ctypes.byref(bmi), 0):
+                return None
+            full = np.frombuffer(buf, dtype=np.uint8).reshape(wh, ww, 4)[:, :, :3]
+            img = full[off_y:off_y + ch, off_x:off_x + cw].copy()  # BGR client area
+        finally:
+            # Deselect hbmp before deleting it: DeleteObject silently fails on a
+            # bitmap still selected into a DC, leaking GDI handles every frame.
+            if old_bmp is not None:
+                gdi32.SelectObject(hdc_mem, old_bmp)
+            gdi32.DeleteObject(hbmp)
+            gdi32.DeleteDC(hdc_mem)
+            user32.ReleaseDC(hwnd, hdc_win)
+
+        # Same crop policy as _window_capture_region: center-x, bottom-aligned.
+        exp_w = max(1, int(self._expect_w))
+        exp_h = max(1, int(self._expect_h))
+        h, w = img.shape[:2]
+        if w > exp_w or h > exp_h:
+            x_off = max(0, (w - exp_w) // 2)
+            y_off = max(0, h - exp_h)
+            img = img[y_off:y_off + exp_h, x_off:x_off + exp_w]
+        return np.ascontiguousarray(img)
 
     def _maybe_dock_debug_window(self) -> None:
         if not self._debug_enabled:
@@ -1458,14 +1572,21 @@ class VisionSystem:
                     time.sleep(float(VISION_SLEEP_NO_MONITOR_S))
                     continue
 
-                capture_region = self.monitor
-                if self._capture_mode == "window":
-                    region = self._window_capture_region()
-                    if region:
-                        capture_region = region
-                screenshot = np.array(self.sct.grab(capture_region))
-                # Convertir BGRA a BGR
-                img_bgr = cv2.cvtColor(screenshot, cv2.COLOR_BGRA2BGR)
+                img_bgr = None
+                if self._capture_mode == "window" and self._capture_window_method == "printwindow":
+                    img_bgr = self._printwindow_grab(self._capture_hwnd)
+                    if img_bgr is None and not self._printwindow_warned:
+                        self._printwindow_warned = True
+                        log("[WARN] PrintWindow capture failed; falling back to MSS screen region.")
+                if img_bgr is None:
+                    capture_region = self.monitor
+                    if self._capture_mode == "window":
+                        region = self._window_capture_region()
+                        if region:
+                            capture_region = region
+                    screenshot = np.array(self.sct.grab(capture_region))
+                    # Convertir BGRA a BGR
+                    img_bgr = cv2.cvtColor(screenshot, cv2.COLOR_BGRA2BGR)
             frame_count += 1
 
             H, W = img_bgr.shape[:2]

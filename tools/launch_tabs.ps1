@@ -1,5 +1,6 @@
 param(
-  [string]$ProjectRoot = ""
+  [string]$ProjectRoot = "",
+  [string]$Workflow = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -83,8 +84,22 @@ function _read_bool_env([string]$name, [bool]$default) {
   return $default
 }
 
+$workflowRaw = $Workflow
+if ([string]::IsNullOrWhiteSpace($workflowRaw)) {
+  $workflowRaw = [System.Environment]::GetEnvironmentVariable("PORCE_SYSTEM_MODE")
+}
+if ([string]::IsNullOrWhiteSpace($workflowRaw)) {
+  $workflowRaw = "SIMULATION"
+}
+$workflowKey = $workflowRaw.Trim().ToUpperInvariant()
+if ($workflowKey -notin @("SIMULATION", "REAL_TWIN")) {
+  _fail "unsupported workflow: $workflowRaw"
+}
+$isRealTwin = $workflowKey -eq "REAL_TWIN"
+
 $teeCapLines = _read_int_env "PORCE_TEE_CAP_LINES" 200
-$brainPrefix = _read_text_env "PORCE_TEE_PREFIX_BRAIN" "BRAIN"
+$brainPrefixDefault = if ($isRealTwin) { "BRAIN-TWIN" } else { "BRAIN" }
+$brainPrefix = _read_text_env "PORCE_TEE_PREFIX_BRAIN" $brainPrefixDefault
 $eyesPrefix = _read_text_env "PORCE_TEE_PREFIX_EYES" "EYES"
 $forceCmdWindows = _read_bool_env "PORCE_FORCE_CMD_WINDOWS" $false
 
@@ -92,14 +107,47 @@ function _cdPipe([string]$cmd) {
   return "cd /d $pipelineDir && $pyenv$cmd"
 }
 
-$brainTitle = "BRAIN (SIM)"
-$eyesTitle  = "EYES (SIM)"
-
 $masterCmd = _cdPipe "python -u log_server.py"
-$sitlCmd   = _cdPipe ("wsl --cd `"$pipelineDir`" --exec bash run_sitl.sh 2>&1 | python tee.py --prefix `"SITL`" --cap-lines $teeCapLines")
-$brainCmd  = "set PORCE_SYSTEM_MODE=SIMULATION && " + (_cdPipe "python -u flight_controller.py 2>&1 | python tee.py --prefix `"$brainPrefix`" --cap-lines $teeCapLines")
-$eyesCmd   = "set PORCE_SYSTEM_MODE=SIMULATION && set PORCE_VISION_DEBUG_WINDOW=1 && set PORCE_VISION_DEBUG_DOCK=1 && " + (_cdPipe "python -u vision_system.py 2>&1 | python tee.py --prefix `"$eyesPrefix`" --cap-lines $teeCapLines")
-$vizCmd    = _cdPipe ("python -u viz_recorder.py 2>&1 | python tee.py --prefix `"VIZ`" --cap-lines $teeCapLines")
+$tabSpecs = @(
+  @{
+    Title = "MASTER LOG"
+    Cmd = $masterCmd
+  }
+)
+
+if ($isRealTwin) {
+  $brainTitle = "BRAIN (REAL_TWIN)"
+  $brainCmd = "set PORCE_SYSTEM_MODE=REAL_TWIN && " + (_cdPipe "python -u flight_controller.py 2>&1 | python tee.py --prefix `"$brainPrefix`" --cap-lines $teeCapLines")
+  $tabSpecs += @{
+    Title = $brainTitle
+    Cmd = $brainCmd
+  }
+} else {
+  $brainTitle = "BRAIN (SIM)"
+  $eyesTitle = "EYES (SIM)"
+  $sitlCmd = _cdPipe ("wsl --cd `"$pipelineDir`" --exec bash run_sitl.sh 2>&1 | python tee.py --prefix `"SITL`" --cap-lines $teeCapLines")
+  $brainCmd = "set PORCE_SYSTEM_MODE=SIMULATION && " + (_cdPipe "python -u flight_controller.py 2>&1 | python tee.py --prefix `"$brainPrefix`" --cap-lines $teeCapLines")
+  $eyesCmd = "set PORCE_SYSTEM_MODE=SIMULATION && set PORCE_VISION_DEBUG_WINDOW=1 && set PORCE_VISION_DEBUG_DOCK=1 && " + (_cdPipe "python -u vision_system.py 2>&1 | python tee.py --prefix `"$eyesPrefix`" --cap-lines $teeCapLines")
+  $vizCmd = _cdPipe ("python -u viz_recorder.py 2>&1 | python tee.py --prefix `"VIZ`" --cap-lines $teeCapLines")
+  $tabSpecs += @(
+    @{
+      Title = "SITL (WSL)"
+      Cmd = $sitlCmd
+    },
+    @{
+      Title = $brainTitle
+      Cmd = $brainCmd
+    },
+    @{
+      Title = $eyesTitle
+      Cmd = $eyesCmd
+    },
+    @{
+      Title = "VIZ RECORDER"
+      Cmd = $vizCmd
+    }
+  )
+}
 
 function _start_fallback_tab([string]$title, [string]$cmd) {
   $safeTitle = $title -replace '"', ''
@@ -128,12 +176,14 @@ function _start_with_tabs() {
     return $false
   }
   try {
-    _start_wt_tab "new" "MASTER LOG" $masterCmd
-    Start-Sleep -Milliseconds 250
-    _start_wt_tab "last" "SITL (WSL)" $sitlCmd
-    _start_wt_tab "last" $brainTitle $brainCmd
-    _start_wt_tab "last" $eyesTitle $eyesCmd
-    _start_wt_tab "last" "VIZ RECORDER" $vizCmd
+    $windowTarget = "new"
+    foreach ($tab in $tabSpecs) {
+      _start_wt_tab $windowTarget $tab.Title $tab.Cmd
+      if ($windowTarget -eq "new") {
+        Start-Sleep -Milliseconds 250
+        $windowTarget = "last"
+      }
+    }
     return $true
   } catch {
     Write-Host "[launch_tabs] WARN: WT launch failed: $($_.Exception.Message)" -ForegroundColor Yellow
@@ -143,11 +193,9 @@ function _start_with_tabs() {
 
 function _start_fallback_all() {
   $ok = $true
-  $ok = (_start_fallback_tab "MASTER LOG" $masterCmd) -and $ok
-  $ok = (_start_fallback_tab "SITL (WSL)" $sitlCmd) -and $ok
-  $ok = (_start_fallback_tab $brainTitle $brainCmd) -and $ok
-  $ok = (_start_fallback_tab $eyesTitle $eyesCmd) -and $ok
-  $ok = (_start_fallback_tab "VIZ RECORDER" $vizCmd) -and $ok
+  foreach ($tab in $tabSpecs) {
+    $ok = (_start_fallback_tab $tab.Title $tab.Cmd) -and $ok
+  }
   return $ok
 }
 

@@ -39,6 +39,18 @@ function Resolve-RepoVarPath([string]$value, [string]$repoRoot) {
   return [Environment]::ExpandEnvironmentVariables($expanded)
 }
 
+function Find-EnginePluginDir([string]$engineRoot, [string]$pluginPrefix) {
+  if ([string]::IsNullOrWhiteSpace($engineRoot)) { return $null }
+  $pluginsRoot = Join-Path $engineRoot "Engine\Plugins"
+  if (-not (Test-Path $pluginsRoot)) { return $null }
+  $matches = Get-ChildItem $pluginsRoot -Directory -Recurse -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -like "$pluginPrefix*" }
+  if ($matches) {
+    return $matches | Select-Object -First 1 -ExpandProperty FullName
+  }
+  return $null
+}
+
 $failures = New-Object System.Collections.Generic.List[string]
 $warnings = New-Object System.Collections.Generic.List[string]
 
@@ -57,6 +69,7 @@ $lockPath = Join-Path $RepoRoot "pipeline\requirements.lock.txt"
 $venvPython = Join-Path $RepoRoot "venv\Scripts\python.exe"
 $yoloConfigDir = Join-Path $RepoRoot "pipeline\logs\ultralytics"
 $sitlBinary = Join-Path $RepoRoot "ardupilot\build\sitl\bin\arducopter"
+$engineRoot = "D:\Epic Games\UE_5.7"
 
 Write-Host "[preflight] Repo: $RepoRoot"
 
@@ -119,10 +132,10 @@ if (Test-Path $venvPython) {
 if (Test-Path $uprojectPath) {
   try {
     $uproject = Get-Content $uprojectPath -Raw | ConvertFrom-Json
-    if (("$($uproject.EngineAssociation)") -eq "5.6") {
-      NoteOk "Unreal EngineAssociation is 5.6."
+    if (("$($uproject.EngineAssociation)") -eq "5.7") {
+      NoteOk "Unreal EngineAssociation is 5.7."
     } else {
-      NoteFail "Unreal EngineAssociation is '$($uproject.EngineAssociation)' (expected 5.6)."
+      NoteFail "Unreal EngineAssociation is '$($uproject.EngineAssociation)' (expected 5.7)."
     }
 
     $plugins = @{}
@@ -144,11 +157,24 @@ if (Test-Path $uprojectPath) {
   }
 }
 
-if (-not (Test-Path (Join-Path $RepoRoot "Unreal\Plugins\CesiumForUnreal"))) {
-  NoteWarn "CesiumForUnreal is not vendored in project plugins; ensure it is installed in UE 5.6."
+$cesiumProjectPlugin = Join-Path $RepoRoot "Unreal\Plugins\CesiumForUnreal"
+$vaRestProjectPlugin = Join-Path $RepoRoot "Unreal\Plugins\VaRest"
+$cesiumEnginePlugin = Find-EnginePluginDir -engineRoot $engineRoot -pluginPrefix "Cesium"
+$vaRestEnginePlugin = Find-EnginePluginDir -engineRoot $engineRoot -pluginPrefix "VaRest"
+
+if (Test-Path $cesiumProjectPlugin) {
+  NoteOk "CesiumForUnreal vendored in project plugins."
+} elseif ($cesiumEnginePlugin) {
+  NoteOk "CesiumForUnreal found in UE 5.7 engine plugins: $cesiumEnginePlugin"
+} else {
+  NoteWarn "CesiumForUnreal is not vendored and was not found in UE 5.7 engine plugins."
 }
-if (-not (Test-Path (Join-Path $RepoRoot "Unreal\Plugins\VaRest"))) {
-  NoteWarn "VaRest is not vendored in project plugins; ensure it is installed in UE 5.6."
+if (Test-Path $vaRestProjectPlugin) {
+  NoteOk "VaRest vendored in project plugins."
+} elseif ($vaRestEnginePlugin) {
+  NoteOk "VaRest found in UE 5.7 engine plugins: $vaRestEnginePlugin"
+} else {
+  NoteWarn "VaRest is not vendored and was not found in UE 5.7 engine plugins."
 }
 
 if (Test-Path $defaultsPath) {
