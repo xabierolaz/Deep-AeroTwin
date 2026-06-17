@@ -44,7 +44,7 @@ BIKE = "#256f8f"
 GRID = "#d4dbe2"
 
 FIG1_XLIM = (-40.0, 160.0)
-FIG1_YLIM = (-190.0, 10.0)
+FIG1_YLIM = (-165.0, 35.0)
 FIG1_PANEL_FIGSIZE = (5.8, 5.8)
 
 
@@ -387,7 +387,6 @@ def prepare_static_context() -> dict:
     traj = valid_traj(pd.read_csv(STATIC_RUN / "brain" / "trajectory.csv"))
     brain = parse_jsonl(STATIC_RUN / "brain" / "events.jsonl")
 
-    detect_evt = nearest_event(brain, STATIC_DETECTION_TS, "decision_snapshot", "tower")
     evasion_evt = nearest_event(brain, STATIC_EVASION_TS, "evasion_route_generated", "tower")
     completion_evt = nearest_event(brain, STATIC_COMPLETION_TS, "evasion_completed")
     no_action_events = [
@@ -398,6 +397,7 @@ def prepare_static_context() -> dict:
         and event.get("decision_reason") == "distance_above_reaction"
         and float(event.get("ts", 0.0)) < float(evasion_evt["ts"])
     ]
+    detect_evt = no_action_events[-2] if len(no_action_events) >= 2 else nearest_event(brain, STATIC_DETECTION_TS, "decision_snapshot", "tower")
     detection_detail_evt = max(no_action_events, key=lambda event: float(event["ts"])) if no_action_events else detect_evt
 
     det_row = nearest_row(traj, float(detect_evt["ts"]))

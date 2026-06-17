@@ -18,11 +18,11 @@ La figura pedida es una composicion de seis paneles:
 - Los seis paneles deben llevar superpuesto el grid real del planificador: `81 x 81` celdas, `6 m` por celda, radio `40` celdas.
 - La deteccion/obstaculo de la Figura 1 debe ser unica y de tipo torre. No deben aparecer ciclistas, peloton, vacas ni multiples torres detectadas.
 - Los seis paneles deben tener el mismo aspect ratio, los mismos valores en los ejes y las mismas etiquetas de ejes. El encuadre/camara no se mueve entre paneles: la Figura 1 se lee como una secuencia temporal sobre un mismo mapa fijo.
-- Para las figuras generadas actuales, el encuadre fijo activo queda documentado como eje X `[-40, 160]` m y eje Y `[-190, 10]` m, con etiquetas `East (m)` y `North (m)`. Es un encuadre cuadrado `1:1` de 200 m x 200 m, centrado en el tramo WP1->WP2 para maximizar claridad.
+- Para las figuras generadas actuales, el encuadre fijo activo queda documentado como eje X `[-40, 160]` m y eje Y `[-165, 35]` m, con etiquetas `East (m)` y `North (m)`. Es un encuadre cuadrado `1:1` de 200 m x 200 m, centrado en el tramo WP1->WP2 para maximizar claridad, con mas aire por encima de WP1 y menos espacio muerto bajo WP2.
 - La version amplia anterior y la version cercana anterior quedan preservadas como contexto, pero no son la version activa para componer la Figura 1.
 - Los paneles `1B` y `1C` deben ser continuidad del mismo encuentro. La version corregida usa el run `pipeline/logs/paper_wp1_wp2_tower/paper_wp1_wp2_tower_p0.56_l+8.0_20260617_120539`; ambos corresponden a la misma torre `vision:101`.
 - La lectura activa queda fijada como secuencia temporal `1A -> 1B -> 1C -> 1D -> 1E -> 1F`.
-- La instruccion original agrupaba `1B/1E` como deteccion y `1C/1F` como evasion, pero eso solo funcionaba como matriz por columnas. Al exigir seis paneles cenitales con mismo encuadre, la figura se entiende mejor como secuencia; por tanto `1B` es deteccion temprana, `1C` la ultima deteccion sin accion con radios, `1D` el inicio de evasion A*, `1E` la evasion en curso y `1F` el resumen final.
+- La instruccion original agrupaba `1B/1E` como deteccion y `1C/1F` como evasion, pero eso solo funcionaba como matriz por columnas. Al exigir seis paneles cenitales con mismo encuadre, la figura se entiende mejor como secuencia; por tanto `1B` es deteccion sin accion cerca del umbral, `1C` la ultima deteccion sin accion con radios, `1D` el inicio de evasion A*, `1E` la evasion en curso y `1F` el resumen final.
 
 ## Total de figuras y paneles a generar
 
@@ -67,6 +67,9 @@ Por tanto, la nueva Figura 1 parece compactar esas etapas en una unica figura mu
 - Validacion: `accepted_types=["tower"]`, `clean_detection_count=9`, `valid_plan_count=1`, `valid_completion_count=1`, `failure_count=0`.
 - Evasion activa: comienza en progreso `0.2085` del tramo WP1->WP2 y termina en `0.9412`, antes de llegar a WP2.
 - Evento de planificacion: `planner_obs_count=1`, por tanto la torre `vision:101` si fue incluida por el planner.
+- Panel `1B`: deteccion sin accion a `67.1 m`.
+- Panel `1C`: ultima deteccion sin accion a `63.1 m`, justo antes de generar evasion al cruzar `reaction_distance_eval_m = 61 m`.
+- La torre se muestra en `1B` porque ya existe como obstaculo activo detectado (`obs_fresh=True`, `obs_count=1`). No estamos dibujando el rango fisico/sensorial de deteccion de YOLO; los circulos de `1C` son distancias de reaccion/control, no el alcance de la camara.
 
 ## Trazabilidad tecnica
 
@@ -191,7 +194,7 @@ Decision cerrada:
 
 ### 1C - Grafica: deteccion sin accion
 
-Debe mostrar el mismo instante que `1B`, pero con mas informacion grafica:
+Debe mostrar un instante posterior a `1B`, todavia sin accion, pero mas cerca del umbral de planificacion:
 
 - mission/global path;
 - UAS;
@@ -308,7 +311,7 @@ Respuestas ya cerradas:
 
 1. Figura 1 usa obstaculo estatico: torre.
 2. Figura 2 queda para obstaculo en movimiento: ciclista o peloton.
-3. `1B` y `1C` muestran el obstaculo dentro del `Reaction Range`, pero fuera de la `Base reaction distance`.
+3. `1B` y `1C` muestran el obstaculo ya detectado, pero todavia fuera de `reaction_distance_eval_m`, por eso no hay accion. Si `Reaction Range` se usa en el paper como rango sensorial/de deteccion, la torre esta dentro porque `obs_fresh=True`; si se usa como `reaction_distance_eval_m`, entonces debe estar fuera para que el estado "No Safety Action" sea correcto.
 4. El `81 x 81 occupancy grid` basta en la representacion grafica `1F`; no hace falta dentro de Unreal.
 5. El resumen final del caso estatico de la torre queda como `1F` para que la lectura `1A -> 1F` sea temporal. La etiqueta original `1D` solo se conserva como antecedente historico de la instruccion recibida.
 

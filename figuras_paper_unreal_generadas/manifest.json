@@ -2,7 +2,7 @@
   "figure_1": {
     "figure": "figure_1_static_tower_multipanel.png",
     "run": "pipeline\\logs\\paper_wp1_wp2_tower\\paper_wp1_wp2_tower_p0.56_l+8.0_20260617_120539",
-    "detection_event_ts": 1781690753.5818584,
+    "detection_event_ts": 1781690756.0941088,
     "evasion_event_ts": 1781690756.8978844,
     "completion_event_ts": 1781690773.1845434,
     "obstacle": {
