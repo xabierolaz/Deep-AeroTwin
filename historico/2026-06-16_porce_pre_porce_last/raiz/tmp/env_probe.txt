@@ -1,0 +1,36 @@
+== GPU ==
+NVIDIA GeForce RTX 5090, 32607 MiB, 596.36
+== venvs ==
+/home/user/sdv2_venv
+== torch sdv2 ==
+2.11.0+cu128 True NVIDIA GeForce RTX 5090
+== disk /mnt/d ==
+D:\             3.7T  3.3T  423G  89% /mnt/d
+== neural ==
+README_live_viewer.md
+README_localized_restyle.md
+README_pipeline_2stage.md
+SOTA_RESEARCH_2026.md
+StreamDiffusionV2
+__pycache__
+ckpts
+configure_wan_control.py
+detail_transfer.py
+detect_clip.py
+ejea_prompt.txt
+extract_control.py
+live_server.py
+live_viewer.py
+localized_restyle_slider.html
+models
+region_composite.py
+run_pipeline.sh
+torch_probe.py
+wan_models
+wsl_download_models.sh
+wsl_install_deps.sh
+wsl_run_ejea.sh
+wsl_run_ejea_ns.sh
+wsl_run_poc.sh
+wsl_setup_pipeline.sh
+wsl_setup_sdv2.sh

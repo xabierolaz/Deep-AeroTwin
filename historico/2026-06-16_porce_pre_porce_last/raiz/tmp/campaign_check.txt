@@ -1,0 +1,4 @@
+True
+[17:41:14] campaign start: 40 runs, 4 workers
+True
+1

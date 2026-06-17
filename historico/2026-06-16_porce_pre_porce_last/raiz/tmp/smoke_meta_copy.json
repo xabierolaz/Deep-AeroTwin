@@ -1,0 +1,32 @@
+{
+  "run": "porce_on_with_detections_20260612_173504_r00",
+  "scenario": "porce_on_with_detections",
+  "run_idx": 0,
+  "port": 18090,
+  "evasion": true,
+  "inject": true,
+  "started_at": "2026-06-12T17:35:04",
+  "ok": true,
+  "mission_completed": true,
+  "saw_evasion": true,
+  "timeout": false,
+  "error": null,
+  "inject_meta": {
+    "obs_lat": 42.229441491619006,
+    "obs_lon": -1.2348257047952498,
+    "from_lat": 42.22967978857696,
+    "from_lon": -1.2350717024331022,
+    "distance_m": 33.25,
+    "type": "biker",
+    "source": "vision",
+    "posts": 45,
+    "posts_ok": 45
+  },
+  "ended_at": "2026-06-12T17:38:40",
+  "metrics": {
+    "duration_s": 207,
+    "path_length_m": 1463.5,
+    "max_wp_idx": 12,
+    "mean_obstacles": 0.09
+  }
+}

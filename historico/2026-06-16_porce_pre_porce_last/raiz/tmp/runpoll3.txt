@@ -1,0 +1,16 @@
+=== last progress line ===
+97%|█████████▋| 29/30 [01:32<00:03,  3.04s/it]
+100%|██████████| 30/30 [01:35<00:00,  3.09s/it]
+100%|██████████| 30/30 [01:35<00:00,  3.18s/it]
+=== markers ===
++ echo PREDICT_RC=0
+PREDICT_RC=0
++ echo STAGE1_RUN_DONE
+STAGE1_RUN_DONE
+=== proc ===
+0
+=== out ===
+total 972
+drwxrwxrwx 1 user user   4096 Jun 13 10:37 .
+drwxrwxrwx 1 user user   4096 Jun 13 10:37 ..
+-rwxrwxrwx 1 user user 994909 Jun 13 10:37 00000001.mp4

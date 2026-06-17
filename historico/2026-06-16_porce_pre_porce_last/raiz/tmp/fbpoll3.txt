@@ -1,0 +1,17 @@
+=== markers ===
+TORCH 2.11.0+cu128 12.8
++ echo DEPS_RC=0
+DEPS_RC=0
+  error: subprocess-exited-with-error
+      ModuleNotFoundError: No module named 'pkg_resources'
++ echo PKG_RC=1
+PKG_RC=1
+=== proc ===
+4444 bash /mnt/d/Deep-AeroTwin-UE57-Test/neural/job_fvsr_build.sh
+4650 python setup.py install
+4937 /bin/sh -c /usr/local/cuda-12.8/bin/nvcc -MD -MF /home/user/Block-Sparse-Attention/build/temp.linux-x86_64-cpython-312/csrc/block_sparse_attn/src/flash_bwd_block_hdim64_bf16_causal_sm80.o.d -I/home/user/Block-Sparse-Attention/csrc/block_sparse_attn -I/home/user/Block-Sparse-Attention/csrc/block_sparse_attn/src -I/home/user/Block-Sparse-Attention/csrc/cutlass/include -I/home/user/flashvsr_venv/lib/python3.12/site-packages/torch/include -I/home/user/flashvsr_venv/lib/python3.12/site-packages/torch/include/torch/csrc/api/include -I/usr/local/cuda-12.8/include -I/home/user/flashvsr_venv/include -I/usr/include/python3.12 -c -c /home/user/Block-Sparse-Attention/csrc/block_sparse_attn/src/flash_bwd_block_hdim64_bf16_causal_sm80.cu -o /home/user/Block-Sparse-Attention/build/temp.linux-x86_64-cpython-312/csrc/block_sparse_attn/src/flash_bwd_block_hdim64_bf16_causal_sm80.o -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr --compiler-options ''"'"'-fPIC'"'"'' -O3 -std=c++17 -U__CUDA_NO_HALF_OPERATORS__ -U__CUDA_NO_HALF_CONVERSIONS__ -U__CUDA_NO_HALF2_OPERATORS__ -U__CUDA_NO_BFLOAT16_CONVERSIONS__ --expt-relaxed-constexpr --expt-extended-lambda --use_fast_math -gencode arch=compute_120,code=sm_120 -gencode arch=compute_120,code=compute_120 --threads 4 -DTORCH_API_INCLUDE_EXTENSION_H -DTORCH_EXTENSION_NAME=block_sparse_attn_cuda
+=== tail ===
+/home/user/flashvsr_venv/lib/python3.12/site-packages/torch/include/c10/cuda/CUDAEvent.h:362:21: note: you can stabilize this value with ‘--param hardware_destructive_interference_size=64’, or disable this warning with ‘-Wno-interference-size’
+/home/user/flashvsr_venv/lib/python3.12/site-packages/torch/include/c10/cuda/CUDAEvent.h:363:14: warning: use of ‘std::hardware_destructive_interference_size’ [-Winterference-size]
+  363 |     alignas(c10::hardware_destructive_interference_size) std::mutex mutex_;
+      |              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

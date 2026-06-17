@@ -1,0 +1,125 @@
+﻿On branch main
+Your branch is ahead of 'origin_https/main' by 4 commits.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+  (commit or discard the untracked or modified content in submodules)
+	modified:   Unreal/Config/DefaultEngine.ini
+	modified:   Unreal/Source/AirTraffic/Public/PelotonSplineActor.h
+	modified:   ardupilot (modified content)
+	deleted:    docs/auditoria_unreal_demos_paper_20260612.md
+	deleted:    docs/d4_twin_demo_20260612.md
+	deleted:    docs/unreal_mcp_audit.md
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/bib_correccion_xabi.bib
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/biber-pass.txt
+	modified:   paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/bibliografia/bibliografia.bib
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/compile-integration-1.txt
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/compile-integration-2.txt
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/compile-pass1.txt
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/compile-pass2.txt
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/compile-pass3.txt
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/compile-pass4.txt
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/compile-porce-1.txt
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/compile-porce-2.txt
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/data/e2e_ablation_metrics.csv
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/data/e2e_campaign_stats.csv
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/data/latency_metrics.json
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/data/paper_metrics.json
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/data/reference_audit.json
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/data/reference_audit_summary_v3.md
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/data/reference_audit_summary_v4.md
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/data/reference_audit_v2.json
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/data/reference_audit_v3.json
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/data/reference_audit_v4.json
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/figures/e2e_ablation_paths.png
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/figures/pipeline_a_architecture.drawio
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/figures/pipeline_a_architecture.from_drawio.png
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/figures/pipeline_a_architecture.png
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/figures/porce_case_timeseries.png
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/figures/porce_case_trajectory.drawio
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/figures/porce_case_trajectory.png
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/figures/porce_case_viewer_frame.jpg
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/figures/porce_detection_montage.drawio
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/figures/porce_detection_montage.png
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/figures/porce_method_flow.drawio
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/figures/porce_method_flow.png
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/figures/porce_six_stage_sequence.png
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/figures/porce_yolo_future_overlay.png
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/figures/tmp_crop_114.png
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/figures/tmp_crop_120.png
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/figures/tmp_crop_90.png
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/main.aux
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/main.bbl
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/main.bib
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/main.blg
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/main.out
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/main.pdf
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/main.tex
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/main_correccion_xabi.aux
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/main_correccion_xabi.bbl
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/main_correccion_xabi.blg
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/main_correccion_xabi.out
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/main_correccion_xabi.pdf
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/main_correccion_xabi.tex
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/manuscript.aux
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/manuscript.bbl
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/manuscript.bcf
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/manuscript.blg
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/manuscript.out
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/manuscript.pdf
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/manuscript.run.xml
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/manuscript.tex
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/openwork.aux
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/openwork.bbl
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/openwork.bcf
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/openwork.blg
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/openwork.out
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/openwork.pdf
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/openwork.run.xml
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/openwork.sty
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/openwork.tex
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/rewrite-biber.txt
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/rewrite-pass1.txt
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/rewrite-pass2.txt
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/rewrite-pass3.txt
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/scripts/audit_drawio_diagrams.py
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/scripts/export_drawio_assets.py
+	deleted:    paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/scripts/generate_paper_assets.py
+	modified:   pipeline/constants.py
+	modified:   pipeline/flight_controller.py
+	modified:   pipeline/porce_defaults.env
+	modified:   pipeline/porce_manager.py
+	deleted:    tmp/audit_spawn_alignment.ps1
+	deleted:    tmp/make_latest_run_viz_gif.bat
+	deleted:    tmp/spawn_unreal_obstacles.ps1
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	.migration/
+	EASA_FORMULACION_SEGURIDAD_PORCE.tex
+	EASA_REFERENCIAS_PORCE.bib
+	EASA_TRAZABILIDAD_PORCE.tex
+	GIT_STATUS_2026-06-16_085037.txt
+	GIT_STATUS_AFTER_OVERLEAF_COMPILE_2026-06-16_085037.txt
+	GIT_STATUS_FULL_2026-06-16_085037.txt
+	GIT_STATUS_FULL_AFTER_OVERLEAF_COMPILE_2026-06-16_085037.txt
+	IMPORTANTE_PORCE_UNREAL.md
+	Unreal/Plugins/CesiumForUnreal/
+	Unreal/Plugins/VaRest/
+	Unreal/Source/AirTraffic/Private/CowHerdSubsystem.cpp
+	Unreal/Source/AirTraffic/Public/CowHerdSubsystem.h
+	historico/
+	neural/
+	paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/IEEE/
+	paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/Imagenes/
+	paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/Main_formato_ieee.aux
+	paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/Main_formato_ieee.bbl
+	paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/Main_formato_ieee.blg
+	paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/Main_formato_ieee.pdf
+	paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/Versiones anteriores/
+	paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/bibliografia/referencias_revision_porce.bib
+	paper/_source_archives/
+
+no changes added to commit (use "git add" and/or "git commit -a")

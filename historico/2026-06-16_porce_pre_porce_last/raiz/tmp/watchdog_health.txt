@@ -1,0 +1,7 @@
+﻿=== UE procesos ===
+36904 | AirTraffic - Unreal Editor
+47828 | AirTraffic (64-bit Development PCD3D_SM6) 
+=== pythons pipeline ===
+42932 | D:\Deep-AeroTwin-UE57-Test\venv\Scripts\python.exe -u flight_controller.py
+236260 | "C:\Users\xabie\AppData\Local\Programs\Python\Python312\python.exe" -u flight_controller.py
+=== arducopter WSL ===

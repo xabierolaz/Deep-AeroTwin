@@ -1,0 +1,164 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex.fmt)
+ restricted \write18 enabled.
+entering extended mode
+(main.tex
+LaTeX2e <2023-11-01> patch level 1
+L3 programming layer <2024-01-04>
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/base\article.cls
+Document Class: article 2023/05/17 v1.4n Standard LaTeX document class
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/base\size11.clo))
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/base\inputenc.sty)
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/base\fontenc.sty)
+(C:\Program Files\MiKTeX\tex/generic/babel\babel.sty
+(C:\Program Files\MiKTeX\tex/generic/babel\txtbabel.def)
+*************************************
+* Local config file bblopts.cfg used
+*
+(C:\Program Files\MiKTeX\tex/latex/arabi\bblopts.cfg)
+(C:\Program Files\MiKTeX\tex/generic/babel/locale/en\babel-english.tex)
+(C:\Program Files\MiKTeX\tex/latex/babel-english\english.ldf))
+(C:\Users\xabie\AppData\Roaming\MiKTeX\tex/latex/geometry\geometry.sty
+(C:\Program Files\MiKTeX\tex/latex/graphics\keyval.sty)
+(C:\Program Files\MiKTeX\tex/generic/iftex\ifvtex.sty
+(C:\Program Files\MiKTeX\tex/generic/iftex\iftex.sty))
+(C:\Users\xabie\AppData\Roaming\MiKTeX\tex/latex/geometry\geometry.cfg))
+(C:\Program Files\MiKTeX\tex/latex/psnfss\mathptmx.sty)
+(C:\Program Files\MiKTeX\tex/latex/microtype\microtype.sty
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/etoolbox\etoolbox.sty)
+(C:\Program Files\MiKTeX\tex/latex/microtype\microtype-pdftex.def)
+(C:\Program Files\MiKTeX\tex/latex/microtype\microtype.cfg))
+(C:\Program Files\MiKTeX\tex/latex/setspace\setspace.sty)
+(C:\Program Files\MiKTeX\tex/latex/amsmath\amsmath.sty
+For additional information on amsmath, use the `?' option.
+(C:\Program Files\MiKTeX\tex/latex/amsmath\amstext.sty
+(C:\Program Files\MiKTeX\tex/latex/amsmath\amsgen.sty))
+(C:\Program Files\MiKTeX\tex/latex/amsmath\amsbsy.sty)
+(C:\Program Files\MiKTeX\tex/latex/amsmath\amsopn.sty))
+(C:\Program Files\MiKTeX\tex/latex/amsfonts\amssymb.sty
+(C:\Program Files\MiKTeX\tex/latex/amsfonts\amsfonts.sty))
+(C:\Program Files\MiKTeX\tex/latex/mathtools\mathtools.sty
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/tools\calc.sty)
+(C:\Program Files\MiKTeX\tex/latex/mathtools\mhsetup.sty))
+(C:\Program Files\MiKTeX\tex/latex/graphics\graphicx.sty
+(C:\Program Files\MiKTeX\tex/latex/graphics\graphics.sty
+(C:\Program Files\MiKTeX\tex/latex/graphics\trig.sty)
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\graphics.c
+fg)
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/graphics-def\pdftex.def
+))) (C:\Users\xabie\AppData\Roaming\MiKTeX\tex/latex/caption\subcaption.sty
+(C:\Users\xabie\AppData\Roaming\MiKTeX\tex/latex/caption\caption.sty
+(C:\Users\xabie\AppData\Roaming\MiKTeX\tex/latex/caption\caption3.sty)))
+(C:\Users\xabie\AppData\Roaming\MiKTeX\tex/latex/booktabs\booktabs.sty)
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/tools\tabularx.sty
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/tools\array.sty))
+(C:\Program Files\MiKTeX\tex/latex/siunitx\siunitx.sty
+(C:\Program Files\MiKTeX\tex/latex/translations\translations.sty
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/generic/pdftexcmds\pdftexcmds
+.sty (C:\Users\xabie\AppData\Roaming\MiKTeX\tex/generic/infwarerr\infwarerr.sty
+) (C:\Users\xabie\AppData\Roaming\MiKTeX\tex/generic/ltxcmds\ltxcmds.sty))))
+(C:\Users\xabie\AppData\Roaming\MiKTeX\tex/latex/enumitem\enumitem.sty)
+(C:\Program Files\MiKTeX\tex/latex/algorithms\algorithm.sty
+(C:\Users\xabie\AppData\Roaming\MiKTeX\tex/latex/float\float.sty)
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/base\ifthen.sty))
+(C:\Program Files\MiKTeX\tex/latex/algorithmicx\algpseudocode.sty
+(C:\Program Files\MiKTeX\tex/latex/algorithmicx\algorithmicx.sty
+Document Style algorithmicx 1.2 - a greatly improved `algorithmic' style
+)
+Document Style - pseudocode environments for use with the `algorithmicx' style
+) (C:\Program Files\MiKTeX\tex/latex/csquotes\csquotes.sty
+(C:\Program Files\MiKTeX\tex/latex/csquotes\csquotes.def)
+(C:\Program Files\MiKTeX\tex/latex/csquotes\csquotes.cfg))
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/xcolor\xcolor.sty
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\color.cfg)
+(C:\Program Files\MiKTeX\tex/latex/graphics\mathcolor.ltx))
+(C:\Program Files\MiKTeX\tex/latex/cite\cite.sty)
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hyperref.sty
+(C:\Users\xabie\AppData\Roaming\MiKTeX\tex/latex/kvsetkeys\kvsetkeys.sty)
+(C:\Users\xabie\AppData\Roaming\MiKTeX\tex/generic/kvdefinekeys\kvdefinekeys.st
+y) (C:\Users\xabie\AppData\Roaming\MiKTeX\tex/generic/pdfescape\pdfescape.sty)
+(C:\Users\xabie\AppData\Roaming\MiKTeX\tex/latex/hycolor\hycolor.sty)
+(C:\Users\xabie\AppData\Roaming\MiKTeX\tex/latex/letltxmacro\letltxmacro.sty)
+(C:\Users\xabie\AppData\Roaming\MiKTeX\tex/latex/auxhook\auxhook.sty)
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\nameref.sty
+(C:\Users\xabie\AppData\Roaming\MiKTeX\tex/latex/refcount\refcount.sty)
+(C:\Users\xabie\AppData\Roaming\MiKTeX\tex/generic/gettitlestring\gettitlestrin
+g.sty (C:\Users\xabie\AppData\Roaming\MiKTeX\tex/latex/kvoptions\kvoptions.sty)
+)) (C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\pd1enc.def)
+ (C:\Users\xabie\AppData\Roaming\MiKTeX\tex/generic/intcalc\intcalc.sty)
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\puenc.def)
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/url\url.sty)
+(C:\Users\xabie\AppData\Roaming\MiKTeX\tex/generic/bitset\bitset.sty
+(C:\Users\xabie\AppData\Roaming\MiKTeX\tex/generic/bigintcalc\bigintcalc.sty))
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/base\atbegshi-ltx.sty))
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hpdftex.def
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/base\atveryend-ltx.sty)
+
+(C:\Users\xabie\AppData\Roaming\MiKTeX\tex/latex/rerunfilecheck\rerunfilecheck.
+sty
+(C:\Users\xabie\AppData\Roaming\MiKTeX\tex/generic/uniquecounter\uniquecounter.
+sty))) (C:\Program Files\MiKTeX\tex/latex/preprint\authblk.sty)
+(C:\Program Files\MiKTeX\tex/latex/psnfss\t1ptm.fd)
+(C:\Program Files\MiKTeX\tex/latex/l3backend\l3backend-pdftex.def) (main.aux)
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+(C:\Program Files\MiKTeX\tex/latex/microtype\mt-ptm.cfg)
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mk
+ii
+[Loading MPS to PDF converter (version 2006.09.02).]
+)
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-b
+ase.sty (C:\Program Files\MiKTeX\tex/latex/00miktex\epstopdf-sys.cfg))
+(C:\Program Files\MiKTeX\tex/latex/translations/dicts\translations-basic-dictio
+nary-english.trsl) (main.out) (main.out)
+(C:\Program Files\MiKTeX\tex/latex/psnfss\ot1ztmcm.fd)
+(C:\Program Files\MiKTeX\tex/latex/psnfss\omlztmcm.fd)
+(C:\Program Files\MiKTeX\tex/latex/psnfss\omsztmcm.fd)
+(C:\Program Files\MiKTeX\tex/latex/psnfss\omxztmcm.fd)
+(C:\Program Files\MiKTeX\tex/latex/psnfss\ot1ptm.fd)
+(C:\Program Files\MiKTeX\tex/latex/microtype\mt-msa.cfg)
+(C:\Program Files\MiKTeX\tex/latex/microtype\mt-msb.cfg)
+(C:\Users\xabie\AppData\Local\Programs\MiKTeX\tex/latex/base\t1cmtt.fd)
+(C:\Program Files\MiKTeX\tex/latex/psnfss\ts1ptm.fd) [1{C:/Users/xabie/AppData/
+Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/xabie/AppData/Local/Programs
+/MiKTeX/fonts/enc/dvips/base/8r.enc}] [2] [3] [4] [5] [6 <./figures/pipeline_a_
+architecture.png (PNG copy)>] [7] [8 <./figures/porce_method_flow.png (PNG copy
+)>] [9] [10] [11] [12] [13]
+Underfull \hbox (badness 4279) in paragraph at lines 446--447
+[]\T1/ptm/m/n/10.95 (+20) The ex-act plan-ner ob-sta-cle iden-ti-ties are se-ri
+-al-ized in \T1/cmtt/m/n/10.95 evasion_route_generated \T1/ptm/m/n/10.95 (+20) 
+(field
+[14]
+Underfull \hbox (badness 5908) in paragraph at lines 468--469
+[]\T1/ptm/m/n/10.95 (+20) E. U. A. S. A. (EASA). ``EASA Ar-ti-fi-cial In-tel-li
+-gence Roadmap 2.0: A Human-
+
+Underfull \hbox (badness 6063) in paragraph at lines 468--469
+\T1/ptm/m/n/10.95 (+20) Centric Ap-proach to AI in Avi-a-tion''. EASA Gen-eral 
+Pub-li-ca-tions, 2023. Avail-able:
+
+Underfull \hbox (badness 10000) in paragraph at lines 468--469
+[]$\T1/cmtt/m/n/10.95 https : / / www . easa . europa . eu / en / document-[]li
+brary / general-[]publications /
+[15] [16] [17] [18] [19 <./figures/e2e_ablation_paths.png>] [20 <./figures/porc
+e_yolo_future_overlay.png> <./figures/porce_six_stage_sequence.png>] [21 <./fig
+ures/porce_detection_montage.png>] [22 <./figures/porce_case_trajectory.png>]
+[23 <./figures/porce_case_timeseries.png>] (main.aux)
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+ )
+(see the transcript file for additional information) <C:\Users\xabie\AppData\Lo
+cal\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1095.pk> <C:\Users\xabie\AppD
+ata\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1000.pk><C:/Program Fil
+es/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Program Files/MiKTeX/fo
+nts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Program Files/MiKTeX/fonts/type1/pu
+blic/amsfonts/cm/cmr10.pfb><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts
+/cm/cmsy10.pfb><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/symbols/msb
+m10.pfb><C:/Users/xabie/AppData/Local/Programs/MiKTeX/fonts/type1/public/rsfs/r
+sfs10.pfb><C:/Program Files/MiKTeX/fonts/type1/urw/symbol/usyr.pfb><C:/Users/xa
+bie/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/xa
+bie/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/xa
+bie/AppData/Local/Programs/MiKTeX/fonts/type1/urw/times/utmri8a.pfb>
+Output written on main.pdf (23 pages, 2368328 bytes).
+Transcript written on main.log.
+pdflatex: major issue: User/administrator updates are out-of-sync.

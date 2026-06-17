@@ -1,0 +1,14 @@
+0 %, 4497 MiB
+your 130
+=LINES=
+47
+=LASTPROC=
+2026-06-13 08:01:07,825 - SingleGPUInference - INFO - Processed 47, time: 0.2184 s, FPS: 18.3121
+2026-06-13 08:01:08,057 - SingleGPUInference - INFO - Processed 48, time: 0.2327 s, FPS: 17.1915
+=AVG=
+2026-06-13 08:01:08,289 - SingleGPUInference - INFO - VAE Encode Average FPS: 73.0653
+2026-06-13 08:01:08,290 - SingleGPUInference - INFO - DiT Average FPS: 28.8417
+2026-06-13 08:01:08,290 - SingleGPUInference - INFO - VAE Decode Average FPS: 42.4047
+2026-06-13 08:01:08,290 - SingleGPUInference - INFO - Video shape: (189, 480, 480, 3), Average FPS: 12.7983
+=DONE=
+=== DONE_EJEA Sat Jun 13 08:01:10 CEST 2026 ===

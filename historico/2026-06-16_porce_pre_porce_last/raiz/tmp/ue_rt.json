@@ -1,0 +1,13 @@
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Viewport realtime updated\n\n{\"success\":true,\"realtime\":true,\"message\":\"Viewport realtime enabled\"}"
+      }
+    ],
+    "isError": false
+  }
+}

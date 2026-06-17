@@ -1,0 +1,5 @@
+[17:59:37] porce_off_with_detections_20260612_175605_r08: ok=True completed=True saw_evasion=False err=None metrics={'duration_s': 205, 'path_length_m': 1455.8, 'max_wp_idx': 12, 'mean_obstacles': 0.09}
+[18:03:08] porce_on_no_detections_20260612_175936_r01: ok=True completed=True saw_evasion=False err=None metrics={'duration_s': 205, 'path_length_m': 1455.8, 'max_wp_idx': 12, 'mean_obstacles': 0.0}
+[18:03:09] porce_on_no_detections_20260612_175936_r00: ok=True completed=True saw_evasion=False err=None metrics={'duration_s': 207, 'path_length_m': 1455.6, 'max_wp_idx': 12, 'mean_obstacles': 0.0}
+[18:03:09] porce_on_no_detections_20260612_175937_r03: ok=True completed=True saw_evasion=False err=None metrics={'duration_s': 205, 'path_length_m': 1455.6, 'max_wp_idx': 12, 'mean_obstacles': 0.0}
+[18:03:09] porce_on_no_detections_20260612_175937_r02: ok=True completed=True saw_evasion=False err=None metrics={'duration_s': 205, 'path_length_m': 1455.5, 'max_wp_idx': 12, 'mean_obstacles': 0.0}

@@ -1,0 +1,6 @@
+=== hf proc ===
+652 /home/user/sdv2_venv/bin/python /home/user/sdv2_venv/bin/hf download Wan-AI/Wan2.1-VACE-1.3B --local-dir /mnt/d/Deep-AeroTwin-UE57-Test/neural/VideoX-Fun/models/Diffusion_Transformer/Wan2.1-VACE-1.3B
+=== size now ===
+6.0G	/mnt/d/Deep-AeroTwin-UE57-Test/neural/VideoX-Fun/models/Diffusion_Transformer/Wan2.1-VACE-1.3B
+=== DL_DONE? ===
+0

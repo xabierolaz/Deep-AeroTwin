@@ -1,0 +1,13 @@
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Python executed successfully\n\n{\"output\":\"TWIN_ECHO {\\\"ok\\\": true, \\\"world\\\": \\\"Ejea\\\", \\\"components_disabled\\\": [\\\"spawner.TRASH_PorceTelemetryComponent_1\\\"]}\",\"error\":\"\"}"
+      }
+    ],
+    "isError": false
+  }
+}

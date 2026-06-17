@@ -83,7 +83,7 @@ public:
 	float RiderZOffset = 0.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Peloton|Movement", meta = (ClampMin = "0.0", Units = "cm/s"))
-	float SpeedCmPerSecond = 850.0f;
+	float SpeedCmPerSecond = 640.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Peloton|Movement", meta = (ClampMin = "0.0", Units = "cm"))
 	float StartDistance = 0.0f;

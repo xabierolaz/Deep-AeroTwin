@@ -1,0 +1,3 @@
+ 12 files changed, 62 insertions(+), 53 deletions(-)
+43cbd23 Fig4 con frame pristino: fix anotacion debug de vision contaminaba frames de audit (copia pre-anotacion); caso definitivo run 233504 (WP6, 16 obs, detour 3.4m, clearance 34.3m)
+game on ORIGINAL Ejea for D4

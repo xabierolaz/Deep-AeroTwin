@@ -1,0 +1,6 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 354
+Connection: close
+Mcp-Session-Id: 48F11E5243363D6E3A2E6B945FDC3EBD
+

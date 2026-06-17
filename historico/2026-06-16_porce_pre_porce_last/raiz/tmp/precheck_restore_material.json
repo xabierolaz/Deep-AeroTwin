@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "components": 11,
+  "slots": 77,
+  "rider_material_cleared": true,
+  "material_names": [
+    "redspawn",
+    "WorldGridMaterial",
+    "WorldGridMaterial",
+    "redspawn",
+    "WorldGridMaterial",
+    "redspawn",
+    "redspawn"
+  ]
+}

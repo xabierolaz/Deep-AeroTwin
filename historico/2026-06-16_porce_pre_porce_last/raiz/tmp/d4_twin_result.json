@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "phases": {
+    "spawn_update": {
+      "ui_obstacles": 3,
+      "entity_ids": [
+        "vision:42",
+        "vision:41",
+        "vision:43"
+      ],
+      "shot": true
+    },
+    "despawn": {
+      "ui_obstacles": 1,
+      "shot": true
+    }
+  },
+  "workflow": "REAL_TWIN",
+  "control_mode": "PASSIVE_TWIN"
+}

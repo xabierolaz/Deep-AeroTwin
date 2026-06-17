@@ -1,0 +1,4 @@
+pipeline pythons: 
+22:05:40 [BRAIN] [PORCE] Navegando Evasion 4/18
+22:05:40 [BRAIN] [STATUS] Mode: GUIDED | GPS: 42.223139, -1.229641 Alt: 523.1m (rel 23.0m) | WP: 7 | Obs: 0 | UE: active=0 age=n/a posts=0 unauth=0 err=-
+[22:05:38.529] [VISION-YOLO] [HB] fps=18.4 frame=6345 capture=640x640 dets=1 tracks=4 send=0 tel=mavlink

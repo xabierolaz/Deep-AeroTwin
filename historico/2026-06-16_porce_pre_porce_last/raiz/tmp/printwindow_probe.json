@@ -1,0 +1,21 @@
+{
+  "matches": [
+    [
+      4392266,
+      "AirTraffic (64-bit Development PCD3D_SM6) "
+    ]
+  ],
+  "window": {
+    "w": 656,
+    "h": 679
+  },
+  "client": {
+    "w": 640,
+    "h": 640,
+    "off_x": 8,
+    "off_y": 31
+  },
+  "printwindow_ok": true,
+  "getdibits_lines": 679,
+  "client_mean_brightness": 154.13639241536458
+}

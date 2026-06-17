@@ -78,7 +78,24 @@ PROJECT_ROOT = _project_root
 # ============================================================================
 EARTH_RADIUS_M = _env_float("PORCE_EARTH_RADIUS_M", 6371000.0)
 GRID_CELL_SIZE_M = _env_float("PORCE_GRID_CELL_SIZE_M", 6.0)   # Resolucion del A*
-SAFETY_DISTANCE_M = _env_float("PORCE_SAFETY_DISTANCE_M", 12.0)  # Radio de seguridad de obstaculo
+SAFETY_DISTANCE_M = _env_float("PORCE_SAFETY_DISTANCE_M", 12.0)  # Radio de seguridad de obstaculo (fallback)
+# --- Radio de seguridad dependiente de clase: operacionalizacion EASA ---
+# Personas no involucradas (familia canonica 'bike': person/bicycle/biker) reciben
+# un radio protector derivado del Ground Risk Buffer de SORA 2.5: la "regla 1:1"
+# establece que el buffer horizontal a terceros no involucrados debe ser >= la
+# altura de vuelo AGL (impulsada por la trayectoria balistica tras terminacion).
+# Aqui se opera como radio de inflado del obstaculo, acotado por suelo y techo.
+# Animales (vaca) y activos (torre) usan despejes geometricos fijos menores; la
+# torre es el mas pequeno porque la inspeccion exige volar cerca del activo.
+# Para reproducir el comportamiento previo basta SAFETY_GRB_RATIO=0 y floor=12.
+SAFETY_GRB_RATIO = max(0.0, _env_float("PORCE_SAFETY_GRB_RATIO", 1.0))  # regla 1:1 SORA
+SAFETY_DISTANCE_PERSON_FLOOR_M = max(0.1, _env_float("PORCE_SAFETY_DISTANCE_PERSON_FLOOR_M", 15.0))
+SAFETY_DISTANCE_PERSON_MAX_M = max(
+    float(SAFETY_DISTANCE_PERSON_FLOOR_M),
+    _env_float("PORCE_SAFETY_DISTANCE_PERSON_MAX_M", 40.0),
+)
+SAFETY_DISTANCE_COW_M = max(0.1, _env_float("PORCE_SAFETY_DISTANCE_COW_M", 12.0))
+SAFETY_DISTANCE_TOWER_M = max(0.1, _env_float("PORCE_SAFETY_DISTANCE_TOWER_M", 8.0))
 CAMERA_FOV_VERTICAL = _env_float("PORCE_CAMERA_FOV_VERTICAL", 45.0)
 CAMERA_HEIGHT = _env_int("PORCE_CAMERA_HEIGHT", 640)
 CAMERA_WIDTH = _env_int("PORCE_CAMERA_WIDTH", 640)

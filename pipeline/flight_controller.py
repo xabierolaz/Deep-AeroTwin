@@ -123,6 +123,11 @@ from constants import (
     BRAIN_FORCE_ARM,
     OBSTACLE_TOKEN,
     MOCK_MOVE_MIN_DIST_M,
+    SAFETY_GRB_RATIO,
+    SAFETY_DISTANCE_PERSON_FLOOR_M,
+    SAFETY_DISTANCE_PERSON_MAX_M,
+    SAFETY_DISTANCE_COW_M,
+    SAFETY_DISTANCE_TOWER_M,
 )
 
 def _canonical_obs_class_name(class_name) -> str:
@@ -616,6 +621,37 @@ def _obs_assoc_distance_m(class_name) -> float:
     return float(OBS_TRACK_ASSOC_DYNAMIC_M)
 
 
+def _obs_safety_radius_m(class_name, alt_agl_m=None) -> float:
+    """Radio de inflado por clase (operacionalizacion EASA / SORA Ground Risk Buffer).
+
+    - Persona no involucrada (familia canonica 'bike': person/bicycle/biker):
+      radio derivado de la regla 1:1 de SORA (buffer horizontal >= altura de
+      vuelo AGL), acotado por suelo y techo. Es un campo de exclusion dinamico:
+      crece con la altura, como el GRB regulatorio.
+    - Vaca: despeje geometrico fijo (animal, obstaculo fisico).
+    - Torre: despeje fijo menor (activo estatico; la inspeccion vuela cerca).
+    - Clase desconocida: se trata como persona (conservador / a favor de seguridad).
+
+    Devuelve metros. Es el R_s usado para inflar este obstaculo en el grid A*.
+    """
+    key = _obs_class_key(class_name)
+    if key == "tower":
+        return float(SAFETY_DISTANCE_TOWER_M)
+    if key == "cow":
+        return float(SAFETY_DISTANCE_COW_M)
+    # 'bike' (persona no involucrada) y clases desconocidas -> GRB regla 1:1.
+    try:
+        h = float(alt_agl_m) if alt_agl_m is not None else 0.0
+    except (TypeError, ValueError):
+        h = 0.0
+    if not math.isfinite(h) or h < 0.0:
+        h = 0.0
+    grb_m = float(SAFETY_GRB_RATIO) * float(h)
+    radius_m = max(float(SAFETY_DISTANCE_PERSON_FLOOR_M), grb_m)
+    radius_m = min(float(SAFETY_DISTANCE_PERSON_MAX_M), radius_m)
+    return float(radius_m)
+
+
 def _clean_obs_distance(raw_value) -> float:
     return _clean_float(raw_value, float(MAVLINK_UNKNOWN_DISTANCE_M))
 
@@ -1017,6 +1053,8 @@ def planner_obstacle_subset(tel, obstacles):
     tel_lat = float(tel.get("lat", 0.0) or 0.0)
     tel_lon = float(tel.get("lon", 0.0) or 0.0)
 
+    alt_agl_m = _clean_float(tel.get("rel_alt", 0.0), 0.0)
+
     ranked = []
     for o in obstacles:
         dist_m = _obs_distance_from_tel_m(float(tel_lat), float(tel_lon), o)
@@ -1025,7 +1063,14 @@ def planner_obstacle_subset(tel, obstacles):
         ranked.append((float(dist_m), o))
 
     ranked.sort(key=lambda item: float(item[0]))
-    return [item[1] for item in ranked[:max_count]]
+    # Etiqueta cada obstaculo con su radio de seguridad de clase (R_s dependiente de
+    # clase y altura, SORA GRB) para que el planner infle por-obstaculo en el grid.
+    subset = []
+    for _dist_m, o in ranked[:max_count]:
+        o_tagged = dict(o)
+        o_tagged["safety_m"] = _obs_safety_radius_m(o.get("type"), alt_agl_m)
+        subset.append(o_tagged)
+    return subset
 
 
 def planner_obs_ids(planner_obs) -> list[str]:

@@ -1,0 +1,17 @@
+
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Level saved\n\n{\"verifiedPath\":\"/Game/Ejea_AuditD1\",\"existsAfter\":true}"
+      }
+    ],
+    "isError": false
+  }
+}
+
+
+

@@ -1,0 +1,23 @@
+{
+  "figure_1": {
+    "figure": "figure_1_static_tower_multipanel.png",
+    "run": "pipeline\\logs\\zero_trust\\20260218_234222",
+    "detection_event_ts": 1771454604.4209192,
+    "detection_frame": "yolo_001398.jpg",
+    "evasion_event_ts": 1771454651.4736636,
+    "evasion_frame": "yolo_002400.jpg",
+    "note": "1D is generated from the available tower episode in this run; the run is not guaranteed to contain only tower obstacles."
+  },
+  "figure_2": {
+    "figure": "figure_2_moving_peloton_multipanel.png",
+    "run": "pipeline\\logs\\zero_trust\\20260612_233504",
+    "route_event_ts": 1781300494.300092,
+    "frame": "yolo_005728.jpg",
+    "snapshots": 957
+  },
+  "reference_assets": [
+    "reference_historical_porce_six_stage_sequence.png",
+    "reference_historical_porce_yolo_future_overlay.png"
+  ],
+  "script_note": "Generated from local audited logs and archived Unreal/vision frames. Review unresolved paper decisions before replacing final LaTeX assets."
+}

@@ -1,0 +1,12 @@
+your 13root         216  5.0  0.0 107012 22272 ?        Ssl  07:44   0:00 /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
+=NET=
+  eth0: 21476814371 3005448    0    0    0     0          0        78 124411291 1531133    0    0    0     0       0          0
+=LOG=
+/mnt/d/Deep-AeroTwin-UE57-Test/neural/ckpts
+CKPT_EXIT=0
+=== sizes ===
+17G	/mnt/d/Deep-AeroTwin-UE57-Test/neural/wan_models/Wan2.1-T2V-1.3B
+5.3G	/mnt/d/Deep-AeroTwin-UE57-Test/neural/ckpts
+=== DONE_MODELS Sat Jun 13 07:43:53 CEST 2026 ===
+=FILES=
+-rwxrwxrwx 1 user user 5676070424 Jun 13 07:41 /mnt/d/Deep-AeroTwin-UE57-Test/neural/wan_models/Wan2.1-T2V-1.3B/diffusion_pytorch_model.safetensors

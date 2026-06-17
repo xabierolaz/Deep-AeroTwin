@@ -1,0 +1,2 @@
+504 sh -lc { pgrep -af arducopter; echo EXIT:True; } > /mnt/d/Deep-AeroTwin-UE57-Test/tmp/overnight/wd_wsl.txt 2>&1
+EXIT:True

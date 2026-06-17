@@ -1,0 +1,1 @@
+{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-03-26","capabilities":{"tools":{"listChanged":true}},"serverInfo":{"name":"unreal-mcp","version":"0.6.0"},"instructions":"Deep-AeroTwin UE 5.7 digital-twin project. Keep automation local to this project, prefer non-destructive asset operations, and ask before deleting or bulk-renaming assets."}}

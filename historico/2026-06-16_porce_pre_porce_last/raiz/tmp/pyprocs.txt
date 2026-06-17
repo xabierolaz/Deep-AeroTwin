@@ -1,0 +1,33 @@
+
+
+ProcessId : 24232
+cmd       : "C:\Users\xabie\AppData\Local\Programs\Python\Python312\python.exe"  "C:\Users\xabie\AppData\Local\Programs\Python\Python312\Scripts\headroom.exe" proxy --host 127.0.0.1 --port 8787 
+
+ProcessId : 192156
+cmd       : "C:\Users\xabie\AppData\Roaming\uv\tools\windows-mcp\Scripts\python.exe" "C:\Users\xabie\.local\bin\windows-mcp.exe"
+
+ProcessId : 191928
+cmd       : "C:\Users\xabie\AppData\Roaming\uv\tools\windows-mcp\Scripts\python.exe" "C:\Users\xabie\.local\bin\windows-mcp.exe"
+
+ProcessId : 149912
+cmd       : "D:\conscience_oepm_pure_kernel\conscience_vla\.venv-vla\Scripts\python.exe" src\harness\f2_learning_curve.py 
+
+ProcessId : 245636
+cmd       : "C:\Program Files\Python310\python.exe" src\harness\f2_learning_curve.py 
+
+ProcessId : 73628
+cmd       : "C:\Users\xabie\AppData\Roaming\uv\tools\windows-mcp\Scripts\python.exe" "C:\Users\xabie\.local\bin\windows-mcp.exe"
+
+ProcessId : 138120
+cmd       : "C:\Users\xabie\AppData\Roaming\uv\tools\windows-mcp\Scripts\python.exe" "C:\Users\xabie\.local\bin\windows-mcp.exe"
+
+ProcessId : 252240
+cmd       : python  -u log_server.py
+
+ProcessId : 63064
+cmd       : "C:\Users\xabie\AppData\Local\Programs\Python\Python312\python.exe" -u log_server.py
+
+
+
+
+False

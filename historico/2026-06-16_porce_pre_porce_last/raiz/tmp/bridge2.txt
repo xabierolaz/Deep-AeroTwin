@@ -1,0 +1,6 @@
+lasterror mtime: 22:36:58
+  File "C:\Users\xabie\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py", line 1347, in do_open
+    raise URLError(err)
+urllib.error.URLError: <urlopen error [WinError 10061] No se puede establecer una conexión ya que el equipo de destino denegó expresamente dicha conexión>
+editor procs: 
+port3000: False

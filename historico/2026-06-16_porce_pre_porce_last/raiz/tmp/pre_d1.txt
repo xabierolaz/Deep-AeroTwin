@@ -1,0 +1,2 @@
+game alive: True
+launched9

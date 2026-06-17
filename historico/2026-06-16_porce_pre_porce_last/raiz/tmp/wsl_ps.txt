@@ -1,0 +1,11 @@
+your 13root           7  0.0  0.0   3120  1792 ?        Sl   07:36   0:00 plan9 --control-socket 7 --log-level 4 --server-fd 8 --pipe-fd 10 --log-truncate
+root         286  5.0  0.0 107012 22528 ?        Ssl  07:36   0:00 /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
+=VENVSIZE=
+6.8G	/home/user/sdv2_venv
+=TORCH=
+2.11.0+cu128
+=TAIL=
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+ERROR: Failed to build 'numpy' when getting requirements to build wheel
+WSL_SETUP_RETURNED=1 

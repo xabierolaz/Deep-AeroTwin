@@ -1,0 +1,48 @@
+=== START POC run Sat Jun 13 07:47:50 CEST 2026 ===
+=== nvidia-smi ===
+NVIDIA GeForce RTX 5090, 4842 MiB, 32607 MiB
+=== run single-GPU v2v, step=2, 480x832, profile ===
+2026-06-13 07:47:58,408 - INFO - Denoising Step List: [700, 500, 0]
+2026-06-13 07:47:59,030 - INFO - Input video tensor shape: (1, 3, 81, 480, 832)
+2026-06-13 07:50:03,202 - INFO - loading /mnt/d/Deep-AeroTwin-UE57-Test/neural/StreamDiffusionV2/wan_models/Wan2.1-T2V-1.3B/Wan2.1_VAE.pth
+2026-06-13 07:50:06,595 - INFO - KV inference with 1 frames per block
+2026-06-13 07:50:54,200 - SingleGPUInference - INFO - Single GPU inference pipeline manager initialized
+2026-06-13 07:51:39,671 - SingleGPUInference - INFO - Loading checkpoint from /mnt/d/Deep-AeroTwin-UE57-Test/neural/StreamDiffusionV2/ckpts/wan_causal_dmd_v2v/model.pt
+2026-06-13 07:51:40,578 - SingleGPUInference - INFO - Starting single GPU inference pipeline
+/home/user/sdv2_venv/lib/python3.12/site-packages/torch/nn/modules/module.py:1790: UserWarning: flash_attn is not installed; falling back to scaled_dot_product_attention for KV-cache attention.
+  return forward_call(*args, **kwargs)
+/mnt/d/Deep-AeroTwin-UE57-Test/neural/StreamDiffusionV2/models/wan/wan_base/modules/model.py:189: UserWarning: flash_attn is not installed; falling back to scaled_dot_product_attention.
+  x = flash_attention(q, k, v, k_lens=context_lens)
+2026-06-13 07:51:42,353 - SingleGPUInference - INFO - Prepared initial chunk: start=0, end=3120, start_idx=0, save_results=0, frames=5
+2026-06-13 07:51:43,140 - SingleGPUInference - INFO - Processed 2, time: 2.5501 s, FPS: 1.5685
+2026-06-13 07:51:43,621 - SingleGPUInference - INFO - Processed 3, time: 0.4811 s, FPS: 8.3139
+2026-06-13 07:51:44,229 - SingleGPUInference - INFO - Processed 4, time: 0.6081 s, FPS: 6.5783
+2026-06-13 07:51:44,716 - SingleGPUInference - INFO - Processed 5, time: 0.4863 s, FPS: 8.2246
+2026-06-13 07:51:45,221 - SingleGPUInference - INFO - Processed 6, time: 0.5053 s, FPS: 7.9156
+2026-06-13 07:51:45,747 - SingleGPUInference - INFO - Processed 7, time: 0.5262 s, FPS: 7.6014
+2026-06-13 07:51:46,254 - SingleGPUInference - INFO - Processed 8, time: 0.5074 s, FPS: 7.8837
+2026-06-13 07:51:46,732 - SingleGPUInference - INFO - Processed 9, time: 0.4773 s, FPS: 8.3807
+2026-06-13 07:51:47,194 - SingleGPUInference - INFO - Processed 10, time: 0.4621 s, FPS: 8.6557
+2026-06-13 07:51:47,644 - SingleGPUInference - INFO - Processed 11, time: 0.4498 s, FPS: 8.8924
+2026-06-13 07:51:48,074 - SingleGPUInference - INFO - Processed 12, time: 0.4307 s, FPS: 9.2870
+2026-06-13 07:51:48,526 - SingleGPUInference - INFO - Processed 13, time: 0.4518 s, FPS: 8.8539
+2026-06-13 07:51:48,977 - SingleGPUInference - INFO - Processed 14, time: 0.4505 s, FPS: 8.8795
+2026-06-13 07:51:49,436 - SingleGPUInference - INFO - Processed 15, time: 0.4591 s, FPS: 8.7135
+2026-06-13 07:51:49,877 - SingleGPUInference - INFO - Processed 16, time: 0.4418 s, FPS: 9.0547
+2026-06-13 07:51:50,317 - SingleGPUInference - INFO - Processed 17, time: 0.4393 s, FPS: 9.1057
+2026-06-13 07:51:50,801 - SingleGPUInference - INFO - Processed 18, time: 0.4838 s, FPS: 8.2676
+2026-06-13 07:51:51,244 - SingleGPUInference - INFO - Processed 19, time: 0.4432 s, FPS: 9.0253
+2026-06-13 07:51:51,682 - SingleGPUInference - INFO - Processed 20, time: 0.4379 s, FPS: 9.1344
+2026-06-13 07:51:52,009 - SingleGPUInference - INFO - Processed 21, time: 0.3275 s, FPS: 12.2153
+2026-06-13 07:51:52,192 - SingleGPUInference - INFO - VAE Encode Average FPS: 39.0315
+2026-06-13 07:51:52,192 - SingleGPUInference - INFO - DiT Average FPS: 22.6090
+2026-06-13 07:51:52,192 - SingleGPUInference - INFO - VAE Decode Average FPS: 22.5299
+2026-06-13 07:51:52,193 - SingleGPUInference - INFO - Video shape: (81, 480, 832, 3), Average FPS: 8.3276
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+2026-06-13 07:51:52,719 - SingleGPUInference - INFO - Video saved to: /mnt/d/Deep-AeroTwin-UE57-Test/neural/StreamDiffusionV2//mnt/d/Deep-AeroTwin-UE57-Test/neural/outputs/output_000.mp4
+2026-06-13 07:51:52,720 - SingleGPUInference - INFO - Single GPU inference pipeline completed
+=== outputs ===
+=== DONE_POC Sat Jun 13 07:51:55 CEST 2026 ===

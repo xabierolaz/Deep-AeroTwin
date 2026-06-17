@@ -1,0 +1,148 @@
+{
+  "audit_root": "D:\\Deep-AeroTwin-UE57-Test\\pipeline\\logs\\zero_trust\\20260612_224316",
+  "stamp": "20260612_224316",
+  "ok": true,
+  "stages": {
+    "sitl_ready": true,
+    "brain_ready": true,
+    "vision_viz_started": true,
+    "first_frame_brightness": 158.1,
+    "mission_completed": true
+  },
+  "last_status": {
+    "mode": "LAND",
+    "armed": true,
+    "wp_idx": 12,
+    "mission_state": "COMPLETED",
+    "saw_evasion": true,
+    "obstacles_count": 0,
+    "evasion": false
+  },
+  "evasion_routes": [
+    {
+      "ts": 1781297054.6506214,
+      "nearest_m": 39.00535481443678,
+      "type": "cow",
+      "obs_ids": [
+        "vision:25"
+      ],
+      "route_points": 23
+    },
+    {
+      "ts": 1781297055.65911,
+      "nearest_m": 35.98386501181432,
+      "type": "cow",
+      "obs_ids": [
+        "vision:25"
+      ],
+      "route_points": 23
+    },
+    {
+      "ts": 1781297056.6696115,
+      "nearest_m": 33.46205592293969,
+      "type": "cow",
+      "obs_ids": [
+        "vision:25",
+        "vision:40"
+      ],
+      "route_points": 25
+    },
+    {
+      "ts": 1781297057.6793482,
+      "nearest_m": 31.016120725422073,
+      "type": "cow",
+      "obs_ids": [
+        "vision:25",
+        "vision:45",
+        "vision:40",
+        "vision:37"
+      ],
+      "route_points": 25
+    },
+    {
+      "ts": 1781297058.6906075,
+      "nearest_m": 27.78929985292584,
+      "type": "cow",
+      "obs_ids": [
+        "vision:25",
+        "vision:60",
+        "vision:50",
+        "vision:45",
+        "vision:40",
+        "vision:37"
+      ],
+      "route_points": 25
+    },
+    {
+      "ts": 1781297059.7243304,
+      "nearest_m": 32.78782081796187,
+      "type": "cow",
+      "obs_ids": [
+        "vision:60",
+        "vision:50",
+        "vision:45",
+        "vision:40",
+        "vision:37",
+        "vision:39"
+      ],
+      "route_points": 24
+    },
+    {
+      "ts": 1781297060.7963264,
+      "nearest_m": 29.504086301699704,
+      "type": "cow",
+      "obs_ids": [
+        "vision:60",
+        "vision:50",
+        "vision:45",
+        "vision:37",
+        "vision:62",
+        "vision:39",
+        "vision:64"
+      ],
+      "route_points": 23
+    },
+    {
+      "ts": 1781297061.817129,
+      "nearest_m": 25.92631896049065,
+      "type": "cow",
+      "obs_ids": [
+        "vision:60",
+        "vision:50",
+        "vision:45",
+        "vision:62",
+        "vision:70",
+        "vision:71",
+        "vision:64"
+      ],
+      "route_points": 22
+    },
+    {
+      "ts": 1781297062.8280845,
+      "nearest_m": 40.037747661718896,
+      "type": "cow",
+      "obs_ids": [
+        "vision:62",
+        "vision:70",
+        "vision:71",
+        "vision:64"
+      ],
+      "route_points": 21
+    },
+    {
+      "ts": 1781297063.8375819,
+      "nearest_m": 38.62337672339567,
+      "type": "cow",
+      "obs_ids": [
+        "vision:62",
+        "vision:71",
+        "vision:70",
+        "vision:64",
+        "vision:76"
+      ],
+      "route_points": 20
+    }
+  ],
+  "evasion_route_count": 352,
+  "vision_frames_archived": 4418
+}

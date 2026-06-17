@@ -1,0 +1,36 @@
+{
+  "out_dir": "D:\\Deep-AeroTwin-UE57-Test\\tmp\\precheck_dryrun_182023",
+  "ok": true,
+  "brain_ready": true,
+  "frames": 3356,
+  "frames_with_outgoing": 224,
+  "frames_with_biker_published": 213,
+  "max_published_biker_conf": 0.878,
+  "sample": [
+    {
+      "frame": 1104,
+      "n_bikers": 4,
+      "top_conf": 0.7060149312019348
+    },
+    {
+      "frame": 1105,
+      "n_bikers": 5,
+      "top_conf": 0.7060149312019348
+    },
+    {
+      "frame": 1106,
+      "n_bikers": 6,
+      "top_conf": 0.7060149312019348
+    },
+    {
+      "frame": 1107,
+      "n_bikers": 7,
+      "top_conf": 0.723244845867157
+    },
+    {
+      "frame": 1108,
+      "n_bikers": 7,
+      "top_conf": 0.723244845867157
+    }
+  ]
+}

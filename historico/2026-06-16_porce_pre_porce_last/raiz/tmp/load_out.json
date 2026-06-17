@@ -1,0 +1,13 @@
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Level loaded\n\n{\"requestedPath\":\"/Game/Ejea_AuditD1\",\"loadedPath\":\"/Game/Ejea_AuditD1\",\"saveDirtyPackages\":false,\"savedDirtyPackagesBeforeLoad\":false,\"dirtyWorldPackagesBeforeLoad\":0,\"dirtyContentPackagesBeforeLoad\":0,\"dirtyWorldPackagesAfterSave\":0,\"dirtyContentPackagesAfterSave\":0,\"failedDirtyPackageSaves\":0,\"verifiedPath\":\"/Game/Ejea_AuditD1\",\"existsAfter\":true}"
+      }
+    ],
+    "isError": false
+  }
+}

@@ -1,0 +1,49 @@
+=== nvcc ===
+/usr/local/cuda-12.6/bin/nvcc
+/usr/local/cuda-12.8/bin/nvcc
+/usr/local/cuda-12/bin/nvcc
+/usr/local/cuda/bin/nvcc
+Cuda compilation tools, release 12.8, V12.8.93
+Build cuda_12.8.r12.8/compiler.35583870_0
+=== clone BSA ===
+Cloning into 'Block-Sparse-Attention'...
+=== BSA setup arch list ===
+50:def cuda_archs() -> str:
+78:def add_cuda_gencodes(cc_flag, archs, bare_metal_version):
+81:      - sm_80/90 (regular)
+82:      - sm_100/120 on CUDA >= 12.8
+85:      - Embed PTX for newest arch for forward compatibility
+88:    if "80" in archs:
+89:        cc_flag += ["-gencode", "arch=compute_80,code=sm_80"]
+91:    # Hopper 9.0 needs >= 11.8
+92:    if bare_metal_version >= Version("11.8") and "90" in archs:
+93:        cc_flag += ["-gencode", "arch=compute_90,code=sm_90"]
+97:        if "100" in archs:
+100:                cc_flag += ["-gencode", "arch=compute_100f,code=sm_100"]
+102:                cc_flag += ["-gencode", "arch=compute_100,code=sm_100"]
+104:        if "120" in archs:
+105:            # sm_120 is supported in CUDA 12.8/12.9+ toolkits
+107:                cc_flag += ["-gencode", "arch=compute_120f,code=sm_120"]
+109:                cc_flag += ["-gencode", "arch=compute_120,code=sm_120"]
+112:        # Thor rename: 12.9 uses sm_101; 13.0+ uses sm_110
+113:        if "110" in archs:
+115:                cc_flag += ["-gencode", "arch=compute_110f,code=sm_110"]
+117:                # Provide Thor support for CUDA 12.9 via sm_101
+119:                    cc_flag += ["-gencode", "arch=compute_101,code=sm_101"]
+122:    # PTX for newest requested arch (forward-compat)
+123:    numeric = [a for a in archs if a.isdigit()]
+126:        cc_flag += ["-gencode", f"arch=compute_{newest},code=compute_{newest}"]
+128:    return cc_flag
+144:def append_nvcc_threads(nvcc_extra_args):
+162:    # Check, if CUDA11 is installed for compute capability 8.0
+163:    cc_flag = []
+172:        add_cuda_gencodes(cc_flag, set(cuda_archs()), bare_metal_version)
+179:    # https://github.com/pytorch/pytorch/blob/8472c24e3b5b60150096486616d98b7bea01500b/torch/utils/cpp_extension.py#L920
+183:    nvcc_flags = [
+207:        nvcc_flags.extend(["-Xcompiler", "/Zc:__cplusplus"])
+210:    ext_modules.append(
+244:                "nvcc": append_nvcc_threads(nvcc_flags + cc_flag),
+257:        version_match = re.search(r"^__version__\s*=\s*(.*)$", f.read(), re.MULTILINE)
+309:            # Make the archive
+316:            archive_basename = f"{self.wheel_dist_name}-{impl_tag}-{abi_tag}-{plat_tag}"
+318:            wheel_path = os.path.join(self.dist_dir, archive_basename + ".whl")

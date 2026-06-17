@@ -1,0 +1,2 @@
+@echo off
+C:\Windows\System32\wsl.exe -e bash -lc "echo =NEURAL=; du -sh /mnt/d/Deep-AeroTwin-UE57-Test/neural/* 2>/dev/null; echo =VENV_NEURAL_D=; du -sh /mnt/d/Deep-AeroTwin-UE57-Test/venv_neural 2>/dev/null; echo =HF_CACHE=; du -sh ~/.cache/huggingface 2>/dev/null; echo =LOGS=; du -sh /mnt/d/Deep-AeroTwin-UE57-Test/pipeline/logs 2>/dev/null; echo =TMP=; du -sh /mnt/d/Deep-AeroTwin-UE57-Test/tmp 2>/dev/null; echo =DF=; df -h /mnt/d" > "D:\Deep-AeroTwin-UE57-Test\tmp\dsize.txt" 2>&1

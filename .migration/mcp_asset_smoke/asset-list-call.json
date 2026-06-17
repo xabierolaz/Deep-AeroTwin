@@ -1,0 +1,1 @@
+{"method":"tools/call","params":{"arguments":{"directory":"/Game","recursivePaths":true,"limit":10,"action":"list"},"name":"manage_asset"},"id":3,"jsonrpc":"2.0"}

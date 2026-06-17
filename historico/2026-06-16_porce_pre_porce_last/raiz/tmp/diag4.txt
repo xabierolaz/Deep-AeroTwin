@@ -1,0 +1,3 @@
+True
+bThrottleCPUWhenNotForeground: OK
+cvar t.IdleWhenNotForeground 0: OK

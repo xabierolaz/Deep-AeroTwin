@@ -1,0 +1,6 @@
+HTTP/1.1 200 OK
+Content-Type: text/event-stream
+Cache-Control: no-cache
+Connection: keep-alive
+Mcp-Session-Id: 50027B7742FA4E3D214EFF85D7959EC5
+

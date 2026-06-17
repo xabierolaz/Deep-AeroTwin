@@ -1,0 +1,85 @@
+{
+  "image": "D:\\Deep-AeroTwin-UE57-Test\\Unreal\\Saved\\Screenshots\\precheck_ciclista_v0.png",
+  "detections": [
+    {
+      "class": "biker",
+      "conf": 0.413,
+      "xyxy": [
+        862.6,
+        376.0,
+        928.9,
+        443.2
+      ]
+    },
+    {
+      "class": "cow",
+      "conf": 0.278,
+      "xyxy": [
+        547.5,
+        88.9,
+        576.0,
+        112.1
+      ]
+    },
+    {
+      "class": "biker",
+      "conf": 0.174,
+      "xyxy": [
+        819.9,
+        361.3,
+        889.1,
+        438.9
+      ]
+    },
+    {
+      "class": "biker",
+      "conf": 0.172,
+      "xyxy": [
+        740.0,
+        361.0,
+        820.0,
+        432.6
+      ]
+    },
+    {
+      "class": "biker",
+      "conf": 0.167,
+      "xyxy": [
+        737.6,
+        364.0,
+        799.6,
+        432.4
+      ]
+    },
+    {
+      "class": "cow",
+      "conf": 0.118,
+      "xyxy": [
+        152.0,
+        313.2,
+        177.4,
+        338.8
+      ]
+    },
+    {
+      "class": "biker",
+      "conf": 0.116,
+      "xyxy": [
+        739.1,
+        297.8,
+        867.1,
+        433.5
+      ]
+    },
+    {
+      "class": "cow",
+      "conf": 0.109,
+      "xyxy": [
+        63.6,
+        711.4,
+        91.4,
+        739.9
+      ]
+    }
+  ]
+}

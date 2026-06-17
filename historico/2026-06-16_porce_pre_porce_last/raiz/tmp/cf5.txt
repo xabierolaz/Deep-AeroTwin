@@ -1,0 +1,6 @@
+TIME
+VACE_FINAL_RC=0
+colormatched -> /mnt/d/Deep-AeroTwin-UE57-Test/tmp/pipeline/vace_final_color.mp4
+FINAL1_DONE
+PROG
+-rwxrwxrwx 1 user user 7230549 Jun 13 16:53 /mnt/d/Deep-AeroTwin-UE57-Test/tmp/pipeline/vace_final_color.mp4

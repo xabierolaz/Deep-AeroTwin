@@ -97,7 +97,17 @@ class PorcePlanner:
                 continue
             if not math.isfinite(lat_f) or not math.isfinite(lon_f):
                 continue
-            clean.append({"lat": lat_f, "lon": lon_f})
+            # Radio de inflado por-obstaculo (operacionalizacion EASA). Lo fija el
+            # Brain segun la clase y la altura (SORA GRB). Si falta, plan_route usa
+            # el radio global por defecto.
+            safety_m = obs.get("safety_m")
+            try:
+                safety_f = float(safety_m)
+                if not math.isfinite(safety_f) or safety_f <= 0.0:
+                    safety_f = None
+            except (TypeError, ValueError):
+                safety_f = None
+            clean.append({"lat": lat_f, "lon": lon_f, "safety_m": safety_f, "type": obs.get("type")})
         return clean
 
     @staticmethod
@@ -137,12 +147,19 @@ class PorcePlanner:
 
         goal_n, goal_e = self.latlon_to_meters(ref_lat, ref_lon, end_lat, end_lon)
         grid_obstacles = set()
-        safety_cells = max(0, int(math.ceil(self.safety_radius_m / self.cell_size)))
+        default_safety_cells = max(0, int(math.ceil(self.safety_radius_m / self.cell_size)))
 
         for obs in self._normalize_obstacles(obstacles):
             obs_n, obs_e = self.latlon_to_meters(ref_lat, ref_lon, obs["lat"], obs["lon"])
             ox = int(obs_e / self.cell_size)
             oy = int(obs_n / self.cell_size)
+            # Inflado por-obstaculo: cada obstaculo usa su propio radio de seguridad
+            # (R_s dependiente de clase via 'safety_m'); fallback al radio global.
+            obs_safety_m = obs.get("safety_m")
+            if obs_safety_m is None:
+                safety_cells = default_safety_cells
+            else:
+                safety_cells = max(0, int(math.ceil(float(obs_safety_m) / self.cell_size)))
             for dx in range(-safety_cells, safety_cells + 1):
                 for dy in range(-safety_cells, safety_cells + 1):
                     grid_obstacles.add((ox + dx, oy + dy))

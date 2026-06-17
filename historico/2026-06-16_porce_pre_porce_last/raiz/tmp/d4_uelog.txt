@@ -1,0 +1,5 @@
+log: AirTraffic_2.log
+LogPluginManager: Mounting Project plugin PorceTelemetry
+[2026.06.12-21.53.32:362][849]LogPorceTelemetry: PORCE Twin V2 SPAWN entity=vision:42 type=cow conf=0.880 world_cm=(1800.0, -1200.0, 0.0) src_ned_m=(18.0, -12.0, 0.0) src_latlon=(42.000162, -1.000145) mode=cesium
+[2026.06.12-21.53.32:368][850]LogPorceTelemetry: PORCE Twin V2 SPAWN entity=vision:41 type=bike conf=0.920 world_cm=(3000.0, 2500.0, 0.0) src_ned_m=(30.0, 25.0, 0.0) src_latlon=(42.00027, -0.999697) mode=cesium
+[2026.06.12-21.53.32:368][850]LogPorceTelemetry: PORCE Twin V2 SPAWN entity=vision:43 type=tower conf=0.970 world_cm=(4500.0, 800.0, 0.0) src_ned_m=(45.0, 8.0, 0.0) src_latlon=(42.000405, -0.999903) mode=cesium

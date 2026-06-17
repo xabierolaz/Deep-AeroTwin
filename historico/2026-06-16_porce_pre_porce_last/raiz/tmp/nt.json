@@ -1,0 +1,13 @@
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Python executed successfully\n\n{\"output\":\"THROTTLE_OFF error: DeveloperSettings: Failed to find property 'throttle_cpu_when_not_foreground' for attribute 'throttle_cpu_when_not_foreground' on 'EditorPerformanceSettings'\",\"error\":\"\"}"
+      }
+    ],
+    "isError": false
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Current level retrieved\n\n{\"mapName\":\"Ejea\",\"mapPath\":\"/Game/Ejea\",\"levelName\":\"PersistentLevel\",\"levelPath\":\"/Game/Ejea\",\"editorWorldName\":\"Ejea\",\"editorWorldPath\":\"/Game/Ejea\",\"worldType\":\"Editor\",\"actorCount\":84,\"isPersistentLevel\":true}"
+      }
+    ],
+    "isError": false
+  }
+}

@@ -1,0 +1,9 @@
+running: 0
+out size: 0
+figs:
+porce_case_timeseries.png 13:21:06
+porce_case_trajectory.png 13:21:05
+porce_detection_montage.png 13:21:05
+porce_six_stage_sequence.png 13:21:05
+porce_yolo_future_overlay.png 13:21:04
+e2e_ablation_paths.png 13:21:04

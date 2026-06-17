@@ -1,0 +1,9 @@
+=== vace_dl.log (head+tail) ===
+RC=True
+du: cannot access './Wan2.1-VACE-1.3B': No such file or directory
+...
+RC=True
+du: cannot access './Wan2.1-VACE-1.3B': No such file or directory
+=== find VACE dirs ===
+/mnt/d/Deep-AeroTwin-UE57-Test/neural/VideoX-Fun/models
+=== ls Diffusion_Transformer ===

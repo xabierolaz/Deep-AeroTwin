@@ -1,0 +1,4 @@
+=== tail log ===
+tail: cannot open '/mnt/d/Deep-AeroTwin-UE57-Test/tmp/stage1_setup.log' for reading: No such file or directory
+=== procs ===
+7 plan9 --control-socket 7 --log-level 4 --server-fd 8 --pipe-fd 10 --log-truncate

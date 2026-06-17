@@ -1,0 +1,226 @@
+% =====================================================================
+% PORCE — Formulación matemática del sistema (listo para pegar en Overleaf)
+% Preámbulo requerido (ya presente en Main_formato_ieee.tex):
+%   \usepackage{amsmath,amssymb,amsfonts}  \usepackage{siunitx}
+% Cada bloque indica el fichero/línea de código que formaliza, para que sea auditable.
+% Decisión de diseño: el método es REACTIVO (sin predicción de trayectoria del
+% obstáculo). Las ecuaciones describen exactamente lo implementado en el repo.
+% =====================================================================
+
+\section{Mathematical Formulation of PORCE}
+\label{sec:formulation}
+
+% --- Glosario compacto de símbolos (opcional) ---
+Throughout, $\phi,\lambda$ denote latitude/longitude, local tangent-plane
+coordinates are North--East $(N,E)$, $R_\oplus$ is the Earth radius, and
+$\delta$ is the planner cell size. All numerical values are the validated
+\texttt{SIMULATION} defaults of the repository (\texttt{porce\_defaults.env}).
+
+% =====================================================================
+\subsection{Monocular Obstacle Geo-positioning}
+% Código: vision_system.py (pixel->gps) + geo_projector.py:104-166
+A detection is reduced to its bottom-centre pixel
+$(u,v)=\!\big(\tfrac{x_1+x_2}{2},\,y_2\big)$, i.e. the assumed ground-contact
+point. With vertical field of view $\psi_v$ and image size $H\times W$, the
+pinhole focal lengths and principal point are
+\begin{equation}
+f_y=\frac{H}{2\tan(\psi_v/2)},\quad
+\psi_h=2\arctan\!\Big(\tfrac{W}{H}\tan\tfrac{\psi_v}{2}\Big),\quad
+f_x=\frac{W}{2\tan(\psi_h/2)},
+\end{equation}
+with $(c_u,c_v)=(W/2,H/2)$. The normalized camera-frame ray is
+\begin{equation}
+\mathbf r^{c}=\frac{1}{\lVert\cdot\rVert}
+\Big[\tfrac{u-c_u}{f_x},\;\tfrac{v-c_v}{f_y},\;1\Big]^{\!\top}.
+\end{equation}
+It is rotated into the local NED frame through the camera-to-body alignment
+$R_{cb}$, the gimbal mount rotation $R_{m}$, and the vehicle attitude
+$R_{nb}(\phi_r,\theta,\psi)$,
+\begin{equation}
+\mathbf r^{n}=R_{nb}(\phi_r,\theta,\psi)\,R_{m}\,R_{cb}\,\mathbf r^{c}.
+\end{equation}
+Assuming locally flat terrain at above-ground height $h$, the ray is
+intersected with the ground plane (valid for $r^{n}_{D}>0$):
+\begin{equation}
+t=\frac{h}{r^{n}_{D}},\quad
+(N,E)=t\,(r^{n}_{N},r^{n}_{E}),\quad
+d_h=\sqrt{N^2+E^2},
+\label{eq:ground-intersection}
+\end{equation}
+and mapped back to geographic coordinates by the equirectangular offset
+\begin{equation}
+\phi_o=\phi+\frac{N}{R_\oplus},\qquad
+\lambda_o=\lambda+\frac{E}{R_\oplus\cos\phi}.
+\end{equation}
+The flat-ground assumption in \eqref{eq:ground-intersection} is the dominant
+geometric error source: range error grows with terrain slope and with
+attitude/altitude uncertainty.
+
+% =====================================================================
+\subsection{Obstacle Tracking, Smoothing, and Time-to-Live}
+% Código: flight_controller.py _ingest_obstacles_locked:886-996 (alpha 0.65/0.25),
+%         _prune_obstacle_tracks_locked:825-841 (TTL), constants/env (tau, a_c)
+A new measurement $z_t$ of class $c$ is associated to the nearest existing
+track within a class-dependent gate $a_c$ ($a_{\text{dyn}}=\SI{12}{\meter}$,
+$a_{\text{stat}}=\SI{20}{\meter}$). The track state is updated by an
+exponential moving average
+\begin{equation}
+\hat{x}_t=(1-\alpha_c)\,\hat{x}_{t-1}+\alpha_c\,z_t,
+\qquad \alpha_{\text{dyn}}=0.65,\;\alpha_{\text{stat}}=0.25,
+\label{eq:ema}
+\end{equation}
+and a track remains in the active set $\mathcal{O}_t$ only while
+\begin{equation}
+t-t^{\text{seen}}_i\le \tau_c,
+\qquad \tau_{\text{dyn}}=\SI{3}{\second},\;\tau_{\text{stat}}=\SI{30}{\second}.
+\label{eq:ttl}
+\end{equation}
+Equations \eqref{eq:ema}--\eqref{eq:ttl} make explicit that perception is
+\emph{filtered, not predicted}: $\hat{x}_t$ lags a moving target, and the lag
+is bounded by $\tau_c$. This is the quantity that the reaction budget
+\eqref{eq:budget} must absorb.
+
+% =====================================================================
+\subsection{Class-Dependent Safety Region (EASA Operationalization)}
+% Código: flight_controller.py _obs_safety_radius_m + planner_obstacle_subset (tag safety_m)
+%         porce_manager.py plan_route (inflado por-obstaculo por su R_s(c))
+This is where the European ground-risk logic enters the algorithm rather than
+only the motivation: the exclusion radius is \emph{not} a single constant but a
+function of the obstacle class $c_o$. The continuous exclusion around obstacle
+$o$ is
+\begin{equation}
+\mathcal{Z}_{\text{safe}}(o)=\{q\in\mathbb{R}^2:\lVert q-p_o\rVert_2\le R_s(c_o)\}.
+\end{equation}
+For uninvolved-person classes (the canonical \texttt{bike} family ---
+\texttt{person}, \texttt{bicycle}, \texttt{biker} --- and any unrecognized class
+by conservative default) the radius is derived from the SORA Ground Risk Buffer
+through its conservative \emph{1:1 rule}, by which the horizontal buffer kept to
+uninvolved third parties is at least the operating height $h$ above ground:
+\begin{equation}
+R_s(\text{person})=\mathrm{clip}\!\big(\kappa\,h,\;R_{\min},\;R_{\max}\big),
+\quad \kappa=1,\;R_{\min}=\SI{15}{\meter},\;R_{\max}=\SI{40}{\meter}.
+\label{eq:grb}
+\end{equation}
+Static assets and animals keep fixed geometric clearances,
+$R_s(\text{tower})=\SI{8}{\meter}$ and $R_s(\text{cow})=\SI{12}{\meter}$, the
+tower being the smallest because inspection requires flying close to the asset.
+Equation \eqref{eq:grb} turns the protective margin into the
+altitude-dependent \emph{dynamic risk field} that the regulation associates with
+an uninvolved person --- it grows with height, as the SORA buffer does --- instead
+of a single hand-tuned constant applied identically to a person, an animal, and a
+tower. With the validated cruise height $h\approx\SI{23}{\meter}$ this yields
+$R_s(\text{person})=\SI{23}{\meter}>R_s(\text{cow})>R_s(\text{tower})$.
+
+On the planner grid of step $\delta=\SI{6}{\meter}$, obstacle $o$ is realized by
+\emph{Chebyshev inflation} of its seed cell by $n_s(o)=\lceil R_s(c_o)/\delta\rceil$
+cells, so a cell $c$ is occupied iff
+\begin{equation}
+S(c)=\mathbf 1\!\left[\;\min_{o\in\mathcal{O}^{\text{loc}}_t}
+\big(\lVert c-c_{o}\rVert_\infty - n_s(o)\big)\le 0\;\right].
+\label{eq:occupancy}
+\end{equation}
+The realized per-obstacle footprint is an $\ell_\infty$ square of half-width
+$n_s(o)\,\delta$, which strictly \emph{contains} the intended disk
+$\mathcal{Z}_{\text{safe}}(o)$ --- the discretization is a conservative outer
+approximation that never under-inflates. The local free space is
+$\mathcal{F}_t=\mathbb{R}^2\setminus\bigcup_{o}\mathcal{Z}_{\text{safe}}(o)$.
+
+% =====================================================================
+\subsection{Speed-Adaptive Triggering and Replan Gate}
+% Código: adaptive_reaction_distance_m:1048-1066 ; decision gate 2133,2171-2206
+The reaction horizon scales with vehicle ground speed $\lVert v_t\rVert$,
+\begin{equation}
+D_{\text{react}}(t)=\mathrm{clip}\!\big(D_{\text{base}}+k_v\lVert v_t\rVert_2,\,
+D_{\min},D_{\max}\big),
+\end{equation}
+with $D_{\text{base}}=D_{\min}=\SI{45}{\meter}$, $k_v=\SI{2.0}{\second}$,
+$D_{\max}=\SI{80}{\meter}$. A replan is requested at $t$ iff the nearest active
+obstacle is inside the horizon and the rate gate is satisfied:
+\begin{equation}
+d_{\text{nearest}}(t)\le D_{\text{react}}(t)
+\;\wedge\;
+\big(t-t^{\text{replan}}\big)\ge \Delta T_r
+\;\wedge\;
+\big(\text{no active path}\,\vee\, d_{\text{nearest}}\le D_{\text{ar}}\big),
+\end{equation}
+where $\Delta T_r=\SI{1}{\second}$ and $D_{\text{ar}}=\SI{60}{\meter}$ is the
+re-trigger distance while an evasion path is already active.
+
+% =====================================================================
+\subsection{Bounded Local A\texorpdfstring{$^\star$}{*} Search}
+% Código: porce_manager.py 135-270 ; costs constants.py:178-179 ; clamp 154-164
+Let the vehicle be the grid origin. The goal is the active waypoint mapped to
+local metres $(N_w,E_w)$ and clamped to the search window of radius
+$\rho=40$ cells:
+\begin{equation}
+(N_w,E_w)\leftarrow
+\begin{cases}
+\dfrac{\rho\delta}{\lVert(N_w,E_w)\rVert_2}\,(N_w,E_w), & \lVert(N_w,E_w)\rVert_2>\rho\delta,\\[4pt]
+(N_w,E_w), & \text{otherwise.}
+\end{cases}
+\end{equation}
+A$^\star$ expands 8-connected neighbours with step costs
+$c_{\text{card}}=1$, $c_{\text{diag}}=\sqrt2$ (cell units) and the Euclidean
+heuristic to the goal cell $n_g$,
+\begin{equation}
+f(n)=g(n)+h(n),\qquad h(n)=\lVert n-n_g\rVert_2 .
+\end{equation}
+Because $h$ never exceeds the true minimum-cost path on this cost structure,
+it is admissible (and consistent); A$^\star$ therefore returns a cost-optimal
+grid path, with a bounded budget of $N_{\max}=10^4$ expansions. The cell path
+is converted back to geographic sub-points which become the active evasion
+reference; nominal waypoint following resumes once the sub-points are
+exhausted.
+
+% =====================================================================
+\subsection{Reactive Safety Condition (Design Justification)}
+\label{subsec:budget}
+% NOTA: esta es la ecuación nueva que justifica POR QUÉ un método reactivo
+% (sin predicción) preserva el radio duro. Es una condición de diseño
+% (cota suficiente, peor caso), NO algo que el sistema calcule online.
+Because the method is reactive, the preserved clearance is governed by a
+reaction-time budget rather than by trajectory prediction. Let $v_c$ be the
+closing speed, bounded by $v_c\le\lVert v_{\text{uav}}\rVert+\lVert
+v_{\text{obs}}\rVert$, and let
+\begin{equation}
+T_{\text{act}}=T_{\text{perc}}+\Delta T_r+T_{\text{loop}}
+\end{equation}
+be the total reaction latency (perception/publish gate, replan interval, and
+control period). Under straight-line worst-case closure during $T_{\text{act}}$,
+the realized minimum separation obeys
+\begin{equation}
+d_{\min}\;\gtrsim\;d_{\text{det}}-v_c\,T_{\text{act}},
+\label{eq:dmin}
+\end{equation}
+where $d_{\text{det}}$ is the distance at first \emph{reliable} detection.
+Preserving the hard radius, $d_{\min}\ge R_s$, yields the sufficient condition
+\begin{equation}
+\boxed{\,d_{\text{det}}\;\ge\;R_s+v_c\,T_{\text{act}}\,.}
+\label{eq:budget}
+\end{equation}
+The detection distance is itself perception-limited: a target of physical
+height $h_{\text{obj}}$ subtends $p$ pixels at range $d$ with
+$p\approx f_y\,h_{\text{obj}}/d$, so reliable detection at a minimum pixel
+height $p_{\min}$ requires
+\begin{equation}
+d_{\text{det}}\le \frac{f_y\,h_{\text{obj}}}{p_{\min}}.
+\label{eq:detrange}
+\end{equation}
+Combining \eqref{eq:budget}--\eqref{eq:detrange} gives the operational envelope
+in which the reactive method is guaranteed to keep the protection radius:
+\begin{equation}
+R_s+v_c\,T_{\text{act}}\;\le\;\frac{f_y\,h_{\text{obj}}}{p_{\min}}.
+\label{eq:envelope}
+\end{equation}
+For the audited \texttt{biker} case ($h_{\text{obj}}=\SI{1.75}{\meter}$,
+$f_y\approx\SI{355}{px}$ from $\psi_v=\SI{84}{\degree}$, $H=640$), the
+geometric ceiling \eqref{eq:detrange} ranges from $\approx\SI{78}{\meter}$ at
+$p_{\min}=8$ down to $\approx\SI{21}{\meter}$ at $p_{\min}=30$ pixels, the
+latter being the regime of a confidently classified rider. This is consistent
+with the observed trigger at \SI{19.47}{\meter} and shows, without invoking any
+motion model, why the maneuver cleared the \SI{12}{\meter} radius by only
+\SI{1.48}{\meter}: the budget \eqref{eq:budget} was nearly saturated. The same
+relation \eqref{eq:envelope} states the design levers explicitly — larger
+$d_{\text{det}}$ (wider FOV or higher resolution), lower $v_c$ (reduced cruise
+speed near protected detections), or smaller $T_{\text{act}}$ (tighter
+perception/replan latency) — that widen the guaranteed margin.

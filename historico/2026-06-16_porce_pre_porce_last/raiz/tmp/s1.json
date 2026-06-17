@@ -1,0 +1,13 @@
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Screenshot queued\n\n{\"success\":true,\"filename\":\"precheck_v1.png\",\"path\":\"../../../../../Deep-AeroTwin-UE57-Test/Unreal/Saved/Screenshots/precheck_v1.png\",\"async\":true,\"message\":\"Screenshot queued. File will be written on the next rendered frame (typically within 100-200ms). Poll the file path to confirm availability. The editor window must be visible for capture to complete.\",\"expectedDelay\":\"200ms\"}"
+      }
+    ],
+    "isError": false
+  }
+}

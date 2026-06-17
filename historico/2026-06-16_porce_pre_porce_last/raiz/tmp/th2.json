@@ -1,0 +1,13 @@
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Python executed successfully\n\n{\"output\":\"THROTTLE2 bThrottleCPUWhenNotForeground: OK | cvar t.IdleWhenNotForeground 0: OK\",\"error\":\"\"}"
+      }
+    ],
+    "isError": false
+  }
+}

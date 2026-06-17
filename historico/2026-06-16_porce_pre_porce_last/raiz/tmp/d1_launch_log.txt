@@ -1,0 +1,17 @@
+[LAUNCHER] Root: D:\Deep-AeroTwin-UE57-Test
+[MODE] Pipeline (SIMULATION)
+[SECURITY] PORCE_OBSTACLE_TOKEN_REQUIRED=1 token_persist=0 token_prefix=466b707a...
+[AUDIT] PORCE_AUDIT_ROOT=D:\Deep-AeroTwin-UE57-Test\pipeline\logs\zero_trust\20260612_183145
+
+[0/3] Checking WSL health...
+[OK] WSL ready.
+[1/3] Cleaning previous pipeline processes...
+[OK] Cleanup done.
+
+[2/3] Opening tabs in Windows Terminal...
+
+[OK] Tabs launched.
+ - Master log: D:\Deep-AeroTwin-UE57-Test\pipeline\logs\zero_trust\20260612_183145\SYSTEM_ALL.log
+ - Viz frames: pipeline\\logs\\viz_frames
+ - Stop everything: powershell -NoProfile -ExecutionPolicy Bypass -File tools\\stop_pipeline.ps1
+

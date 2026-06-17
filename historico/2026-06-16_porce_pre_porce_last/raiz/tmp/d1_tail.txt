@@ -1,0 +1,4 @@
+RUN=20260612_233504
+23:37:44 [BRAIN] [PORCE] Ruta generada: 14 sub-puntos.
+23:37:45 [BRAIN] [PORCE] Navegando Evasion 2/14
+frame: yolo_002358.jpg

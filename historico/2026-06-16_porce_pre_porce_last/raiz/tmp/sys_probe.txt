@@ -1,0 +1,17 @@
+=== whoami ===
+user
+=== sudo passwordless? ===
+sudo: a password is required
+SUDO_NEEDS_PW
+=== distro ===
+; echo === apt cuda-toolkit-12-8 available? ===
+cuda-toolkit-12-8:
+  Installed: 12.8.1-1
+  Candidate: 12.8.2-1
+=== nvidia cuda repo present? ===
+cuda-wsl-ubuntu-x86_64.list
+=== disk ===
+/dev/sdd       1007G  124G  833G  13% /
+D:\             3.7T  3.3T  404G  90% /mnt/d
+=== python ===
+Python 3.12.3

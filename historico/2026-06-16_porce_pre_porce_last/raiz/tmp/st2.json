@@ -1,0 +1,13 @@
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Python executed successfully\n\n{\"output\":\"SCENE_TUNE {\\\"ok\\\": true, \\\"world\\\": \\\"Ejea_AuditD1\\\", \\\"speed\\\": 650.0, \\\"riders\\\": 16, \\\"render_mode\\\": \\\"<PelotonRiderRenderMode.CHILD_ACTOR_BLUEPRINT: 2>\\\", \\\"rider_class\\\": \\\"<Object '/Game/ciclista.ciclista_C' (0x000002B7880D4D00) Class 'BlueprintGeneratedClass'>\\\", \\\"child_actors\\\": 16}\",\"error\":\"\"}"
+      }
+    ],
+    "isError": false
+  }
+}

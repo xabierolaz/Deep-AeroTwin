@@ -1,0 +1,13 @@
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Python executed successfully\n\n{\"output\":\"D1PREP {\\\"ok\\\": true, \\\"ghost_flags_set\\\": [\\\"show_forward_leader_ghosts\\\", \\\"bShowForwardLeaderGhosts\\\"], \\\"ghost_components_hidden\\\": 9, \\\"ghost_childactors_hidden\\\": 0, \\\"pie\\\": {\\\"NewWindowWidth\\\": \\\"ok\\\", \\\"NewWindowHeight\\\": \\\"ok\\\", \\\"LastExecutedPlayModeType\\\": \\\"module 'unreal' has no attribute 'PlayModeType'\\\"}}\",\"error\":\"\"}"
+      }
+    ],
+    "isError": false
+  }
+}
