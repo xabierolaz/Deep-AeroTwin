@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import math
-import shutil
 from pathlib import Path
 
 import matplotlib
@@ -667,8 +666,6 @@ def build_moving_figure() -> dict:
     out = OUT / "figure_2_moving_peloton_multipanel.png"
     fig.savefig(out, dpi=220, bbox_inches="tight", facecolor="white")
     plt.close(fig)
-    if frame:
-        shutil.copyfile(frame, OUT / "figure_2A_moving_peloton_unreal_source.jpg")
     return {
         "figure": str(out.name),
         "run": str(MOVING_RUN.relative_to(REPO)),
@@ -678,39 +675,12 @@ def build_moving_figure() -> dict:
     }
 
 
-def copy_reference_assets() -> list[str]:
-    copied = []
-    refs = [
-        REPO
-        / "historico"
-        / "2026-06-16_porce_pre_porce_last"
-        / "paper"
-        / "Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion"
-        / "figures"
-        / "porce_six_stage_sequence.png",
-        REPO
-        / "historico"
-        / "2026-06-16_porce_pre_porce_last"
-        / "paper"
-        / "Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion"
-        / "figures"
-        / "porce_yolo_future_overlay.png",
-    ]
-    for src in refs:
-        if src.exists():
-            dst = OUT / f"reference_historical_{src.name}"
-            shutil.copyfile(src, dst)
-            copied.append(dst.name)
-    return copied
-
-
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     meta = {
         "figure_1": build_static_figure(),
         "figure_2": build_moving_figure(),
-        "reference_assets": copy_reference_assets(),
-        "script_note": "Generated from local audited logs and archived Unreal/vision frames. Review unresolved paper decisions before replacing final LaTeX assets.",
+        "script_note": "Generated from local audited logs. This folder is intentionally kept to final/current figure assets only; historical references live in git history and historico/.",
     }
     (OUT / "manifest.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
     readme = [
@@ -722,11 +692,9 @@ def main() -> None:
         "",
         "- `figure_1_static_tower_multipanel.png`: Figura 1, caso estatico con torre, paneles 1A-1F, todos en vista cenital.",
         "- `figure_1_panels/`: los seis paneles de Figura 1 por separado, recomendados para componer la figura final manualmente.",
-        "- `figure_2_moving_peloton_multipanel.png`: Figura 2 provisional, obstaculo movil tipo peloton/biker, paneles 2A-2C.",
+        "- `figure_2_moving_peloton_multipanel.png`: Figura 2, obstaculo movil tipo peloton/biker, paneles 2A-2C.",
         "- `manifest.json`: trazabilidad de runs, timestamps y frames fuente.",
         "- `generate_figure1_separate_panels.py`: regenerador de los seis paneles separados de Figura 1.",
-        "- `reference_historical_porce_six_stage_sequence.png`: figura historica de seis paneles generada por `generate_paper_assets.py`.",
-        "- `reference_historical_porce_yolo_future_overlay.png`: figura historica de overlay YOLO/futuro.",
         "",
         "## Lectura critica",
         "",
@@ -749,10 +717,10 @@ def main() -> None:
         "- `Dynamic reaction distance`: distancia de reaccion evaluada en el instante, distinta de `Base reaction distance`.",
         "- `Detected tower obstacle` / `Tower obstacle`: obstaculo estatico tipo torre ya detectado.",
         "",
-        "## Contexto preservado",
+        "## Limpieza de carpeta",
         "",
-        "- La version amplia anterior se conserva como contexto en `figure_1_panels_wide_context/`, `figure_1_static_tower_multipanel_wide_context.png` y `figure_1_panels_contact_sheet_wide_context.png`.",
-        "- La version cercana anterior se conserva como contexto en `figure_1_panels_close_context/`, `figure_1_static_tower_multipanel_close_context.png` y `figure_1_panels_contact_sheet_close_context.png`.",
+        "- Esta carpeta contiene solo los artefactos actuales/finales y los scripts para regenerarlos.",
+        "- Las versiones historicas, contextos amplios/cercanos y capturas fuente antiguas no se conservan aqui para evitar confusion al sustituir figuras en LaTeX.",
     ]
     (OUT / "README.md").write_text("\n".join(readme) + "\n", encoding="utf-8")
     print(json.dumps(meta, indent=2))

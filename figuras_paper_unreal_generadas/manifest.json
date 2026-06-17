@@ -38,9 +38,5 @@
     "frame": "yolo_005728.jpg",
     "snapshots": 957
   },
-  "reference_assets": [
-    "reference_historical_porce_six_stage_sequence.png",
-    "reference_historical_porce_yolo_future_overlay.png"
-  ],
-  "script_note": "Generated from local audited logs and archived Unreal/vision frames. Review unresolved paper decisions before replacing final LaTeX assets."
+  "script_note": "Generated from local audited logs. This folder is intentionally kept to final/current figure assets only; historical references live in git history and historico/."
 }
