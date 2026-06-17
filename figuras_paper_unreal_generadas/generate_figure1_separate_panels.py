@@ -45,8 +45,6 @@ def _make_contact_sheet() -> None:
 def _base_panel(ax, d: dict, *, route: bool = False) -> None:
     if route:
         g.draw_grid(ax, d["occupied"], d["route_cells"], d["route_xy"], origin_xy=d["plan_origin_xy"])
-    else:
-        g.add_grid_background(ax, origin_xy=d["plan_origin_xy"])
     g.plot_wp1_wp2_segment(ax, d["mission"], d["lat_ref"], d["lon_ref"])
 
 

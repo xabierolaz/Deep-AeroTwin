@@ -15,7 +15,7 @@ La figura pedida es una composicion de seis paneles:
 - Primera fila: `1A`, `1B`, `1C`.
 - Segunda fila: `1D`, `1E`, `1F`.
 - Los seis paneles `1A`-`1F` deben ser representaciones cenitales/top-down.
-- Los seis paneles deben llevar superpuesto el grid real del planificador: `81 x 81` celdas, `6 m` por celda, radio `40` celdas.
+- Los seis paneles deben compartir vista cenital, ejes y escala. El grid real del planificador (`81 x 81` celdas, `6 m` por celda, radio `40` celdas) solo debe aparecer cuando el A* local ya se ha generado, porque en el paper es un grid local relativo a la posicion actual del UAS, no una cuadricula absoluta permanente.
 - La deteccion/obstaculo de la Figura 1 debe ser unica y de tipo torre. No deben aparecer ciclistas, peloton, vacas ni multiples torres detectadas.
 - Los seis paneles deben tener el mismo aspect ratio, los mismos valores en los ejes y las mismas etiquetas de ejes. El encuadre/camara no se mueve entre paneles: la Figura 1 se lee como una secuencia temporal sobre un mismo mapa fijo.
 - Para las figuras generadas actuales, el encuadre fijo activo queda documentado como eje X `[-40, 160]` m y eje Y `[-165, 35]` m, con etiquetas `East (m)` y `North (m)`. Es un encuadre cuadrado `1:1` de 200 m x 200 m, centrado en el tramo WP1->WP2 para maximizar claridad, con mas aire por encima de WP1 y menos espacio muerto bajo WP2.
@@ -146,6 +146,8 @@ Ese script consume `/api/ui/data` y dibuja:
 
 Importante: `viz_recorder.py` dibuja el grid en la grafica, no en Unreal.
 
+Decision activa: el `Local A* occupancy grid` se muestra solo en los paneles de evasion (`1D` y `1E`). En `1A`, `1B` y `1C` puede verse la rejilla normal de ejes de la grafica, pero no debe interpretarse como occupancy grid del planner. En `1F` se prioriza el resumen de trayectoria, por lo que el grid se omite para no sugerir que sigue activo como mapa absoluto.
+
 ### Unreal
 
 El codigo Unreal localizado que se relaciona con el obstaculo humano/dinamico es:
@@ -187,11 +189,10 @@ Pendiente:
 Debe mostrar:
 
 - Vista cenital/top-down.
-- Grid real del planificador superpuesto.
 - UAS en vuelo.
 - Deteccion unica de torre.
 - Todavia sin maniobra evasiva.
-- Con grid visible, pero sin ruta A* activa.
+- Sin `Local A* occupancy grid`, porque todavia no se ha generado la ruta local.
 
 Estado tecnico asociado:
 
@@ -213,7 +214,7 @@ Debe mostrar un instante posterior a `1B`, todavia sin accion, pero mas cerca de
 - obstaculo detectado;
 - distancia/radio relevante;
 - sin ruta naranja de evasion;
-- sin grid A* activo.
+- sin `Local A* occupancy grid` activo.
 
 Base tecnica:
 
@@ -229,7 +230,7 @@ Debe mostrar:
 
 - Vista cenital/top-down.
 - UAS ya ejecutando maniobra evasiva.
-- Grid real del planificador superpuesto.
+- `Local A* occupancy grid` real superpuesto, centrado en la posicion del UAS al disparar el plan.
 - Ruta alternativa/maniobra PORCE visible.
 - Deteccion unica de torre.
 
@@ -250,7 +251,7 @@ Decision cerrada:
 
 Debe mostrar el mismo instante que `1D`, enfatizando:
 
-- grid A*;
+- `Local A* occupancy grid`;
 - celdas/ruta de evasion;
 - UAS;
 - obstaculo;
@@ -263,7 +264,7 @@ Base tecnica:
 
 Decision activa:
 
-- Como todos los paneles deben compartir encuadre y ejes, no se hace zoom moviendo la camara. Se mantiene el grid real y se resalta la ruta A*.
+- Como todos los paneles deben compartir encuadre y ejes, no se hace zoom moviendo la camara. Se mantiene el grid local real en su posicion de origen y se resalta la ruta A*.
 
 ### 1F - Grafica resumen de ruta completa
 
@@ -324,7 +325,7 @@ Respuestas ya cerradas:
 1. Figura 1 usa obstaculo estatico: torre.
 2. Figura 2 queda para obstaculo en movimiento: ciclista o peloton.
 3. `1B` y `1C` muestran el obstaculo ya detectado, pero todavia fuera de `reaction_distance_eval_m`, por eso no hay accion. Si `Reaction Range` se usa en el paper como rango sensorial/de deteccion, la torre esta dentro porque `obs_fresh=True`; si se usa como `reaction_distance_eval_m`, entonces debe estar fuera para que el estado "No Safety Action" sea correcto.
-4. El `81 x 81 occupancy grid` basta en la representacion grafica `1F`; no hace falta dentro de Unreal.
+4. El `81 x 81 occupancy grid` basta en la representacion grafica de evasion (`1D`/`1E`); no hace falta dentro de Unreal.
 5. El resumen final del caso estatico de la torre queda como `1F` para que la lectura `1A -> 1F` sea temporal. La etiqueta original `1D` solo se conserva como antecedente historico de la instruccion recibida.
 
 Preguntas que quedan:
@@ -335,5 +336,5 @@ Preguntas que quedan:
 Decision cerrada posteriormente:
 
 - Los seis paneles de la Figura 1 deben ser cenitales/top-down.
-- El grid real `81 x 81` debe aparecer superpuesto en los seis paneles.
+- El grid real `81 x 81` debe aparecer solo cuando el planner local A* esta activo (`1D`/`1E`), no como cuadricula absoluta permanente en los seis paneles.
 - La deteccion debe ser unica y de torre.

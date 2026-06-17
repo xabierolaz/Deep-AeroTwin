@@ -29,7 +29,7 @@
       "selected_plan_ts": 1781690756.8978844,
       "selected_completion_ts": 1781690773.1845434
     },
-    "note": "Figure 1 panels are top-down maps over WP1->WP2 with a fixed 200 m x 200 m frame, the planner 81x81 grid overlaid, and a single tower detection."
+    "note": "Figure 1 panels are top-down maps over WP1->WP2 with a fixed 200 m x 200 m frame. The local 81x81 A* occupancy grid is shown only after evasion planning starts."
   },
   "figure_2": {
     "figure": "figure_2_moving_peloton_multipanel.png",

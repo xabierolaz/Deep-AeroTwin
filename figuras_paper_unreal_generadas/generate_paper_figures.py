@@ -510,7 +510,6 @@ def build_static_figure() -> dict:
     def draw_nominal(ax) -> None:
         early = traj[traj["ts"] <= float(detect_evt["ts"]) - 2.0]
         init_row = early.iloc[-1] if len(early) else d["det_row"]
-        add_grid_background(ax, origin_xy=plan_origin_xy)
         plot_wp1_wp2_segment(ax, mission, d["lat_ref"], d["lon_ref"])
         init_xy = latlon_to_enu(d["lat_ref"], d["lon_ref"], float(init_row["lat"]), float(init_row["lon"]))
         ax.scatter([init_xy[0]], [init_xy[1]], marker="^", s=65, color=INK, zorder=9, label=LABEL_UAS)
@@ -520,7 +519,6 @@ def build_static_figure() -> dict:
         ax.legend(loc="lower left", fontsize=7)
 
     def draw_detection(ax, panel: str, with_reaction_radii: bool, evt: dict, xy: tuple[float, float], obs: list[dict]) -> None:
-        add_grid_background(ax, origin_xy=plan_origin_xy)
         plot_wp1_wp2_segment(ax, mission, d["lat_ref"], d["lon_ref"])
         ax.scatter([xy[0]], [xy[1]], marker="^", s=65, color=INK, zorder=9, label=LABEL_UAS)
         if with_reaction_radii:
@@ -566,7 +564,6 @@ def build_static_figure() -> dict:
         ax.legend(loc="lower left", fontsize=6.8)
 
     def draw_summary(ax) -> None:
-        add_grid_background(ax, origin_xy=plan_origin_xy)
         plot_wp1_wp2_segment(ax, mission, d["lat_ref"], d["lon_ref"])
         ax.plot(traj["east"], traj["north"], color=FLOWN, linewidth=1.0, alpha=0.75, label=LABEL_ACTUAL_TRAJECTORY)
         tower_window = traj[(traj["ts"] >= float(evasion_evt["ts"]) - 2) & (traj["ts"] <= float(d["completion_evt"]["ts"]) + 2)]
@@ -597,7 +594,7 @@ def build_static_figure() -> dict:
         "completion_event_ts": float(d["completion_evt"]["ts"]),
         "obstacle": d["static_source"].get("obstacle", {}),
         "validation": d["static_source"].get("validation", {}),
-        "note": "Figure 1 panels are top-down maps over WP1->WP2 with a fixed 200 m x 200 m frame, the planner 81x81 grid overlaid, and a single tower detection.",
+        "note": "Figure 1 panels are top-down maps over WP1->WP2 with a fixed 200 m x 200 m frame. The local 81x81 A* occupancy grid is shown only after evasion planning starts.",
     }
 
 
@@ -732,10 +729,25 @@ def main() -> None:
         "",
         "- `tools/make_viz_gif_manual.py` no crea el multipanel: crea un GIF a partir de `pipeline/logs/viz_frames/frame_*.png`.",
         "- El multipanel historico se generaba en `generate_paper_assets.py`, funcion `build_six_stage_sequence_figure(...)`.",
-        "- La Figura 1 generada aqui usa un episodio continuo con torre del run `20260220_112052`; todos los paneles corresponden a la misma torre y se ordenan como secuencia temporal.",
-        "- Orden activo de lectura: `1A` navegacion nominal, `1B` deteccion sin accion, `1C` detalle de deteccion con radios, `1D` evasion activa, `1E` detalle/grid de evasion, `1F` resumen final de ruta.",
-        "- Decision actual: los seis paneles de Figura 1 deben ser cenitales/top-down, con el grid real `81 x 81` superpuesto y deteccion unica de torre. `1B` y `1C` ya no deben ser capturas oblicuas Unreal/HUD.",
-        "- Los seis paneles usan el mismo encuadre fijo activo: eje X `[-200, 400]` m y eje Y `[-400, 200]` m, con las mismas etiquetas `East (m)` y `North (m)`. Es un encuadre cuadrado `1:1` centrado para aprovechar la diagonal `WP0/WP1` a `WP4`.",
+        "- La Figura 1 generada aqui usa un episodio continuo WP1->WP2 con una unica torre del run `pipeline/logs/paper_wp1_wp2_tower/paper_wp1_wp2_tower_p0.56_l+8.0_20260617_120539`.",
+        "- La torre usada esta en `lat=42.22904865463611`, `lon=-1.234404232738992`, progreso `0.56` del tramo WP1->WP2 y desplazamiento lateral `+8 m`.",
+        "- Orden activo de lectura: `1A` navegacion nominal, `1B` deteccion sin accion cerca del umbral, `1C` ultima deteccion sin accion con radios, `1D` inicio de evasion A*, `1E` evasion en curso, `1F` resumen final de ruta.",
+        "- Decision actual: los seis paneles de Figura 1 deben ser cenitales/top-down y compartir ejes. El `Local A* occupancy grid` no es absoluto ni permanente; se muestra solo en `1D` y `1E`, cuando el planner ya ha discretizado el vecindario local relativo al UAS.",
+        "- Los seis paneles usan el mismo encuadre fijo activo: eje X `[-40, 160]` m y eje Y `[-165, 35]` m, con las mismas etiquetas `East (m)` y `North (m)`. Es un encuadre cuadrado `1:1` de 200 m x 200 m centrado en el tramo WP1->WP2, con mas aire por encima de WP1 y menos espacio muerto bajo WP2.",
+        "- `1B` usa una deteccion sin accion a `67.1 m`; `1C` usa la ultima deteccion sin accion a `63.1 m`, justo antes de generar la evasion al cruzar `reaction_distance_eval_m=61 m`.",
+        "- Validacion del run: `accepted_types=[\"tower\"]`, `clean_detection_count=9`, `valid_plan_count=1`, `valid_completion_count=1`, `failure_count=0`, evasion activa de progreso `0.2085` a `0.9412` antes de WP2.",
+        "",
+        "## Terminos usados en leyendas",
+        "",
+        "- `Planned flight path`: ruta nominal/global planificada del paper.",
+        "- `Actual UAS trajectory`: trayectoria ejecutada por el UAS; sustituye al termino interno `Flown path`.",
+        "- `Local A* evasion path`: ruta local generada por el planificador A*.",
+        "- `Active evasion segment`: tramo de la trayectoria ejecutada durante la evasion activa.",
+        "- `Dynamic reaction distance`: distancia de reaccion evaluada en el instante, distinta de `Base reaction distance`.",
+        "- `Detected tower obstacle` / `Tower obstacle`: obstaculo estatico tipo torre ya detectado.",
+        "",
+        "## Contexto preservado",
+        "",
         "- La version amplia anterior se conserva como contexto en `figure_1_panels_wide_context/`, `figure_1_static_tower_multipanel_wide_context.png` y `figure_1_panels_contact_sheet_wide_context.png`.",
         "- La version cercana anterior se conserva como contexto en `figure_1_panels_close_context/`, `figure_1_static_tower_multipanel_close_context.png` y `figure_1_panels_contact_sheet_close_context.png`.",
     ]
