@@ -43,6 +43,17 @@ TOWER = "#b23a2f"
 BIKE = "#256f8f"
 GRID = "#d4dbe2"
 
+LABEL_PLANNED_PATH = "Planned flight path"
+LABEL_ACTUAL_TRAJECTORY = "Actual UAS trajectory"
+LABEL_LOCAL_EVASION_PATH = "Local A* evasion path"
+LABEL_ACTIVE_EVASION = "Active evasion segment"
+LABEL_UAS = "UAS"
+LABEL_DETECTED_TOWER = "Detected tower obstacle"
+LABEL_TOWER = "Tower obstacle"
+LABEL_DYNAMIC_REACTION = "Dynamic reaction distance"
+LABEL_BASE_REACTION = "Base reaction distance"
+LABEL_PELOTON_POSITIONS = "Peloton positions over time"
+
 FIG1_XLIM = (-40.0, 160.0)
 FIG1_YLIM = (-165.0, 35.0)
 FIG1_PANEL_FIGSIZE = (5.8, 5.8)
@@ -197,7 +208,7 @@ def draw_unreal_panel(ax, image_path: Path | None, panel: str, title: str, note:
     )
 
 
-def plot_mission(ax, mission_xy: np.ndarray, label: str = "Nominal path") -> None:
+def plot_mission(ax, mission_xy: np.ndarray, label: str = LABEL_PLANNED_PATH) -> None:
     ax.plot(mission_xy[:, 0], mission_xy[:, 1], "--", color=NOMINAL, linewidth=1.2, label=label, zorder=1)
     plotted_labels: dict[tuple[float, float], list[str]] = {}
     for i, (x, y) in enumerate(mission_xy):
@@ -220,7 +231,7 @@ def mission_xy_for_ref(lat_ref: float, lon_ref: float, mission: list[dict]) -> n
 def plot_wp1_wp2_segment(ax, mission: list[dict], lat_ref: float, lon_ref: float) -> np.ndarray:
     idxs = [1, 2]
     pts = np.array([latlon_to_enu(lat_ref, lon_ref, mission[i]["lat"], mission[i]["lon"]) for i in idxs])
-    ax.plot(pts[:, 0], pts[:, 1], "--", color=NOMINAL, linewidth=1.35, label="Nominal path", zorder=1)
+    ax.plot(pts[:, 0], pts[:, 1], "--", color=NOMINAL, linewidth=1.35, label=LABEL_PLANNED_PATH, zorder=1)
     ax.scatter(pts[:, 0], pts[:, 1], s=22, color="#476f9f", zorder=2)
     for idx, (x, y) in zip(idxs, pts):
         dy = -9 if idx == 1 else 4
@@ -362,7 +373,7 @@ def draw_grid(
             )
         )
     if route_xy:
-        ax.plot([p[0] for p in route_xy], [p[1] for p in route_xy], color=EVASION, linewidth=1.8, zorder=5, label="A* evasion path")
+        ax.plot([p[0] for p in route_xy], [p[1] for p in route_xy], color=EVASION, linewidth=1.8, zorder=5, label=LABEL_LOCAL_EVASION_PATH)
 
 def select_unique_obstacle(obs: list[dict]) -> list[dict]:
     valid = [item for item in obs if math.isfinite(float(item.get("distance", float("nan"))))]
@@ -373,12 +384,12 @@ def select_unique_obstacle(obs: list[dict]) -> list[dict]:
 def add_grid_background(ax, origin_xy: tuple[float, float] = (0.0, 0.0)) -> None:
     draw_grid(ax, set(), [], [], origin_xy=origin_xy)
 
-def plot_local_mission(ax, mission: list[dict], lat_ref: float, lon_ref: float, label: str = "Nominal path") -> np.ndarray:
+def plot_local_mission(ax, mission: list[dict], lat_ref: float, lon_ref: float, label: str = LABEL_PLANNED_PATH) -> np.ndarray:
     mission_xy = mission_xy_for_ref(lat_ref, lon_ref, mission)
     plot_mission(ax, mission_xy, label=label)
     return mission_xy
 
-def add_uas(ax, label: str = "UAS") -> None:
+def add_uas(ax, label: str = LABEL_UAS) -> None:
     ax.scatter([0], [0], marker="^", s=65, color=INK, zorder=9, label=label)
 
 def prepare_static_context() -> dict:
@@ -502,7 +513,7 @@ def build_static_figure() -> dict:
         add_grid_background(ax, origin_xy=plan_origin_xy)
         plot_wp1_wp2_segment(ax, mission, d["lat_ref"], d["lon_ref"])
         init_xy = latlon_to_enu(d["lat_ref"], d["lon_ref"], float(init_row["lat"]), float(init_row["lon"]))
-        ax.scatter([init_xy[0]], [init_xy[1]], marker="^", s=65, color=INK, zorder=9, label="UAS")
+        ax.scatter([init_xy[0]], [init_xy[1]], marker="^", s=65, color=INK, zorder=9, label=LABEL_UAS)
         draw_label(ax, "1A", "Initial Stages. Nominal Navigation")
         style_ax(ax)
         apply_figure1_view(ax)
@@ -511,7 +522,7 @@ def build_static_figure() -> dict:
     def draw_detection(ax, panel: str, with_reaction_radii: bool, evt: dict, xy: tuple[float, float], obs: list[dict]) -> None:
         add_grid_background(ax, origin_xy=plan_origin_xy)
         plot_wp1_wp2_segment(ax, mission, d["lat_ref"], d["lon_ref"])
-        ax.scatter([xy[0]], [xy[1]], marker="^", s=65, color=INK, zorder=9, label="UAS")
+        ax.scatter([xy[0]], [xy[1]], marker="^", s=65, color=INK, zorder=9, label=LABEL_UAS)
         if with_reaction_radii:
             ax.add_patch(
                 patches.Circle(
@@ -521,7 +532,7 @@ def build_static_figure() -> dict:
                     linestyle="--",
                     edgecolor="#496d8d",
                     linewidth=1.1,
-                    label="Base reaction distance",
+                    label=LABEL_BASE_REACTION,
                 )
             )
             ax.add_patch(
@@ -532,10 +543,10 @@ def build_static_figure() -> dict:
                     linestyle=":",
                     edgecolor="#2f5d7c",
                     linewidth=1.2,
-                    label="Reaction distance",
+                    label=LABEL_DYNAMIC_REACTION,
                 )
             )
-        draw_obstacles(ax, obs, TOWER, radius=True, label="Tower detection" if not with_reaction_radii else "Tower")
+        draw_obstacles(ax, obs, TOWER, radius=True, label=LABEL_DETECTED_TOWER if not with_reaction_radii else LABEL_TOWER)
         draw_label(ax, panel, "Detection Stage. No Safety Action")
         style_ax(ax)
         apply_figure1_view(ax)
@@ -546,8 +557,8 @@ def build_static_figure() -> dict:
         plot_wp1_wp2_segment(ax, mission, d["lat_ref"], d["lon_ref"])
         if show_flown:
             flown = traj[(traj["ts"] >= float(evasion_evt["ts"])) & (traj["ts"] <= float(d["mid_evasion_row"]["ts"]))]
-            ax.plot(flown["east"], flown["north"], color=FLOWN, linewidth=1.2, alpha=0.75, label="Flown path")
-        ax.scatter([uas_xy[0]], [uas_xy[1]], marker="^", s=65, color=INK, zorder=9, label="UAS")
+            ax.plot(flown["east"], flown["north"], color=FLOWN, linewidth=1.2, alpha=0.75, label=LABEL_ACTUAL_TRAJECTORY)
+        ax.scatter([uas_xy[0]], [uas_xy[1]], marker="^", s=65, color=INK, zorder=9, label=LABEL_UAS)
         draw_obstacles(ax, eva_obs, TOWER, radius=True, label=tower_label)
         draw_label(ax, panel, "Evasion Stage. Safety Action")
         style_ax(ax)
@@ -557,11 +568,11 @@ def build_static_figure() -> dict:
     def draw_summary(ax) -> None:
         add_grid_background(ax, origin_xy=plan_origin_xy)
         plot_wp1_wp2_segment(ax, mission, d["lat_ref"], d["lon_ref"])
-        ax.plot(traj["east"], traj["north"], color=FLOWN, linewidth=1.0, alpha=0.75, label="Flown path")
+        ax.plot(traj["east"], traj["north"], color=FLOWN, linewidth=1.0, alpha=0.75, label=LABEL_ACTUAL_TRAJECTORY)
         tower_window = traj[(traj["ts"] >= float(evasion_evt["ts"]) - 2) & (traj["ts"] <= float(d["completion_evt"]["ts"]) + 2)]
         if len(tower_window):
-            ax.plot(tower_window["east"], tower_window["north"], color=EVASION, linewidth=2.0, label="Tower evasion window")
-        draw_obstacles(ax, eva_obs, TOWER, radius=True, label="Tower")
+            ax.plot(tower_window["east"], tower_window["north"], color=EVASION, linewidth=2.0, label=LABEL_ACTIVE_EVASION)
+        draw_obstacles(ax, eva_obs, TOWER, radius=True, label=LABEL_TOWER)
         draw_label(ax, "1F", "Final Stage. Route Summary")
         style_ax(ax)
         apply_figure1_view(ax)
@@ -570,8 +581,8 @@ def build_static_figure() -> dict:
     draw_nominal(ax1)
     draw_detection(ax2, "1B", with_reaction_radii=False, evt=detect_evt, xy=d["detect_xy"], obs=det_obs)
     draw_detection(ax3, "1C", with_reaction_radii=True, evt=d["detection_detail_evt"], xy=d["detect_detail_xy"], obs=d["det_detail_obs"])
-    draw_evasion(ax4, "1D", "Tower detection", plan_origin_xy)
-    draw_evasion(ax5, "1E", "Tower", d["mid_evasion_xy"], show_flown=True)
+    draw_evasion(ax4, "1D", LABEL_DETECTED_TOWER, plan_origin_xy)
+    draw_evasion(ax5, "1E", LABEL_TOWER, d["mid_evasion_xy"], show_flown=True)
     draw_summary(ax6)
 
     out = OUT / "figure_1_static_tower_multipanel.png"
@@ -634,19 +645,19 @@ def build_moving_figure() -> dict:
 
     plot_mission(ax2, mission_xy)
     local = traj[(traj["ts"] >= float(route_evt["ts"]) - 6) & (traj["ts"] <= float(route_evt["ts"]) + 25)]
-    ax2.plot(local["east"], local["north"], color=FLOWN, linewidth=1.2, label="UAS path")
+    ax2.plot(local["east"], local["north"], color=FLOWN, linewidth=1.2, label=LABEL_ACTUAL_TRAJECTORY)
     if snapshots:
-        sc = ax2.scatter([s["east"] for s in snapshots], [s["north"] for s in snapshots], c=[s["t"] for s in snapshots], cmap="viridis", s=28, marker="x", label="Peloton ghost positions", zorder=8)
+        sc = ax2.scatter([s["east"] for s in snapshots], [s["north"] for s in snapshots], c=[s["t"] for s in snapshots], cmap="viridis", s=28, marker="x", label=LABEL_PELOTON_POSITIONS, zorder=8)
         plt.colorbar(sc, ax=ax2, fraction=0.045, pad=0.02).set_label("t rel. (s)", fontsize=7)
     draw_label(ax2, "2B", "UAS and Peloton Motion")
     style_ax(ax2)
     ax2.legend(loc="lower right", fontsize=7)
 
     plot_mission(ax3, mission_xy)
-    ax3.plot(local["east"], local["north"], color=FLOWN, linewidth=1.0, alpha=0.7, label="Flown path")
+    ax3.plot(local["east"], local["north"], color=FLOWN, linewidth=1.0, alpha=0.7, label=LABEL_ACTUAL_TRAJECTORY)
     active = local[local["evasion_active"] == 1]
     if len(active):
-        ax3.plot(active["east"], active["north"], color=EVASION, linewidth=2.0, label="PORCE active")
+        ax3.plot(active["east"], active["north"], color=EVASION, linewidth=2.0, label=LABEL_ACTIVE_EVASION)
     if snapshots:
         sc2 = ax3.scatter([s["east"] for s in snapshots], [s["north"] for s in snapshots], c=[s["t"] for s in snapshots], cmap="viridis", s=18, marker="x", alpha=0.7, zorder=7)
     draw_label(ax3, "2C", "Moving Obstacle Evasion Summary")

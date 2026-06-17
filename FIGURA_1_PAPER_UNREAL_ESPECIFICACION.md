@@ -71,6 +71,18 @@ Por tanto, la nueva Figura 1 parece compactar esas etapas en una unica figura mu
 - Panel `1C`: ultima deteccion sin accion a `63.1 m`, justo antes de generar evasion al cruzar `reaction_distance_eval_m = 61 m`.
 - La torre se muestra en `1B` porque ya existe como obstaculo activo detectado (`obs_fresh=True`, `obs_count=1`). No estamos dibujando el rango fisico/sensorial de deteccion de YOLO; los circulos de `1C` son distancias de reaccion/control, no el alcance de la camara.
 
+## Vocabulario de leyendas alineado con el paper
+
+Las figuras no deben exponer nombres internos del codigo si el paper usa una formulacion mas clara. Equivalencias activas:
+
+- `Nominal path` o `nominal_route` en codigo -> `Planned flight path`.
+- `Flown path` en generadores/logs -> `Actual UAS trajectory`.
+- `evasion_path` -> `Local A* evasion path`.
+- `evasion_active` / ventana PORCE -> `Active evasion segment`.
+- `reaction_distance_eval_m` -> `Dynamic reaction distance`.
+- `reaction_distance_base_m` -> `Base reaction distance`.
+- `tower` -> `Tower obstacle` o `Detected tower obstacle` cuando se quiere enfatizar el estado de deteccion.
+
 ## Trazabilidad tecnica
 
 ### Mision nominal y waypoints
@@ -209,7 +221,7 @@ Base tecnica:
 
 Decision activa:
 
-- Se muestran `Base reaction distance` y `Reaction distance`; el radio duro `R_s` sigue representado alrededor de la torre.
+- Se muestran `Base reaction distance` y `Dynamic reaction distance`; el radio duro `R_s` sigue representado alrededor de la torre.
 
 ### 1D - Cenital: evasion activa
 
