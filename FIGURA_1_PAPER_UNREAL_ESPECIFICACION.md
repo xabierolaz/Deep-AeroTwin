@@ -14,9 +14,15 @@ La figura pedida es una composicion de seis paneles:
 
 - Primera fila: `1A`, `1B`, `1C`.
 - Segunda fila: `1D`, `1E`, `1F`.
-- `1A` y `1D` son representaciones graficas.
-- `1B`/`1E` son pareja del mismo estado: arriba Unreal, abajo grafica.
-- `1C`/`1F` son pareja del estado de evasion: arriba Unreal, abajo grafica.
+- Los seis paneles `1A`-`1F` deben ser representaciones cenitales/top-down.
+- Los seis paneles deben llevar superpuesto el grid real del planificador: `81 x 81` celdas, `6 m` por celda, radio `40` celdas.
+- La deteccion/obstaculo de la Figura 1 debe ser unica y de tipo torre. No deben aparecer ciclistas, peloton, vacas ni multiples torres detectadas.
+- Los seis paneles deben tener el mismo aspect ratio, los mismos valores en los ejes y las mismas etiquetas de ejes. El encuadre/camara no se mueve entre paneles: la Figura 1 se lee como una secuencia temporal sobre un mismo mapa fijo.
+- Para las figuras generadas actuales, el encuadre fijo activo queda documentado como eje X `[-40, 160]` m y eje Y `[-190, 10]` m, con etiquetas `East (m)` y `North (m)`. Es un encuadre cuadrado `1:1` de 200 m x 200 m, centrado en el tramo WP1->WP2 para maximizar claridad.
+- La version amplia anterior y la version cercana anterior quedan preservadas como contexto, pero no son la version activa para componer la Figura 1.
+- Los paneles `1B` y `1C` deben ser continuidad del mismo encuentro. La version corregida usa el run `pipeline/logs/paper_wp1_wp2_tower/paper_wp1_wp2_tower_p0.56_l+8.0_20260617_120539`; ambos corresponden a la misma torre `vision:101`.
+- La lectura activa queda fijada como secuencia temporal `1A -> 1B -> 1C -> 1D -> 1E -> 1F`.
+- La instruccion original agrupaba `1B/1E` como deteccion y `1C/1F` como evasion, pero eso solo funcionaba como matriz por columnas. Al exigir seis paneles cenitales con mismo encuadre, la figura se entiende mejor como secuencia; por tanto `1B` es deteccion temprana, `1C` la ultima deteccion sin accion con radios, `1D` el inicio de evasion A*, `1E` la evasion en curso y `1F` el resumen final.
 
 ## Total de figuras y paneles a generar
 
@@ -50,6 +56,17 @@ La fuente Overleaf actual aun mantiene figuras separadas despues del comentario:
 - `ruta_completada_ultimo_obs.png`: resumen/final.
 
 Por tanto, la nueva Figura 1 parece compactar esas etapas en una unica figura multi-panel, pero esto debe confirmarse antes de editar LaTeX.
+
+## Run activo para generar Figura 1
+
+- Run: `pipeline/logs/paper_wp1_wp2_tower/paper_wp1_wp2_tower_p0.56_l+8.0_20260617_120539`.
+- Tipo de ejecucion: `pipeline/flight_controller.py` real con `PORCE_MOCK_MAVLINK=1`, obstaculo estatico inyectado por `/api/obstacles` con `source=vision`, `type=tower`.
+- No es un mockup manual de la logica: los eventos `decision_snapshot`, `evasion_route_generated`, `evasion_completed` y la trayectoria salen del Brain real.
+- No es todavia captura real Unreal/YOLO: la deteccion se inyecta de forma determinista para aislar el comportamiento PORCE y generar la figura reproducible.
+- Torre: `lat=42.22904865463611`, `lon=-1.234404232738992`, progreso `0.56` en WP1->WP2, lateral `+8 m`.
+- Validacion: `accepted_types=["tower"]`, `clean_detection_count=9`, `valid_plan_count=1`, `valid_completion_count=1`, `failure_count=0`.
+- Evasion activa: comienza en progreso `0.2085` del tramo WP1->WP2 y termina en `0.9412`, antes de llegar a WP2.
+- Evento de planificacion: `planner_obs_count=1`, por tanto la torre `vision:101` si fue incluida por el planner.
 
 ## Trazabilidad tecnica
 
@@ -150,15 +167,16 @@ Pendiente:
 
 - Confirmar si `1A` debe ser una grafica tipo `viz_recorder.py` o una grafica mas limpia hecha especificamente para el paper.
 
-### 1B - Unreal: deteccion sin accion
+### 1B - Cenital: deteccion sin accion
 
 Debe mostrar:
 
-- Escena Unreal.
+- Vista cenital/top-down.
+- Grid real del planificador superpuesto.
 - UAS en vuelo.
-- Obstaculo detectado/visible.
+- Deteccion unica de torre.
 - Todavia sin maniobra evasiva.
-- Sin grid ni ruta A* activa.
+- Con grid visible, pero sin ruta A* activa.
 
 Estado tecnico asociado:
 
@@ -166,13 +184,14 @@ Estado tecnico asociado:
 - `evasion.active = false`.
 - `decision_reason = "distance_above_reaction"`.
 
-Pendiente:
+Decision cerrada:
 
-- Confirmar como debe verse la "deteccion" en Unreal: solo obstaculo visible, bounding box YOLO, marcador, circulo de seguridad, o HUD.
+- No se usa captura oblicua/camara Unreal para este panel.
+- No se dibujan ciclistas, peloton, vacas ni multiples torres.
 
-### 1E - Grafica: deteccion sin accion
+### 1C - Grafica: deteccion sin accion
 
-Debe mostrar el mismo instante que `1B`, pero como grafica:
+Debe mostrar el mismo instante que `1B`, pero con mas informacion grafica:
 
 - mission/global path;
 - UAS;
@@ -185,19 +204,19 @@ Base tecnica:
 
 - `pipeline/viz_recorder.py` ya representa este estado como `OBSTACLE DETECTED` cuando hay obstaculos y `evasion.active` es falso.
 
-Pendiente:
+Decision activa:
 
-- Aclarar si la grafica debe mostrar la distancia de reaccion, el radio de seguridad `R_s`, o ambos. El texto recibido dice "distancia de seguridad como para ejecutar la accion", pero el codigo ejecuta la accion por distancia de reaccion, no por el radio duro de seguridad.
+- Se muestran `Base reaction distance` y `Reaction distance`; el radio duro `R_s` sigue representado alrededor de la torre.
 
-### 1C - Unreal: evasion activa con zoom
+### 1D - Cenital: evasion activa
 
 Debe mostrar:
 
-- Escena Unreal.
+- Vista cenital/top-down.
 - UAS ya ejecutando maniobra evasiva.
-- Vista con zoom al esquive.
-- Grid visible.
+- Grid real del planificador superpuesto.
 - Ruta alternativa/maniobra PORCE visible.
+- Deteccion unica de torre.
 
 Estado tecnico asociado:
 
@@ -206,31 +225,32 @@ Estado tecnico asociado:
 - `evasion.grid_origin` no nulo.
 - evento `evasion_route_generated` ya producido.
 
-Pendiente critico:
+Decision cerrada:
 
-- Confirmar como debe verse la captura Unreal: escena limpia, bounding box YOLO, marcador, circulo de seguridad, HUD o etiqueta de estado.
+- No se usa captura oblicua/camara Unreal para este panel.
+- No se dibujan ciclistas, peloton, vacas ni multiples torres.
+- Mantiene el mismo encuadre que el resto de paneles; el zoom local queda resuelto por el detalle de `1E`, no por mover la camara.
 
-### 1F - Grafica: evasion activa con zoom
+### 1E - Grafica: evasion activa con grid
 
-Debe mostrar el mismo instante que `1C`, pero como grafica:
+Debe mostrar el mismo instante que `1D`, enfatizando:
 
 - grid A*;
 - celdas/ruta de evasion;
 - UAS;
 - obstaculo;
-- zoom local del esquive.
+- ruta local del esquive.
 
 Base tecnica:
 
 - `pipeline/viz_recorder.py` ya dibuja grid y ruta de evasion cuando `evasion.active` y `evasion.grid_origin` existen.
 - `pipeline/porce_manager.py` define la geometria real del grid.
 
-Pendiente:
+Decision activa:
 
-- Confirmar si el zoom debe centrarse en `evasion.grid_origin`, en el obstaculo, o en el UAS.
-- Confirmar si deben verse celdas ocupadas por inflado de obstaculo, porque `viz_recorder.py` actualmente muestra grid y ruta, pero no reconstruye explicitamente todas las celdas ocupadas del planificador.
+- Como todos los paneles deben compartir encuadre y ejes, no se hace zoom moviendo la camara. Se mantiene el grid real y se resalta la ruta A*.
 
-### 1D - Grafica resumen de ruta completa
+### 1F - Grafica resumen de ruta completa
 
 Debe mostrar:
 
@@ -288,9 +308,9 @@ Respuestas ya cerradas:
 
 1. Figura 1 usa obstaculo estatico: torre.
 2. Figura 2 queda para obstaculo en movimiento: ciclista o peloton.
-3. `1B` y `1E` muestran el obstaculo dentro del `Reaction Range`, pero fuera de la `Base reaction distance`.
+3. `1B` y `1C` muestran el obstaculo dentro del `Reaction Range`, pero fuera de la `Base reaction distance`.
 4. El `81 x 81 occupancy grid` basta en la representacion grafica `1F`; no hace falta dentro de Unreal.
-5. `1D` es `Final Stage. Route Summary` solo del caso estatico de la torre.
+5. El resumen final del caso estatico de la torre queda como `1F` para que la lectura `1A -> 1F` sea temporal. La etiqueta original `1D` solo se conserva como antecedente historico de la instruccion recibida.
 
 Preguntas que quedan:
 
@@ -299,4 +319,6 @@ Preguntas que quedan:
 
 Decision cerrada posteriormente:
 
-- En las capturas Unreal (`1B` y `1C`) deben aparecer bounding boxes/HUD de deteccion.
+- Los seis paneles de la Figura 1 deben ser cenitales/top-down.
+- El grid real `81 x 81` debe aparecer superpuesto en los seis paneles.
+- La deteccion debe ser unica y de torre.

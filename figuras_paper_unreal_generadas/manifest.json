@@ -1,12 +1,35 @@
 {
   "figure_1": {
     "figure": "figure_1_static_tower_multipanel.png",
-    "run": "pipeline\\logs\\zero_trust\\20260218_234222",
-    "detection_event_ts": 1771454604.4209192,
-    "detection_frame": "yolo_001398.jpg",
-    "evasion_event_ts": 1771454651.4736636,
-    "evasion_frame": "yolo_002400.jpg",
-    "note": "1D is generated from the available tower episode in this run; the run is not guaranteed to contain only tower obstacles."
+    "run": "pipeline\\logs\\paper_wp1_wp2_tower\\paper_wp1_wp2_tower_p0.56_l+8.0_20260617_120539",
+    "detection_event_ts": 1781690753.5818584,
+    "evasion_event_ts": 1781690756.8978844,
+    "completion_event_ts": 1781690773.1845434,
+    "obstacle": {
+      "lat": 42.22904865463611,
+      "lon": -1.234404232738992,
+      "east_m": 56.05096609440895,
+      "north_m": -71.87032532501878,
+      "progress": 0.56,
+      "lateral_m": 8.0,
+      "segment_length_m": 162.12726544017545
+    },
+    "validation": {
+      "ok": true,
+      "accepted_types": [
+        "tower"
+      ],
+      "clean_detection_count": 9,
+      "valid_plan_count": 1,
+      "valid_completion_count": 1,
+      "failure_count": 0,
+      "active_start_progress": 0.2085174508242129,
+      "active_end_progress": 0.941170201196193,
+      "selected_detection_ts": 1781690753.5818584,
+      "selected_plan_ts": 1781690756.8978844,
+      "selected_completion_ts": 1781690773.1845434
+    },
+    "note": "Figure 1 panels are top-down maps over WP1->WP2 with a fixed 200 m x 200 m frame, the planner 81x81 grid overlaid, and a single tower detection."
   },
   "figure_2": {
     "figure": "figure_2_moving_peloton_multipanel.png",

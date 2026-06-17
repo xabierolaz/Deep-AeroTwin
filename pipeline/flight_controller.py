@@ -1047,18 +1047,36 @@ def nearest_obstacle_info(tel, obstacles):
     return nearest_obs, float(min_dist)
 
 
-def planner_obstacle_subset(tel, obstacles):
+def _obs_identity_keys(obs: Optional[dict]) -> set[str]:
+    if not obs:
+        return set()
+    keys = set()
+    for key in ("entity_id", "source_id", "id"):
+        value = obs.get(key)
+        if value is not None and str(value).strip():
+            keys.add(f"{key}:{str(value).strip()}")
+    return keys
+
+
+def planner_obstacle_subset(tel, obstacles, force_include: Optional[dict] = None):
     max_count = max(1, int(EVASION_PLANNER_OBS_MAX_COUNT))
     max_dist_m = float(EVASION_PLANNER_OBS_MAX_DISTANCE_M)
     tel_lat = float(tel.get("lat", 0.0) or 0.0)
     tel_lon = float(tel.get("lon", 0.0) or 0.0)
+    force_keys = _obs_identity_keys(force_include)
 
     alt_agl_m = _clean_float(tel.get("rel_alt", 0.0), 0.0)
 
     ranked = []
     for o in obstacles:
         dist_m = _obs_distance_from_tel_m(float(tel_lat), float(tel_lon), o)
-        if math.isfinite(max_dist_m) and max_dist_m > 0.0 and float(dist_m) > float(max_dist_m):
+        is_forced = bool(force_keys and (_obs_identity_keys(o) & force_keys))
+        if (
+            not is_forced
+            and math.isfinite(max_dist_m)
+            and max_dist_m > 0.0
+            and float(dist_m) > float(max_dist_m)
+        ):
             continue
         ranked.append((float(dist_m), o))
 
@@ -1326,7 +1344,7 @@ def build_lateral_replan_route(
     offset_m = float(EVASION_FAILSAFE_LATERAL_OFFSET_M)
     forward_gain = max(0.0, float(EVASION_FAILSAFE_LATERAL_FORWARD_GAIN))
     min_points = max(1, int(EVASION_ROUTE_MIN_POINTS))
-    planner_obs = planner_obstacle_subset(tel, obstacles)
+    planner_obs = planner_obstacle_subset(tel, obstacles, force_include=nearest_obs)
     planner_obs_count = int(len(planner_obs))
 
     signs = _choose_lateral_sign_order(
@@ -2257,7 +2275,7 @@ def control_loop():
                         else:
                             target_wp = {'lat': tel['lat'], 'lon': tel['lon']}
 
-                        planner_obs = planner_obstacle_subset(tel, obs)
+                        planner_obs = planner_obstacle_subset(tel, obs, force_include=nearest_eval)
                         planner_obs_count = int(len(planner_obs))
                         new_route = planner.plan_route(
                             tel['lat'],
@@ -3016,5 +3034,3 @@ if __name__ == '__main__':
 
     log.info(f"Iniciando CEREBRO en http://{BRAIN_APP_BIND_HOST}:{MAVLINK_HUB_HTTP_PORT}...")
     app.run(host=BRAIN_APP_BIND_HOST, port=MAVLINK_HUB_HTTP_PORT, use_reloader=False, threaded=True)
-
-

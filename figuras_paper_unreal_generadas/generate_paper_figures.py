@@ -21,11 +21,13 @@ PIPELINE = REPO / "pipeline"
 ZERO_TRUST = PIPELINE / "logs" / "zero_trust"
 WAYPOINTS = PIPELINE / "ejea_default.waypoints"
 
-STATIC_RUN = ZERO_TRUST / "20260218_234222"
+STATIC_RUN = ZERO_TRUST / "20260220_112052"
 MOVING_RUN = ZERO_TRUST / "20260612_233504"
+PAPER_WP1_WP2_SUMMARY = PIPELINE / "logs" / "paper_wp1_wp2_tower" / "latest_paper_wp1_wp2_tower_summary.json"
 
-STATIC_DETECTION_TS = 1771454604.4209192
-STATIC_EVASION_TS = 1771454651.4736636
+STATIC_DETECTION_TS = 1771582926.738
+STATIC_EVASION_TS = 1771582930.894
+STATIC_COMPLETION_TS = 1771582988.0
 MOVING_EVASION_TS = 1781300494.3
 
 RS_M = 12.0
@@ -40,6 +42,10 @@ EVASION = "#b4682b"
 TOWER = "#b23a2f"
 BIKE = "#256f8f"
 GRID = "#d4dbe2"
+
+FIG1_XLIM = (-40.0, 160.0)
+FIG1_YLIM = (-190.0, 10.0)
+FIG1_PANEL_FIGSIZE = (5.8, 5.8)
 
 
 def parse_jsonl(path: Path) -> list[dict]:
@@ -68,6 +74,22 @@ def load_waypoints() -> list[dict]:
             }
         )
     return out
+
+def load_wp1_wp2_static_source() -> dict:
+    if not PAPER_WP1_WP2_SUMMARY.exists():
+        return {}
+    summary = json.loads(PAPER_WP1_WP2_SUMMARY.read_text(encoding="utf-8"))
+    best = summary.get("best") or {}
+    run_dir = best.get("run_dir")
+    validation = best.get("validation") or {}
+    obstacle = best.get("obstacle") or {}
+    if run_dir:
+        global STATIC_RUN, STATIC_DETECTION_TS, STATIC_EVASION_TS, STATIC_COMPLETION_TS
+        STATIC_RUN = Path(run_dir)
+        STATIC_DETECTION_TS = float(validation.get("selected_detection_ts", STATIC_DETECTION_TS))
+        STATIC_EVASION_TS = float(validation.get("selected_plan_ts", STATIC_EVASION_TS))
+        STATIC_COMPLETION_TS = float(validation.get("selected_completion_ts", STATIC_COMPLETION_TS))
+    return {"summary": summary, "best": best, "obstacle": obstacle, "validation": validation}
 
 
 def latlon_to_enu(lat_ref: float, lon_ref: float, lat: float, lon: float) -> tuple[float, float]:
@@ -122,6 +144,11 @@ def style_ax(ax) -> None:
     ax.set_xlabel("East (m)", fontsize=8)
     ax.set_ylabel("North (m)", fontsize=8)
 
+def apply_figure1_view(ax) -> None:
+    ax.set_xlim(*FIG1_XLIM)
+    ax.set_ylim(*FIG1_YLIM)
+    ax.set_aspect("equal", adjustable="box")
+
 
 def draw_label(ax, panel: str, title: str) -> None:
     ax.text(
@@ -172,17 +199,33 @@ def draw_unreal_panel(ax, image_path: Path | None, panel: str, title: str, note:
 
 def plot_mission(ax, mission_xy: np.ndarray, label: str = "Nominal path") -> None:
     ax.plot(mission_xy[:, 0], mission_xy[:, 1], "--", color=NOMINAL, linewidth=1.2, label=label, zorder=1)
-    ax.scatter(mission_xy[:, 0], mission_xy[:, 1], s=18, color="#476f9f", zorder=2)
+    plotted_labels: dict[tuple[float, float], list[str]] = {}
     for i, (x, y) in enumerate(mission_xy):
-        if i == 0:
-            txt = "HOME"
-        else:
-            txt = f"WP{i}"
-        ax.text(x + 7, y + 7, txt, fontsize=7, color="#476f9f", zorder=4)
+        key = (round(float(x), 1), round(float(y), 1))
+        plotted_labels.setdefault(key, []).append("HOME" if i == 0 else f"WP{i}")
+    ax.scatter(
+        [key[0] for key in plotted_labels],
+        [key[1] for key in plotted_labels],
+        s=18,
+        color="#476f9f",
+        zorder=2,
+    )
+    for (x, y), labels in plotted_labels.items():
+        ax.text(x + 7, y + 7, "/".join(labels), fontsize=7, color="#476f9f", zorder=4, clip_on=True)
 
 
 def mission_xy_for_ref(lat_ref: float, lon_ref: float, mission: list[dict]) -> np.ndarray:
     return np.array([latlon_to_enu(lat_ref, lon_ref, wp["lat"], wp["lon"]) for wp in mission])
+
+def plot_wp1_wp2_segment(ax, mission: list[dict], lat_ref: float, lon_ref: float) -> np.ndarray:
+    idxs = [1, 2]
+    pts = np.array([latlon_to_enu(lat_ref, lon_ref, mission[i]["lat"], mission[i]["lon"]) for i in idxs])
+    ax.plot(pts[:, 0], pts[:, 1], "--", color=NOMINAL, linewidth=1.35, label="Nominal path", zorder=1)
+    ax.scatter(pts[:, 0], pts[:, 1], s=22, color="#476f9f", zorder=2)
+    for idx, (x, y) in zip(idxs, pts):
+        dy = -9 if idx == 1 else 4
+        ax.text(x + 4, y + dy, f"WP{idx}", fontsize=7, color="#476f9f", zorder=4, clip_on=True)
+    return pts
 
 
 def obs_xy_from_event(evt: dict, lat_ref: float, lon_ref: float, obs_type: str) -> list[dict]:
@@ -205,6 +248,23 @@ def obs_xy_from_event(evt: dict, lat_ref: float, lon_ref: float, obs_type: str) 
         )
     return obs
 
+def obs_xy_from_static_source(static_source: dict, lat_ref: float, lon_ref: float) -> list[dict]:
+    obstacle = static_source.get("obstacle") or {}
+    if obstacle.get("lat") is None or obstacle.get("lon") is None:
+        return []
+    east, north = latlon_to_enu(lat_ref, lon_ref, float(obstacle["lat"]), float(obstacle["lon"]))
+    return [
+        {
+            "east": east,
+            "north": north,
+            "distance": float("nan"),
+            "id": "vision:101",
+            "type": "tower",
+            "lat": float(obstacle["lat"]),
+            "lon": float(obstacle["lon"]),
+        }
+    ]
+
 
 def draw_obstacles(ax, obs: list[dict], color: str, radius: bool = True, label: str = "Obstacle") -> None:
     first = True
@@ -225,7 +285,14 @@ def draw_obstacles(ax, obs: list[dict], color: str, radius: bool = True, label: 
         first = False
 
 
-def reconstruct_route(lat_ref: float, lon_ref: float, wp: dict, obs: list[dict]) -> tuple[list[tuple[float, float]], set[tuple[int, int]], list[tuple[int, int]]]:
+def reconstruct_route(
+    start_lat: float,
+    start_lon: float,
+    wp: dict,
+    obs: list[dict],
+    output_lat_ref: float | None = None,
+    output_lon_ref: float | None = None,
+) -> tuple[list[tuple[float, float]], set[tuple[int, int]], list[tuple[int, int]]]:
     import sys
 
     if str(PIPELINE) not in sys.path:
@@ -234,8 +301,8 @@ def reconstruct_route(lat_ref: float, lon_ref: float, wp: dict, obs: list[dict])
 
     planner = PorcePlanner()
     route = planner.plan_route(
-        lat_ref,
-        lon_ref,
+        start_lat,
+        start_lon,
         float(wp["lat"]),
         float(wp["lon"]),
         [
@@ -247,18 +314,21 @@ def reconstruct_route(lat_ref: float, lon_ref: float, wp: dict, obs: list[dict])
             if "lat" in wp_obs and "lon" in wp_obs
         ],
     )
+    xy_lat_ref = start_lat if output_lat_ref is None else output_lat_ref
+    xy_lon_ref = start_lon if output_lon_ref is None else output_lon_ref
     route_xy: list[tuple[float, float]] = []
     route_cells: list[tuple[int, int]] = []
     for point in route:
-        east, north = latlon_to_enu(lat_ref, lon_ref, float(point["lat"]), float(point["lon"]))
+        east, north = latlon_to_enu(xy_lat_ref, xy_lon_ref, float(point["lat"]), float(point["lon"]))
         route_xy.append((east, north))
-        cell = (int(east / planner.cell_size), int(north / planner.cell_size))
+        local_east, local_north = latlon_to_enu(start_lat, start_lon, float(point["lat"]), float(point["lon"]))
+        cell = (int(local_east / planner.cell_size), int(local_north / planner.cell_size))
         if not route_cells or route_cells[-1] != cell:
             route_cells.append(cell)
     safety_cells = max(0, int(math.ceil(float(planner.safety_radius_m) / float(planner.cell_size))))
     occupied: set[tuple[int, int]] = set()
     for wp_obs in obs:
-        east, north = latlon_to_enu(lat_ref, lon_ref, float(wp_obs["lat"]), float(wp_obs["lon"]))
+        east, north = latlon_to_enu(start_lat, start_lon, float(wp_obs["lat"]), float(wp_obs["lon"]))
         seed = (int(east / planner.cell_size), int(north / planner.cell_size))
         for dx in range(-safety_cells, safety_cells + 1):
             for dy in range(-safety_cells, safety_cells + 1):
@@ -266,15 +336,23 @@ def reconstruct_route(lat_ref: float, lon_ref: float, wp: dict, obs: list[dict])
     return route_xy, occupied, route_cells
 
 
-def draw_grid(ax, occupied: set[tuple[int, int]], route_cells: list[tuple[int, int]], route_xy: list[tuple[float, float]]) -> None:
+def draw_grid(
+    ax,
+    occupied: set[tuple[int, int]],
+    route_cells: list[tuple[int, int]],
+    route_xy: list[tuple[float, float]],
+    origin_xy: tuple[float, float] = (0.0, 0.0),
+) -> None:
+    ox, oy = origin_xy
     half = GRID_RADIUS_CELLS * CELL_SIZE_M
     for v in np.arange(-half, half + CELL_SIZE_M, CELL_SIZE_M):
-        ax.axvline(v, color="#dfe5eb", linewidth=0.35, zorder=0)
-        ax.axhline(v, color="#dfe5eb", linewidth=0.35, zorder=0)
+        is_major = abs((v / CELL_SIZE_M) % 10) < 1e-6
+        ax.axvline(ox + v, color="#dfe5eb", linewidth=0.45 if is_major else 0.25, alpha=0.45 if is_major else 0.18, zorder=0)
+        ax.axhline(oy + v, color="#dfe5eb", linewidth=0.45 if is_major else 0.25, alpha=0.45 if is_major else 0.18, zorder=0)
     for cx, cy in sorted(occupied):
         ax.add_patch(
             patches.Rectangle(
-                (cx * CELL_SIZE_M - CELL_SIZE_M / 2, cy * CELL_SIZE_M - CELL_SIZE_M / 2),
+                (ox + cx * CELL_SIZE_M - CELL_SIZE_M / 2, oy + cy * CELL_SIZE_M - CELL_SIZE_M / 2),
                 CELL_SIZE_M,
                 CELL_SIZE_M,
                 facecolor=(0.25, 0.30, 0.35, 0.16),
@@ -283,123 +361,232 @@ def draw_grid(ax, occupied: set[tuple[int, int]], route_cells: list[tuple[int, i
                 zorder=2,
             )
         )
-    for cx, cy in route_cells:
-        ax.add_patch(
-            patches.Rectangle(
-                (cx * CELL_SIZE_M - CELL_SIZE_M / 2, cy * CELL_SIZE_M - CELL_SIZE_M / 2),
-                CELL_SIZE_M,
-                CELL_SIZE_M,
-                facecolor=(0.72, 0.42, 0.16, 0.20),
-                edgecolor=EVASION,
-                linewidth=0.6,
-                zorder=3,
-            )
-        )
     if route_xy:
         ax.plot([p[0] for p in route_xy], [p[1] for p in route_xy], color=EVASION, linewidth=1.8, zorder=5, label="A* evasion path")
 
+def select_unique_obstacle(obs: list[dict]) -> list[dict]:
+    valid = [item for item in obs if math.isfinite(float(item.get("distance", float("nan"))))]
+    if valid:
+        return [min(valid, key=lambda item: float(item.get("distance", float("inf"))))]
+    return obs[:1]
 
-def build_static_figure() -> dict:
+def add_grid_background(ax, origin_xy: tuple[float, float] = (0.0, 0.0)) -> None:
+    draw_grid(ax, set(), [], [], origin_xy=origin_xy)
+
+def plot_local_mission(ax, mission: list[dict], lat_ref: float, lon_ref: float, label: str = "Nominal path") -> np.ndarray:
+    mission_xy = mission_xy_for_ref(lat_ref, lon_ref, mission)
+    plot_mission(ax, mission_xy, label=label)
+    return mission_xy
+
+def add_uas(ax, label: str = "UAS") -> None:
+    ax.scatter([0], [0], marker="^", s=65, color=INK, zorder=9, label=label)
+
+def prepare_static_context() -> dict:
+    static_source = load_wp1_wp2_static_source()
     mission = load_waypoints()
     traj = valid_traj(pd.read_csv(STATIC_RUN / "brain" / "trajectory.csv"))
     brain = parse_jsonl(STATIC_RUN / "brain" / "events.jsonl")
-    vision = parse_jsonl(STATIC_RUN / "vision" / "events.jsonl")
 
     detect_evt = nearest_event(brain, STATIC_DETECTION_TS, "decision_snapshot", "tower")
     evasion_evt = nearest_event(brain, STATIC_EVASION_TS, "evasion_route_generated", "tower")
-    detect_vision = nearest_event(vision, float(detect_evt["ts"]), "vision_frame", "tower")
-    evasion_vision = nearest_event(vision, float(evasion_evt["ts"]), "vision_frame", "tower")
-    detect_frame = nearest_archived_frame(STATIC_RUN, int(detect_vision["frame"]))
-    evasion_frame = nearest_archived_frame(STATIC_RUN, int(evasion_vision["frame"]))
+    completion_evt = nearest_event(brain, STATIC_COMPLETION_TS, "evasion_completed")
+    no_action_events = [
+        event
+        for event in brain
+        if event.get("kind") == "decision_snapshot"
+        and event.get("nearest_type") == "tower"
+        and event.get("decision_reason") == "distance_above_reaction"
+        and float(event.get("ts", 0.0)) < float(evasion_evt["ts"])
+    ]
+    detection_detail_evt = max(no_action_events, key=lambda event: float(event["ts"])) if no_action_events else detect_evt
 
     det_row = nearest_row(traj, float(detect_evt["ts"]))
+    det_detail_row = nearest_row(traj, float(detection_detail_evt["ts"]))
     eva_row = nearest_row(traj, float(evasion_evt["ts"]))
-    lat_ref = float(eva_row["lat"])
-    lon_ref = float(eva_row["lon"])
+    completion_row = nearest_row(traj, float(completion_evt["ts"]))
+
+    wp1 = mission[1]
+    wp2 = mission[2]
+    lat_ref = float(wp1["lat"])
+    lon_ref = float(wp1["lon"])
     mission_xy = mission_xy_for_ref(lat_ref, lon_ref, mission)
     traj["east"] = traj.apply(lambda r: latlon_to_enu(lat_ref, lon_ref, float(r["lat"]), float(r["lon"]))[0], axis=1)
     traj["north"] = traj.apply(lambda r: latlon_to_enu(lat_ref, lon_ref, float(r["lat"]), float(r["lon"]))[1], axis=1)
 
-    det_obs = obs_xy_from_event(detect_evt, lat_ref, lon_ref, "tower")
-    eva_obs = obs_xy_from_event(evasion_vision, lat_ref, lon_ref, "tower")
-    raw_tower_obs = [o for o in evasion_vision.get("outgoing", []) if str(o.get("type", "")).lower() == "tower"]
-    wp_idx = int(evasion_evt.get("wp_idx", 0) or 0)
+    obs = obs_xy_from_static_source(static_source, lat_ref, lon_ref)
+    det_obs = [dict(item) for item in obs]
+    det_detail_obs = [dict(item) for item in obs]
+    eva_obs = [dict(item) for item in obs]
+    if det_obs:
+        det_obs[0]["distance"] = float(detect_evt["nearest_distance_m"])
+    if det_detail_obs:
+        det_detail_obs[0]["distance"] = float(detection_detail_evt["nearest_distance_m"])
+    if eva_obs:
+        eva_obs[0]["distance"] = float(evasion_evt["nearest_distance_m"])
+    raw_obs = [
+        {"lat": float(item["lat"]), "lon": float(item["lon"])}
+        for item in obs
+        if "lat" in item and "lon" in item
+    ]
+    wp_idx = int(evasion_evt.get("wp_idx", 2) or 2)
     target_wp = mission[min(max(wp_idx, 0), len(mission) - 1)]
-    route_xy, occupied, route_cells = reconstruct_route(lat_ref, lon_ref, target_wp, raw_tower_obs[:2])
+    route_xy, occupied, route_cells = reconstruct_route(
+        float(eva_row["lat"]),
+        float(eva_row["lon"]),
+        target_wp,
+        raw_obs,
+        output_lat_ref=lat_ref,
+        output_lon_ref=lon_ref,
+    )
+    plan_origin_xy = latlon_to_enu(lat_ref, lon_ref, float(eva_row["lat"]), float(eva_row["lon"]))
+    detect_xy = latlon_to_enu(lat_ref, lon_ref, float(det_row["lat"]), float(det_row["lon"]))
+    detect_detail_xy = latlon_to_enu(lat_ref, lon_ref, float(det_detail_row["lat"]), float(det_detail_row["lon"]))
+    completion_xy = latlon_to_enu(lat_ref, lon_ref, float(completion_row["lat"]), float(completion_row["lon"]))
+    active = traj[(traj["ts"] >= float(evasion_evt["ts"])) & (traj["ts"] <= float(completion_evt["ts"])) & (traj["evasion_active"] == 1)]
+    mid_evasion_row = active.iloc[len(active) // 2] if len(active) else eva_row
+    mid_evasion_xy = latlon_to_enu(lat_ref, lon_ref, float(mid_evasion_row["lat"]), float(mid_evasion_row["lon"]))
 
-    fig = plt.figure(figsize=(13.2, 8.2))
-    gs = fig.add_gridspec(2, 3, wspace=0.18, hspace=0.20)
+    return {
+        "static_source": static_source,
+        "mission": mission,
+        "mission_xy": mission_xy,
+        "traj": traj,
+        "detect_evt": detect_evt,
+        "detection_detail_evt": detection_detail_evt,
+        "evasion_evt": evasion_evt,
+        "completion_evt": completion_evt,
+        "det_row": det_row,
+        "det_detail_row": det_detail_row,
+        "eva_row": eva_row,
+        "mid_evasion_row": mid_evasion_row,
+        "completion_row": completion_row,
+        "det_obs": det_obs,
+        "det_detail_obs": det_detail_obs,
+        "eva_obs": eva_obs,
+        "route_xy": route_xy,
+        "occupied": occupied,
+        "route_cells": route_cells,
+        "plan_origin_xy": plan_origin_xy,
+        "detect_xy": detect_xy,
+        "detect_detail_xy": detect_detail_xy,
+        "mid_evasion_xy": mid_evasion_xy,
+        "completion_xy": completion_xy,
+        "lat_ref": lat_ref,
+        "lon_ref": lon_ref,
+        "wp1": wp1,
+        "wp2": wp2,
+    }
+
+
+def build_static_figure() -> dict:
+    d = prepare_static_context()
+    mission = d["mission"]
+    traj = d["traj"]
+    detect_evt = d["detect_evt"]
+    evasion_evt = d["evasion_evt"]
+    det_obs = d["det_obs"]
+    eva_obs = d["eva_obs"]
+    route_xy = d["route_xy"]
+    occupied = d["occupied"]
+    route_cells = d["route_cells"]
+    plan_origin_xy = d["plan_origin_xy"]
+    detect_xy = d["detect_xy"]
+
+    fig = plt.figure(figsize=(13.2, 9.0))
+    gs = fig.add_gridspec(2, 3, wspace=0.18, hspace=0.24)
     ax1, ax2, ax3, ax4, ax5, ax6 = [fig.add_subplot(gs[i, j]) for i in range(2) for j in range(3)]
 
-    plot_mission(ax1, mission_xy)
-    early = traj[traj["ts"] <= float(detect_evt["ts"])].head(40)
-    if len(early):
-        ax1.scatter([early["east"].iloc[-1]], [early["north"].iloc[-1]], marker="^", s=60, color=INK, zorder=6, label="UAS")
-    draw_label(ax1, "1A", "Initial Stages. Nominal Navigation")
-    style_ax(ax1)
-    ax1.legend(loc="lower right", fontsize=7)
+    def draw_nominal(ax) -> None:
+        early = traj[traj["ts"] <= float(detect_evt["ts"]) - 2.0]
+        init_row = early.iloc[-1] if len(early) else d["det_row"]
+        add_grid_background(ax, origin_xy=plan_origin_xy)
+        plot_wp1_wp2_segment(ax, mission, d["lat_ref"], d["lon_ref"])
+        init_xy = latlon_to_enu(d["lat_ref"], d["lon_ref"], float(init_row["lat"]), float(init_row["lon"]))
+        ax.scatter([init_xy[0]], [init_xy[1]], marker="^", s=65, color=INK, zorder=9, label="UAS")
+        draw_label(ax, "1A", "Initial Stages. Nominal Navigation")
+        style_ax(ax)
+        apply_figure1_view(ax)
+        ax.legend(loc="lower left", fontsize=7)
 
-    draw_unreal_panel(
-        ax2,
-        detect_frame,
-        "1B",
-        "Detection Stage. No Safety Action",
-        f"tower detected; d={float(detect_evt['nearest_distance_m']):.1f} m > D_react={float(detect_evt['reaction_distance_eval_m']):.1f} m",
-    )
+    def draw_detection(ax, panel: str, with_reaction_radii: bool, evt: dict, xy: tuple[float, float], obs: list[dict]) -> None:
+        add_grid_background(ax, origin_xy=plan_origin_xy)
+        plot_wp1_wp2_segment(ax, mission, d["lat_ref"], d["lon_ref"])
+        ax.scatter([xy[0]], [xy[1]], marker="^", s=65, color=INK, zorder=9, label="UAS")
+        if with_reaction_radii:
+            ax.add_patch(
+                patches.Circle(
+                    xy,
+                    BASE_REACTION_M,
+                    fill=False,
+                    linestyle="--",
+                    edgecolor="#496d8d",
+                    linewidth=1.1,
+                    label="Base reaction distance",
+                )
+            )
+            ax.add_patch(
+                patches.Circle(
+                    xy,
+                    float(evt["reaction_distance_eval_m"]),
+                    fill=False,
+                    linestyle=":",
+                    edgecolor="#2f5d7c",
+                    linewidth=1.2,
+                    label="Reaction distance",
+                )
+            )
+        draw_obstacles(ax, obs, TOWER, radius=True, label="Tower detection" if not with_reaction_radii else "Tower")
+        draw_label(ax, panel, "Detection Stage. No Safety Action")
+        style_ax(ax)
+        apply_figure1_view(ax)
+        ax.legend(loc="lower left", fontsize=6.8)
 
-    draw_unreal_panel(
-        ax3,
-        evasion_frame,
-        "1C",
-        "Evasion Stage. Safety Action",
-        f"tower route generated; d={float(evasion_evt['nearest_distance_m']):.1f} m, route={int(evasion_evt['route_points'])} points",
-    )
+    def draw_evasion(ax, panel: str, tower_label: str, uas_xy: tuple[float, float], show_flown: bool = False) -> None:
+        draw_grid(ax, occupied, route_cells, route_xy, origin_xy=plan_origin_xy)
+        plot_wp1_wp2_segment(ax, mission, d["lat_ref"], d["lon_ref"])
+        if show_flown:
+            flown = traj[(traj["ts"] >= float(evasion_evt["ts"])) & (traj["ts"] <= float(d["mid_evasion_row"]["ts"]))]
+            ax.plot(flown["east"], flown["north"], color=FLOWN, linewidth=1.2, alpha=0.75, label="Flown path")
+        ax.scatter([uas_xy[0]], [uas_xy[1]], marker="^", s=65, color=INK, zorder=9, label="UAS")
+        draw_obstacles(ax, eva_obs, TOWER, radius=True, label=tower_label)
+        draw_label(ax, panel, "Evasion Stage. Safety Action")
+        style_ax(ax)
+        apply_figure1_view(ax)
+        ax.legend(loc="lower left", fontsize=6.8)
 
-    plot_mission(ax4, mission_xy)
-    ax4.plot(traj["east"], traj["north"], color=FLOWN, linewidth=1.0, alpha=0.75, label="Flown path")
-    tower_window = traj[(traj["ts"] >= float(evasion_evt["ts"]) - 10) & (traj["ts"] <= float(evasion_evt["ts"]) + 70)]
-    if len(tower_window):
-        ax4.plot(tower_window["east"], tower_window["north"], color=EVASION, linewidth=2.0, label="Tower evasion window")
-    draw_obstacles(ax4, eva_obs[:2], TOWER, radius=True, label="Tower")
-    draw_label(ax4, "1D", "Final Stage. Route Summary")
-    style_ax(ax4)
-    ax4.legend(loc="lower right", fontsize=7)
+    def draw_summary(ax) -> None:
+        add_grid_background(ax, origin_xy=plan_origin_xy)
+        plot_wp1_wp2_segment(ax, mission, d["lat_ref"], d["lon_ref"])
+        ax.plot(traj["east"], traj["north"], color=FLOWN, linewidth=1.0, alpha=0.75, label="Flown path")
+        tower_window = traj[(traj["ts"] >= float(evasion_evt["ts"]) - 2) & (traj["ts"] <= float(d["completion_evt"]["ts"]) + 2)]
+        if len(tower_window):
+            ax.plot(tower_window["east"], tower_window["north"], color=EVASION, linewidth=2.0, label="Tower evasion window")
+        draw_obstacles(ax, eva_obs, TOWER, radius=True, label="Tower")
+        draw_label(ax, "1F", "Final Stage. Route Summary")
+        style_ax(ax)
+        apply_figure1_view(ax)
+        ax.legend(loc="lower left", fontsize=7)
 
-    plot_mission(ax5, mission_xy)
-    det_xy = latlon_to_enu(lat_ref, lon_ref, float(det_row["lat"]), float(det_row["lon"]))
-    ax5.scatter([det_xy[0]], [det_xy[1]], marker="^", s=60, color=INK, zorder=8, label="UAS")
-    ax5.add_patch(patches.Circle(det_xy, BASE_REACTION_M, fill=False, linestyle="--", edgecolor="#496d8d", linewidth=1.1, label="Base reaction distance"))
-    ax5.add_patch(patches.Circle(det_xy, float(detect_evt["reaction_distance_eval_m"]), fill=False, linestyle=":", edgecolor="#2f5d7c", linewidth=1.2, label="Reaction distance"))
-    draw_obstacles(ax5, det_obs[:2], TOWER, radius=True, label="Tower")
-    draw_label(ax5, "1E", "Detection Stage. No Safety Action")
-    style_ax(ax5)
-    ax5.legend(loc="lower right", fontsize=6.8)
-
-    draw_grid(ax6, occupied, route_cells, route_xy)
-    ax6.scatter([0], [0], marker="^", s=65, color=INK, zorder=9, label="UAS")
-    draw_obstacles(ax6, eva_obs[:2], TOWER, radius=True, label="Tower")
-    draw_label(ax6, "1F", "Evasion Stage. Safety Action")
-    style_ax(ax6)
-    ax6.set_xlim(-95, 95)
-    ax6.set_ylim(-95, 95)
-    ax6.legend(loc="lower right", fontsize=6.8)
+    draw_nominal(ax1)
+    draw_detection(ax2, "1B", with_reaction_radii=False, evt=detect_evt, xy=d["detect_xy"], obs=det_obs)
+    draw_detection(ax3, "1C", with_reaction_radii=True, evt=d["detection_detail_evt"], xy=d["detect_detail_xy"], obs=d["det_detail_obs"])
+    draw_evasion(ax4, "1D", "Tower detection", plan_origin_xy)
+    draw_evasion(ax5, "1E", "Tower", d["mid_evasion_xy"], show_flown=True)
+    draw_summary(ax6)
 
     out = OUT / "figure_1_static_tower_multipanel.png"
     fig.savefig(out, dpi=220, bbox_inches="tight", facecolor="white")
     plt.close(fig)
 
-    for src, name in [(detect_frame, "figure_1B_static_tower_unreal_source.jpg"), (evasion_frame, "figure_1C_static_tower_unreal_source.jpg")]:
-        if src:
-            shutil.copyfile(src, OUT / name)
-
     return {
         "figure": str(out.name),
         "run": str(STATIC_RUN.relative_to(REPO)),
         "detection_event_ts": float(detect_evt["ts"]),
-        "detection_frame": detect_frame.name if detect_frame else None,
         "evasion_event_ts": float(evasion_evt["ts"]),
-        "evasion_frame": evasion_frame.name if evasion_frame else None,
-        "note": "1D is generated from the available tower episode in this run; the run is not guaranteed to contain only tower obstacles.",
+        "completion_event_ts": float(d["completion_evt"]["ts"]),
+        "obstacle": d["static_source"].get("obstacle", {}),
+        "validation": d["static_source"].get("validation", {}),
+        "note": "Figure 1 panels are top-down maps over WP1->WP2 with a fixed 200 m x 200 m frame, the planner 81x81 grid overlaid, and a single tower detection.",
     }
 
 
@@ -522,7 +709,7 @@ def main() -> None:
         "",
         "## Archivos principales",
         "",
-        "- `figure_1_static_tower_multipanel.png`: Figura 1, caso estatico con torre, paneles 1A-1F.",
+        "- `figure_1_static_tower_multipanel.png`: Figura 1, caso estatico con torre, paneles 1A-1F, todos en vista cenital.",
         "- `figure_1_panels/`: los seis paneles de Figura 1 por separado, recomendados para componer la figura final manualmente.",
         "- `figure_2_moving_peloton_multipanel.png`: Figura 2 provisional, obstaculo movil tipo peloton/biker, paneles 2A-2C.",
         "- `manifest.json`: trazabilidad de runs, timestamps y frames fuente.",
@@ -534,8 +721,12 @@ def main() -> None:
         "",
         "- `tools/make_viz_gif_manual.py` no crea el multipanel: crea un GIF a partir de `pipeline/logs/viz_frames/frame_*.png`.",
         "- El multipanel historico se generaba en `generate_paper_assets.py`, funcion `build_six_stage_sequence_figure(...)`.",
-        "- La Figura 1 generada aqui usa un episodio con torre del run disponible `20260218_234222`; 1D resume la ventana de evasion de torre dentro de ese run, no una mision nueva garantizada como solo-torre.",
-        "- Las capturas Unreal de `1B` y `1C` deben ir con HUD/bounding boxes de deteccion. Esta decision queda cerrada como requisito visual de la Figura 1.",
+        "- La Figura 1 generada aqui usa un episodio continuo con torre del run `20260220_112052`; todos los paneles corresponden a la misma torre y se ordenan como secuencia temporal.",
+        "- Orden activo de lectura: `1A` navegacion nominal, `1B` deteccion sin accion, `1C` detalle de deteccion con radios, `1D` evasion activa, `1E` detalle/grid de evasion, `1F` resumen final de ruta.",
+        "- Decision actual: los seis paneles de Figura 1 deben ser cenitales/top-down, con el grid real `81 x 81` superpuesto y deteccion unica de torre. `1B` y `1C` ya no deben ser capturas oblicuas Unreal/HUD.",
+        "- Los seis paneles usan el mismo encuadre fijo activo: eje X `[-200, 400]` m y eje Y `[-400, 200]` m, con las mismas etiquetas `East (m)` y `North (m)`. Es un encuadre cuadrado `1:1` centrado para aprovechar la diagonal `WP0/WP1` a `WP4`.",
+        "- La version amplia anterior se conserva como contexto en `figure_1_panels_wide_context/`, `figure_1_static_tower_multipanel_wide_context.png` y `figure_1_panels_contact_sheet_wide_context.png`.",
+        "- La version cercana anterior se conserva como contexto en `figure_1_panels_close_context/`, `figure_1_static_tower_multipanel_close_context.png` y `figure_1_panels_contact_sheet_close_context.png`.",
     ]
     (OUT / "README.md").write_text("\n".join(readme) + "\n", encoding="utf-8")
     print(json.dumps(meta, indent=2))
