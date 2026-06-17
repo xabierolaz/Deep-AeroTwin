@@ -53,6 +53,7 @@ LABEL_TOWER = "Tower obstacle"
 LABEL_DYNAMIC_REACTION = "Dynamic reaction distance"
 LABEL_BASE_REACTION = "Base reaction distance"
 LABEL_PELOTON_POSITIONS = "Peloton positions over time"
+LABEL_LOCAL_GRID = "Local A* occupancy grid"
 
 FIG1_XLIM = (-40.0, 160.0)
 FIG1_YLIM = (-165.0, 35.0)
@@ -358,8 +359,10 @@ def draw_grid(
     half = GRID_RADIUS_CELLS * CELL_SIZE_M
     for v in np.arange(-half, half + CELL_SIZE_M, CELL_SIZE_M):
         is_major = abs((v / CELL_SIZE_M) % 10) < 1e-6
-        ax.axvline(ox + v, color="#dfe5eb", linewidth=0.45 if is_major else 0.25, alpha=0.45 if is_major else 0.18, zorder=0)
-        ax.axhline(oy + v, color="#dfe5eb", linewidth=0.45 if is_major else 0.25, alpha=0.45 if is_major else 0.18, zorder=0)
+        ax.axvline(ox + v, color="#b9c3cf", linewidth=0.58 if is_major else 0.36, alpha=0.55 if is_major else 0.34, zorder=0)
+        ax.axhline(oy + v, color="#b9c3cf", linewidth=0.58 if is_major else 0.36, alpha=0.55 if is_major else 0.34, zorder=0)
+    if route_xy or occupied:
+        ax.plot([], [], color="#9aa6b2", linewidth=0.8, alpha=0.8, label=LABEL_LOCAL_GRID)
     for cx, cy in sorted(occupied):
         ax.add_patch(
             patches.Rectangle(
@@ -408,8 +411,8 @@ def prepare_static_context() -> dict:
         and event.get("decision_reason") == "distance_above_reaction"
         and float(event.get("ts", 0.0)) < float(evasion_evt["ts"])
     ]
-    detect_evt = no_action_events[-2] if len(no_action_events) >= 2 else nearest_event(brain, STATIC_DETECTION_TS, "decision_snapshot", "tower")
-    detection_detail_evt = max(no_action_events, key=lambda event: float(event["ts"])) if no_action_events else detect_evt
+    detect_evt = no_action_events[-4] if len(no_action_events) >= 4 else nearest_event(brain, STATIC_DETECTION_TS, "decision_snapshot", "tower")
+    detection_detail_evt = no_action_events[-2] if len(no_action_events) >= 2 else detect_evt
 
     det_row = nearest_row(traj, float(detect_evt["ts"]))
     det_detail_row = nearest_row(traj, float(detection_detail_evt["ts"]))
@@ -565,10 +568,10 @@ def build_static_figure() -> dict:
 
     def draw_summary(ax) -> None:
         plot_wp1_wp2_segment(ax, mission, d["lat_ref"], d["lon_ref"])
-        ax.plot(traj["east"], traj["north"], color=FLOWN, linewidth=1.0, alpha=0.75, label=LABEL_ACTUAL_TRAJECTORY)
+        ax.plot(traj["east"], traj["north"], color=FLOWN, linewidth=1.45, alpha=0.85, label=LABEL_ACTUAL_TRAJECTORY)
         tower_window = traj[(traj["ts"] >= float(evasion_evt["ts"]) - 2) & (traj["ts"] <= float(d["completion_evt"]["ts"]) + 2)]
         if len(tower_window):
-            ax.plot(tower_window["east"], tower_window["north"], color=EVASION, linewidth=2.0, label=LABEL_ACTIVE_EVASION)
+            ax.plot(tower_window["east"], tower_window["north"], color=EVASION, linewidth=1.55, alpha=0.78, label=LABEL_ACTIVE_EVASION)
         draw_obstacles(ax, eva_obs, TOWER, radius=True, label=LABEL_TOWER)
         draw_label(ax, "1F", "Final Stage. Route Summary")
         style_ax(ax)
@@ -734,7 +737,7 @@ def main() -> None:
         "- Orden activo de lectura: `1A` navegacion nominal, `1B` deteccion sin accion cerca del umbral, `1C` ultima deteccion sin accion con radios, `1D` inicio de evasion A*, `1E` evasion en curso, `1F` resumen final de ruta.",
         "- Decision actual: los seis paneles de Figura 1 deben ser cenitales/top-down y compartir ejes. El `Local A* occupancy grid` no es absoluto ni permanente; se muestra solo en `1D` y `1E`, cuando el planner ya ha discretizado el vecindario local relativo al UAS.",
         "- Los seis paneles usan el mismo encuadre fijo activo: eje X `[-40, 160]` m y eje Y `[-165, 35]` m, con las mismas etiquetas `East (m)` y `North (m)`. Es un encuadre cuadrado `1:1` de 200 m x 200 m centrado en el tramo WP1->WP2, con mas aire por encima de WP1 y menos espacio muerto bajo WP2.",
-        "- `1B` usa una deteccion sin accion a `67.1 m`; `1C` usa la ultima deteccion sin accion a `63.1 m`, justo antes de generar la evasion al cruzar `reaction_distance_eval_m=61 m`.",
+        "- `1B` usa una deteccion sin accion a `75.1 m`; `1C` usa una deteccion sin accion a `67.1 m`, todavia fuera de `reaction_distance_eval_m=61 m`.",
         "- Validacion del run: `accepted_types=[\"tower\"]`, `clean_detection_count=9`, `valid_plan_count=1`, `valid_completion_count=1`, `failure_count=0`, evasion activa de progreso `0.2085` a `0.9412` antes de WP2.",
         "",
         "## Terminos usados en leyendas",

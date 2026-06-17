@@ -135,10 +135,10 @@ def main() -> None:
 
     fig, ax = plt.subplots(figsize=g.FIG1_PANEL_FIGSIZE)
     _base_panel(ax, d)
-    ax.plot(traj["east"], traj["north"], color=g.FLOWN, linewidth=1.0, alpha=0.75, label=g.LABEL_ACTUAL_TRAJECTORY)
+    ax.plot(traj["east"], traj["north"], color=g.FLOWN, linewidth=1.45, alpha=0.85, label=g.LABEL_ACTUAL_TRAJECTORY)
     tower_window = traj[(traj["ts"] >= float(d["evasion_evt"]["ts"]) - 2) & (traj["ts"] <= float(d["completion_evt"]["ts"]) + 2)]
     if len(tower_window):
-        ax.plot(tower_window["east"], tower_window["north"], color=g.EVASION, linewidth=2.0, label=g.LABEL_ACTIVE_EVASION)
+        ax.plot(tower_window["east"], tower_window["north"], color=g.EVASION, linewidth=1.55, alpha=0.78, label=g.LABEL_ACTIVE_EVASION)
     g.draw_obstacles(ax, d["eva_obs"], g.TOWER, radius=True, label=g.LABEL_TOWER)
     g.draw_label(ax, "1F", "Final Stage. Route Summary")
     g.style_ax(ax)

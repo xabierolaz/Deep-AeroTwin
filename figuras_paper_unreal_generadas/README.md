@@ -21,7 +21,7 @@ Esta carpeta contiene las figuras compuestas pedidas en la conversacion.
 - Orden activo de lectura: `1A` navegacion nominal, `1B` deteccion sin accion cerca del umbral, `1C` ultima deteccion sin accion con radios, `1D` inicio de evasion A*, `1E` evasion en curso, `1F` resumen final de ruta.
 - Decision actual: los seis paneles de Figura 1 deben ser cenitales/top-down y compartir ejes. El `Local A* occupancy grid` no es absoluto ni permanente; se muestra solo en `1D` y `1E`, cuando el planner ya ha discretizado el vecindario local relativo al UAS.
 - Los seis paneles usan el mismo encuadre fijo activo: eje X `[-40, 160]` m y eje Y `[-165, 35]` m, con las mismas etiquetas `East (m)` y `North (m)`. Es un encuadre cuadrado `1:1` de 200 m x 200 m centrado en el tramo WP1->WP2, con mas aire por encima de WP1 y menos espacio muerto bajo WP2.
-- `1B` usa una deteccion sin accion a `67.1 m`; `1C` usa la ultima deteccion sin accion a `63.1 m`, justo antes de generar la evasion al cruzar `reaction_distance_eval_m=61 m`.
+- `1B` usa una deteccion sin accion a `75.1 m`; `1C` usa una deteccion sin accion a `67.1 m`, todavia fuera de `reaction_distance_eval_m=61 m`.
 - Validacion del run: `accepted_types=["tower"]`, `clean_detection_count=9`, `valid_plan_count=1`, `valid_completion_count=1`, `failure_count=0`, evasion activa de progreso `0.2085` a `0.9412` antes de WP2.
 
 ## Terminos usados en leyendas

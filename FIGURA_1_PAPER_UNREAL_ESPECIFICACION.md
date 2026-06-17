@@ -67,8 +67,9 @@ Por tanto, la nueva Figura 1 parece compactar esas etapas en una unica figura mu
 - Validacion: `accepted_types=["tower"]`, `clean_detection_count=9`, `valid_plan_count=1`, `valid_completion_count=1`, `failure_count=0`.
 - Evasion activa: comienza en progreso `0.2085` del tramo WP1->WP2 y termina en `0.9412`, antes de llegar a WP2.
 - Evento de planificacion: `planner_obs_count=1`, por tanto la torre `vision:101` si fue incluida por el planner.
-- Panel `1B`: deteccion sin accion a `67.1 m`.
-- Panel `1C`: ultima deteccion sin accion a `63.1 m`, justo antes de generar evasion al cruzar `reaction_distance_eval_m = 61 m`.
+- Panel `1A`: ultimo estado real del run sin obstaculo activo; permanece cerca de WP1 porque no hay una muestra avanzada WP1->WP2 sin deteccion.
+- Panel `1B`: deteccion sin accion a `75.1 m`.
+- Panel `1C`: deteccion sin accion a `67.1 m`, todavia fuera de `reaction_distance_eval_m = 61 m`.
 - La torre se muestra en `1B` porque ya existe como obstaculo activo detectado (`obs_fresh=True`, `obs_count=1`). No estamos dibujando el rango fisico/sensorial de deteccion de YOLO; los circulos de `1C` son distancias de reaccion/control, no el alcance de la camara.
 
 ## Vocabulario de leyendas alineado con el paper
