@@ -22,7 +22,7 @@ function NoteFail([string]$message) {
 function Read-DotEnv([string]$path) {
   $result = @{}
   foreach ($line in Get-Content $path) {
-    $trimmed = $line.Trim()
+    $trimmed = $line.Trim().TrimStart([char]0xFEFF)
     if ([string]::IsNullOrWhiteSpace($trimmed)) { continue }
     if ($trimmed.StartsWith("#")) { continue }
     $idx = $trimmed.IndexOf("=")
@@ -32,6 +32,28 @@ function Read-DotEnv([string]$path) {
     $result[$key] = $val
   }
   return $result
+}
+
+function Test-BinaryContainsAscii([string]$path, [string]$needle) {
+  if (-not (Test-Path $path)) { return $false }
+  try {
+    $bytes = [System.IO.File]::ReadAllBytes($path)
+    $text = [System.Text.Encoding]::ASCII.GetString($bytes)
+    return $text.Contains($needle)
+  } catch {
+    return $false
+  }
+}
+
+function Test-BinaryContainsAsciiIgnoreCase([string]$path, [string]$needle) {
+  if (-not (Test-Path $path)) { return $false }
+  try {
+    $bytes = [System.IO.File]::ReadAllBytes($path)
+    $text = [System.Text.Encoding]::ASCII.GetString($bytes)
+    return $text.IndexOf($needle, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+  } catch {
+    return $false
+  }
 }
 
 function Resolve-RepoVarPath([string]$value, [string]$repoRoot) {
@@ -65,6 +87,8 @@ $defaultsPath = Join-Path $RepoRoot "pipeline\porce_defaults.env"
 $runSITLPath = Join-Path $RepoRoot "pipeline\run_sitl.sh"
 $launchPath = Join-Path $RepoRoot "launch.bat"
 $engineIniPath = Join-Path $RepoRoot "Unreal\Config\DefaultEngine.ini"
+$ejeaMapPath = Join-Path $RepoRoot "Unreal\Content\Ejea.umap"
+$generatedPaperCapturesPath = Join-Path $RepoRoot "Unreal\Content\Generated\PaperCaptures"
 $lockPath = Join-Path $RepoRoot "pipeline\requirements.lock.txt"
 $venvPython = Join-Path $RepoRoot "venv\Scripts\python.exe"
 $yoloConfigDir = Join-Path $RepoRoot "pipeline\logs\ultralytics"
@@ -79,6 +103,51 @@ foreach ($required in @($uprojectPath, $defaultsPath, $runSITLPath, $launchPath,
   } else {
     NoteFail "Missing required file: $required"
   }
+}
+
+if (Test-Path $ejeaMapPath) {
+  $datPatterns = @("DAT_PaperCapture", "DAT_RotProbe", "DAT_PaperRealFlightCamera")
+  $datHits = @($datPatterns | Where-Object { Test-BinaryContainsAscii -path $ejeaMapPath -needle $_ })
+  if ($datHits.Count -gt 0) {
+    NoteFail "Unreal\Content\Ejea.umap contains temporary DAT staging markers: $($datHits -join ', ')"
+  } else {
+    NoteOk "Ejea.umap has no temporary DAT staging markers."
+  }
+
+  $legacyCyclistPatterns = @("/Game/ciclista", "ciclista_C", "ciclista1_C", "ciclista2_C", "bp_biker")
+  $legacyCyclistHits = @($legacyCyclistPatterns | Where-Object { Test-BinaryContainsAsciiIgnoreCase -path $ejeaMapPath -needle $_ })
+  if ($legacyCyclistHits.Count -gt 0) {
+    NoteFail "Ejea.umap contains legacy loose cyclist references: $($legacyCyclistHits -join ', ')"
+  } else {
+    NoteOk "Ejea.umap has no legacy loose cyclist references."
+  }
+
+  $requiredPelotonRoutes = @(
+    "Peloton_Route_WP02_Cross",
+    "Peloton_Route_WP04_Cross",
+    "Peloton_Route_WP07_Cross",
+    "Peloton_Route_WP09_Cross"
+  )
+  $missingPelotonRoutes = @($requiredPelotonRoutes | Where-Object { -not (Test-BinaryContainsAscii -path $ejeaMapPath -needle $_) })
+  if ($missingPelotonRoutes.Count -gt 0) {
+    NoteFail "Ejea.umap is missing scripted peloton crossing routes: $($missingPelotonRoutes -join ', ')"
+  } else {
+    NoteOk "Ejea.umap contains all scripted peloton crossing routes."
+  }
+} else {
+  NoteFail "Missing Unreal map: $ejeaMapPath"
+}
+
+if (Test-Path $generatedPaperCapturesPath) {
+  $datAssets = @(Get-ChildItem -LiteralPath $generatedPaperCapturesPath -Recurse -File -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -like "DAT_*" })
+  if ($datAssets.Count -gt 0) {
+    NoteFail "Temporary DAT generated capture assets remain under Unreal\Content\Generated\PaperCaptures."
+  } else {
+    NoteOk "No temporary DAT generated capture assets remain."
+  }
+} else {
+  NoteOk "No generated PaperCaptures directory present."
 }
 
 $submoduleGitlink = $null
@@ -232,10 +301,10 @@ if (Test-Path $defaultsPath) {
 
 if (Test-Path $runSITLPath) {
   $runSITLRaw = Get-Content $runSITLPath -Raw
-  if ($runSITLRaw -match 'SITL_SERIAL0:-tcp:127\.0\.0\.1:5760') {
-    NoteOk "SITL serial0 default is loopback."
+  if ($runSITLRaw -match 'SITL_SERIAL0:-tcp:0\.0\.0\.0:\$SITL_PORT') {
+    NoteOk "SITL serial0 default binds to the configured TCP port."
   } else {
-    NoteFail "run_sitl.sh should default SITL_SERIAL0 to tcp:127.0.0.1:5760."
+    NoteFail "run_sitl.sh should default SITL_SERIAL0 to tcp:0.0.0.0:`$SITL_PORT."
   }
 }
 

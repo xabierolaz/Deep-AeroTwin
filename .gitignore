@@ -36,6 +36,20 @@ Thumbs.db
 *.tmp
 *.bak
 *.swp
+*~
+
+# --- LaTeX build artifacts ---
+*.aux
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.out
+*.synctex.gz
+*.toc
+*.bcf
+*.run.xml
 
 # --- Logs / run artifacts ---
 logs/
@@ -48,6 +62,14 @@ nul
 brain/
 pipeline/brain/
 pipeline/vision/
+
+# --- Local neural/video worktrees and model caches ---
+neural/FlashVSR/
+neural/VideoX-Fun/
+neural/ckpts/
+neural/models/
+neural/wan_models/
+neural/__pycache__/
 
 # --- Unreal Engine ---
 # Keep source/assets under Unreal/, ignore generated output (Binaries/Intermediate/Saved/DerivedDataCache) and IDE files.
@@ -86,6 +108,18 @@ yolo/dataset/
 yolo/runs/
 yolo/venv/
 yolo/labels_backup_*/
+
+# Keep paper-capture intermediates out of git; final paper artifacts stay under final_artifacts/ and Imagenes/.
+figuras_paper_unreal_generadas/yolo_crossing_precheck/annotated/
+figuras_paper_unreal_generadas/yolo_crossing_precheck/event_frames_fine/
+figuras_paper_unreal_generadas/yolo_crossing_precheck/paper_candidates/
+figuras_paper_unreal_generadas/yolo_crossing_precheck/raw/
+figuras_paper_unreal_generadas/yolo_crossing_precheck/raw_unreal_foreground_peloton_candidates/
+figuras_paper_unreal_generadas/yolo_crossing_precheck/raw_unreal_red_peloton_candidates/
+figuras_paper_unreal_generadas/yolo_crossing_precheck/validated_video_frames/
+figuras_paper_unreal_generadas/yolo_crossing_precheck/capture_manifest.json
+figuras_paper_unreal_generadas/yolo_crossing_precheck/yolo_precheck_manifest.json
+figuras_paper_unreal_generadas/yolo_crossing_precheck/yolo_crossing_precheck.mp4
 
 # YOLO weights: ignore by default; allow committing only the canonical runtime weight.
 *.pt

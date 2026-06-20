@@ -4,6 +4,7 @@ param(
 )
 
 $ErrorActionPreference = "SilentlyContinue"
+$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 
 function _log([string]$msg) {
   if (-not $Quiet) {
@@ -11,12 +12,35 @@ function _log([string]$msg) {
   }
 }
 
+function _env_bool([string]$name, [bool]$default) {
+  $raw = [System.Environment]::GetEnvironmentVariable($name)
+  if ([string]::IsNullOrWhiteSpace($raw)) {
+    return $default
+  }
+  $normalized = $raw.Trim().ToLowerInvariant()
+  if ($normalized -in @("1", "true", "yes", "on")) {
+    return $true
+  }
+  if ($normalized -in @("0", "false", "no", "off")) {
+    return $false
+  }
+  return $default
+}
+
 _log "[stop_pipeline] Stopping Deep-AeroTwin pipeline processes..."
 
 # Match by command line so this works for:
 # - separate cmd.exe windows started by launch.bat
 # - Windows Terminal tabs (cmd.exe hosted by wt.exe)
-$regex = '(?i)(flight_controller\.py|vision_system\.py|viz_recorder\.py|log_server\.py|tee\.py)'
+$regex = '(?i)(flight_controller\.py|vision_system\.py|viz_recorder\.py|log_server\.py|tee\.py|sitl_runner\.py|run_sitl\.sh|sim_vehicle\.py|arducopter|mavproxy\.py|porce_tab_[0-9a-f]+\.bat)'
+$terminalTitles = @(
+  "MASTER LOG",
+  "SITL (WSL)",
+  "BRAIN (SIM)",
+  "BRAIN (REAL_TWIN)",
+  "EYES (SIM)",
+  "VIZ RECORDER"
+)
 
 function _self_parent_pid() {
   try {
@@ -47,7 +71,7 @@ function _collect_targets() {
     # when run from inside a pipeline tab (taskkill /T tries to kill itself).
     $pyTargets = Get-CimInstance Win32_Process |
       Where-Object { $_.CommandLine -and ($_.CommandLine -match $regex) } |
-      Where-Object { $_.Name -and ($_.Name -imatch '^python(?:3)?\.exe$') } |
+      Where-Object { $_.Name -and ($_.Name -imatch '^(python(?:3)?|pythonw|py)\.exe$') } |
       Where-Object { ([int]$_.ProcessId -ne $PID) } |
       Sort-Object -Property ProcessId -Unique
 
@@ -137,19 +161,19 @@ function _kill_targets([object[]]$targets, [bool]$force) {
   return $remaining
 }
 
-function _port_owner_matches_pipeline([int]$ownerPid) {
+function _port_owner_matches_pipeline([int]$ownerPid, [int]$port = 0) {
   try {
     $proc = Get-CimInstance Win32_Process -Filter ("ProcessId={0}" -f $ownerPid)
     if (-not $proc) { return $false }
     $name = ($proc.Name | ForEach-Object { $_ }) -join ""
     $cmd = ($proc.CommandLine | ForEach-Object { $_ }) -join ""
-    if ($name -imatch '^(python(?:3)?\.exe|cmd\.exe|wsl(?:host)?\.exe)$') { return $true }
     if ($cmd -and ($cmd -match $regex)) { return $true }
+    if ($name -imatch '^wsl\.exe$' -and $cmd -and ($cmd -match '(?i)(run_sitl\.sh|sim_vehicle\.py|arducopter|mavproxy\.py)')) { return $true }
   } catch {}
   return $false
 }
 
-function _audit_pipeline_ports() {
+function _cleanup_pipeline_ports([bool]$force) {
   $ports = @(8080, 9090, 5760, 5762, 5763)
   try {
     $hits = Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue |
@@ -158,28 +182,106 @@ function _audit_pipeline_ports() {
     if (-not $hits -or $hits.Count -eq 0) {
       return
     }
-    $pipelineHits = @($hits | Where-Object { _port_owner_matches_pipeline ([int]$_.OwningProcess) })
+    $pipelineHits = @($hits | Where-Object { _port_owner_matches_pipeline ([int]$_.OwningProcess) ([int]$_.LocalPort) })
     if ($pipelineHits.Count -eq 0) {
       return
     }
     foreach ($h in $pipelineHits) {
-      _log ("[stop_pipeline] WARN: pipeline-like listener still alive port={0} pid={1}" -f ([int]$h.LocalPort), ([int]$h.OwningProcess))
+      $ownerPid = [int]$h.OwningProcess
+      _log ("[stop_pipeline] WARN: pipeline listener still alive port={0} pid={1}" -f ([int]$h.LocalPort), $ownerPid)
+      if ($force -and $ownerPid -ne $PID -and (-not $parentPid -or $ownerPid -ne $parentPid)) {
+        [void](_kill_pid_once $ownerPid $true)
+      }
     }
   } catch {
     # Optional check; do not fail stop path on systems without NetTCP APIs.
   }
 }
 
+function _report_persistent_portproxy_rules() {
+  try {
+    $output = & netsh.exe interface portproxy show all 2>$null
+    if (-not $output) {
+      return
+    }
+    $hits = @($output | Where-Object { $_ -match '^\s*127\.0\.0\.1\s+(5760|5762)\s+' })
+    foreach ($line in $hits) {
+      _log ("[stop_pipeline] WARN: persistent netsh portproxy rule remains: {0}" -f ($line.Trim() -replace '\s+', ' '))
+    }
+    if ($hits.Count -gt 0) {
+      _log "[stop_pipeline] WARN: remove these from an elevated shell with:"
+      _log "  netsh interface portproxy delete v4tov4 listenaddress=127.0.0.1 listenport=5760"
+      _log "  netsh interface portproxy delete v4tov4 listenaddress=127.0.0.1 listenport=5762"
+    }
+  } catch {}
+}
+
+function _stop_unreal_pie() {
+  if (-not (_env_bool "PORCE_STOP_UNREAL_PIE_ON_STOP" $true)) {
+    return
+  }
+
+  $mcpScript = Join-Path $RepoRoot "tools\unreal_mcp_call.py"
+  if (-not (Test-Path $mcpScript)) {
+    return
+  }
+
+  $pythonExe = Join-Path $RepoRoot "venv\Scripts\python.exe"
+  if (-not (Test-Path $pythonExe)) {
+    $pythonExe = "python"
+  }
+
+  try {
+    & $pythonExe $mcpScript control_editor "{}" --arg action=stop --timeout 5 > $null 2> $null
+    if ($LASTEXITCODE -eq 0) {
+      _log "[stop_pipeline] Unreal PIE stopped via MCP."
+    }
+  } catch {}
+}
+
+function _cleanup_terminal_windows([bool]$force) {
+  $targets = @()
+  try {
+    $targets = Get-Process WindowsTerminal -ErrorAction SilentlyContinue |
+      Where-Object { $_.MainWindowTitle -and ($terminalTitles -contains $_.MainWindowTitle) } |
+      Sort-Object -Property Id -Unique
+  } catch {
+    $targets = @()
+  }
+
+  if (-not $targets -or $targets.Count -eq 0) {
+    return
+  }
+
+  foreach ($p in $targets) {
+    _log ("[stop_pipeline] closing WindowsTerminal PID={0} Title={1}" -f $p.Id, $p.MainWindowTitle)
+    try {
+      [void]$p.CloseMainWindow()
+    } catch {}
+  }
+
+  Start-Sleep -Milliseconds 500
+  foreach ($p in $targets) {
+    try {
+      $alive = Get-Process -Id $p.Id -ErrorAction Stop
+      if ($force -and $alive) {
+        _log ("[stop_pipeline] force-closing WindowsTerminal PID={0} Title={1}" -f $p.Id, $p.MainWindowTitle)
+        Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+      }
+    } catch {}
+  }
+}
+
 $targets = _collect_targets
 $pyTargets = @($targets.py)
 $cmdTargets = @($targets.cmd)
+$forceKill = (-not $Soft)
 
 _log ("[stop_pipeline] targets: python={0} cmd_tabs={1}" -f ($pyTargets.Count | ForEach-Object { $_ }), ($cmdTargets.Count | ForEach-Object { $_ }))
 
 if ((-not $pyTargets -or $pyTargets.Count -eq 0) -and (-not $cmdTargets -or $cmdTargets.Count -eq 0)) {
   _log "[stop_pipeline] No matching Windows processes found."
 } else {
-  $forceKill = (-not $Soft)
   $remaining = 0
   $remaining += _kill_targets $pyTargets $forceKill
   $remaining += _kill_targets $cmdTargets $forceKill
@@ -234,6 +336,26 @@ if ($wslHealthy) {
   }
 }
 
-_audit_pipeline_ports
+_cleanup_pipeline_ports $forceKill
+_cleanup_terminal_windows $forceKill
+_stop_unreal_pie
+_report_persistent_portproxy_rules
+
+try {
+  $removedTempTabs = 0
+  @("porce_tab_*.bat", "porce_wt_*.ps1") | ForEach-Object {
+    $filter = $_
+    Get-ChildItem -Path $env:TEMP -Filter $filter -File -ErrorAction SilentlyContinue
+  } | ForEach-Object {
+    try {
+      Remove-Item -LiteralPath $_.FullName -Force -ErrorAction Stop
+      $removedTempTabs += 1
+    } catch {}
+  }
+  if ($removedTempTabs -gt 0) {
+    _log ("[stop_pipeline] Removed stale temp tab launchers: {0}" -f $removedTempTabs)
+  }
+} catch {}
+
 _log "[stop_pipeline] Done."
 exit 0

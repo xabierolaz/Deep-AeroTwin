@@ -1,14 +1,15 @@
 #include "PelotonSplineActor.h"
 
-#include "Components/ChildActorComponent.h"
-#include "Components/InstancedStaticMeshComponent.h"
+#include "Components/ActorComponent.h"
 #include "Components/SceneComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Components/SplineComponent.h"
-#include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
-#include "Materials/MaterialInstanceDynamic.h"
+#include "Camera/PlayerCameraManager.h"
+#include "GameFramework/PlayerController.h"
 #include "Materials/MaterialInterface.h"
-#include "Engine/StaticMesh.h"
+#include "Engine/SkeletalMesh.h"
+#include "EngineUtils.h"
 #include "UObject/ConstructorHelpers.h"
 
 APelotonSplineActor::APelotonSplineActor()
@@ -21,47 +22,18 @@ APelotonSplineActor::APelotonSplineActor()
 	RouteSpline = CreateDefaultSubobject<USplineComponent>(TEXT("RouteSpline"));
 	RouteSpline->SetupAttachment(SceneRoot);
 	RouteSpline->bEditableWhenInherited = true;
-	RouteSpline->SetClosedLoop(true);
+	RouteSpline->SetClosedLoop(false);
 	RouteSpline->bDrawDebug = false;
 	RouteSpline->ClearSplinePoints(false);
-	RouteSpline->AddSplinePoint(FVector(-900.0f, 0.0f, 0.0f), ESplineCoordinateSpace::Local, false);
-	RouteSpline->AddSplinePoint(FVector(0.0f, 850.0f, 0.0f), ESplineCoordinateSpace::Local, false);
-	RouteSpline->AddSplinePoint(FVector(1200.0f, 0.0f, 0.0f), ESplineCoordinateSpace::Local, false);
-	RouteSpline->AddSplinePoint(FVector(0.0f, -850.0f, 0.0f), ESplineCoordinateSpace::Local, false);
+	RouteSpline->AddSplinePoint(FVector(-2400.0f, 0.0f, 0.0f), ESplineCoordinateSpace::Local, false);
+	RouteSpline->AddSplinePoint(FVector(2400.0f, 0.0f, 0.0f), ESplineCoordinateSpace::Local, false);
 	RouteSpline->UpdateSpline();
 
-	RiderMeshInstances = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("RiderMeshInstances"));
-	RiderMeshInstances->SetupAttachment(SceneRoot);
-	RiderMeshInstances->bEditableWhenInherited = true;
-	RiderMeshInstances->SetMobility(EComponentMobility::Movable);
-	RiderMeshInstances->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	RiderMeshInstances->SetCastShadow(false);
-	RiderMeshInstances->SetReceivesDecals(false);
-	RiderMeshInstances->SetComponentTickEnabled(false);
-
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> DefaultRiderMesh(TEXT("/Game/biker_mesh"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> DefaultRiderMesh(
+		TEXT("/Game/Peloton/TexturedBiker/biker_text_pedal_loop/SkeletalMeshes/biker_text_pedal_loop"));
 	if (DefaultRiderMesh.Succeeded())
 	{
-		RiderStaticMesh = DefaultRiderMesh.Object;
-		RiderMeshInstances->SetStaticMesh(RiderStaticMesh);
-	}
-
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface> DefaultRiderMaterial(TEXT("/Game/Peloton/M_PelotonRider"));
-	if (DefaultRiderMaterial.Succeeded())
-	{
-		RiderMaterial = DefaultRiderMaterial.Object;
-	}
-
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface> DefaultGhostMaterial(TEXT("/Game/Peloton/M_PelotonGhost"));
-	if (DefaultGhostMaterial.Succeeded())
-	{
-		GhostMaterial = DefaultGhostMaterial.Object;
-	}
-
-	static ConstructorHelpers::FClassFinder<AActor> DefaultRiderClass(TEXT("/Game/bp_biker"));
-	if (DefaultRiderClass.Succeeded())
-	{
-		RiderClass = DefaultRiderClass.Class;
+		RiderSkeletalMesh = DefaultRiderMesh.Object;
 	}
 }
 
@@ -69,8 +41,8 @@ void APelotonSplineActor::BeginPlay()
 {
 	Super::BeginPlay();
 	RuntimeLeadDistance = NormalizeSplineDistance(StartDistance);
+	DestroyLegacyComponents();
 	EnsureRiderComponents();
-	EnsureGhostComponents();
 	UpdateRiderTransforms(RuntimeLeadDistance);
 }
 
@@ -94,7 +66,11 @@ void APelotonSplineActor::Tick(float DeltaSeconds)
 	const bool bShouldAnimate = bIsGameWorld ? bAnimateInGame : bAnimateInEditor;
 	if (bShouldAnimate)
 	{
-		RuntimeLeadDistance = NormalizeSplineDistance(RuntimeLeadDistance + SpeedCmPerSecond * DeltaSeconds);
+		const bool bSynchronized = UpdateSynchronizedLeadDistance();
+		if (!bSynchronized)
+		{
+			RuntimeLeadDistance = NormalizeSplineDistance(RuntimeLeadDistance + SpeedCmPerSecond * DeltaSeconds);
+		}
 		UpdateRiderTransforms(RuntimeLeadDistance);
 	}
 	else if (!bIsGameWorld)
@@ -124,8 +100,8 @@ void APelotonSplineActor::RebuildPeloton()
 	}
 
 	RuntimeLeadDistance = NormalizeSplineDistance(EditorPreviewDistance);
+	DestroyLegacyComponents();
 	EnsureRiderComponents();
-	EnsureGhostComponents();
 	UpdateRiderTransforms(RuntimeLeadDistance);
 }
 
@@ -139,41 +115,36 @@ void APelotonSplineActor::SetPreviewDistance(float Distance)
 	}
 }
 
-void APelotonSplineActor::DestroyRiderComponents()
+void APelotonSplineActor::DestroyRiderSkeletalMeshComponents()
 {
-	for (UChildActorComponent* RiderComponent : RiderComponents)
-	{
-		if (RiderComponent)
-		{
-			RiderComponent->DestroyChildActor();
-			RiderComponent->DestroyComponent();
-		}
-	}
-	RiderComponents.Reset();
-}
-
-void APelotonSplineActor::DestroyRiderMeshComponents()
-{
-	for (UStaticMeshComponent* RiderMeshComponent : RiderMeshComponents)
+	for (USkeletalMeshComponent* RiderMeshComponent : RiderSkeletalMeshComponents)
 	{
 		if (RiderMeshComponent)
 		{
 			RiderMeshComponent->DestroyComponent();
 		}
 	}
-	RiderMeshComponents.Reset();
+	RiderSkeletalMeshComponents.Reset();
 }
 
-void APelotonSplineActor::DestroyGhostComponents(TArray<TObjectPtr<UStaticMeshComponent>>& GhostComponents)
+void APelotonSplineActor::DestroyLegacyComponents()
 {
-	for (UStaticMeshComponent* GhostComponent : GhostComponents)
+	TArray<UActorComponent*> Components;
+	GetComponents(Components);
+	for (UActorComponent* Component : Components)
 	{
-		if (GhostComponent)
+		if (!Component)
 		{
-			GhostComponent->DestroyComponent();
+			continue;
+		}
+
+		const FString ComponentName = Component->GetName();
+		if (ComponentName.Contains(TEXT("Ghost"), ESearchCase::IgnoreCase) ||
+			ComponentName.Contains(TEXT("RiderMesh"), ESearchCase::IgnoreCase))
+		{
+			Component->DestroyComponent();
 		}
 	}
-	GhostComponents.Reset();
 }
 
 void APelotonSplineActor::EnsureRiderComponents()
@@ -183,24 +154,20 @@ void APelotonSplineActor::EnsureRiderComponents()
 		return;
 	}
 
-	const int32 SafeRiderCount = FMath::Clamp(RiderCount, 1, 64);
-	if (RiderStaticMesh && RiderRenderMode == EPelotonRiderRenderMode::StaticMeshComponents)
-	{
-		DestroyRiderComponents();
-		if (RiderMeshInstances)
-		{
-			RiderMeshInstances->ClearInstances();
-		}
+	DestroyLegacyComponents();
 
-		if (RiderMeshComponents.Num() != SafeRiderCount)
+	const int32 SafeRiderCount = FMath::Clamp(RiderCount, 1, 64);
+	if (RiderSkeletalMesh)
+	{
+		if (RiderSkeletalMeshComponents.Num() != SafeRiderCount)
 		{
-			DestroyRiderMeshComponents();
+			DestroyRiderSkeletalMeshComponents();
 			for (int32 RiderIndex = 0; RiderIndex < SafeRiderCount; ++RiderIndex)
 			{
-				const FName ComponentName(*FString::Printf(TEXT("PelotonRiderMesh_%02d"), RiderIndex + 1));
-				UStaticMeshComponent* RiderMeshComponent = NewObject<UStaticMeshComponent>(this, ComponentName);
+				const FName ComponentName(*FString::Printf(TEXT("PelotonRiderSkeletalMesh_%02d"), RiderIndex + 1));
+				USkeletalMeshComponent* RiderMeshComponent = NewObject<USkeletalMeshComponent>(this, ComponentName);
 				RiderMeshComponent->CreationMethod = EComponentCreationMethod::UserConstructionScript;
-				RiderMeshComponent->SetStaticMesh(RiderStaticMesh);
+				RiderMeshComponent->SetSkeletalMesh(RiderSkeletalMesh);
 				ApplyRiderMaterial(RiderMeshComponent);
 				RiderMeshComponent->SetMobility(EComponentMobility::Movable);
 				RiderMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -210,151 +177,36 @@ void APelotonSplineActor::EnsureRiderComponents()
 				RiderMeshComponent->SetupAttachment(SceneRoot);
 				RiderMeshComponent->RegisterComponent();
 				AddInstanceComponent(RiderMeshComponent);
-				RiderMeshComponents.Add(RiderMeshComponent);
+				RiderSkeletalMeshComponents.Add(RiderMeshComponent);
 			}
 		}
 
-		for (UStaticMeshComponent* RiderMeshComponent : RiderMeshComponents)
+		for (int32 RiderIndex = 0; RiderIndex < RiderSkeletalMeshComponents.Num(); ++RiderIndex)
 		{
-			if (RiderMeshComponent && RiderMeshComponent->GetStaticMesh() != RiderStaticMesh)
+			USkeletalMeshComponent* RiderMeshComponent = RiderSkeletalMeshComponents[RiderIndex];
+			if (!RiderMeshComponent)
 			{
-				RiderMeshComponent->SetStaticMesh(RiderStaticMesh);
+				continue;
+			}
+			if (RiderMeshComponent->GetSkeletalMeshAsset() != RiderSkeletalMesh)
+			{
+				RiderMeshComponent->SetSkeletalMesh(RiderSkeletalMesh);
 			}
 			RiderMeshComponent->SetCastShadow(bRidersCastShadows);
 			RiderMeshComponent->SetReceivesDecals(false);
 			RiderMeshComponent->SetComponentTickEnabled(false);
 			ApplyRiderMaterial(RiderMeshComponent);
+			UpdatePedalMorph(RiderMeshComponent, RiderIndex);
 		}
 		return;
 	}
 
-	DestroyRiderMeshComponents();
-	if (RiderMeshInstances && RiderStaticMesh && RiderRenderMode == EPelotonRiderRenderMode::InstancedStaticMesh)
-	{
-		DestroyRiderComponents();
-		if (RiderMeshInstances->GetStaticMesh() != RiderStaticMesh)
-		{
-			RiderMeshInstances->SetStaticMesh(RiderStaticMesh);
-			RiderMeshInstances->ClearInstances();
-		}
-		RiderMeshInstances->SetCastShadow(bRidersCastShadows);
-		RiderMeshInstances->SetReceivesDecals(false);
-		RiderMeshInstances->SetComponentTickEnabled(false);
-		ApplyRiderMaterial(RiderMeshInstances);
-
-		while (RiderMeshInstances->GetInstanceCount() < SafeRiderCount)
-		{
-			RiderMeshInstances->AddInstance(FTransform::Identity);
-		}
-		while (RiderMeshInstances->GetInstanceCount() > SafeRiderCount)
-		{
-			RiderMeshInstances->RemoveInstance(RiderMeshInstances->GetInstanceCount() - 1);
-		}
-		return;
-	}
-
-	if (RiderMeshInstances)
-	{
-		RiderMeshInstances->ClearInstances();
-	}
-
-	if (!RiderClass)
-	{
-		DestroyRiderComponents();
-		return;
-	}
-
-	if (RiderComponents.Num() != SafeRiderCount)
-	{
-		DestroyRiderComponents();
-		for (int32 RiderIndex = 0; RiderIndex < SafeRiderCount; ++RiderIndex)
-		{
-			const FName ComponentName(*FString::Printf(TEXT("PelotonRider_%02d"), RiderIndex + 1));
-			UChildActorComponent* RiderComponent = NewObject<UChildActorComponent>(this, ComponentName);
-			RiderComponent->CreationMethod = EComponentCreationMethod::UserConstructionScript;
-			RiderComponent->SetChildActorClass(RiderClass);
-			RiderComponent->SetupAttachment(SceneRoot);
-			RiderComponent->RegisterComponent();
-			AddInstanceComponent(RiderComponent);
-			RiderComponents.Add(RiderComponent);
-		}
-	}
-
-	for (UChildActorComponent* RiderComponent : RiderComponents)
-	{
-		if (RiderComponent && RiderComponent->GetChildActorClass() != RiderClass)
-		{
-			RiderComponent->SetChildActorClass(RiderClass);
-		}
-	}
-}
-
-void APelotonSplineActor::EnsureGhostComponents()
-{
-	if (!CanBuildRiderComponents() || !RiderStaticMesh)
-	{
-		DestroyGhostComponents(ForwardGhostComponents);
-		DestroyGhostComponents(BackwardGhostComponents);
-		return;
-	}
-
-	const int32 ForwardGhostCount = bShowForwardLeaderGhosts ? GetGhostCount(ForwardGhostDistance) : 0;
-	const int32 BackwardGhostCount = bShowBackwardLastGhosts ? GetGhostCount(BackwardGhostDistance) : 0;
-	auto EnsureGhostArray = [this](TArray<TObjectPtr<UStaticMeshComponent>>& GhostComponents, int32 DesiredCount, const TCHAR* Prefix)
-	{
-		if (GhostComponents.Num() != DesiredCount)
-		{
-			DestroyGhostComponents(GhostComponents);
-			for (int32 GhostIndex = 0; GhostIndex < DesiredCount; ++GhostIndex)
-			{
-				const FName ComponentName(*FString::Printf(TEXT("%s_%02d"), Prefix, GhostIndex + 1));
-				UStaticMeshComponent* GhostComponent = NewObject<UStaticMeshComponent>(this, ComponentName);
-				GhostComponent->CreationMethod = EComponentCreationMethod::UserConstructionScript;
-				GhostComponent->SetStaticMesh(RiderStaticMesh);
-				GhostComponent->SetMobility(EComponentMobility::Movable);
-				GhostComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				GhostComponent->SetCastShadow(false);
-				GhostComponent->SetReceivesDecals(false);
-				GhostComponent->SetComponentTickEnabled(false);
-				GhostComponent->SetupAttachment(SceneRoot);
-				GhostComponent->RegisterComponent();
-				AddInstanceComponent(GhostComponent);
-				ApplyGhostMaterial(GhostComponent);
-				GhostComponents.Add(GhostComponent);
-			}
-		}
-
-		for (UStaticMeshComponent* GhostComponent : GhostComponents)
-		{
-			if (!GhostComponent)
-			{
-				continue;
-			}
-			if (GhostComponent->GetStaticMesh() != RiderStaticMesh)
-			{
-				GhostComponent->SetStaticMesh(RiderStaticMesh);
-			}
-			GhostComponent->SetCastShadow(false);
-			GhostComponent->SetReceivesDecals(false);
-			GhostComponent->SetComponentTickEnabled(false);
-			ApplyGhostMaterial(GhostComponent);
-		}
-	};
-
-	EnsureGhostArray(ForwardGhostComponents, ForwardGhostCount, TEXT("PelotonForwardGhost"));
-	EnsureGhostArray(BackwardGhostComponents, BackwardGhostCount, TEXT("PelotonBackwardGhost"));
-	RefreshGhostMaterials();
+	DestroyRiderSkeletalMeshComponents();
 }
 
 void APelotonSplineActor::UpdateRiderTransforms(float LeadDistance)
 {
-	const bool bUseMeshComponents = !RiderMeshComponents.IsEmpty();
-	const bool bUseMeshInstances =
-		RiderMeshInstances &&
-		RiderStaticMesh &&
-		RiderRenderMode == EPelotonRiderRenderMode::InstancedStaticMesh &&
-		RiderMeshInstances->GetInstanceCount() > 0;
-	if (!RouteSpline || (!bUseMeshComponents && !bUseMeshInstances && RiderComponents.IsEmpty()))
+	if (!RouteSpline || RiderSkeletalMeshComponents.IsEmpty())
 	{
 		return;
 	}
@@ -365,9 +217,7 @@ void APelotonSplineActor::UpdateRiderTransforms(float LeadDistance)
 		return;
 	}
 
-	const int32 ActiveRiderCount = bUseMeshComponents
-		? RiderMeshComponents.Num()
-		: (bUseMeshInstances ? RiderMeshInstances->GetInstanceCount() : RiderComponents.Num());
+	const int32 ActiveRiderCount = RiderSkeletalMeshComponents.Num();
 	for (int32 RiderIndex = 0; RiderIndex < ActiveRiderCount; ++RiderIndex)
 	{
 		const FVector2D FormationOffset = GetFormationOffset(RiderIndex);
@@ -388,194 +238,199 @@ void APelotonSplineActor::UpdateRiderTransforms(float LeadDistance)
 		FRotator RiderRotation = bFaceAlongSpline ? SplineRotation : GetActorRotation();
 		RiderRotation.Yaw += RiderYawOffset;
 
-		if (bUseMeshComponents)
+		USkeletalMeshComponent* RiderMeshComponent = RiderSkeletalMeshComponents[RiderIndex];
+		if (RiderMeshComponent)
 		{
-			UStaticMeshComponent* RiderMeshComponent = RiderMeshComponents[RiderIndex];
-			if (RiderMeshComponent)
+			RiderMeshComponent->SetWorldLocationAndRotation(
+				RiderLocation,
+				RiderRotation,
+				false,
+				nullptr,
+				ETeleportType::None);
+			UpdatePedalMorph(RiderMeshComponent, RiderIndex);
+		}
+	}
+}
+
+void APelotonSplineActor::ApplyRiderMaterial(USkeletalMeshComponent* RiderMeshComponent) const
+{
+	if (!RiderMeshComponent)
+	{
+		return;
+	}
+
+	const int32 MaterialSlotCount = RiderMeshComponent->GetNumMaterials();
+	for (int32 MaterialIndex = 0; MaterialIndex < MaterialSlotCount; ++MaterialIndex)
+	{
+		if (RiderMaterial)
+		{
+			RiderMeshComponent->SetMaterial(MaterialIndex, RiderMaterial.Get());
+		}
+	}
+}
+
+void APelotonSplineActor::UpdatePedalMorph(USkeletalMeshComponent* RiderMeshComponent, int32 RiderIndex) const
+{
+	if (!RiderMeshComponent || !bAnimatePedalMorph || PedalMorphTargetName.IsNone())
+	{
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	const float TimeSeconds = World ? World->GetTimeSeconds() : 0.0f;
+	const float SafeCycleSeconds = FMath::Max(0.05f, PedalCycleSeconds);
+	const float Phase = FMath::Frac((TimeSeconds / SafeCycleSeconds) + static_cast<float>(RiderIndex) * PedalPhaseOffsetPerRider);
+	const float SmoothLoop = 0.5f - 0.5f * FMath::Cos(Phase * 2.0f * PI);
+	const float MinValue = FMath::Clamp(PedalMorphMin, 0.0f, 1.0f);
+	const float MaxValue = FMath::Clamp(PedalMorphMax, 0.0f, 1.0f);
+	const float MorphValue = FMath::Lerp(MinValue, MaxValue, SmoothLoop);
+	RiderMeshComponent->SetMorphTarget(PedalMorphTargetName, MorphValue, false);
+}
+
+AActor* APelotonSplineActor::ResolveSyncTargetActor()
+{
+	if (!bSyncToTargetActor)
+	{
+		return nullptr;
+	}
+
+	if (CachedSyncTargetActor.IsValid())
+	{
+		return CachedSyncTargetActor.Get();
+	}
+
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return nullptr;
+	}
+
+	const FString TargetText = SyncTargetActorLabel.TrimStartAndEnd();
+	if (TargetText.IsEmpty())
+	{
+		return nullptr;
+	}
+
+	for (TActorIterator<AActor> It(World); It; ++It)
+	{
+		AActor* Candidate = *It;
+		if (!Candidate)
+		{
+			continue;
+		}
+
+		const FString CandidateName = Candidate->GetName();
+		if (CandidateName.Equals(TargetText, ESearchCase::IgnoreCase) ||
+			CandidateName.Contains(TargetText, ESearchCase::IgnoreCase))
+		{
+			CachedSyncTargetActor = Candidate;
+			return Candidate;
+		}
+
+#if WITH_EDITOR
+		const FString CandidateLabel = Candidate->GetActorLabel();
+		if (CandidateLabel.Equals(TargetText, ESearchCase::IgnoreCase) ||
+			CandidateLabel.Contains(TargetText, ESearchCase::IgnoreCase))
+		{
+			CachedSyncTargetActor = Candidate;
+			return Candidate;
+		}
+#endif
+	}
+
+	return nullptr;
+}
+
+bool APelotonSplineActor::UpdateSynchronizedLeadDistance()
+{
+	if (!bSyncToTargetActor || !RouteSpline)
+	{
+		return false;
+	}
+
+	UWorld* World = GetWorld();
+	FVector TargetLocation = FVector::ZeroVector;
+	FString TargetDebugName;
+	AActor* TargetActor = nullptr;
+	if (bSyncToPlayerCamera && World && World->IsGameWorld())
+	{
+		if (APlayerController* PlayerController = World->GetFirstPlayerController())
+		{
+			if (PlayerController->PlayerCameraManager)
 			{
-				RiderMeshComponent->SetWorldLocationAndRotation(
-					RiderLocation,
-					RiderRotation,
-					false,
-					nullptr,
-					ETeleportType::None);
+				TargetLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
+				TargetDebugName = TEXT("PlayerCameraManager");
 			}
-			continue;
 		}
+	}
 
-		if (bUseMeshInstances)
+	if (TargetDebugName.IsEmpty())
+	{
+		TargetActor = ResolveSyncTargetActor();
+		if (!TargetActor)
 		{
-			RiderMeshInstances->UpdateInstanceTransform(
-				RiderIndex,
-				FTransform(RiderRotation, RiderLocation, FVector::OneVector),
-				true,
-				RiderIndex == ActiveRiderCount - 1,
-				false);
-			continue;
+			return false;
 		}
+		TargetLocation = TargetActor->GetActorLocation();
+#if WITH_EDITOR
+		TargetDebugName = TargetActor->GetActorLabel();
+#else
+		TargetDebugName = TargetActor->GetName();
+#endif
+	}
 
-		UChildActorComponent* RiderComponent = RiderComponents[RiderIndex];
-		if (RiderComponent)
+	FVector Direction = SyncApproachDirection;
+	Direction.Z = 0.0f;
+	if (!Direction.Normalize())
+	{
+		const float ReferenceDistance = SyncCrossingDistance > UE_KINDA_SMALL_NUMBER
+			? SyncCrossingDistance
+			: EditorPreviewDistance;
+		Direction = RouteSpline->GetDirectionAtDistanceAlongSpline(
+			NormalizeSplineDistance(ReferenceDistance),
+			ESplineCoordinateSpace::World);
+		Direction.Z = 0.0f;
+		if (!Direction.Normalize())
 		{
-			RiderComponent->SetWorldLocationAndRotation(RiderLocation, RiderRotation);
+			Direction = FVector(1.0f, 0.0f, 0.0f);
 		}
 	}
 
-	UpdateGhostTransforms(LeadDistance, ActiveRiderCount);
-}
-
-void APelotonSplineActor::UpdateGhostTransforms(float LeadDistance, int32 ActiveRiderCount)
-{
-	if (!RouteSpline || !RiderStaticMesh || ActiveRiderCount <= 0)
-	{
-		return;
-	}
-
-	for (int32 GhostIndex = 0; GhostIndex < ForwardGhostComponents.Num(); ++GhostIndex)
-	{
-		const float FadeRatio = ForwardGhostComponents.Num() <= 1
-			? 0.0f
-			: static_cast<float>(GhostIndex) / static_cast<float>(ForwardGhostComponents.Num() - 1);
-		const float Opacity = GetGhostOpacity(FadeRatio);
-		const float GhostDistance = LeadDistance + ForwardGhostStartOffset + static_cast<float>(GhostIndex) * GhostSpacing;
-		UpdateGhostComponent(ForwardGhostComponents[GhostIndex], GhostDistance, 0.0f, Opacity);
-	}
-
-	const FVector2D LastFormationOffset = GetFormationOffset(ActiveRiderCount - 1);
-	const float LastRiderDistance = LeadDistance - LastFormationOffset.X;
-	for (int32 GhostIndex = 0; GhostIndex < BackwardGhostComponents.Num(); ++GhostIndex)
-	{
-		const float FadeRatio = BackwardGhostComponents.Num() <= 1
-			? 0.0f
-			: static_cast<float>(GhostIndex) / static_cast<float>(BackwardGhostComponents.Num() - 1);
-		const float Opacity = GetGhostOpacity(FadeRatio);
-		const float GhostDistance = LastRiderDistance - BackwardGhostStartOffset - static_cast<float>(GhostIndex) * GhostSpacing;
-		UpdateGhostComponent(BackwardGhostComponents[GhostIndex], GhostDistance, LastFormationOffset.Y, Opacity);
-	}
-}
-
-void APelotonSplineActor::UpdateGhostComponent(
-	UStaticMeshComponent* GhostComponent,
-	float Distance,
-	float LateralOffset,
-	float Opacity)
-{
-	if (!GhostComponent || !RouteSpline)
-	{
-		return;
-	}
-
-	const float GhostDistance = NormalizeSplineDistance(Distance);
-	const FVector SplineLocation = RouteSpline->GetLocationAtDistanceAlongSpline(
-		GhostDistance,
+	const float CrossingDistance = NormalizeSplineDistance(
+		SyncCrossingDistance > UE_KINDA_SMALL_NUMBER ? SyncCrossingDistance : EditorPreviewDistance);
+	const FVector CrossingLocation = RouteSpline->GetLocationAtDistanceAlongSpline(
+		CrossingDistance,
 		ESplineCoordinateSpace::World);
-	const FRotator SplineRotation = RouteSpline->GetRotationAtDistanceAlongSpline(
-		GhostDistance,
-		ESplineCoordinateSpace::World);
+	const float SignedDistanceToCrossing = FVector::DotProduct(CrossingLocation - TargetLocation, Direction);
+	const float TargetSpeed = FMath::Max(1.0f, SyncTargetSpeedCmPerSecond);
+	const float SecondsUntilTargetCrossing = SignedDistanceToCrossing / TargetSpeed;
 
-	const FRotationMatrix RotationMatrix(SplineRotation);
-	const FVector RightVector = RotationMatrix.GetScaledAxis(EAxis::Y);
-	const FVector UpVector = RotationMatrix.GetScaledAxis(EAxis::Z);
-	const FVector GhostLocation = SplineLocation + RightVector * LateralOffset + UpVector * RiderZOffset;
-	FRotator GhostRotation = bFaceAlongSpline ? SplineRotation : GetActorRotation();
-	GhostRotation.Yaw += RiderYawOffset;
+	const float TimeSeconds = World ? World->GetTimeSeconds() : 0.0f;
+	const float AutonomousLoopDistance = SpeedCmPerSecond * TimeSeconds;
+	RuntimeLeadDistance = NormalizeSplineDistance(
+		CrossingDistance -
+		SpeedCmPerSecond * SecondsUntilTargetCrossing +
+		SyncPhaseOffset +
+		AutonomousLoopDistance);
 
-	GhostComponent->SetWorldLocationAndRotation(
-		GhostLocation,
-		GhostRotation,
-		false,
-		nullptr,
-		ETeleportType::None);
-	GhostComponent->SetVisibility(Opacity > UE_KINDA_SMALL_NUMBER, true);
-}
-
-void APelotonSplineActor::ApplyRiderMaterial(UStaticMeshComponent* RiderMeshComponent) const
-{
-	if (!RiderMeshComponent || !RiderMaterial)
+	if (TimeSeconds - LastSyncDebugLogTimeSeconds >= 30.0f)
 	{
-		return;
+		LastSyncDebugLogTimeSeconds = TimeSeconds;
+#if WITH_EDITOR
+		const FString ActorText = GetActorLabel();
+#else
+		const FString ActorText = GetName();
+#endif
+		UE_LOG(LogTemp, Verbose, TEXT("[PelotonSync] %s target=%s signed_cm=%.1f crossing_cm=%.1f lead_cm=%.1f loop_cm=%.1f target_speed_cm_s=%.1f"),
+			*ActorText,
+			*TargetDebugName,
+			SignedDistanceToCrossing,
+			CrossingDistance,
+			RuntimeLeadDistance,
+			AutonomousLoopDistance,
+			TargetSpeed);
 	}
-
-	const int32 MaterialSlotCount = GetRiderMaterialSlotCount();
-	for (int32 MaterialIndex = 0; MaterialIndex < MaterialSlotCount; ++MaterialIndex)
-	{
-		RiderMeshComponent->SetMaterial(MaterialIndex, RiderMaterial);
-	}
-}
-
-void APelotonSplineActor::ApplyGhostMaterial(UStaticMeshComponent* GhostComponent)
-{
-	if (!GhostComponent || !GhostMaterial)
-	{
-		return;
-	}
-
-	const int32 MaterialSlotCount = GetRiderMaterialSlotCount();
-	for (int32 MaterialIndex = 0; MaterialIndex < MaterialSlotCount; ++MaterialIndex)
-	{
-		if (!Cast<UMaterialInstanceDynamic>(GhostComponent->GetMaterial(MaterialIndex)))
-		{
-			GhostComponent->CreateAndSetMaterialInstanceDynamicFromMaterial(MaterialIndex, GhostMaterial);
-		}
-	}
-}
-
-void APelotonSplineActor::RefreshGhostMaterials()
-{
-	auto RefreshGhostArray = [this](
-		TArray<TObjectPtr<UStaticMeshComponent>>& GhostComponents,
-		const FLinearColor& Color)
-	{
-		for (int32 GhostIndex = 0; GhostIndex < GhostComponents.Num(); ++GhostIndex)
-		{
-			const float FadeRatio = GhostComponents.Num() <= 1
-				? 0.0f
-				: static_cast<float>(GhostIndex) / static_cast<float>(GhostComponents.Num() - 1);
-			const float Opacity = GetGhostOpacity(FadeRatio);
-			const FLinearColor GhostColor = bUseGhostHeatmap ? GetGhostHeatmapColor(FadeRatio) : Color;
-			UpdateGhostMaterialParameters(GhostComponents[GhostIndex], GhostColor, Opacity);
-		}
-	};
-
-	RefreshGhostArray(ForwardGhostComponents, ForwardGhostColor);
-	RefreshGhostArray(BackwardGhostComponents, BackwardGhostColor);
-}
-
-void APelotonSplineActor::UpdateGhostMaterialParameters(
-	UStaticMeshComponent* GhostComponent,
-	const FLinearColor& Color,
-	float Opacity)
-{
-	if (!GhostComponent)
-	{
-		return;
-	}
-
-	ApplyGhostMaterial(GhostComponent);
-
-	const float ClampedOpacity = FMath::Clamp(Opacity, 0.0f, 1.0f);
-	const int32 MaterialSlotCount = GetRiderMaterialSlotCount();
-	for (int32 MaterialIndex = 0; MaterialIndex < MaterialSlotCount; ++MaterialIndex)
-	{
-		UMaterialInstanceDynamic* DynamicMaterial = Cast<UMaterialInstanceDynamic>(GhostComponent->GetMaterial(MaterialIndex));
-		if (!DynamicMaterial)
-		{
-			continue;
-		}
-
-		DynamicMaterial->SetVectorParameterValue(TEXT("GhostColor"), Color);
-		DynamicMaterial->SetScalarParameterValue(TEXT("GhostOpacity"), ClampedOpacity);
-	}
-}
-
-int32 APelotonSplineActor::GetRiderMaterialSlotCount() const
-{
-	if (!RiderStaticMesh)
-	{
-		return 1;
-	}
-
-	return FMath::Max(1, RiderStaticMesh->GetStaticMaterials().Num());
+	return true;
 }
 
 FVector2D APelotonSplineActor::GetFormationOffset(int32 RiderIndex) const
@@ -601,36 +456,6 @@ FVector2D APelotonSplineActor::GetFormationOffset(int32 RiderIndex) const
 	}
 
 	return FVector2D(DistanceBehindLeader, LateralOffset);
-}
-
-float APelotonSplineActor::GetGhostOpacity(float FadeRatio) const
-{
-	const float Alpha = FMath::Clamp(FadeRatio, 0.0f, 1.0f);
-	const float MaxOpacity = FMath::Clamp(GhostMaxOpacity, 0.0f, 1.0f);
-	const float MinOpacity = FMath::Clamp(GhostMinOpacity, 0.0f, MaxOpacity);
-	return FMath::Lerp(MaxOpacity, MinOpacity, Alpha);
-}
-
-FLinearColor APelotonSplineActor::GetGhostHeatmapColor(float FadeRatio) const
-{
-	const float Alpha = FMath::Clamp(FadeRatio, 0.0f, 1.0f);
-	if (Alpha <= 0.5f)
-	{
-		return FMath::Lerp(GhostHotColor, GhostMidColor, Alpha * 2.0f);
-	}
-
-	return FMath::Lerp(GhostMidColor, GhostColdColor, (Alpha - 0.5f) * 2.0f);
-}
-
-int32 APelotonSplineActor::GetGhostCount(float Distance) const
-{
-	if (Distance <= UE_KINDA_SMALL_NUMBER || GhostSpacing <= UE_KINDA_SMALL_NUMBER)
-	{
-		return 0;
-	}
-
-	const int32 SafeMaxGhostsPerSide = FMath::Clamp(MaxGhostsPerSide, 0, 32);
-	return FMath::Clamp(FMath::CeilToInt(Distance / GhostSpacing), 0, SafeMaxGhostsPerSide);
 }
 
 float APelotonSplineActor::NormalizeSplineDistance(float Distance) const

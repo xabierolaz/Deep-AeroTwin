@@ -275,9 +275,18 @@ def main() -> None:
         if len(mx) > 1:
             min_x, max_x = min(mx), max(mx)
             min_y, max_y = min(my), max(my)
-            ax.set_xlim(min_x - VIZ_PAD_M, max_x + VIZ_PAD_M)
-            ax.set_ylim(min_y - VIZ_PAD_M, max_y + VIZ_PAD_M)
-            ax.set_aspect("equal", adjustable="datalim")
+            cx = (min_x + max_x) * 0.5
+            cy = (min_y + max_y) * 0.5
+            half_span = max(max_x - min_x, max_y - min_y) * 0.5 + VIZ_PAD_M
+            if not math.isfinite(half_span) or half_span <= 0:
+                half_span = max(1.0, float(VIZ_PAD_M))
+            ax.set_xlim(cx - half_span, cx + half_span)
+            ax.set_ylim(cy - half_span, cy + half_span)
+            ax.set_aspect("auto")
+            try:
+                ax.set_box_aspect(1)
+            except Exception:
+                pass
 
         ax.grid(True, linestyle=":", alpha=0.6)
         fig.savefig(os.path.join(OUTPUT_DIR, f"frame_{frame:04d}.png"), dpi=VIZ_DPI)

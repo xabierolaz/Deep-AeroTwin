@@ -102,9 +102,14 @@ $brainPrefixDefault = if ($isRealTwin) { "BRAIN-TWIN" } else { "BRAIN" }
 $brainPrefix = _read_text_env "PORCE_TEE_PREFIX_BRAIN" $brainPrefixDefault
 $eyesPrefix = _read_text_env "PORCE_TEE_PREFIX_EYES" "EYES"
 $forceCmdWindows = _read_bool_env "PORCE_FORCE_CMD_WINDOWS" $false
+$allowCmdFallback = _read_bool_env "PORCE_ALLOW_CMD_WINDOWS_FALLBACK" $false
+$keepTerminalOpen = _read_bool_env "PORCE_TERMINAL_KEEP_OPEN" $false
+$cmdExitSwitch = if ($keepTerminalOpen) { "/k" } else { "/c" }
+$windowTarget = _read_text_env "PORCE_WT_WINDOW" "DeepAeroTwinPORCE"
+$dryRun = _read_bool_env "PORCE_LAUNCH_TABS_DRY_RUN" $false
 
 function _cdPipe([string]$cmd) {
-  return "cd /d $pipelineDir && $pyenv$cmd"
+  return "cd /d `"$pipelineDir`" && $pyenv$cmd"
 }
 
 $masterCmd = _cdPipe "python -u log_server.py"
@@ -125,9 +130,9 @@ if ($isRealTwin) {
 } else {
   $brainTitle = "BRAIN (SIM)"
   $eyesTitle = "EYES (SIM)"
-  $sitlCmd = _cdPipe ("wsl --cd `"$pipelineDir`" --exec bash run_sitl.sh 2>&1 | python tee.py --prefix `"SITL`" --cap-lines $teeCapLines")
+  $sitlCmd = _cdPipe ("python -u sitl_runner.py --prefix `"SITL`" --cap-lines $teeCapLines")
   $brainCmd = "set PORCE_SYSTEM_MODE=SIMULATION && " + (_cdPipe "python -u flight_controller.py 2>&1 | python tee.py --prefix `"$brainPrefix`" --cap-lines $teeCapLines")
-  $eyesCmd = "set PORCE_SYSTEM_MODE=SIMULATION && set PORCE_VISION_DEBUG_WINDOW=1 && set PORCE_VISION_DEBUG_DOCK=1 && " + (_cdPipe "python -u vision_system.py 2>&1 | python tee.py --prefix `"$eyesPrefix`" --cap-lines $teeCapLines")
+  $eyesCmd = "set PORCE_SYSTEM_MODE=SIMULATION && " + (_cdPipe "python -u vision_system.py 2>&1 | python tee.py --prefix `"$eyesPrefix`" --cap-lines $teeCapLines")
   $vizCmd = _cdPipe ("python -u viz_recorder.py 2>&1 | python tee.py --prefix `"VIZ`" --cap-lines $teeCapLines")
   $tabSpecs += @(
     @{
@@ -149,6 +154,14 @@ if ($isRealTwin) {
   )
 }
 
+if ($dryRun) {
+  Write-Host ("[launch_tabs] DRY-RUN workflow={0} window={1} keep_open={2} tabs={3}" -f $workflowKey, $windowTarget, $keepTerminalOpen, $tabSpecs.Count)
+  foreach ($tab in $tabSpecs) {
+    Write-Host ("[launch_tabs] DRY-RUN tab: {0}" -f $tab.Title)
+  }
+  exit 0
+}
+
 function _start_fallback_tab([string]$title, [string]$cmd) {
   $safeTitle = $title -replace '"', ''
   try {
@@ -159,11 +172,11 @@ function _start_fallback_tab([string]$title, [string]$cmd) {
     @(
       "@echo off",
       "title `"$safeTitle`"",
-      "cd /d $pipelineDir",
+      "cd /d `"$pipelineDir`"",
       $cmd
     ) | Set-Content -Path $tmpFile -Encoding UTF8
 
-    Start-Process -FilePath "cmd.exe" -ArgumentList @('/k', "`"$tmpFile`"") -WindowStyle Normal | Out-Null
+    Start-Process -FilePath "cmd.exe" -ArgumentList @($cmdExitSwitch, "`"$tmpFile`"") -WindowStyle Normal | Out-Null
     return $true
   } catch {
     Write-Host "[launch_tabs] WARN: fallback tab creation failed for '$safeTitle': $($_.Exception.Message)" -ForegroundColor Yellow
@@ -176,14 +189,19 @@ function _start_with_tabs() {
     return $false
   }
   try {
-    $windowTarget = "new"
+    $wtCliArgs = @("-w", $windowTarget)
+    $isFirst = $true
     foreach ($tab in $tabSpecs) {
-      _start_wt_tab $windowTarget $tab.Title $tab.Cmd
-      if ($windowTarget -eq "new") {
-        Start-Sleep -Milliseconds 250
-        $windowTarget = "last"
+      if (-not $isFirst) {
+        $wtCliArgs += ";"
       }
+      $wtCliArgs += @(
+        "new-tab", "--title", $tab.Title,
+        "cmd", $cmdExitSwitch, $tab.Cmd
+      )
+      $isFirst = $false
     }
+    _invoke_wt $wtCliArgs
     return $true
   } catch {
     Write-Host "[launch_tabs] WARN: WT launch failed: $($_.Exception.Message)" -ForegroundColor Yellow
@@ -200,20 +218,35 @@ function _start_fallback_all() {
 }
 
 function _invoke_wt([string[]]$wtCliArgs) {
-  & $wt @wtCliArgs | Out-Null
-  $exitCode = $LASTEXITCODE
-  if ($exitCode -ne 0) {
-    throw "wt.exe exited with code $exitCode"
+  $tmpName = "porce_wt_" + [System.Guid]::NewGuid().ToString("N") + ".ps1"
+  $tmpFile = Join-Path $env:TEMP $tmpName
+  function _ps_quote([string]$text) {
+    return "'" + ($text -replace "'", "''") + "'"
   }
-}
 
-function _start_wt_tab([string]$windowTarget, [string]$title, [string]$cmd) {
-  $wtCliArgs = @(
-    "-w", $windowTarget,
-    "new-tab", "--title", $title,
-    "cmd", "/k", $cmd
-  )
-  _invoke_wt $wtCliArgs
+  $lines = @()
+  $lines += "`$wt = $(_ps_quote $wt)"
+  $lines += "`$wtArgs = @("
+  foreach ($arg in $wtCliArgs) {
+    $lines += "  $(_ps_quote $arg)"
+  }
+  $lines += ")"
+  $lines += "& `$wt @wtArgs"
+  $lines += "exit `$LASTEXITCODE"
+  $lines | Set-Content -Path $tmpFile -Encoding UTF8
+
+  try {
+    $proc = Start-Process -FilePath "powershell.exe" `
+      -ArgumentList @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $tmpFile) `
+      -WindowStyle Hidden `
+      -Wait `
+      -PassThru
+    if ($proc -and $proc.ExitCode -ne 0) {
+      throw "wt launcher exited with code $($proc.ExitCode)"
+    }
+  } finally {
+    Remove-Item -LiteralPath $tmpFile -Force -ErrorAction SilentlyContinue
+  }
 }
 
 if ($forceCmdWindows) {
@@ -222,8 +255,12 @@ if ($forceCmdWindows) {
     _fail "fallback tab creation failed"
   }
 } elseif (-not (_start_with_tabs)) {
-  Write-Host "[launch_tabs] WARN: Falling back to cmd tabs." -ForegroundColor Yellow
-  if (-not (_start_fallback_all)) {
-    _fail "fallback tab creation failed"
+  if ($allowCmdFallback) {
+    Write-Host "[launch_tabs] WARN: Falling back to separate cmd windows because PORCE_ALLOW_CMD_WINDOWS_FALLBACK=1." -ForegroundColor Yellow
+    if (-not (_start_fallback_all)) {
+      _fail "fallback tab creation failed"
+    }
+  } else {
+    _fail "Windows Terminal tabs are required. Refusing to open separate cmd windows; set PORCE_ALLOW_CMD_WINDOWS_FALLBACK=1 only for emergency fallback."
   }
 }

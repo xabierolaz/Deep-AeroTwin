@@ -332,10 +332,12 @@ Respuestas ya cerradas:
 Preguntas que quedan:
 
 1. Cuando el paper habla de preservar la separacion, quieres que la grafica marque visualmente el `hard safety radius R_s = 12 m`, la `Base reaction distance = 45 m`, o ambas cosas?
-2. Para la Figura 2, confirmamos peloton en vez de ciclista individual?
+2. Para la Figura 2, confirmamos peloton en vez de ciclista individual? Confirmado: peloton de ciclistas controlado por script.
 
 Decision cerrada posteriormente:
 
 - Los seis paneles de la Figura 1 deben ser cenitales/top-down.
 - El grid real `81 x 81` debe aparecer solo cuando el planner local A* esta activo (`1D`/`1E`), no como cuadricula absoluta permanente en los seis paneles.
 - La deteccion debe ser unica y de torre.
+- La Figura 2 debe usar solo ciclistas actuales del actor `APelotonSplineActor`: sin vacas, sin torres, sin ciclistas sueltos heredados y sin ghosts de malla de ciclista en Unreal. La prediccion/historia puede mostrarse en graficas o como overlay editorial no detectable por YOLO, pero no como copias transparentes del rider mesh.
+- Las rutas de peloton deben cruzar perpendicularmente la ruta del dron, alternando izquierda-derecha y derecha-izquierda para que el cruce sea legible en camara.

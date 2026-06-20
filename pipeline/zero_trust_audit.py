@@ -73,6 +73,7 @@ class ZeroTrustAudit:
         with self._lock:
             try:
                 self._events_fp.write(line + "\n")
+                self._events_fp.flush()
             except Exception:
                 pass
 

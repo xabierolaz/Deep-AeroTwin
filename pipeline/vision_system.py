@@ -57,6 +57,7 @@ from constants import (
     VISION_CAPTURE_WINDOW_CLASS,
     VISION_CAPTURE_WINDOW_EXACT,
     VISION_CAPTURE_WINDOW_FOCUS,
+    VISION_CAPTURE_WINDOW_CLICK_FOCUS,
     VISION_CAPTURE_WINDOW_TOPMOST,
     VISION_CAPTURE_WINDOW_METHOD,
     VISION_CAPTURE_MONITOR,
@@ -76,8 +77,19 @@ from constants import (
     VISION_DEBUG_TOPMOST,
     VISION_TARGET_FPS,
     VISION_OVERLAY_MAX_OBS,
+    VISION_OVERLAY_MODE,
+    VISION_PAPER_OVERLAY_BARS,
+    VISION_PAPER_OVERLAY_SHOW_FPS,
+    VISION_PAPER_OVERLAY_TITLE,
+    VISION_PAPER_OVERLAY_ALPHA,
+    VISION_PAPER_OVERLAY_TOP_H,
+    VISION_PAPER_OVERLAY_BOTTOM_H,
+    VISION_PAPER_OVERLAY_TEXT_SCALE,
+    VISION_PAPER_OVERLAY_LABEL_SCALE,
+    VISION_PAPER_OVERLAY_LINE_THICKNESS,
     VISION_DET_CONF,
     VISION_PUBLISH_CONF,
+    VISION_MIN_AGL_TO_PUBLISH_M,
     VISION_MIN_BOX_HEIGHT_PX,
     VISION_MIN_BOX_AREA_FRAC,
     VISION_MAX_BOX_AREA_FRAC,
@@ -107,6 +119,10 @@ from constants import (
     VISION_STATIC_DIST_MAX_STEP_M,
     VISION_STATIC_DIST_RATE_MPS,
     VISION_TRACK_MAX_ACTIVE,
+    VISION_DYNAMIC_CLUSTER_ENABLE,
+    VISION_DYNAMIC_CLUSTER_CLASS_NAMES,
+    VISION_DYNAMIC_CLUSTER_GEO_M,
+    VISION_DYNAMIC_CLUSTER_DIST_M,
     VISION_MAX_OBS_PER_FRAME,
     VISION_HEARTBEAT_S,
     OBSTACLE_TOKEN_REQUIRED,
@@ -125,6 +141,7 @@ from constants import (
     VISION_SLEEP_NO_MONITOR_S,
     VISION_POST_TIMEOUT_S,
     VISION_GUI_WAITKEY_MS,
+    VISION_PROCESS_PRIORITY,
     VISION_MIN_DT_S_FOR_FPS,
     VISION_HEIGHT_ERR_MIN_M,
     VISION_HEIGHT_ERR_SLOPE,
@@ -153,6 +170,12 @@ from constants import (
     VISION_DEBUG_FOOTER_LABEL_X0,
     VISION_DEBUG_FOOTER_LABEL_Y_OFFSET,
     MAVLINK_UNKNOWN_DISTANCE_M,
+    VISION_RECORD_ENABLE,
+    VISION_RECORD_PATH,
+    VISION_RECORD_FPS,
+    VISION_RECORD_CODEC,
+    VISION_RECORD_MAX_SECONDS,
+    VISION_DETECTIONS_LOG_INTERVAL_S,
     VISION_DEBUG_SCALE_EPS,
     GEOMETRY_COS_LAT_EPS,
     GEOMETRY_EPS,
@@ -171,10 +194,16 @@ STATIC_CLASS_KEYS = {
     for name in OBS_STATIC_CLASS_NAMES
     if str(name).strip()
 }
+DYNAMIC_CLUSTER_CLASS_KEYS = {
+    str(name).strip().lower()
+    for name in VISION_DYNAMIC_CLUSTER_CLASS_NAMES
+    if str(name).strip()
+}
 
 # Split detection threshold (model output) and publish threshold (what is sent to Brain).
 DETECTION_CONFIDENCE_THRESHOLD = float(VISION_DET_CONF)
 PUBLISH_CONFIDENCE_THRESHOLD = float(VISION_PUBLISH_CONF)
+MIN_AGL_TO_PUBLISH_M = float(VISION_MIN_AGL_TO_PUBLISH_M)
 
 # Keep recall for small far objects, but reject pathological giant boxes.
 MIN_BOX_HEIGHT_PX = float(VISION_MIN_BOX_HEIGHT_PX)
@@ -201,6 +230,9 @@ STATIC_DIST_RATE_MPS = float(VISION_STATIC_DIST_RATE_MPS)
 PROJECT_CLAMP_TO_MAX_RANGE = bool(VISION_PROJECT_CLAMP_TO_MAX_RANGE)
 PROJECT_MAX_RANGE_MARGIN_M = float(VISION_PROJECT_MAX_RANGE_MARGIN_M)
 TRACK_MAX_ACTIVE = int(VISION_TRACK_MAX_ACTIVE)
+DYNAMIC_CLUSTER_ENABLE = bool(VISION_DYNAMIC_CLUSTER_ENABLE)
+DYNAMIC_CLUSTER_GEO_M = float(VISION_DYNAMIC_CLUSTER_GEO_M)
+DYNAMIC_CLUSTER_DIST_M = float(VISION_DYNAMIC_CLUSTER_DIST_M)
 MAX_OBS_PER_FRAME = int(VISION_MAX_OBS_PER_FRAME)
 HEARTBEAT_S = float(VISION_HEARTBEAT_S)
 IGNORE_BOTTOM_PX = int(VISION_IGNORE_BOTTOM_PX)
@@ -243,11 +275,36 @@ class VisionTrack:
 
 
 class VisionSystem:
+    @staticmethod
+    def _set_process_priority() -> None:
+        priority = str(VISION_PROCESS_PRIORITY or "").strip().lower()
+        if not priority or os.name != "nt":
+            return
+        priority_map = {
+            "normal": 0x00000020,
+            "above_normal": 0x00008000,
+            "abovenormal": 0x00008000,
+            "high": 0x00000080,
+        }
+        priority_class = priority_map.get(priority)
+        if priority_class is None:
+            log(f"[WARN] Prioridad de vision desconocida: {priority!r}")
+            return
+        try:
+            kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+            handle = kernel32.GetCurrentProcess()
+            if not kernel32.SetPriorityClass(handle, int(priority_class)):
+                raise ctypes.WinError(ctypes.get_last_error())
+            log(f"[PERF] Vision process priority={priority}")
+        except Exception as exc:
+            log(f"[WARN] No se pudo ajustar prioridad de vision: {exc}")
+
     def __init__(self):
         log("Inicializando sistema de vision YOLOv11...")
 
         # Avoid coordinate mismatches on high-DPI displays (important for window/ROI capture).
         self._set_windows_dpi_aware()
+        self._set_process_priority()
 
         # 1. Cargar Modelo
         try:
@@ -281,6 +338,7 @@ class VisionSystem:
                 "Filtros Vision: "
                 f"det_conf={DETECTION_CONFIDENCE_THRESHOLD:.2f} "
                 f"pub_conf={PUBLISH_CONFIDENCE_THRESHOLD:.2f} "
+                f"min_agl_pub={MIN_AGL_TO_PUBLISH_M:.1f}m "
                 f"min_h={MIN_BOX_HEIGHT_PX:.1f}px "
                 f"min_area={MIN_BOX_AREA_FRAC:.6f} "
                 f"max_area_global={MAX_BOX_AREA_FRAC:.3f} "
@@ -334,10 +392,12 @@ class VisionSystem:
         self._capture_window_class = str(VISION_CAPTURE_WINDOW_CLASS).strip()
         self._capture_window_exact = _truthy(VISION_CAPTURE_WINDOW_EXACT)
         self._capture_window_focus = _truthy(VISION_CAPTURE_WINDOW_FOCUS)
+        self._capture_window_click_focus = _truthy(VISION_CAPTURE_WINDOW_CLICK_FOCUS)
         self._capture_window_topmost = _truthy(VISION_CAPTURE_WINDOW_TOPMOST)
         self._capture_window_method = str(VISION_CAPTURE_WINDOW_METHOD).strip().lower() or "mss"
         self._capture_hwnd = None
         self._printwindow_warned = False
+        self._capture_focus_click_done = False
 
         if self._vision_source in {"VIDEO", "VIDEO_FILE", "VIDEO_STREAM"}:
             self._capture_mode = "video"
@@ -414,10 +474,25 @@ class VisionSystem:
 
         # Vision loop rate control (0 = as fast as possible).
         self._target_fps = float(VISION_TARGET_FPS)
+        self._record_enabled = bool(VISION_RECORD_ENABLE)
+        self._record_path = str(VISION_RECORD_PATH).strip()
+        self._record_fps = max(1.0, float(VISION_RECORD_FPS))
+        self._record_codec = (str(VISION_RECORD_CODEC).strip() or "mp4v")[:4]
+        self._record_max_seconds = max(0.0, float(VISION_RECORD_MAX_SECONDS))
+        self._record_writer = None
+        self._record_frame_size = None
+        self._record_frame_count = 0
 
         # FPS measurement (EMA).
         self._last_frame_ts = None
         self._fps_ema = 0.0
+
+        if self._record_enabled:
+            log(
+                "[REC] YOLO overlay recording enabled: "
+                f"path={self._record_path} fps={self._record_fps:.1f} "
+                f"codec={self._record_codec} max_s={self._record_max_seconds:.1f}"
+            )
 
         if self._debug_enabled:
             try:
@@ -441,6 +516,9 @@ class VisionSystem:
         self._origin_lon: Optional[float] = None
         self._origin_ground_msl: Optional[float] = None
         self._overlay_max_obs = int(float(VISION_OVERLAY_MAX_OBS))
+        self._overlay_mode = str(VISION_OVERLAY_MODE or "paper").strip().lower()
+        if self._overlay_mode not in {"paper", "debug", "off"}:
+            self._overlay_mode = "paper"
 
         # Simple temporal stabilizer (reduces bbox/telemetry jitter in the projected lat/lon).
         self._tracks: dict[int, VisionTrack] = {}
@@ -457,6 +535,7 @@ class VisionSystem:
                 "vision_config",
                 det_conf=float(DETECTION_CONFIDENCE_THRESHOLD),
                 publish_conf=float(PUBLISH_CONFIDENCE_THRESHOLD),
+                min_agl_to_publish_m=float(MIN_AGL_TO_PUBLISH_M),
                 min_box_height_px=float(MIN_BOX_HEIGHT_PX),
                 min_box_area_frac=float(MIN_BOX_AREA_FRAC),
                 max_box_area_frac=float(MAX_BOX_AREA_FRAC),
@@ -476,6 +555,11 @@ class VisionSystem:
                 project_clamp_to_max_range=bool(PROJECT_CLAMP_TO_MAX_RANGE),
                 project_max_range_margin_m=float(PROJECT_MAX_RANGE_MARGIN_M),
                 track_max_active=int(TRACK_MAX_ACTIVE),
+                dynamic_cluster_enable=bool(DYNAMIC_CLUSTER_ENABLE),
+                dynamic_cluster_classes=list(DYNAMIC_CLUSTER_CLASS_KEYS),
+                dynamic_cluster_geo_m=float(DYNAMIC_CLUSTER_GEO_M),
+                dynamic_cluster_dist_m=float(DYNAMIC_CLUSTER_DIST_M),
+                max_obs_per_frame=int(MAX_OBS_PER_FRAME),
                 ignore_bottom_px=int(IGNORE_BOTTOM_PX),
                 ignore_bottom_frac=float(IGNORE_BOTTOM_FRAC),
                 vision_source=str(self._vision_source),
@@ -549,7 +633,17 @@ class VisionSystem:
                     if (cbuf.value or "") != want_class:
                         return True
 
-                matches.append(hwnd)
+                score = 0
+                title_l = title.lower()
+                if "preview" in title_l:
+                    score += 30
+                if "unreal editor" not in title_l:
+                    score += 20
+                if target_l and title_l.startswith(target_l):
+                    score += 10
+                if "airtraffic" in title_l:
+                    score += 5
+                matches.append((score, hwnd))
             except Exception:
                 pass
             return True
@@ -559,7 +653,10 @@ class VisionSystem:
         except Exception:
             return None
 
-        return matches[0] if matches else None
+        if not matches:
+            return None
+        matches.sort(key=lambda item: item[0], reverse=True)
+        return matches[0][1]
 
     def _win32_prepare_window(self, hwnd) -> None:
         if os.name != "nt" or not hwnd:
@@ -578,6 +675,22 @@ class VisionSystem:
                 user32.SetForegroundWindow(hwnd)
             except Exception:
                 pass
+            if self._capture_window_click_focus and not self._capture_focus_click_done:
+                try:
+                    rect = wintypes.RECT()
+                    if user32.GetClientRect(hwnd, ctypes.byref(rect)):
+                        pt = wintypes.POINT(0, 0)
+                        if user32.ClientToScreen(hwnd, ctypes.byref(pt)):
+                            center_x = int(pt.x + max(1, int(rect.right - rect.left)) // 2)
+                            center_y = int(pt.y + max(1, int(rect.bottom - rect.top)) // 2)
+                            user32.SetCursorPos(center_x, center_y)
+                            MOUSEEVENTF_LEFTDOWN = 0x0002
+                            MOUSEEVENTF_LEFTUP = 0x0004
+                            user32.mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+                            user32.mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
+                            self._capture_focus_click_done = True
+                except Exception:
+                    pass
 
         if self._capture_window_topmost:
             try:
@@ -745,6 +858,104 @@ class VisionSystem:
             self._debug_last_dock_anchor = anchor
         except Exception:
             pass
+
+    def _pump_debug_status(self, message: str) -> bool:
+        """Keep the OpenCV debug window responsive while Vision is waiting."""
+        if not self._debug_enabled:
+            return False
+        try:
+            w = max(320, int(self._expect_w or CAMERA_WIDTH or 640))
+            h = max(240, int(self._expect_h or CAMERA_HEIGHT or 480))
+            frame = np.zeros((h, w, 3), dtype=np.uint8)
+            lines = [
+                "YOLO V11 VISION DEBUG",
+                str(message),
+                f"capture={self._capture_mode} title={self._capture_window_title or '-'}",
+            ]
+            y = 34
+            for idx, line in enumerate(lines):
+                color = (0, 220, 255) if idx == 0 else (220, 220, 220)
+                cv2.putText(
+                    frame,
+                    line[:96],
+                    (18, y),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.55,
+                    color,
+                    1,
+                    cv2.LINE_AA,
+                )
+                y += 28
+            cv2.imshow(self._debug_title, frame)
+            return bool(cv2.waitKey(max(1, int(VISION_GUI_WAITKEY_MS))) & 0xFF == ord("q"))
+        except Exception:
+            return False
+
+    def _ensure_record_writer(self, width: int, height: int) -> bool:
+        if not self._record_enabled:
+            return False
+        if self._record_writer is not None and self._record_frame_size == (int(width), int(height)):
+            return True
+
+        try:
+            if self._record_writer is not None:
+                self._record_writer.release()
+        except Exception:
+            pass
+        self._record_writer = None
+        self._record_frame_size = None
+
+        try:
+            out_dir = os.path.dirname(os.path.abspath(self._record_path))
+            if out_dir:
+                os.makedirs(out_dir, exist_ok=True)
+            codec = (self._record_codec + "mp4v")[:4]
+            writer = cv2.VideoWriter(
+                self._record_path,
+                cv2.VideoWriter_fourcc(*codec),
+                float(self._record_fps),
+                (int(width), int(height)),
+            )
+            if not writer.isOpened():
+                log(f"[REC][WARN] No se pudo abrir VideoWriter: {self._record_path}")
+                self._record_enabled = False
+                return False
+            self._record_writer = writer
+            self._record_frame_size = (int(width), int(height))
+            log(f"[REC] Writing YOLO overlay video {int(width)}x{int(height)} -> {self._record_path}")
+            return True
+        except Exception as exc:
+            log(f"[REC][WARN] Error inicializando VideoWriter: {exc}")
+            self._record_enabled = False
+            return False
+
+    def _record_overlay_frame(self, image_bgr) -> None:
+        if not self._record_enabled or image_bgr is None:
+            return
+        if self._record_max_seconds > 0.0:
+            max_frames = int(math.ceil(float(self._record_max_seconds) * float(self._record_fps)))
+            if self._record_frame_count >= max_frames:
+                try:
+                    if self._record_writer is not None:
+                        self._record_writer.release()
+                        log(f"[REC] YOLO overlay video closed at max duration: {self._record_path} frames={self._record_frame_count}")
+                except Exception:
+                    pass
+                self._record_writer = None
+                self._record_frame_size = None
+                self._record_enabled = False
+                return
+        try:
+            height, width = image_bgr.shape[:2]
+            if not self._ensure_record_writer(int(width), int(height)):
+                return
+            frame = image_bgr
+            if self._record_frame_size != (int(width), int(height)):
+                frame = cv2.resize(image_bgr, self._record_frame_size, interpolation=cv2.INTER_LINEAR)
+            self._record_writer.write(frame)
+            self._record_frame_count += 1
+        except Exception as exc:
+            log(f"[REC][WARN] Error grabando frame YOLO: {exc}")
 
     def _window_capture_region(self) -> Optional[dict]:
         if not self.monitor:
@@ -1099,6 +1310,9 @@ class VisionSystem:
         return True
 
     def _merge_static_outgoing_inplace(self, primary: dict, duplicate: dict) -> None:
+        self._merge_outgoing_inplace(primary, duplicate)
+
+    def _merge_outgoing_inplace(self, primary: dict, duplicate: dict) -> None:
         conf_a = max(0.0, self._safe_float(primary.get("confidence"), 0.0))
         conf_b = max(0.0, self._safe_float(duplicate.get("confidence"), 0.0))
         denom = max(float(GEOMETRY_EPS), float(conf_a + conf_b))
@@ -1129,6 +1343,56 @@ class VisionSystem:
         if id_a is None or int(id_b) < int(id_a):
             primary["id"] = int(id_b)
             primary["source_id"] = int(id_b)
+
+    def _is_dynamic_cluster_class(self, class_name: str) -> bool:
+        class_key = self._class_name_key(str(class_name))
+        return bool(DYNAMIC_CLUSTER_ENABLE and class_key in DYNAMIC_CLUSTER_CLASS_KEYS and not self._is_static_class(class_key))
+
+    def _is_same_dynamic_outgoing(self, a: dict, b: dict) -> bool:
+        class_a = self._class_name_key(str(a.get("type", "")))
+        class_b = self._class_name_key(str(b.get("type", "")))
+        if not (self._is_dynamic_cluster_class(class_a) and self._is_dynamic_cluster_class(class_b)):
+            return False
+
+        geo_d = self._haversine_m(
+            a.get("lat"),
+            a.get("lon"),
+            b.get("lat"),
+            b.get("lon"),
+        )
+        if not math.isfinite(geo_d) or float(geo_d) > float(DYNAMIC_CLUSTER_GEO_M):
+            return False
+
+        dist_a = self._safe_float(a.get("distance"))
+        dist_b = self._safe_float(b.get("distance"))
+        if not (math.isfinite(dist_a) and math.isfinite(dist_b)):
+            return False
+        if abs(float(dist_a) - float(dist_b)) > float(DYNAMIC_CLUSTER_DIST_M):
+            return False
+        return True
+
+    def _collapse_dynamic_outgoing(self, outgoing: list[dict]) -> list[dict]:
+        if (not DYNAMIC_CLUSTER_ENABLE) or len(outgoing) <= 1:
+            return outgoing
+
+        passthrough: list[dict] = []
+        merged_dynamic: list[dict] = []
+        for item in outgoing:
+            class_key = self._class_name_key(str(item.get("type", "")))
+            if not self._is_dynamic_cluster_class(class_key):
+                passthrough.append(dict(item))
+                continue
+
+            merged = False
+            for existing in merged_dynamic:
+                if self._is_same_dynamic_outgoing(item, existing):
+                    self._merge_outgoing_inplace(existing, item)
+                    merged = True
+                    break
+            if not merged:
+                merged_dynamic.append(dict(item))
+
+        return merged_dynamic + passthrough
 
     def _collapse_static_outgoing(self, outgoing: list[dict]) -> list[dict]:
         if len(outgoing) <= 1:
@@ -1470,11 +1734,220 @@ class VisionSystem:
         height = max(0.0, min(float(height), float(VISION_HEIGHT_CLAMP_M)))
         return float(height)
 
+    def _draw_text_with_outline(self, image_bgr, text: str, xy: tuple[int, int], *, scale: float, color, thickness: int = 1) -> None:
+        cv2.putText(
+            image_bgr,
+            str(text),
+            (int(xy[0]), int(xy[1])),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            float(scale),
+            (0, 0, 0),
+            max(1, int(thickness) + 2),
+            cv2.LINE_AA,
+        )
+        cv2.putText(
+            image_bgr,
+            str(text),
+            (int(xy[0]), int(xy[1])),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            float(scale),
+            tuple(color),
+            max(1, int(thickness)),
+            cv2.LINE_AA,
+        )
+
+    @staticmethod
+    def _fit_text_to_width(text: str, max_width_px: int, *, scale: float, thickness: int = 1) -> str:
+        text = str(text)
+        max_width_px = max(8, int(max_width_px))
+        try:
+            width = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, float(scale), max(1, int(thickness)))[0][0]
+            if width <= max_width_px:
+                return text
+            suffix = "..."
+            lo, hi = 0, len(text)
+            while lo < hi:
+                mid = (lo + hi + 1) // 2
+                candidate = text[:mid].rstrip() + suffix
+                cand_w = cv2.getTextSize(candidate, cv2.FONT_HERSHEY_SIMPLEX, float(scale), max(1, int(thickness)))[0][0]
+                if cand_w <= max_width_px:
+                    lo = mid
+                else:
+                    hi = mid - 1
+            return text[:lo].rstrip() + suffix
+        except Exception:
+            return text[:96]
+
+    def _paper_class_color(self, class_name: str, *, published: bool = False) -> tuple[int, int, int]:
+        key = self._class_name_key(str(class_name))
+        if key == "biker":
+            return (80, 235, 170) if published else (70, 190, 145)
+        if key == "tower":
+            return (0, 215, 255) if published else (0, 170, 220)
+        if key == "cow":
+            return (170, 185, 115) if published else (130, 150, 90)
+        return (230, 230, 230)
+
+    def _paper_track_state(self, track: VisionTrack, outgoing_ids: set[int], seen_ids: set[int], now_s: float) -> str:
+        track_id = int(track.obs_id)
+        if track_id in outgoing_ids:
+            return "published" if track_id in seen_ids else "held"
+        hold_s = float(TRACK_HOLD_S)
+        age_s = max(0.0, float(now_s) - float(track.last_seen_ts))
+        if track_id not in seen_ids and age_s > hold_s:
+            return "lost"
+        return "tracking"
+
+    def _paper_planner_label(self, telemetry: dict) -> str:
+        failsafe = str(telemetry.get("failsafe_action_active", "") or "").strip().upper()
+        if failsafe:
+            return f"failsafe {failsafe}"
+        evasion_raw = telemetry.get("evasion_active", telemetry.get("evasion", False))
+        if bool(evasion_raw):
+            return "avoidance"
+        return "monitoring"
+
+    def _draw_paper_bar(self, image_bgr, y0: int, y1: int) -> None:
+        if y1 <= y0:
+            return
+        H, W = image_bgr.shape[:2]
+        y0 = max(0, min(int(H), int(y0)))
+        y1 = max(0, min(int(H), int(y1)))
+        if y1 <= y0:
+            return
+        overlay_img = image_bgr.copy()
+        cv2.rectangle(overlay_img, (0, y0), (int(W - 1), int(y1 - 1)), (18, 22, 24), thickness=-1)
+        cv2.addWeighted(
+            overlay_img,
+            float(VISION_PAPER_OVERLAY_ALPHA),
+            image_bgr,
+            1.0 - float(VISION_PAPER_OVERLAY_ALPHA),
+            0.0,
+            image_bgr,
+        )
+
+    def _draw_paper_overlay(
+        self,
+        image_bgr,
+        *,
+        tracks_sorted: list[VisionTrack],
+        outgoing_ids: set[int],
+        seen_ids: set[int],
+        telemetry: dict,
+        now_s: float,
+        outgoing_count: int,
+    ) -> None:
+        H, W = image_bgr.shape[:2]
+        top_h = int(VISION_PAPER_OVERLAY_TOP_H) if bool(VISION_PAPER_OVERLAY_BARS) else 0
+        bottom_h = int(VISION_PAPER_OVERLAY_BOTTOM_H) if bool(VISION_PAPER_OVERLAY_BARS) else 0
+        text_scale = float(VISION_PAPER_OVERLAY_TEXT_SCALE)
+        label_scale = float(VISION_PAPER_OVERLAY_LABEL_SCALE)
+        line_thickness = int(VISION_PAPER_OVERLAY_LINE_THICKNESS)
+
+        if top_h > 0:
+            self._draw_paper_bar(image_bgr, 0, top_h)
+            target_text = ",".join(TARGET_CLASS_NAMES) if TARGET_CLASS_NAMES else "all"
+            top_parts = [str(VISION_PAPER_OVERLAY_TITLE), f"targets {target_text}", f"pub {int(outgoing_count)}"]
+            if bool(VISION_PAPER_OVERLAY_SHOW_FPS):
+                top_parts.append(f"{float(self._fps_ema):.1f} FPS")
+            top_text = self._fit_text_to_width(
+                " | ".join(top_parts),
+                int(W - 20),
+                scale=text_scale,
+                thickness=1,
+            )
+            self._draw_text_with_outline(
+                image_bgr,
+                top_text,
+                (10, max(18, int(top_h * 0.68))),
+                scale=text_scale,
+                color=(235, 245, 245),
+                thickness=1,
+            )
+
+        max_n = max(0, min(int(self._overlay_max_obs), len(tracks_sorted)))
+        for track in tracks_sorted[:max_n]:
+            bbox = dict(track.bbox or {})
+            try:
+                x1 = int(max(0, min(W - 1, int(bbox.get("x1", 0)))))
+                y1 = int(max(0, min(H - 1, int(bbox.get("y1", 0)))))
+                x2 = int(max(0, min(W - 1, int(bbox.get("x2", 0)))))
+                y2 = int(max(0, min(H - 1, int(bbox.get("y2", 0)))))
+            except Exception:
+                continue
+            if x2 <= x1 or y2 <= y1:
+                continue
+
+            track_id = int(track.obs_id)
+            published = track_id in outgoing_ids
+            color = self._paper_class_color(str(track.class_name), published=published)
+            state = self._paper_track_state(track, outgoing_ids, seen_ids, float(now_s))
+            cv2.rectangle(image_bgr, (x1, y1), (x2, y2), color, line_thickness + (1 if published else 0), cv2.LINE_AA)
+            label = f"{str(track.class_name)} #{track_id} {float(track.conf):.2f} {float(track.dist):.1f}m {state}"
+            label_y = max(top_h + 18, y1 - 8)
+            if label_y >= y1 and y2 + 18 < H - bottom_h:
+                label_y = y2 + 18
+            label_x = max(6, x1)
+            try:
+                label_w = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, label_scale, 1)[0][0]
+                if label_x + label_w + 8 > W:
+                    label_x = max(6, min(label_x, W - label_w - 8))
+            except Exception:
+                pass
+            label_fit = self._fit_text_to_width(
+                label,
+                int(W - label_x - 8),
+                scale=label_scale,
+                thickness=1,
+            )
+            self._draw_text_with_outline(
+                image_bgr,
+                label_fit,
+                (label_x, min(H - bottom_h - 6, label_y)),
+                scale=label_scale,
+                color=color,
+                thickness=1,
+            )
+
+        if bottom_h > 0:
+            y0 = max(0, H - bottom_h)
+            self._draw_paper_bar(image_bgr, y0, H)
+            planner = self._paper_planner_label(telemetry)
+            if tracks_sorted:
+                nearest = tracks_sorted[0]
+                nearest_text = f"nearest: {nearest.class_name} #{int(nearest.obs_id)} {float(nearest.dist):.1f} m"
+            else:
+                nearest_text = "nearest: none"
+            path_len = telemetry.get("evasion_path_len", None)
+            path_text = ""
+            try:
+                if path_len is not None and int(path_len) > 0:
+                    path_text = f" | path {int(path_len)} pts"
+            except Exception:
+                path_text = ""
+            bottom_text = f"{nearest_text} | planner: {planner}{path_text}"
+            bottom_text = self._fit_text_to_width(
+                bottom_text,
+                int(W - 20),
+                scale=text_scale,
+                thickness=1,
+            )
+            self._draw_text_with_outline(
+                image_bgr,
+                bottom_text,
+                (10, min(H - 10, y0 + max(22, int(bottom_h * 0.62)))),
+                scale=text_scale,
+                color=(235, 245, 245),
+                thickness=1,
+            )
+
     def run(self):
         log("Sistema listo. Esperando visualizacion...")
 
         hb_every_s = float(HEARTBEAT_S)
         hb_last_ts = time.time()
+        detections_log_every_s = float(VISION_DETECTIONS_LOG_INTERVAL_S)
+        detections_log_last_ts = 0.0
         frame_count = 0
         last_dets = 0
         last_send = 0
@@ -1495,6 +1968,8 @@ class VisionSystem:
             telemetry = self.get_telemetry()
             if not telemetry:
                 # Si no hay telemetria, esperamos
+                if self._pump_debug_status("Waiting for Brain telemetry..."):
+                    break
                 time.sleep(float(VISION_SLEEP_NO_TELEMETRY_S))
                 continue
                 
@@ -1531,6 +2006,8 @@ class VisionSystem:
             if self._capture_mode == "video":
                 img_bgr = self._read_video_frame()
                 if img_bgr is None:
+                    if self._pump_debug_status("Waiting for video frame..."):
+                        break
                     if self._video_loop:
                         time.sleep(float(self._video_reopen_sleep_s))
                     else:
@@ -1544,11 +2021,15 @@ class VisionSystem:
                             self._win32_prepare_window(self._capture_hwnd)
                     if not self._capture_hwnd:
                         # No window yet (Unreal PIE not started?)
+                        if self._pump_debug_status("Waiting for capture window..."):
+                            break
                         time.sleep(float(VISION_SLEEP_NO_WINDOW_S))
                         continue
 
                     self.monitor = self._win32_client_region(self._capture_hwnd)
                     if not self.monitor:
+                        if self._pump_debug_status("Waiting for valid capture region..."):
+                            break
                         time.sleep(float(VISION_SLEEP_INVALID_MONITOR_S))
                         continue
 
@@ -1569,6 +2050,8 @@ class VisionSystem:
                     self._maybe_dock_debug_window()
 
                 if not self.monitor:
+                    if self._pump_debug_status("Waiting for monitor capture region..."):
+                        break
                     time.sleep(float(VISION_SLEEP_NO_MONITOR_S))
                     continue
 
@@ -1686,7 +2169,7 @@ class VisionSystem:
                         reject_counts["ignored_header_strip"] += 1
                         reject_reason = "ignored_header_strip"
                     if reject_reason:
-                        if self._debug_enabled:
+                        if (self._debug_enabled or self._record_enabled) and self._overlay_mode == "debug":
                             try:
                                 cv2.rectangle(
                                     img_bgr,
@@ -1736,7 +2219,7 @@ class VisionSystem:
                     )
                     if not projected:
                         reject_counts["projection_failed"] += 1
-                        if self._debug_enabled:
+                        if (self._debug_enabled or self._record_enabled) and self._overlay_mode == "debug":
                             try:
                                 cv2.rectangle(
                                     img_bgr,
@@ -1809,36 +2292,48 @@ class VisionSystem:
                         f"enu=({float(obj_x_m):.1f},{float(obj_y_m):.1f})"
                     )
                      
-                    # Dibujar en Debug
-                    cv2.rectangle(
-                        img_bgr,
-                        (x1, y1),
-                        (x2, y2),
-                        tuple(VISION_DEBUG_BBOX_COLOR),
-                        int(VISION_DEBUG_BBOX_THICKNESS),
-                    )
-                    label_x = int(max(0, x1))
-                    label_y_main = int(max(14, y1 - 10))
-                    label_y_geo = int(min(int(H - 4), label_y_main + 14))
-                    for text, y in ((label_main, label_y_main), (label_geo, label_y_geo)):
-                        cv2.putText(
-                            img_bgr,
-                            text,
-                            (label_x, y),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            float(VISION_DEBUG_BBOX_LABEL_SCALE),
-                            tuple(VISION_DEBUG_BBOX_BASE_OUTLINE_COLOR),
-                            int(VISION_DEBUG_BBOX_BASE_OUTLINE_THICKNESS),
-                        )
-                        cv2.putText(
-                            img_bgr,
-                            text,
-                            (label_x, y),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            float(VISION_DEBUG_BBOX_LABEL_SCALE),
-                            tuple(VISION_DEBUG_BBOX_LABEL_COLOR),
-                            int(VISION_DEBUG_BBOX_LABEL_THICKNESS),
-                        )
+                    # Draw only the paper-safe evidence layer during final captures.
+                    # The verbose geometry remains in JSONL audit and debug mode.
+                    if (self._debug_enabled or self._record_enabled) and self._overlay_mode != "off":
+                        if self._overlay_mode == "debug":
+                            cv2.rectangle(
+                                img_bgr,
+                                (x1, y1),
+                                (x2, y2),
+                                tuple(VISION_DEBUG_BBOX_COLOR),
+                                int(VISION_DEBUG_BBOX_THICKNESS),
+                            )
+                            label_x = int(max(0, x1))
+                            label_y_main = int(max(14, y1 - 10))
+                            label_y_geo = int(min(int(H - 4), label_y_main + 14))
+                            for text, y in ((label_main, label_y_main), (label_geo, label_y_geo)):
+                                cv2.putText(
+                                    img_bgr,
+                                    text,
+                                    (label_x, y),
+                                    cv2.FONT_HERSHEY_SIMPLEX,
+                                    float(VISION_DEBUG_BBOX_LABEL_SCALE),
+                                    tuple(VISION_DEBUG_BBOX_BASE_OUTLINE_COLOR),
+                                    int(VISION_DEBUG_BBOX_BASE_OUTLINE_THICKNESS),
+                                )
+                                cv2.putText(
+                                    img_bgr,
+                                    text,
+                                    (label_x, y),
+                                    cv2.FONT_HERSHEY_SIMPLEX,
+                                    float(VISION_DEBUG_BBOX_LABEL_SCALE),
+                                    tuple(VISION_DEBUG_BBOX_LABEL_COLOR),
+                                    int(VISION_DEBUG_BBOX_LABEL_THICKNESS),
+                                )
+                        elif self._overlay_mode == "paper":
+                            cv2.rectangle(
+                                img_bgr,
+                                (x1, y1),
+                                (x2, y2),
+                                self._paper_class_color(class_name, published=False),
+                                max(1, int(VISION_PAPER_OVERLAY_LINE_THICKNESS) - 1),
+                                cv2.LINE_AA,
+                            )
                     
                     # Agregar a lista de detecciones candidatas; el ID estable se asigna por asociacion a tracks.
                     frame_dets.append({
@@ -1859,7 +2354,7 @@ class VisionSystem:
                     })
 
             # Visual hint of ignored footer area (zero-trust auditability in debug view).
-            if self._debug_enabled and ignore_bottom_px > 0:
+            if self._debug_enabled and self._overlay_mode == "debug" and ignore_bottom_px > 0:
                 try:
                     y0 = int(max(0, min(int(H - 1), int(ignore_top_y))))
                     overlay_img = img_bgr.copy()
@@ -1898,7 +2393,7 @@ class VisionSystem:
                     pass
 
             # Visual hint of ignored header area (toolbar strip).
-            if self._debug_enabled and ignore_top_px > 0:
+            if self._debug_enabled and self._overlay_mode == "debug" and ignore_top_px > 0:
                 try:
                     y1h = int(max(0, min(int(H - 1), int(ignore_top_px))))
                     overlay_img = img_bgr.copy()
@@ -1936,53 +2431,52 @@ class VisionSystem:
                 except Exception:
                     pass
 
-            # 5. Visualizacion (Ventana Debug)
-            if self._debug_enabled:
-                try:
-                    scale = float(self._debug_scale) if math.isfinite(self._debug_scale) and self._debug_scale > 0.0 else 1.0
-                    if abs(scale - 1.0) > float(VISION_DEBUG_SCALE_EPS):
-                        disp = cv2.resize(img_bgr, (int(W * scale), int(H * scale)), interpolation=cv2.INTER_LINEAR)
-                    else:
-                        disp = img_bgr
-                    cv2.imshow(self._debug_title, disp)
-                except Exception:
-                    pass
-            
-            # 6. Enviar al Brain
+            # 5. Enviar al Brain
             frame_dets = self._dedupe_frame_detections(frame_dets)
-            seen_ids = self._update_tracks_from_detections(frame_dets, float(now_s))
+            publish_geometry_ready = (
+                math.isfinite(float(dron_alt_agl))
+                and float(dron_alt_agl) >= float(MIN_AGL_TO_PUBLISH_M)
+            )
+            if publish_geometry_ready:
+                seen_ids = self._update_tracks_from_detections(frame_dets, float(now_s))
+            else:
+                seen_ids = set()
+                if self._tracks:
+                    self._tracks.clear()
 
             outgoing = []
             hold_s = float(TRACK_HOLD_S)
-            for obs_id, t in self._tracks.items():
-                seen_req = int(self._min_seen_to_publish_for_class(str(t.class_name)))
-                conf_ok = float(t.conf) >= float(PUBLISH_CONFIDENCE_THRESHOLD)
-                if obs_id in seen_ids:
-                    ok = conf_ok and int(t.seen_count) >= seen_req
-                else:
-                    age_s = float(now_s) - float(t.last_seen_ts)
-                    ok = (
-                        conf_ok
-                        and math.isfinite(hold_s)
-                        and hold_s > 0.0
-                        and age_s <= hold_s
-                        and int(t.seen_count) >= seen_req
-                    )
-                if not ok:
-                    continue
+            if publish_geometry_ready:
+                for obs_id, t in self._tracks.items():
+                    seen_req = int(self._min_seen_to_publish_for_class(str(t.class_name)))
+                    conf_ok = float(t.conf) >= float(PUBLISH_CONFIDENCE_THRESHOLD)
+                    if obs_id in seen_ids:
+                        ok = conf_ok and int(t.seen_count) >= seen_req
+                    else:
+                        age_s = float(now_s) - float(t.last_seen_ts)
+                        ok = (
+                            conf_ok
+                            and math.isfinite(hold_s)
+                            and hold_s > 0.0
+                            and age_s <= hold_s
+                            and int(t.seen_count) >= seen_req
+                        )
+                    if not ok:
+                        continue
 
-                outgoing.append({
-                    'id': int(t.obs_id),
-                    'source_id': int(t.obs_id),
-                    'lat': float(t.lat),
-                    'lon': float(t.lon),
-                    'distance': float(t.dist),
-                    'type': str(t.class_name),
-                    'confidence': float(t.conf),
-                    'source': 'vision',
-                    'bbox': t.bbox,
-                })
+                    outgoing.append({
+                        'id': int(t.obs_id),
+                        'source_id': int(t.obs_id),
+                        'lat': float(t.lat),
+                        'lon': float(t.lon),
+                        'distance': float(t.dist),
+                        'type': str(t.class_name),
+                        'confidence': float(t.conf),
+                        'source': 'vision',
+                        'bbox': t.bbox,
+                    })
 
+            outgoing = self._collapse_dynamic_outgoing(outgoing)
             outgoing = self._collapse_static_outgoing(outgoing)
             outgoing.sort(key=lambda o: float(o.get("distance", float(MAVLINK_UNKNOWN_DISTANCE_M))))
             max_out = int(MAX_OBS_PER_FRAME) if int(MAX_OBS_PER_FRAME) > 0 else len(outgoing)
@@ -1995,7 +2489,9 @@ class VisionSystem:
             post_error = ""
 
             if outgoing:
-                log(f"Dets frame={len(frame_dets)} tracks={len(self._tracks)} send={len(outgoing)}")
+                if detections_log_every_s <= 0.0 or now_s - detections_log_last_ts >= detections_log_every_s:
+                    detections_log_last_ts = now_s
+                    log(f"Dets frame={len(frame_dets)} tracks={len(self._tracks)} send={len(outgoing)}")
                 post_attempted = True
                 try:
                     headers = {}
@@ -2007,90 +2503,119 @@ class VisionSystem:
                 except Exception as e:
                     post_error = str(e)
 
-            # Minimal overlay for live debugging (keep detailed forensics in JSONL audit).
-            if self._debug_enabled:
+            # Overlay for live debugging/recording. Paper mode keeps only visual evidence;
+            # full forensics remain in JSONL audit and debug mode.
+            if (self._debug_enabled or self._record_enabled) and self._overlay_mode != "off":
                 try:
-                    overlay = []
-                    rej_total = int(sum(reject_counts.values()))
-                    overlay.append(
-                        f"FPS {self._fps_ema:.1f} | RAW {int(raw_boxes_total)} ACC {int(len(frame_dets))} "
-                        f"TRK {int(len(self._tracks))} OUT {int(len(outgoing))} REJ {rej_total}"
-                    )
-                    post_label = "IDLE"
-                    if post_attempted:
-                        if post_ok:
-                            post_label = f"OK:{int(post_status) if post_status is not None else 200}"
-                        elif post_status is not None:
-                            post_label = f"HTTP:{int(post_status)}"
-                        else:
-                            post_label = "ERR"
-                    overlay.append(
-                        f"POST {post_label} | TEL {telemetry_source} | AGL {float(dron_alt_agl):.1f}m | YAW {float(dron_yaw):.1f}deg"
-                    )
-                    overlay.append(f"MASK top={int(ignore_top_px)}px bottom={int(ignore_bottom_px)}px")
-                    if post_error:
-                        msg = str(post_error).replace("\n", " ").strip()
-                        overlay.append(f"POST_ERR {msg[:96]}")
-
                     outgoing_ids = {int(o.get("id")) for o in outgoing if o.get("id") is not None}
                     tracks_sorted = sorted(
                         self._tracks.values(),
                         key=lambda t: float(getattr(t, "dist", float(MAVLINK_UNKNOWN_DISTANCE_M))),
                     )
-                    max_n = max(0, min(3, int(self._overlay_max_obs)))
-                    if max_n > 0:
-                        tracks_sorted = tracks_sorted[:max_n]
+
+                    if self._overlay_mode == "paper":
+                        self._draw_paper_overlay(
+                            img_bgr,
+                            tracks_sorted=tracks_sorted,
+                            outgoing_ids=outgoing_ids,
+                            seen_ids=seen_ids,
+                            telemetry=telemetry,
+                            now_s=float(now_s),
+                            outgoing_count=int(len(outgoing)),
+                        )
                     else:
-                        tracks_sorted = []
-
-                    hold_s = float(TRACK_HOLD_S)
-                    for i, track in enumerate(tracks_sorted, 1):
-                        track_id = int(track.obs_id)
-                        seen_req = int(self._min_seen_to_publish_for_class(str(track.class_name)))
-                        seen_now = track_id in seen_ids
-                        conf_ok = float(track.conf) >= float(PUBLISH_CONFIDENCE_THRESHOLD)
-                        age_s = max(0.0, float(now_s) - float(track.last_seen_ts))
-                        if track_id in outgoing_ids:
-                            state = "pub" if seen_now else "hold"
-                        elif not conf_ok:
-                            state = "lowconf"
-                        elif int(track.seen_count) < seen_req:
-                            state = "warmup"
-                        elif (not seen_now) and (age_s > hold_s):
-                            state = "drop"
-                        else:
-                            state = "ready"
+                        overlay = []
+                        rej_total = int(sum(reject_counts.values()))
                         overlay.append(
-                            f"{i}) id={track_id} {str(track.class_name)} d={float(track.dist):.1f}m "
-                            f"c={float(track.conf):.2f} seen={int(track.seen_count)}/{seen_req} age={age_s:.1f}s {state}"
+                            f"FPS {self._fps_ema:.1f} | RAW {int(raw_boxes_total)} ACC {int(len(frame_dets))} "
+                            f"TRK {int(len(self._tracks))} OUT {int(len(outgoing))} REJ {rej_total}"
                         )
+                        post_label = "IDLE"
+                        if not publish_geometry_ready:
+                            post_label = "AGL_GATE"
+                        if post_attempted:
+                            if post_ok:
+                                post_label = f"OK:{int(post_status) if post_status is not None else 200}"
+                            elif post_status is not None:
+                                post_label = f"HTTP:{int(post_status)}"
+                            else:
+                                post_label = "ERR"
                         overlay.append(
-                            f"   px=({int(track.cx)},{int(track.cy)}) "
-                            f"gps=({float(track.lat):.6f},{float(track.lon):.6f})"
+                            f"POST {post_label} | TEL {telemetry_source} | AGL {float(dron_alt_agl):.1f}m | YAW {float(dron_yaw):.1f}deg"
                         )
+                        overlay.append(f"MASK top={int(ignore_top_px)}px bottom={int(ignore_bottom_px)}px")
+                        if post_error:
+                            msg = str(post_error).replace("\n", " ").strip()
+                            overlay.append(f"POST_ERR {msg[:96]}")
 
-                    x0, y0 = int(VISION_DEBUG_OVERLAY_X0), int(VISION_DEBUG_OVERLAY_Y0)
-                    dy = int(VISION_DEBUG_OVERLAY_LINE_STEP)
-                    for idx, text in enumerate(overlay):
-                        y = y0 + idx * dy
-                        cv2.putText(
-                            img_bgr,
-                            text,
-                            (x0, y),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            float(VISION_DEBUG_OVERLAY_TEXT_SCALE),
-                            tuple(VISION_DEBUG_OVERLAY_OUTLINE_COLOR),
-                            int(VISION_DEBUG_OVERLAY_OUTLINE_THICKNESS),
-                        )
-                        cv2.putText(
-                            img_bgr,
-                            text,
-                            (x0, y),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            float(VISION_DEBUG_OVERLAY_TEXT_SCALE),
-                            tuple(VISION_DEBUG_OVERLAY_TEXT_COLOR),
-                            int(VISION_DEBUG_OVERLAY_TEXT_THICKNESS),
-                        )
+                        max_n = max(0, min(3, int(self._overlay_max_obs)))
+                        debug_tracks = tracks_sorted[:max_n] if max_n > 0 else []
+                        hold_s = float(TRACK_HOLD_S)
+                        for i, track in enumerate(debug_tracks, 1):
+                            track_id = int(track.obs_id)
+                            seen_req = int(self._min_seen_to_publish_for_class(str(track.class_name)))
+                            seen_now = track_id in seen_ids
+                            conf_ok = float(track.conf) >= float(PUBLISH_CONFIDENCE_THRESHOLD)
+                            age_s = max(0.0, float(now_s) - float(track.last_seen_ts))
+                            if track_id in outgoing_ids:
+                                state = "pub" if seen_now else "hold"
+                            elif not conf_ok:
+                                state = "lowconf"
+                            elif int(track.seen_count) < seen_req:
+                                state = "warmup"
+                            elif (not seen_now) and (age_s > hold_s):
+                                state = "drop"
+                            else:
+                                state = "ready"
+                            overlay.append(
+                                f"{i}) id={track_id} {str(track.class_name)} d={float(track.dist):.1f}m "
+                                f"c={float(track.conf):.2f} seen={int(track.seen_count)}/{seen_req} age={age_s:.1f}s {state}"
+                            )
+                            overlay.append(
+                                f"   px=({int(track.cx)},{int(track.cy)}) "
+                                f"gps=({float(track.lat):.6f},{float(track.lon):.6f})"
+                            )
+
+                        x0, y0 = int(VISION_DEBUG_OVERLAY_X0), int(VISION_DEBUG_OVERLAY_Y0)
+                        dy = int(VISION_DEBUG_OVERLAY_LINE_STEP)
+                        for idx, text in enumerate(overlay):
+                            y = y0 + idx * dy
+                            cv2.putText(
+                                img_bgr,
+                                text,
+                                (x0, y),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                float(VISION_DEBUG_OVERLAY_TEXT_SCALE),
+                                tuple(VISION_DEBUG_OVERLAY_OUTLINE_COLOR),
+                                int(VISION_DEBUG_OVERLAY_OUTLINE_THICKNESS),
+                            )
+                            cv2.putText(
+                                img_bgr,
+                                text,
+                                (x0, y),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                float(VISION_DEBUG_OVERLAY_TEXT_SCALE),
+                                tuple(VISION_DEBUG_OVERLAY_TEXT_COLOR),
+                                int(VISION_DEBUG_OVERLAY_TEXT_THICKNESS),
+                            )
+                except Exception:
+                    pass
+
+            self._record_overlay_frame(img_bgr)
+
+            # Visualizacion (Ventana Debug) after the full overlay has been drawn.
+            debug_waitkey_done = False
+            if self._debug_enabled:
+                try:
+                    scale = float(self._debug_scale) if math.isfinite(self._debug_scale) and self._debug_scale > 0.0 else 1.0
+                    if abs(scale - 1.0) > float(VISION_DEBUG_SCALE_EPS):
+                        disp = cv2.resize(img_bgr, (int(W * scale), int(H * scale)), interpolation=cv2.INTER_LINEAR)
+                    else:
+                        disp = img_bgr
+                    cv2.imshow(self._debug_title, disp)
+                    debug_waitkey_done = True
+                    if cv2.waitKey(max(1, int(VISION_GUI_WAITKEY_MS))) & 0xFF == ord("q"):
+                        break
                 except Exception:
                     pass
 
@@ -2128,6 +2653,10 @@ class VisionSystem:
                             "accepted_frame_dets": int(len(frame_dets)),
                             "tracks_active": int(len(self._tracks)),
                             "published_outgoing": int(len(outgoing)),
+                        },
+                        publish_gate={
+                            "geometry_ready": bool(publish_geometry_ready),
+                            "min_agl_to_publish_m": float(MIN_AGL_TO_PUBLISH_M),
                         },
                         reject_counts=dict(reject_counts),
                         detections=dets_for_log,
@@ -2182,7 +2711,7 @@ class VisionSystem:
                 if elapsed < min_period:
                     time.sleep(max(0.0, min_period - elapsed))
 
-            if cv2.waitKey(max(1, int(VISION_GUI_WAITKEY_MS))) & 0xFF == ord("q"):
+            if (not debug_waitkey_done) and cv2.waitKey(max(1, int(VISION_GUI_WAITKEY_MS))) & 0xFF == ord("q"):
                 break
                  
             # log(f"Ciclo Vision: {time.perf_counter() - frame_now:.3f}s")
@@ -2194,10 +2723,16 @@ class VisionSystem:
         except Exception:
             pass
         try:
+            if self._record_writer is not None:
+                self._record_writer.release()
+                log(f"[REC] YOLO overlay video closed: {self._record_path} frames={self._record_frame_count}")
+        except Exception:
+            pass
+        self._record_writer = None
+        try:
             self._audit.close()
         except Exception:
             pass
 
 if __name__ == '__main__':
     VisionSystem().run()
-

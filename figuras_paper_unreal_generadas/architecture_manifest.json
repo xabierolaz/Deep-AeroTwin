@@ -1,0 +1,18 @@
+{
+  "system_workflow": {
+    "file": "D:\\Deep-AeroTwin-UE57-Test\\figuras_paper_unreal_generadas\\System Workflow.png",
+    "latex_files": [
+      "D:\\Deep-AeroTwin-UE57-Test\\paper\\Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion\\Imagenes\\System Workflow.png",
+      "D:\\Deep-AeroTwin-UE57-Test\\paper\\Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion\\IEEE\\TII-Articles-LaTeX-template\\Imagenes\\System Workflow.png",
+      "D:\\Deep-AeroTwin-UE57-Test\\System Workflow.png"
+    ]
+  },
+  "pipeline_a": {
+    "file": "D:\\Deep-AeroTwin-UE57-Test\\figuras_paper_unreal_generadas\\Pipeline A.png",
+    "latex_files": [
+      "D:\\Deep-AeroTwin-UE57-Test\\paper\\Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion\\Imagenes\\Pipeline A.png",
+      "D:\\Deep-AeroTwin-UE57-Test\\paper\\Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion\\IEEE\\TII-Articles-LaTeX-template\\Imagenes\\Pipeline A.png",
+      "D:\\Deep-AeroTwin-UE57-Test\\Pipeline A.png"
+    ]
+  }
+}

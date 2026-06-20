@@ -6,8 +6,8 @@ Este documento deja registradas las dos vias activas para controlar el Unreal Ed
 
 ## Capturas guardadas
 
-- `unreal_python_remote_execution_settings.png`: configuracion del plugin Python.
-- `unreal_mcp_automation_bridge_settings.png`: configuracion del plugin MCP Automation Bridge.
+- `docs/unreal_mcp/unreal_python_remote_execution_settings.png`: configuracion del plugin Python.
+- `docs/unreal_mcp/unreal_mcp_automation_bridge_settings.png`: configuracion del plugin MCP Automation Bridge.
 
 ## 1. Python Remote Execution
 

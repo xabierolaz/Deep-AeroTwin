@@ -5,6 +5,7 @@ import unreal
 
 
 CONTROLLED_GROUPS = ("towers", "cows", "bikers", "peloton")
+TEMP_ACTOR_PREFIXES = ("DAT_",)
 PAPER_WP1_WP2_TOWER = {
     "label": "t0",
     "lat": 42.22904865463611,
@@ -48,21 +49,21 @@ PROFILES = {
         "recommended_vision_targets": "tower",
     },
     "paper_moving_peloton": {
-        "description": "Moving-obstacle paper case: bikers/peloton visible; towers and cows hidden.",
+        "description": "Moving-obstacle paper case: scripted peloton and towers visible; cows and legacy bikers hidden.",
         "visible": {
-            "towers": False,
+            "towers": True,
             "cows": False,
-            "bikers": True,
+            "bikers": False,
             "peloton": True,
         },
-        "recommended_vision_targets": "biker",
+        "recommended_vision_targets": "biker,tower",
     },
     "paper_all_obstacles": {
         "description": "Debug/reset profile: all paper obstacle groups visible.",
         "visible": {
             "towers": True,
             "cows": True,
-            "bikers": True,
+            "bikers": False,
             "peloton": True,
         },
         "recommended_vision_targets": "biker,cow,tower",
@@ -139,6 +140,32 @@ def _actor_location(actor):
         "y": round(float(loc.y), 3),
         "z": round(float(loc.z), 3),
     }
+
+def _is_temporary_actor(actor):
+    label = _actor_label(actor)
+    name = _safe_text(actor.get_name())
+    return any(label.startswith(prefix) or name.startswith(prefix) for prefix in TEMP_ACTOR_PREFIXES)
+
+def cleanup_temporary_scene_actors(dry_run=False):
+    subsystem = _actor_subsystem()
+    removed = []
+    for actor in list(_all_actors()):
+        if not _is_temporary_actor(actor):
+            continue
+        row = {
+            "label": _actor_label(actor),
+            "name": _safe_text(actor.get_name()),
+            "class": _actor_class(actor),
+            "folder": _actor_folder(actor),
+        }
+        removed.append(row)
+        if dry_run:
+            continue
+        try:
+            subsystem.destroy_actor(actor)
+        except Exception as exc:
+            row["destroy_error"] = str(exc)
+    return removed
 
 
 def _actor_llh(actor):
@@ -408,6 +435,7 @@ def apply_profile(profile_name, dry_run=False, include_details=True, include_act
         raise ValueError("Unknown profile '%s'. Available: %s" % (profile_name, ", ".join(sorted(PROFILES))))
 
     profile = PROFILES[profile_name]
+    temp_cleanup = cleanup_temporary_scene_actors(dry_run=dry_run)
     groups, _ = collect_scene_groups()
     selected_visible = {
         group: set(str(item) for item in labels)
@@ -420,6 +448,7 @@ def apply_profile(profile_name, dry_run=False, include_details=True, include_act
         "dry_run": bool(dry_run),
         "recommended_vision_targets": profile.get("recommended_vision_targets", ""),
         "paper_waypoint_context": dict(profile.get("paper_waypoint_context", {})),
+        "temporary_actor_cleanup": temp_cleanup,
         "groups": {},
         "moves": {},
     }

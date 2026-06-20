@@ -17,7 +17,7 @@ if "%PROJECT_ROOT:~-1%"=="\" set "PROJECT_ROOT=%PROJECT_ROOT:~0,-1%"
 set "PIPELINE_DIR=%PROJECT_ROOT%\pipeline"
 set "LOGS_DIR=%PIPELINE_DIR%\logs"
 
-set "PORCE_DEFAULTS_FORCE=1"
+if not defined PORCE_DEFAULTS_FORCE set "PORCE_DEFAULTS_FORCE=1"
 call "%PROJECT_ROOT%\tools\load_porce_defaults.bat" "%PROJECT_ROOT%\pipeline\porce_defaults.env" "%PORCE_DEFAULTS_FORCE%"
 if errorlevel 1 (
   echo [ERROR] Failed to load shared defaults from pipeline\porce_defaults.env
@@ -43,6 +43,9 @@ if /I "%WORKFLOW%"=="SIMULATION" (
 ) else (
   if not defined PORCE_WSL_PRECHECK_ENABLE set "PORCE_WSL_PRECHECK_ENABLE=0"
 )
+
+if not defined PORCE_TERMINAL_KEEP_OPEN set "PORCE_TERMINAL_KEEP_OPEN=0"
+if not defined PORCE_WT_WINDOW set "PORCE_WT_WINDOW=DeepAeroTwinPORCE"
 
 if not defined PORCE_OBSTACLE_TOKEN_PERSIST set "PORCE_OBSTACLE_TOKEN_PERSIST=0"
 if /I "%PORCE_OBSTACLE_TOKEN_PERSIST%"=="true" set "PORCE_OBSTACLE_TOKEN_PERSIST=1"
@@ -108,8 +111,8 @@ if /I "%WORKFLOW%"=="REAL_TWIN" (
   set "MODE_LABEL=Digital Twin (REAL_TWIN)"
 ) else (
   set "PORCE_SYSTEM_MODE=SIMULATION"
-  set "PORCE_VISION_DEBUG_WINDOW=1"
-  set "PORCE_VISION_DEBUG_DOCK=1"
+  if not defined PORCE_VISION_DEBUG_WINDOW set "PORCE_VISION_DEBUG_WINDOW=1"
+  if not defined PORCE_VISION_DEBUG_DOCK set "PORCE_VISION_DEBUG_DOCK=1"
   set "MODE_LABEL=Pipeline (SIMULATION)"
 )
 

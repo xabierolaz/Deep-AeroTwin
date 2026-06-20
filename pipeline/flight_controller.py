@@ -76,6 +76,14 @@ from constants import (
     MAVLINK_ARM_FORCE_CODE,
     MAVLINK_ERROR_RETRY_SLEEP_S,
     MAVLINK_HEADING_SCALE,
+    TELEMETRY_ATTITUDE_SMOOTH_ENABLE,
+    TELEMETRY_ATTITUDE_SMOOTH_MAX_RATE_DPS,
+    TELEMETRY_ATTITUDE_SMOOTH_RESET_JUMP_DEG,
+    TELEMETRY_ATTITUDE_SMOOTH_TAU_S,
+    TELEMETRY_YAW_SMOOTH_ENABLE,
+    TELEMETRY_YAW_SMOOTH_MAX_RATE_DPS,
+    TELEMETRY_YAW_SMOOTH_TAU_S,
+    TELEMETRY_YAW_SMOOTH_RESET_JUMP_DEG,
     MAVLINK_LOOP_SLEEP_S,
     MAVLINK_RECONNECT_SLEEP_S,
     MAVLINK_RECV_TIMEOUT_S,
@@ -324,6 +332,13 @@ state = {
     'unreal_truth_posts_total': 0,
     'unreal_truth_posts_unauthorized': 0,
     'unreal_truth_last_error': '',
+    'telemetry_yaw_smooth': {
+        'yaw': None,
+        'heading': None,
+        'pitch': None,
+        'roll': None,
+        'ts': 0.0,
+    },
 }
 
 state_lock = threading.Lock()
@@ -486,6 +501,7 @@ def _mock_vehicle_loop():
     cur_mode = 'STABILIZE'
     cur_armed = False
     cur_groundspeed = 0.0
+    cur_yaw_deg = 0.0
 
     last_ts = time.time()
     while True:
@@ -545,6 +561,8 @@ def _mock_vehicle_loop():
                 east = dlon * R * (math.cos(math.radians(cur_lat)) or float(GEOMETRY_COS_LAT_EPS))
                 dist = math.hypot(north, east)
                 if dist > float(MOCK_MOVE_MIN_DIST_M):
+                    target_yaw_deg = _normalize_angle_deg(math.degrees(math.atan2(east, north)))
+                    cur_yaw_deg = _smooth_angle_deg(cur_yaw_deg, target_yaw_deg, dt)
                     spd = float(NAV_SPEED_HORIZONTAL_MS)
                     d = min(dist, spd * dt)
                     s = d / (dist + float(GEOMETRY_EPS))
@@ -571,8 +589,8 @@ def _mock_vehicle_loop():
             state['telemetry']['mode'] = cur_mode
             state['telemetry']['armed'] = cur_armed
             state['telemetry']['groundspeed'] = float(cur_groundspeed)
-            state['telemetry']['heading'] = 0.0
-            state['telemetry']['yaw'] = 0.0
+            state['telemetry']['heading'] = float(cur_yaw_deg)
+            state['telemetry']['yaw'] = float(cur_yaw_deg)
             state['telemetry']['last_update'] = now
             seeded_home = _maybe_seed_home_from_telemetry_locked(
                 cur_lat,
@@ -676,6 +694,135 @@ def _clean_float(raw_value, default_value: float) -> float:
     if not math.isfinite(value):
         value = float(default_value)
     return float(value)
+
+
+def _normalize_angle_deg(value: float) -> float:
+    wrapped = math.fmod(float(value), 360.0)
+    if wrapped < 0.0:
+        wrapped += 360.0
+    return float(wrapped)
+
+
+def _angle_delta_deg(target: float, current: float) -> float:
+    return (float(target) - float(current) + 540.0) % 360.0 - 180.0
+
+
+def _smooth_angle_deg(current: float | None, target: float, dt_s: float) -> float:
+    target = _normalize_angle_deg(float(target))
+    if current is None or not math.isfinite(float(current)):
+        return target
+    current = _normalize_angle_deg(float(current))
+    dt_s = max(0.0, float(dt_s))
+    delta = _angle_delta_deg(target, current)
+    if abs(delta) >= float(TELEMETRY_YAW_SMOOTH_RESET_JUMP_DEG) and dt_s > 2.0:
+        return target
+    tau_s = max(0.01, float(TELEMETRY_YAW_SMOOTH_TAU_S))
+    alpha = 1.0 - math.exp(-dt_s / tau_s) if dt_s > 0.0 else 1.0
+    requested_step = delta * max(0.0, min(1.0, alpha))
+    max_step = max(0.0, float(TELEMETRY_YAW_SMOOTH_MAX_RATE_DPS)) * max(dt_s, 0.0)
+    if max_step > 0.0:
+        requested_step = max(-max_step, min(max_step, requested_step))
+    return _normalize_angle_deg(current + requested_step)
+
+
+def _smooth_scalar_deg(
+    current: float | None,
+    target: float,
+    dt_s: float,
+    *,
+    max_rate_dps: float,
+    tau_s: float,
+    reset_jump_deg: float,
+) -> float:
+    target = float(target)
+    if current is None or not math.isfinite(float(current)):
+        return target
+    current = float(current)
+    if not math.isfinite(current):
+        return target
+    dt_s = max(0.0, float(dt_s))
+    delta = float(target) - float(current)
+    if abs(delta) >= float(reset_jump_deg) and dt_s > 2.0:
+        return target
+    alpha = 1.0 - math.exp(-dt_s / max(0.01, float(tau_s))) if dt_s > 0.0 else 1.0
+    requested_step = delta * max(0.0, min(1.0, alpha))
+    max_step = max(0.0, float(max_rate_dps)) * max(dt_s, 0.0)
+    if max_step > 0.0:
+        requested_step = max(-max_step, min(max_step, requested_step))
+    return float(current + requested_step)
+
+
+def _apply_smoothed_telemetry_angles_locked(telemetry: dict, now_ts: float) -> dict:
+    yaw_enabled = bool(TELEMETRY_YAW_SMOOTH_ENABLE)
+    attitude_enabled = bool(TELEMETRY_ATTITUDE_SMOOTH_ENABLE)
+    if not yaw_enabled and not attitude_enabled:
+        return telemetry
+
+    raw_yaw = _clean_float(telemetry.get("yaw", telemetry.get("heading", 0.0)), 0.0)
+    raw_heading = _clean_float(telemetry.get("heading", raw_yaw), raw_yaw)
+    raw_pitch = _clean_float(telemetry.get("pitch", 0.0), 0.0)
+    raw_roll = _clean_float(telemetry.get("roll", 0.0), 0.0)
+    smooth = state.setdefault(
+        "telemetry_yaw_smooth",
+        {"yaw": None, "heading": None, "pitch": None, "roll": None, "ts": 0.0},
+    )
+    last_ts = _clean_float(smooth.get("ts", 0.0), 0.0)
+    dt_s = 0.0 if last_ts <= 0.0 else max(0.0, float(now_ts) - float(last_ts))
+
+    smooth_yaw = _smooth_angle_deg(smooth.get("yaw"), raw_yaw, dt_s) if yaw_enabled else raw_yaw
+    smooth_heading = _smooth_angle_deg(smooth.get("heading"), raw_heading, dt_s) if yaw_enabled else raw_heading
+    smooth_pitch = (
+        _smooth_scalar_deg(
+            smooth.get("pitch"),
+            raw_pitch,
+            dt_s,
+            max_rate_dps=float(TELEMETRY_ATTITUDE_SMOOTH_MAX_RATE_DPS),
+            tau_s=float(TELEMETRY_ATTITUDE_SMOOTH_TAU_S),
+            reset_jump_deg=float(TELEMETRY_ATTITUDE_SMOOTH_RESET_JUMP_DEG),
+        )
+        if attitude_enabled
+        else raw_pitch
+    )
+    smooth_roll = (
+        _smooth_scalar_deg(
+            smooth.get("roll"),
+            raw_roll,
+            dt_s,
+            max_rate_dps=float(TELEMETRY_ATTITUDE_SMOOTH_MAX_RATE_DPS),
+            tau_s=float(TELEMETRY_ATTITUDE_SMOOTH_TAU_S),
+            reset_jump_deg=float(TELEMETRY_ATTITUDE_SMOOTH_RESET_JUMP_DEG),
+        )
+        if attitude_enabled
+        else raw_roll
+    )
+    smooth["yaw"] = float(smooth_yaw)
+    smooth["heading"] = float(smooth_heading)
+    smooth["pitch"] = float(smooth_pitch)
+    smooth["roll"] = float(smooth_roll)
+    smooth["ts"] = float(now_ts)
+
+    output = dict(telemetry)
+    output["raw_yaw"] = float(raw_yaw)
+    output["raw_heading"] = float(raw_heading)
+    output["raw_pitch"] = float(raw_pitch)
+    output["raw_roll"] = float(raw_roll)
+    output["yaw"] = float(smooth_yaw)
+    output["heading"] = float(smooth_heading)
+    output["pitch"] = float(smooth_pitch)
+    output["roll"] = float(smooth_roll)
+    output["yaw_smoothing"] = {
+        "enabled": bool(yaw_enabled),
+        "max_rate_dps": float(TELEMETRY_YAW_SMOOTH_MAX_RATE_DPS),
+        "tau_s": float(TELEMETRY_YAW_SMOOTH_TAU_S),
+        "dt_s": float(dt_s),
+    }
+    output["attitude_smoothing"] = {
+        "enabled": bool(attitude_enabled),
+        "max_rate_dps": float(TELEMETRY_ATTITUDE_SMOOTH_MAX_RATE_DPS),
+        "tau_s": float(TELEMETRY_ATTITUDE_SMOOTH_TAU_S),
+        "dt_s": float(dt_s),
+    }
+    return output
 
 
 def _as_map(value: Any) -> dict:
@@ -1428,6 +1575,7 @@ def _merged_telemetry_for_vision_locked(now_ts: float) -> tuple[dict, bool, floa
     }
 
     if not bool(UNREAL_TELEMETRY_INGEST_ENABLE):
+        merged = _apply_smoothed_telemetry_angles_locked(merged, float(now_ts))
         return merged, False, float("inf")
 
     unreal_last_update = _clean_float(state.get("unreal_truth_last_update", 0.0), 0.0)
@@ -1473,6 +1621,7 @@ def _merged_telemetry_for_vision_locked(now_ts: float) -> tuple[dict, bool, floa
             if roll_truth is not None:
                 merged["roll"] = _clean_float(roll_truth, float(merged["roll"]))
 
+    merged = _apply_smoothed_telemetry_angles_locked(merged, float(now_ts))
     return merged, bool(use_unreal_truth), float(unreal_age_s)
 
 
@@ -1483,6 +1632,16 @@ def get_telemetry():
         t = state['telemetry']
         active = (now_ts - float(t.get('last_update', 0.0) or 0.0)) < HEARTBEAT_TIMEOUT_S
         merged, use_unreal_truth, unreal_age_s = _merged_telemetry_for_vision_locked(now_ts)
+        active_obstacles = _rebuild_active_obstacles_locked(now_ts)
+        nearest_dist = None
+        nearest_type = ""
+        try:
+            nearest_obs, nearest_dist = nearest_obstacle_info(merged, active_obstacles)
+            if nearest_obs:
+                nearest_type = str(nearest_obs.get("type", "") or "")
+        except Exception:
+            nearest_dist = None
+            nearest_type = ""
         return jsonify({
             "ts": now_ts,
             "active": bool(active),
@@ -1492,15 +1651,30 @@ def get_telemetry():
             # rel_alt is used by vision for pixel->ground projection (AGL approx in SIM).
             "rel_alt": float(merged["rel_alt"]),
             "heading": float(merged["heading"]),
+            "raw_heading": float(merged.get("raw_heading", merged["heading"])),
             # Prefer attitude yaw (ATTITUDE) if available; fall back to heading.
             "yaw": float(merged["yaw"]),
+            "raw_yaw": float(merged.get("raw_yaw", merged["yaw"])),
+            "yaw_smoothing": merged.get("yaw_smoothing", {"enabled": False}),
             "roll": float(merged["roll"]),
+            "raw_roll": float(merged.get("raw_roll", merged["roll"])),
             "pitch": float(merged["pitch"]),
+            "raw_pitch": float(merged.get("raw_pitch", merged["pitch"])),
+            "attitude_smoothing": merged.get("attitude_smoothing", {"enabled": False}),
             "armed": bool(merged["armed"]),
             "mode": str(merged["mode"]),
             "telemetry_source": "unreal_truth" if bool(use_unreal_truth) else "mavlink",
             "unreal_truth_active": bool(use_unreal_truth),
             "unreal_truth_age_s": None if not math.isfinite(unreal_age_s) else float(unreal_age_s),
+            "wp_idx": 0 if IS_REAL_TWIN else int(state.get("current_wp_idx", 0) or 0),
+            "obstacles_count": len(active_obstacles),
+            "nearest_obs_dist_m": None if nearest_dist is None else float(nearest_dist),
+            "nearest_obs_type": str(nearest_type),
+            "evasion_active": False if IS_REAL_TWIN else bool(state.get("evasion_active", False)),
+            "evasion_path_len": 0 if IS_REAL_TWIN else int(len(state.get("evasion_path", []) or [])),
+            "evasion_path_idx": 0 if IS_REAL_TWIN else int(state.get("path_index", 0) or 0),
+            "failsafe_action_active": "" if IS_REAL_TWIN else str(state.get("failsafe_action_active", "") or ""),
+            "mission_state": str(state.get("mission_state", "UNKNOWN")),
         })
 
 @app.route('/api/states', methods=['GET'])
@@ -1778,6 +1952,9 @@ def status():
 def mavlink_loop():
     global master
     conn_str = str(SITL_CONN_STRING)
+    ack_log_state = {}
+    statustext_log_state = {}
+    repeated_log_min_s = max(5.0, float(CONTROL_LOG_INTERVAL_S))
     log.info(f"Conectando MAVLink en {conn_str}...")
     while True:
         try:
@@ -1863,7 +2040,17 @@ def mavlink_loop():
                             state['telemetry']['last_statustext_ts'] = time.time()
                             # Log only relevant messages to avoid flooding.
                             if isinstance(text, str) and ("PreArm" in text or "Arm" in text or "EKF" in text or "GPS" in text or "Takeoff" in text or "takeoff" in text):
-                                log.warning(f"[STATUSTEXT] {text}")
+                                now_ack = time.time()
+                                key = text.strip()
+                                prev = statustext_log_state.get(key, {"ts": 0.0, "suppressed": 0})
+                                if now_ack - float(prev.get("ts", 0.0)) >= repeated_log_min_s:
+                                    suppressed = int(prev.get("suppressed", 0) or 0)
+                                    suffix = f" (repeated {suppressed}x suppressed)" if suppressed else ""
+                                    log.warning(f"[STATUSTEXT] {text}{suffix}")
+                                    statustext_log_state[key] = {"ts": now_ack, "suppressed": 0}
+                                else:
+                                    prev["suppressed"] = int(prev.get("suppressed", 0) or 0) + 1
+                                    statustext_log_state[key] = prev
                         elif msg_type == 'COMMAND_ACK':
                             cmd = getattr(msg, 'command', None)
                             res = getattr(msg, 'result', None)
@@ -1898,12 +2085,24 @@ def mavlink_loop():
                         except Exception:
                             res_name = f"RES_{res}"
 
-                        if cmd in (
+                        should_log_ack = cmd in (
                             mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
                             mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
                             mavutil.mavlink.MAV_CMD_DO_SET_MODE,
-                        ) or res != mavutil.mavlink.MAV_RESULT_ACCEPTED:
-                            log.info(f"[ACK] {cmd_name}({cmd}) -> {res_name}({res})")
+                        ) or res != mavutil.mavlink.MAV_RESULT_ACCEPTED
+                        if should_log_ack:
+                            now_ack = time.time()
+                            key = (cmd, res)
+                            prev = ack_log_state.get(key, {"ts": 0.0, "suppressed": 0})
+                            is_success = res == mavutil.mavlink.MAV_RESULT_ACCEPTED
+                            if is_success or now_ack - float(prev.get("ts", 0.0)) >= repeated_log_min_s:
+                                suppressed = int(prev.get("suppressed", 0) or 0)
+                                suffix = f" (repeated {suppressed}x suppressed)" if suppressed else ""
+                                log.info(f"[ACK] {cmd_name}({cmd}) -> {res_name}({res}){suffix}")
+                                ack_log_state[key] = {"ts": now_ack, "suppressed": 0}
+                            else:
+                                prev["suppressed"] = int(prev.get("suppressed", 0) or 0) + 1
+                                ack_log_state[key] = prev
                 except Exception as e:
                     log.error(f"Error en loop MAVLink: {e}")
                     time.sleep(float(MAVLINK_ERROR_RETRY_SLEEP_S))
@@ -2269,7 +2468,9 @@ def control_loop():
                         can_replan_now = True
 
                     if should_plan_route:
-                        log.warning(f"[PORCE] Obstaculo detectado a {float(min_dist_eval):.1f}m. Planificando ruta A*...")
+                        if (now_loop - float(last_evasion_status_log_ts)) >= float(CONTROL_LOG_INTERVAL_S):
+                            last_evasion_status_log_ts = now_loop
+                            log.warning(f"[PORCE] Obstaculo detectado a {float(min_dist_eval):.1f}m. Planificando ruta A*...")
                         if len(wps) > 0:
                             target_wp = wps[current_idx] if current_idx < len(wps) else wps[-1]
                         else:
@@ -2438,10 +2639,12 @@ def control_loop():
                                             failsafe_hold_until_ts = float(hold_until)
                                             decision_reason = "route_failed_hold"
                                             decision_hold_active = True
-                                            log.error(
-                                                "[PORCE] Failsafe etapa 2: no se pudo generar ruta lateral. "
-                                                "Aplicando hold de seguridad."
-                                            )
+                                            if (now_loop - float(last_failsafe_status_log_ts)) >= float(CONTROL_LOG_INTERVAL_S):
+                                                last_failsafe_status_log_ts = now_loop
+                                                log.error(
+                                                    "[PORCE] Failsafe etapa 2: no se pudo generar ruta lateral. "
+                                                    "Aplicando hold de seguridad."
+                                                )
                                             if _audit.enabled:
                                                 _audit.log_event(
                                                     "evasion_route_failed_hold",
@@ -2455,10 +2658,12 @@ def control_loop():
                                                 )
                                         else:
                                             decision_reason = "route_failed_no_hold"
-                                            log.error(
-                                                "[PORCE] Failsafe etapa 2: no se pudo generar ruta lateral "
-                                                "y hold deshabilitado."
-                                            )
+                                            if (now_loop - float(last_failsafe_status_log_ts)) >= float(CONTROL_LOG_INTERVAL_S):
+                                                last_failsafe_status_log_ts = now_loop
+                                                log.error(
+                                                    "[PORCE] Failsafe etapa 2: no se pudo generar ruta lateral "
+                                                    "y hold deshabilitado."
+                                                )
                                             if _audit.enabled:
                                                 _audit.log_event(
                                                     "evasion_route_failed",
@@ -2880,7 +3085,11 @@ def ui_data_endpoint():
     with state_lock:
         now_ts = float(time.time())
         active_obstacles = list(_rebuild_active_obstacles_locked(now_ts))
-        telemetry_out = dict(state['telemetry'])
+        telemetry_out, use_unreal_truth, unreal_age_s = _merged_telemetry_for_vision_locked(now_ts)
+        telemetry_out = dict(telemetry_out)
+        telemetry_out["telemetry_source"] = "unreal_truth" if bool(use_unreal_truth) else "mavlink"
+        telemetry_out["unreal_truth_active"] = bool(use_unreal_truth)
+        telemetry_out["unreal_truth_age_s"] = None if not math.isfinite(unreal_age_s) else float(unreal_age_s)
         home_out = dict(state['home'] or {})
         home_lat = home_out.get("lat")
         home_lon = home_out.get("lon")

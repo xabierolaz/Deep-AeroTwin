@@ -372,7 +372,7 @@ void UVaRestRequestJSON::ProcessRequest()
 		}
 		else
 		{
-			UE_LOG(LogVaRest, Log, TEXT("%s: Request (urlencoded): %s %s (check bExtendedLog for additional data)"), *VA_FUNC_LINE, *HttpRequest->GetVerb(), *HttpRequest->GetURL());
+			UE_LOG(LogVaRest, Verbose, TEXT("%s: Request (urlencoded): %s %s (check bExtendedLog for additional data)"), *VA_FUNC_LINE, *HttpRequest->GetVerb(), *HttpRequest->GetURL());
 		}
 
 		break;
@@ -417,7 +417,7 @@ void UVaRestRequestJSON::ProcessRequest()
 		}
 		else
 		{
-			UE_LOG(LogVaRest, Log, TEXT("%s: Request (url body): %s %s (check bExtendedLog for additional data)"), *VA_FUNC_LINE, *HttpRequest->GetVerb(), *HttpRequest->GetURL());
+			UE_LOG(LogVaRest, Verbose, TEXT("%s: Request (url body): %s %s (check bExtendedLog for additional data)"), *VA_FUNC_LINE, *HttpRequest->GetVerb(), *HttpRequest->GetURL());
 		}
 
 		break;
@@ -455,7 +455,7 @@ void UVaRestRequestJSON::ProcessRequest()
 		}
 		else
 		{
-			UE_LOG(LogVaRest, Log, TEXT("Request (json): %s %s (check bExtendedLog for additional data)"), *HttpRequest->GetVerb(), *HttpRequest->GetURL());
+			UE_LOG(LogVaRest, Verbose, TEXT("Request (json): %s %s (check bExtendedLog for additional data)"), *HttpRequest->GetVerb(), *HttpRequest->GetURL());
 		}
 
 		break;
@@ -509,7 +509,14 @@ void UVaRestRequestJSON::OnProcessRequestComplete(FHttpRequestPtr Request, FHttp
 
 #if PLATFORM_DESKTOP
 	// Log response state
-	UE_LOG(LogVaRest, Log, TEXT("Response (%d): %sJSON(%s%s%s)JSON"), ResponseCode, LINE_TERMINATOR, LINE_TERMINATOR, *Response->GetContentAsString(), LINE_TERMINATOR);
+	if (UVaRestLibrary::GetVaRestSettings()->bExtendedLog)
+	{
+		UE_LOG(LogVaRest, Log, TEXT("Response (%d): %sJSON(%s%s%s)JSON"), ResponseCode, LINE_TERMINATOR, LINE_TERMINATOR, *Response->GetContentAsString(), LINE_TERMINATOR);
+	}
+	else
+	{
+		UE_LOG(LogVaRest, Verbose, TEXT("Response (%d): %s"), ResponseCode, Request.IsValid() ? *Request->GetURL() : TEXT(""));
+	}
 #endif
 
 	// Process response headers

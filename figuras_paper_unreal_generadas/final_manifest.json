@@ -1,0 +1,48 @@
+{
+  "figure_1_final": {
+    "file": "D:\\Deep-AeroTwin-UE57-Test\\figuras_paper_unreal_generadas\\paper_figure_1_static_tower_sequence.png",
+    "latex_file": "D:\\Deep-AeroTwin-UE57-Test\\paper\\Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion\\Imagenes\\paper_figure_1_static_tower_sequence.png",
+    "latex_files": [
+      "D:\\Deep-AeroTwin-UE57-Test\\paper\\Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion\\Imagenes\\paper_figure_1_static_tower_sequence.png",
+      "D:\\Deep-AeroTwin-UE57-Test\\paper\\Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion\\IEEE\\TII-Articles-LaTeX-template\\Imagenes\\paper_figure_1_static_tower_sequence.png",
+      "D:\\Deep-AeroTwin-UE57-Test\\paper_figure_1_static_tower_sequence.png"
+    ],
+    "view_m": {
+      "xlim": [
+        -45.0,
+        155.0
+      ],
+      "ylim": [
+        -160.0,
+        40.0
+      ]
+    },
+    "source_run": "pipeline\\logs\\paper_wp1_wp2_tower\\paper_wp1_wp2_tower_p0.56_l+8.0_20260617_120539"
+  },
+  "unreal_staging": {
+    "profile": "paper_all_obstacles",
+    "script": "Unreal/Scripts/paper_peloton_stage.py",
+    "note": "Figure 2 must use a current Unreal/SITL/YOLO run. Override PORCE_FIG2_MOVING_RUN only for audited recaptures; legacy 20260617 assets are not canonical."
+  },
+  "figure_2_final": {
+    "file": "D:\\Deep-AeroTwin-UE57-Test\\figuras_paper_unreal_generadas\\paper_figure_2_moving_peloton_sequence.png",
+    "latex_file": "D:\\Deep-AeroTwin-UE57-Test\\paper\\Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion\\Imagenes\\paper_figure_2_moving_peloton_sequence.png",
+    "latex_files": [
+      "D:\\Deep-AeroTwin-UE57-Test\\paper\\Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion\\Imagenes\\paper_figure_2_moving_peloton_sequence.png",
+      "D:\\Deep-AeroTwin-UE57-Test\\paper\\Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion\\IEEE\\TII-Articles-LaTeX-template\\Imagenes\\paper_figure_2_moving_peloton_sequence.png",
+      "D:\\Deep-AeroTwin-UE57-Test\\paper_figure_2_moving_peloton_sequence.png"
+    ],
+    "source_run": "pipeline\\logs\\zero_trust\\20260620_084932",
+    "route_event_ts": 1781938233.5749743,
+    "detections": 13,
+    "centroids": 13,
+    "unreal_frames": {
+      "run": "pipeline\\logs\\zero_trust\\20260620_084932",
+      "peloton_frame": 652,
+      "yolo_overlay_frame": 652,
+      "peloton_image": "figuras_paper_unreal_generadas\\yolo_crossing_precheck\\final_artifacts\\figure_unreal_raw_peloton_crossing.png",
+      "yolo_overlay_image": "figuras_paper_unreal_generadas\\yolo_crossing_precheck\\final_artifacts\\figure_yolo_overlay_peloton_crossing_close.png",
+      "yolo_crossing_video": "figuras_paper_unreal_generadas\\yolo_crossing_precheck\\final_artifacts\\video_yolo_peloton_crossing_event.mp4"
+    }
+  }
+}

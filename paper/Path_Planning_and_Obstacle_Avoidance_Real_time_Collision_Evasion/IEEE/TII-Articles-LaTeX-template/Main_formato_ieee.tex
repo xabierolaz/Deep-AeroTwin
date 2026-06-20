@@ -4,6 +4,7 @@
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{algorithmic}
 \usepackage{graphicx}
+\graphicspath{{./}{../../}}
 \usepackage{textcomp}
 \usepackage{url}
 
@@ -111,7 +112,7 @@ The main contributions of the paper are the following.
 Vision-based UAV navigation has been widely studied as a perception-driven alternative to map-only planning, with applications ranging from localization to obstacle detection and local trajectory generation. Although these techniques are often motivated by scenarios where Global Navigation Satellite Systems (GNSS) signals are unavailable, unreliable, or degraded, the literature has demonstrated that vision-based approaches are not limited to such conditions \cite{arafat2023vision,huang2025investigation}. However, there are general reviews on UAV navigation that integrate this type of techniques and consistently distinguish between global and local path planning paradigms. Global path planning methods assume a sufficiently known environment and compute a static solution in advance based on prior maps or predefined constraints. Classical search algorithms such as Dijkstra or A* have been employed within this paradigm and can perform effectively in fully mapped and static environments \cite{lavalle2006planning}.However, their use as stand-alone solutions without integration with complementary perceptual or reactive components presents significant limitations in real-world missions such as power-line inspection or infrastructure monitoring. In contrast, local path planning approaches generate or adapt trajectories online while the vehicle is moving, allowing immediate reactions to newly perceived environmental elements encountered during flight \cite{debnath2024review,meng2025advances}. More specifically, recent surveys in 2025 and 2026 confirm that the dominant design goals remain collision avoidance, dynamic feasibility, and computational efficiency, while explicit treatment of ground exposure of third-parties is still comparatively rare in runtime planning \cite{merei2025survey,nafees2026review}. The proposed method is explicitly positioned in the online local-replanning class.
 
 However, there is a second distinction that matters for this paper and that was often implicit in earlier project notes: much of the academic literature is still evaluated under what may be called a \emph{toy-problem bias}. In those formulations, the navigation problem is simplified enough to validate a planner mathematically, but the same simplifications weaken direct transfer to operational infrastructure inspection. Three simplifications are especially consequential here.
-\begin{itemize}[leftmargin=1.3em]
+\begin{itemize}
     \item \textbf{Obstacle homogeneity.} Obstacles are often represented as interchangeable geometric primitives or generic occupied cells. In inspection practice, this is not operationally neutral: a tower, a cow, and an uninvolved person may all occupy space, but they do not carry the same legal or operational meaning.
     \item \textbf{Binary safety.} Many planners implicitly treat a mission as successful as long as physical collision is avoided. For European civil UAS operations, that criterion is too weak because a near overflight of uninvolved people may already be operationally unacceptable even when no impact occurs \cite{EU2019_947,JARUS_SORA_2_5_2024,EASA_AMC_GM_SORA25_2025}.
     \item \textbf{Free-space permissiveness.} Conventional local planning usually assumes that any geometrically free air volume is candidate flight space. In European operations, parts of that free volume may still be undesirable or prohibited once uninvolved people, sensitive ground areas, or risk buffers are considered.
@@ -234,7 +235,6 @@ However, as introduced in Section 2, the operational focus shifts during the exe
 The controller-level logic that constitutes the scientific core of the proposed method is specified below. The method receives the active waypoint, fresh perception outputs, and current telemetry; canonicalizes human-adjacent detections into protected local regions; evaluates whether the nearest obstacle enters the dynamic reaction horizon; and either preserves nominal mission following or activates a bounded A* local bypass. Importantly, the same decision chain also defines the fallback behavior and the audit outputs, so the proposal is not just a path planner but a complete online conflict-resolution policy.
 
 
-%XABI: \diagramplaceholder{Flujo metodológico del sistema: debería verse un diagrama de control con inicio en la actualización de telemetría, waypoint activo y tracks; después, la canonicalización de clases tipo person/bicycle/biker en regiones protegidas; a continuación, el cálculo del horizonte dinámico de reacción y una decisión binaria sobre si el obstáculo entra o no en ese horizonte. Si no entra, el sistema mantiene el seguimiento nominal; si entra, construye el subconjunto acotado del planificador, ejecuta el A* local y decide si la ruta local es válida. Si lo es, ejecuta subobjetivos y reengancha con el waypoint actual; si no lo es, activa la escalera de failsafe. En paralelo, el mismo diagrama debería mostrar qué eventos de auditoría se generan en cada rama.}
 
 \subsection{Problem Formulation}
 
@@ -366,7 +366,6 @@ The proposed method is evaluated inside  the validated \texttt{SIMULATION} workf
 \label{Simulation Environment Diagram}
 \end{figure}
 
-%XABI: \diagramplaceholder{Arquitectura de Pipeline A: debería verse, de izquierda a derecha, la cadena completa de integración con el fichero de misión, la fuente visual Cesium/Unreal y la telemetría MAVLink entrando en el Brain; debajo, el sistema de visión devolviendo tracks geoposicionados; a la derecha, el planificador local de evasión entregando una ruta local y, más abajo, el autopiloto ejecutando setpoints; todavía más a la derecha, la API de estado compartido y los artefactos zero-trust como salida auditable. Las flechas deberían distinguir claramente flujo operativo en tiempo real frente a flujo de auditoría, sin cruces ni ambigüedades, para dejar inequívoco cómo se integra el sistema con Pipeline A.}
 
 The Simulation Environment roles are the following:
 \begin{itemize}
@@ -427,7 +426,27 @@ Table~\ref{tab:config} summarizes the main runtime parameters used to evaluate t
 
 \section{Results}
 
-In this section, the results of the experiments performed with the environment present in the $Deep\_Aero\_Twin$ repository using the proposed method are represented. 
+In this section, the results of the experiments performed with the environment present in the $Deep\_Aero\_Twin$ repository using the proposed method are represented. The visual evaluation is organized into two reproducible cases: a static tower obstacle and a moving peloton/biker obstacle.
+
+The first controlled experiment evaluates a static tower obstacle on the WP1--WP2 segment. The UAS starts from nominal waypoint tracking, receives a tower detection while the obstacle is still outside the dynamic reaction distance, and later triggers the local A* planner once the reaction condition is met. Figure~\ref{fig:static_tower_sequence} condenses this complete sequence in a common top-down frame: the occupancy grid is shown only after the planner has generated the local search space, while the last panel summarizes the executed deviation and recovery with respect to the planned path.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{Imagenes/paper_figure_1_static_tower_sequence.png}
+\caption{Static tower encounter. The sequence shows nominal navigation, obstacle detection without safety action, reaction-distance margins, local A* triggering, active evasion, and route recovery.}
+\label{fig:static_tower_sequence}
+\end{figure*}
+
+The second experiment stresses the same decision chain with a moving obstacle represented as a peloton/biker target. The Unreal scene was configured with the paper moving-obstacle profile and executed through the same waypoint-driven runtime used by the pipeline. Figure~\ref{fig:moving_peloton_sequence} combines real Unreal evidence from the validated flight with the audited planning logs: panel 2A shows only the current scripted cyclist peloton inside Unreal, panel 2B overlays the YOLO track boxes on the same Unreal view, panel 2C shows the detected moving track around the trigger instant, and panel 2D shows the resulting evasion response against the moving-obstacle centroid.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{Imagenes/paper_figure_2_moving_peloton_sequence.png}
+\caption{Moving-obstacle peloton encounter. The figure combines real Unreal frames of the current cyclist peloton and YOLO detections with logged biker tracks, peloton centroid evolution, and the active evasion segment generated by the UAS.}
+\label{fig:moving_peloton_sequence}
+\end{figure*}
+
+\iffalse
 
 In a first step, the Mission is downloaded into the simulated UAS. The mission comes from a preplanned waypoints file that contains a takeoff waypoint, a sequence of predefined inspection waypoints and a landing command. For the experiment, the UAS clims from \SI{500}{\meter} MSL to approximately \SI{523}{\meter} MSL, follows the inspection corridor, and lands automatically once the final waypoint is reached. This initial planned behaviour is represented in Figure \ref{instante inicial}, where it is appreciable that at in the initial stages, the UAS is navigating without any perturbation, following the predefined waypoints path. 
 
@@ -520,6 +539,8 @@ Finally, in Figure \ref{fase final. Completado} the final stage of the process i
 
 %PORCE: Para mi dentro de esta parte de metodología experimental sobra la parte de auditoría. Habría que adaptarlo a la propuesta de sacar las diferentes capturas del Gif para explicar como funciona la metodología. Y ya ver si eso si meter algo de lo que ha propuesto Xabi de la parte del E2E. Pero eso quizás a él le da para otro artículo y no es necesario meterlo por aquí.
 
+\fi
+
 %%PORCE: PROPUESTA DE XABI
 
 \section{Experimental Methodology}
@@ -549,17 +570,23 @@ The following metrics are extracted from logs:
     \item detour cost, computed as the difference between evasion path length and the straight-line segment joining the first and last evasion points.
 \end{itemize}
 
-The visual materials discussed in the paper were generated directly from repository logs by a dedicated script placed inside the \texttt{paper/} folder. In the present draft, the still-pending diagrams are replaced by short placeholder paragraphs in Spanish that specify the exact visual evidence expected in the final version, so the results section remains reproducible from project artifacts even before the final artwork is rebuilt.
+The visual materials discussed in the paper were generated directly from repository logs by the scripts in \texttt{figuras\_paper\_unreal\_generadas/}. The Unreal evidence is copied into the LaTeX \texttt{Imagenes/} folder from validated flight captures, while the validation diagrams are rebuilt from the audited telemetry, vision, and planner logs.
 
 \section{Experimental Validation of the Proposed Method}
 
 \subsection{Controlled E2E Ablation}
 
-The early section of the E2E trajectories is specified below through a short placeholder paragraph in Spanish while the final plot is being rebuilt. The two scenarios without detections are practically identical regardless of whether the replanning module is enabled, which confirms that the planner remains dormant when no conflict enters the system. The \texttt{replanner off + detections} scenario also follows the nominal corridor, while \texttt{replanner on + detections} introduces a visible local detour before rejoining the original path.
+The controlled E2E ablation is reconstructed from the campaign \texttt{20260612\_174114}, with ten runs per scenario. Figure~\ref{fig:e2e_ablation} overlays representative trajectories from the four operating modes. The two scenarios without detections are practically identical regardless of whether the replanning module is enabled, which confirms that the planner remains dormant when no conflict enters the system. The \texttt{replanner off + detections} scenario also follows the nominal corridor, while \texttt{replanner on + detections} introduces a visible local detour before rejoining the original path.
 
-%XABI: \diagramplaceholder{Ablación E2E de trayectorias: debería verse una superposición de las cuatro trayectorias del tramo inicial de misión, con colores claramente diferenciados para \texttt{replanner on/off} y \texttt{detections on/off}. El mensaje visual que debe quedar claro es que los dos casos sin detecciones casi se solapan por completo, que el caso con detecciones pero el replanning desactivado sigue el corredor nominal, y que solo el caso con detecciones y el replanning activado introduce un desvío local corto antes de reincorporarse a la ruta original.}
 
-Table~\ref{tab:e2e} quantifies this result. The mission always completes, and the overhead introduced by the avoidance behavior is small: relative to \texttt{replanner off + detections}, enabling the method under detections adds only \SI{4.6}{\meter} to the path and \SI{2}{\second} to the total mission.
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{Imagenes/paper_figure_3_e2e_ablation.png}
+\caption{Controlled E2E ablation reconstructed from campaign \texttt{20260612\_174114}. The full-mission overlay shows that all scenarios complete the same inspection corridor, while the conflict-window inset isolates the behavioral specificity of the proposed method: only the combination of detections and enabled replanning produces a local detour around the injected \texttt{biker} obstacle.}
+\label{fig:e2e_ablation}
+\end{figure*}
+
+Table~\ref{tab:e2e} quantifies this result. The mission always completes, and the overhead introduced by the avoidance behavior is small: relative to \texttt{replanner off + detections}, enabling the method under detections adds \SI{8.3}{\meter} to the mean path and approximately \SI{2}{\second} to the total mission.
 
 \begin{table}[t]
     \centering
@@ -568,10 +595,10 @@ Table~\ref{tab:e2e} quantifies this result. The mission always completes, and th
         \toprule
         \textbf{Scenario} & {\textbf{Time (s)}} & {\textbf{Path (m)}} & \textbf{Done} \\
         \midrule
-        replanner on + detections & 206 & 1460.1 & Yes \\
-        replanner off + detections & 204 & 1455.5 & Yes \\
-        replanner on + no detections & 204 & 1455.6 & Yes \\
-        replanner off + no detections & 204 & 1455.6 & Yes \\
+        replanner on + detections & 207 & 1463.9 & Yes \\
+        replanner off + detections & 205 & 1455.5 & Yes \\
+        replanner on + no detections & 206 & 1455.8 & Yes \\
+        replanner off + no detections & 207 & 1455.7 & Yes \\
         \bottomrule
     \end{tabular}
     \caption{Controlled E2E ablation metrics extracted from \texttt{pipeline/logs/e2e}.}
@@ -582,17 +609,21 @@ This ablation does not claim broad statistical superiority; instead, it verifies
 
 \subsection{Audited Collision-Evasion Maneuver}
 
-The selected zero-trust maneuver comes from run \texttt{20260220\_092802} and is intentionally stricter than the earlier tower/cattle-like cases because the trigger-side detections are \texttt{biker} tracks, i.e. the human-adjacent obstacle family that most directly supports the no-overflight claim of the proposed method. The perception-to-planner chain is specified below through a short placeholder paragraph in Spanish while the final montage is being rebuilt: from the last pre-trigger vision frame (frame 5053 at \(t=-\SI{0.095}{\second}\)), 300 raw detector boxes are reduced to 233 projected detections, then to four published \texttt{biker} tracks, of which the three nearest are used as the auditable proxy of the planner subset. This is the strongest zero-trust reconstruction possible from repository artifacts because the route event serializes the planner count but not the obstacle identities.
+The selected zero-trust maneuver comes from run \texttt{20260220\_092802} and is intentionally stricter than the earlier tower/cattle-like cases because the trigger-side detections are \texttt{biker} tracks, i.e. the human-adjacent obstacle family that most directly supports the no-overflight claim of the proposed method. Figure~\ref{fig:audited_evasion_validation} reconstructs the perception-to-planner chain from the last pre-trigger vision frame (frame 5053 at \(t=-\SI{0.095}{\second}\)): 300 raw detector boxes are reduced to 233 projected detections, then to four published \texttt{biker} tracks, of which the three nearest are used as the auditable proxy of the planner subset. This is the strongest zero-trust reconstruction possible from repository artifacts because the route event serializes the planner count but not the obstacle identities.
 
-%XABI: \diagramplaceholder{Montaje de percepción a planificador: debería verse, en la parte superior, una secuencia de reducción con cuatro etapas claramente numeradas: 300 cajas brutas, 233 detecciones proyectadas, 4 tracks \texttt{biker} publicados y 3 tracks finales usados como proxy del subconjunto del planificador. En la parte inferior deberían aparecer tres vistas coordinadas del mismo instante: espacio de píxel, espacio métrico local y espacio de rejilla del planificador. El objetivo visual no es estético sino probatorio: demostrar cómo la evidencia bruta termina convirtiéndose en la entrada auditable que realmente condiciona la activación del método.}
 
-The geometric effect of the method in a local ENU frame centered on the trigger-side telemetry state is specified below through a short placeholder paragraph in Spanish while the final trajectory figure is being rebuilt. The background lattice matches the real \SI{6}{\meter} planner discretization, while the shaded occupied cells correspond to the auditable proxy obtained by inflating the three nearest published trigger-side \texttt{biker} tracks with the configured \SI{12}{\meter} safety radius. Two of those tracks, at 42.0 and \SI{42.1}{\meter}, quantize to the same seed cell, so the merged occupied block is a genuine property of the planner discretization rather than a drawing artifact. The vehicle then departs from the nominal mission corridor, executes a bounded bypass, and rejoins the original path before continuing toward WP9.
+Panel 4B shows the geometric effect of the method in a local ENU frame centered on the trigger-side telemetry state. The background lattice matches the real \SI{6}{\meter} planner discretization, while the shaded occupied cells correspond to the auditable proxy obtained by inflating the three nearest published trigger-side \texttt{biker} tracks with the configured \SI{12}{\meter} safety radius. Two of those tracks, at 42.0 and \SI{42.1}{\meter}, quantize to the same seed cell, so the merged occupied block is a genuine property of the planner discretization rather than a drawing artifact. The vehicle then departs from the nominal mission corridor, executes a bounded bypass, and rejoins the original path before continuing toward WP9.
 
-%XABI: \diagramplaceholder{Trayectoria auditada del caso: debería verse un plano local ENU con la rejilla real de \SI{6}{\meter} del planificador, el punto de disparo de la maniobra, el waypoint objetivo WP9, el segmento nominal de misión y la trayectoria ejecutada por el dron durante la evasión. También deberían verse las celdas ocupadas derivadas de inflar con \SI{12}{\meter} los tres tracks \texttt{biker} más cercanos, así como la ruta discreta de 15 puntos que recorre el planificador para rodear esa ocupación y volver a engancharse con el corredor nominal. El mensaje visual clave es que el desvío está cuantizado en la rejilla real y no en una rejilla arbitraria dibujada a posteriori.}
 
-The geometric view is complemented below by a short placeholder paragraph in Spanish that specifies the expected time-series visualization while the final plot is being rebuilt. The reaction horizon remains comfortably above the clearance signal throughout the event, while the reconstructed geometric distance to the trigger-side proxy tracks never crosses the hard \SI{12}{\meter} safety radius. It does, however, fall below the \SI{22}{\meter} failsafe threshold during part of the maneuver, which is consistent with the role of that threshold as an escalation parameter for replanning failure rather than a guaranteed obstacle-clearance margin.
+Panel 4C complements the map with the corresponding time series. The reaction horizon remains comfortably above the clearance signal throughout the event, while the reconstructed geometric distance to the trigger-side proxy tracks never crosses the hard \SI{12}{\meter} safety radius. It does, however, fall below the \SI{22}{\meter} failsafe threshold during part of the maneuver, which is consistent with the role of that threshold as an escalation parameter for replanning failure rather than a guaranteed obstacle-clearance margin.
 
-%\XABI: diagramplaceholder{Serie temporal de la maniobra: debería verse un eje temporal con, como mínimo, cuatro curvas o referencias claramente distinguibles: el horizonte dinámico de reacción, la distancia geométrica mínima a los tracks proxy, el radio duro de seguridad de \SI{12}{\meter} y el umbral de failsafe de \SI{22}{\meter}. Idealmente se marcarían también el instante de activación del método, la fase de evasión activa y el momento de reincorporación a la misión. La lectura visual que debe sostener la figura es que el sistema trabaja dentro de un margen estrecho pero auditable: nunca viola el radio duro de seguridad aunque sí entra en la zona que justificaría una escalada si el replanning fracasara.}
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{Imagenes/paper_figure_4_audited_collision_evasion.png}
+\caption{Audited collision-evasion maneuver from run \texttt{20260220\_092802}. Panel 4A traces the logged perception reduction from raw boxes to planner-proxy tracks, panel 4B maps the three trigger-side \texttt{biker} proxies and inflated occupied cells in the real \SI{6}{\meter} planner grid, and panel 4C verifies that the executed evasion remains above the hard \SI{12}{\meter} safety radius while operating close to the configured margin.}
+\label{fig:audited_evasion_validation}
+\end{figure*}
+
 
 Table~\ref{tab:case} summarizes the main metrics derived from the audited run. The method is triggered at \SI{19.47}{\meter}, well inside the observed reaction horizon. It computes a 15-point local route and completes the maneuver in \SI{33.95}{\second}. The evasion path length is \SI{110.49}{\meter}; the equivalent straight-line segment between the first and last evasion points is \SI{43.60}{\meter}, so the local safety maneuver introduces a detour of \SI{66.90}{\meter}. Most importantly, the minimum geometric separation to the three trigger-side \texttt{biker} proxy tracks is \SI{13.48}{\meter}, which leaves only \SI{1.48}{\meter} of margin above the configured safety radius. That narrow but auditable clearance is scientifically stronger than an easy case because it shows the method operating close to the configured protection limit without crossing it.
 
@@ -627,7 +658,7 @@ Together, the ablation and the audited case study support two claims. First, the
 \section{Limitations and Future Work}
 
 The current paper is intentionally aligned with the evidence already available for the proposed method in the repository, and this imposes clear limits on what can be claimed.
-\begin{itemize}[leftmargin=1.3em]
+\begin{itemize}
     \item The experiments are simulation-based. The method is validated in Pipeline A under \texttt{SIMULATION}, but the real-world workflow still requires dedicated flight campaigns.
     \item The quantitative section is reproducible but not yet statistical. The paper reports representative runs and controlled ablations, not a large benchmark suite across many random seeds or scenarios.
     \item The regulatory novelty is operational rather than juridically complete. The method currently approximates uninvolved civilians through human-adjacent moving obstacle classes and conservative geometric avoidance; it is not yet a full SORA-compliant optimizer with class-dependent legal mitigations.
@@ -649,6 +680,10 @@ The controlled E2E ablation shows that the overhead of enabling the method under
 \section*{Acknowledgment}
 
 \bibliographystyle{ieeetr}
-\bibliography{bibliografia/referencias_revision_porce}
+\IfFileExists{bibliografia/referencias_revision_porce.bib}{%
+\bibliography{bibliografia/referencias_revision_porce}%
+}{%
+\bibliography{../../bibliografia/referencias_revision_porce}%
+}
 
 ov\end{document}

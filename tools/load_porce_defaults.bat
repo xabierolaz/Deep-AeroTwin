@@ -15,12 +15,13 @@ if not exist "%CFG_FILE%" (
 
 for /F "usebackq eol=# delims=" %%R in ("%CFG_FILE%") do (
   for /F "tokens=1,* delims==" %%K in ("%%R") do (
-    if not "%%K"=="" if not "%%L"=="" (
+    if not "%%K"=="" (
       if "%FORCE_SET%"=="1" (
         REM Force mode: overwrite existing env values for deterministic runs.
+        REM Empty values are intentional: they clear stale process env such as tokens.
         call set "%%K=%%L"
       ) else (
-        if not defined %%K (
+        if not "%%L"=="" if not defined %%K (
           REM Allow environment-variable placeholders like %%VAR%% in cfg values.
           call set "%%K=%%L"
         )

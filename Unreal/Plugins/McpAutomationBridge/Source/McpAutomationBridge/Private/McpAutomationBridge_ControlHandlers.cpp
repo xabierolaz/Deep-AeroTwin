@@ -2700,22 +2700,37 @@ bool UMcpAutomationBridgeSubsystem::HandleControlEditorPlay(
 #if MCP_HAS_LEVEL_EDITOR_PLAY_SETTINGS
   PlayParams.EditorPlaySettings = GetMutableDefault<ULevelEditorPlaySettings>();
 #endif
+
+  FString PlayMode;
+  if (Payload.IsValid() && Payload->TryGetStringField(TEXT("mode"), PlayMode)) {
+    PlayMode = PlayMode.TrimStartAndEnd().ToLower();
+  }
+  const bool bUseFloatingWindow =
+      PlayMode == TEXT("floating") || PlayMode == TEXT("new_window") ||
+      PlayMode == TEXT("new-window") || PlayMode == TEXT("window") ||
+      PlayMode == TEXT("preview");
+
 #if MCP_HAS_LEVEL_EDITOR_MODULE
-  if (FLevelEditorModule *LevelEditorModule =
-          FModuleManager::GetModulePtr<FLevelEditorModule>(
-              TEXT("LevelEditor"))) {
+  if (!bUseFloatingWindow && FModuleManager::Get().IsModuleLoaded(TEXT("LevelEditor"))) {
+    FLevelEditorModule *LevelEditorModule =
+        FModuleManager::GetModulePtr<FLevelEditorModule>(TEXT("LevelEditor"));
+    if (LevelEditorModule) {
     TSharedPtr<IAssetViewport> DestinationViewport =
         LevelEditorModule->GetFirstActiveViewport();
     if (DestinationViewport.IsValid())
       PlayParams.DestinationSlateViewport = DestinationViewport;
+    }
   }
 #endif
 
   GEditor->RequestPlaySession(PlayParams);
   TSharedPtr<FJsonObject> Resp = McpHandlerUtils::CreateResultObject();
   Resp->SetBoolField(TEXT("success"), true);
+  Resp->SetBoolField(TEXT("floatingWindow"), bUseFloatingWindow);
   SendAutomationResponse(Socket, RequestId, true,
-                         TEXT("Play in Editor started"), Resp, FString());
+                         bUseFloatingWindow ? TEXT("Play in Editor started in floating window")
+                                            : TEXT("Play in Editor started"),
+                         Resp, FString());
   return true;
 #else
   return false;

@@ -113,11 +113,6 @@
       "Optional": true
     },
     {
-      "Name": "StructUtils",
-      "Enabled": true,
-      "Optional": true
-    },
-    {
       "Name": "Metasound",
       "Enabled": true,
       "Optional": true

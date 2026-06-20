@@ -245,6 +245,14 @@ void UCesiumGaussianSplatSubsystem::Tick(float DeltaTime) {
     return;
   }
 
+  if (this->SplatComponents.IsEmpty()) {
+    if (IsValid(this->_pNiagaraActor)) {
+      this->_pNiagaraActor->Destroy();
+      this->reset();
+    }
+    return;
+  }
+
   if (!IsValid(this->_pNiagaraActor) || pWorld != this->_pLastCreatedWorld) {
     this->initializeForWorld(*pWorld);
   }
@@ -320,6 +328,11 @@ void UCesiumGaussianSplatSubsystem::makeInterfaceDirty(bool tilesOnly) {
 
 UCesiumGaussianSplatDataInterface*
 UCesiumGaussianSplatSubsystem::getDataInterface() const {
+  if (!IsValid(this->_pNiagaraComponent) ||
+      !IsValid(this->_pNiagaraComponent->GetAsset())) {
+    return nullptr;
+  }
+
   return UNiagaraFunctionLibrary::GetDataInterface<
       UCesiumGaussianSplatDataInterface>(
       this->_pNiagaraComponent,

@@ -141,7 +141,7 @@ function Assert-True([bool]$Condition, [string]$Message) {
 }
 
 function Invoke-AlignmentAudit([string]$RepoRoot, [string]$BaseUrl, [double]$WarnErrorM = 0.5) {
-  $scriptPath = Join-Path $RepoRoot "tmp\audit_spawn_alignment.ps1"
+  $scriptPath = Join-Path $RepoRoot "tools\audit_spawn_alignment.ps1"
   if (-not (Test-Path $scriptPath)) {
     Fail "Alignment audit script not found: $scriptPath"
   }

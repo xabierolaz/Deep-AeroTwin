@@ -90,7 +90,7 @@ public:
 			.String(TEXT("path"), TEXT("Path to a directory."))
 			.String(TEXT("actorName"), TEXT("Name of the actor."))
 			.String(TEXT("name"), TEXT("Name identifier."))
-			.String(TEXT("mode"), TEXT(""))
+			.String(TEXT("mode"), TEXT("For action=play: use new_window/floating to launch PIE in a separate preview window; use viewport or omit for the active editor viewport."))
 			.Number(TEXT("deltaTime"), TEXT(""))
 			.String(TEXT("resolution"), TEXT("Resolution setting (e.g., 1024x1024)."))
 			.Bool(TEXT("realtime"), TEXT(""))

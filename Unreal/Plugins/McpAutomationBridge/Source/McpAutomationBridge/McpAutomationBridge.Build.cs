@@ -205,7 +205,6 @@ public class McpAutomationBridge : ModuleRules
             AddOptionalDynamicModule(Target, EngineDir, "StateTreeEditorModule", "StateTreeEditorModule");
             AddOptionalDynamicModule(Target, EngineDir, "SmartObjectsModule", "SmartObjectsModule");
             AddOptionalDynamicModule(Target, EngineDir, "SmartObjectsEditorModule", "SmartObjectsEditorModule");
-            AddOptionalConditionalModule(Target, EngineDir, "StructUtils", "StructUtils");
             AddOptionalDynamicModule(Target, EngineDir, "MassEntity", "MassEntity");
             AddOptionalDynamicModule(Target, EngineDir, "MassSpawner", "MassSpawner");
             AddOptionalDynamicModule(Target, EngineDir, "MassActors", "MassActors");

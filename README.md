@@ -20,12 +20,13 @@ Documento dedicado en raíz: [`WORKFLOWS.md`](WORKFLOWS.md)
 
 - `launch.bat`: arranque del workflow `SIMULATION`
 - `launch_digital_twin.bat`: arranque del workflow `DIGITAL TWIN` / `REAL_TWIN`
-- `launch_spawner.bat`: `SIMULATION` + spawner sintético para probar Unreal
+- `LANZAR_TODO_PAPER.bat`: arranque completo para paper: prepara Unreal, abre PIE y lanza la pipeline.
 - Stop global: `powershell -NoProfile -ExecutionPolicy Bypass -File tools\stop_pipeline.ps1`
 
 Nota:
 
-- Hoy el launcher de raíz validado es `launch.bat`, que fuerza `PORCE_SYSTEM_MODE=SIMULATION`.
+- Hoy el launcher de raíz validado para el paper es `LANZAR_TODO_PAPER.bat`.
+- `launch.bat` queda como launcher pipeline-only y asume Unreal/PIE ya preparado.
 - `launch_digital_twin.bat` levanta el perfil pasivo `REAL_TWIN` sin SITL ni `vision_system.py` local.
 
 ## Bootstrap reproducible (zero-trust)
@@ -35,7 +36,7 @@ Preparación recomendada para clonado limpio:
 1. `powershell -NoProfile -ExecutionPolicy Bypass -File tools\bootstrap.ps1`
 2. `powershell -NoProfile -ExecutionPolicy Bypass -File tools\preflight_zero_trust.ps1`
 3. Si falta SITL: `powershell -NoProfile -ExecutionPolicy Bypass -File tools\build_sitl_wsl.ps1`
-4. Arranque: `launch.bat`
+4. Arranque completo paper: `LANZAR_TODO_PAPER.bat`
 
 Notas:
 
@@ -330,12 +331,10 @@ Georreferenciación (componente):
 - `CmToMScale`
 - `OriginActor`
 
-Spawn rápido en Unreal (test de tubería):
+Spawn sintético antiguo:
 
-- Doble click en `launch_spawner.bat`.
-- Opcional por consola: `launch_spawner.bat 30 4` (`duration_s=30`, `hz=4`).
-- Publica obstáculos sintéticos (`source=vision`) en `/api/obstacles`.
-- Auditoría de coherencia `lat/lon -> world_m`: `powershell -NoProfile -ExecutionPolicy Bypass -File tmp\audit_spawn_alignment.ps1`
+- El wrapper `launch_spawner.bat` se retiró del flujo operativo porque dependía de scripts temporales bajo `tmp\`.
+- Para pruebas reproducibles de obstáculos se usa la pipeline normal con logs/auditoría zero-trust, o el harness documentado en `tools\run_paper_wp1_wp2_tower.py` para la Figura 1.
 
 ## Peso YOLO canónico
 

@@ -1,3 +1,12 @@
 [submodule "ardupilot"]
 	path = ardupilot
 	url = https://github.com/ArduPilot/ardupilot.git
+[submodule "neural/FlashVSR"]
+	path = neural/FlashVSR
+	url = https://github.com/OpenImagingLab/FlashVSR.git
+[submodule "neural/StreamDiffusionV2"]
+	path = neural/StreamDiffusionV2
+	url = https://github.com/chenfengxu714/StreamDiffusionV2.git
+[submodule "neural/VideoX-Fun"]
+	path = neural/VideoX-Fun
+	url = https://github.com/aigc-apps/VideoX-Fun.git

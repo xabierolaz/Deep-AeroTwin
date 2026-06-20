@@ -16,6 +16,26 @@ namespace
 	constexpr float MaxTurnDeg = 75.0f;
 	constexpr float WanderRadiusCm = 1500.0f;
 	constexpr bool bFaceHeading = true;
+
+	bool IsCowActor(const AActor* Actor)
+	{
+		if (!Actor)
+		{
+			return false;
+		}
+
+		FString Text = Actor->GetName();
+		if (const UClass* ActorClass = Actor->GetClass())
+		{
+			Text += TEXT(" ");
+			Text += ActorClass->GetName();
+		}
+#if WITH_EDITOR
+		Text += TEXT(" ");
+		Text += Actor->GetActorLabel();
+#endif
+		return Text.Contains(TEXT("cow"), ESearchCase::IgnoreCase);
+	}
 }
 
 bool UCowHerdSubsystem::DoesSupportWorldType(const EWorldType::Type WorldType) const
@@ -48,8 +68,6 @@ void UCowHerdSubsystem::DiscoverCows()
 		return;
 	}
 
-	UClass* CowClass = LoadClass<AActor>(nullptr, TEXT("/Game/bp_cow.bp_cow_C"));
-
 	int32 Added = 0;
 	for (TActorIterator<AActor> It(World); It; ++It)
 	{
@@ -58,17 +76,18 @@ void UCowHerdSubsystem::DiscoverCows()
 		{
 			continue;
 		}
-		const bool bIsCow = CowClass ? Actor->IsA(CowClass) : Actor->GetName().Contains(TEXT("cow"));
-		if (!bIsCow)
+		if (!IsCowActor(Actor))
 		{
 			continue;
 		}
 
-		if (USceneComponent* Root = Actor->GetRootComponent())
+		TArray<USceneComponent*> SceneComponents;
+		Actor->GetComponents<USceneComponent>(SceneComponents);
+		for (USceneComponent* Component : SceneComponents)
 		{
-			if (Root->Mobility != EComponentMobility::Movable)
+			if (Component && Component->Mobility != EComponentMobility::Movable)
 			{
-				Root->SetMobility(EComponentMobility::Movable);
+				Component->SetMobility(EComponentMobility::Movable);
 			}
 		}
 
@@ -88,8 +107,8 @@ void UCowHerdSubsystem::DiscoverCows()
 
 	if (Added > 0)
 	{
-		UE_LOG(LogTemp, Display, TEXT("CowHerdSubsystem: now driving %d cow(s) (+%d new, bp_cow class %s)."),
-			Cows.Num(), Added, CowClass ? TEXT("resolved") : TEXT("name fallback"));
+		UE_LOG(LogTemp, Display, TEXT("CowHerdSubsystem: now driving %d cow(s) (+%d new)."),
+			Cows.Num(), Added);
 	}
 }
 

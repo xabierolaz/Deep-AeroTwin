@@ -40,6 +40,31 @@ float Clamp01(float Value)
     return FMath::Max(0.0f, FMath::Min(1.0f, Value));
 }
 
+void TryLoadConfiguredActorClass(TSubclassOf<AActor>& Slot, const TCHAR* EnvKey, const TCHAR* Label)
+{
+    if (Slot != nullptr)
+    {
+        return;
+    }
+
+    const FString ClassPath = FPlatformMisc::GetEnvironmentVariable(EnvKey).TrimStartAndEnd();
+    if (ClassPath.IsEmpty())
+    {
+        return;
+    }
+
+    UClass* LoadedClass = StaticLoadClass(AActor::StaticClass(), nullptr, *ClassPath);
+    if (LoadedClass != nullptr)
+    {
+        Slot = LoadedClass;
+        UE_LOG(LogPorceTelemetry, Log, TEXT("PORCE Twin V2 configured class loaded: %s -> %s"), Label, *ClassPath);
+    }
+    else
+    {
+        UE_LOG(LogPorceTelemetry, Warning, TEXT("PORCE Twin V2 configured class not found: %s (%s)"), Label, *ClassPath);
+    }
+}
+
 UCesiumGlobeAnchorComponent* FindOrCreateGlobeAnchor(AActor* Actor)
 {
     if (!IsValid(Actor))
@@ -121,30 +146,10 @@ void UPorceTelemetryComponent::BeginPlay()
         PollRateHz = 5.0f;
     }
 
-    auto EnsureClassLoaded = [this](TSubclassOf<AActor>& Slot, const TCHAR* ClassPath, const TCHAR* Label) -> void
-    {
-        if (Slot != nullptr)
-        {
-            return;
-        }
-        UClass* LoadedClass = StaticLoadClass(AActor::StaticClass(), nullptr, ClassPath);
-        if (LoadedClass != nullptr)
-        {
-            Slot = LoadedClass;
-            UE_LOG(LogPorceTelemetry, Log, TEXT("PORCE Twin V2 default class loaded: %s -> %s"), Label, ClassPath);
-        }
-        else
-        {
-            UE_LOG(LogPorceTelemetry, Verbose, TEXT("PORCE Twin V2 default class not found: %s (%s)"), Label, ClassPath);
-        }
-    };
-
-    EnsureClassLoaded(TowerActorClass, TEXT("/Game/BP_Tower.BP_Tower_C"), TEXT("tower"));
-    EnsureClassLoaded(CowActorClass, TEXT("/Game/BP_Cow.BP_Cow_C"), TEXT("cow"));
-    EnsureClassLoaded(BikerActorClass, TEXT("/Game/BP_Biker.BP_Biker_C"), TEXT("biker"));
-    EnsureClassLoaded(TowerActorClass, TEXT("/Game/bp_tower.bp_tower_C"), TEXT("tower"));
-    EnsureClassLoaded(CowActorClass, TEXT("/Game/bp_cow.bp_cow_C"), TEXT("cow"));
-    EnsureClassLoaded(BikerActorClass, TEXT("/Game/bp_biker.bp_biker_C"), TEXT("biker"));
+    TryLoadConfiguredActorClass(DefaultObstacleActorClass, TEXT("PORCE_UNREAL_TWIN_DEFAULT_ACTOR_CLASS"), TEXT("default"));
+    TryLoadConfiguredActorClass(TowerActorClass, TEXT("PORCE_UNREAL_TWIN_TOWER_ACTOR_CLASS"), TEXT("tower"));
+    TryLoadConfiguredActorClass(CowActorClass, TEXT("PORCE_UNREAL_TWIN_COW_ACTOR_CLASS"), TEXT("cow"));
+    TryLoadConfiguredActorClass(BikerActorClass, TEXT("PORCE_UNREAL_TWIN_BIKER_ACTOR_CLASS"), TEXT("biker"));
 }
 
 void UPorceTelemetryComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
