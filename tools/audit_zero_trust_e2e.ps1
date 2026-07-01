@@ -620,15 +620,36 @@ try {
   Assert-True ($unauthCode -eq 401) "SIMULATION should reject obstacle POST without token"
 
   $headers = @{ "X-PORCE-Token" = $simToken }
-  $homeLat = [double]$ui1.home.lat
-  $homeLon = [double]$ui1.home.lon
-  $body = @{ obstacles = @(@{ source = "vision"; source_id = 21; type = "person"; confidence = 0.89; lat = ($homeLat + 0.000020); lon = ($homeLon + 0.000015) }) } | ConvertTo-Json -Depth 5
+  $explicitWorldNorth = 12.5
+  $explicitWorldEast = -3.25
+  $explicitWorldUp = 1.5
+  $body = @{
+    obstacles = @(
+      @{
+        source = "vision"
+        source_id = 21
+        type = "person"
+        confidence = 0.89
+        world_m = @{
+          north = $explicitWorldNorth
+          east = $explicitWorldEast
+          up = $explicitWorldUp
+        }
+        heading_rad = ([Math]::PI / 2.0)
+      }
+    )
+  } | ConvertTo-Json -Depth 5
   Invoke-RestMethod -Uri "$($simulationRuntime.BaseUrl)/api/obstacles" -Method Post -Headers $headers -ContentType "application/json" -Body $body | Out-Null
   Start-Sleep -Milliseconds 800
   $ui2 = Invoke-RestMethod -Uri "$($simulationRuntime.BaseUrl)/api/ui/data" -TimeoutSec 2
   $bike = $ui2.obstacles | Where-Object { $_.entity_id -eq "vision:21" } | Select-Object -First 1
   Assert-True ($null -ne $bike) "SIMULATION did not retain authorized obstacle"
   Assert-True ([string]$bike.object_type -eq "bike") "SIMULATION did not canonicalize person -> bike"
+  Assert-True ($null -ne $bike.world_m) "SIMULATION did not preserve explicit obstacle world_m"
+  Assert-True ([Math]::Abs(([double]$bike.world_m.north) - $explicitWorldNorth) -lt 0.001) "SIMULATION explicit obstacle world_m.north mismatch"
+  Assert-True ([Math]::Abs(([double]$bike.world_m.east) - $explicitWorldEast) -lt 0.001) "SIMULATION explicit obstacle world_m.east mismatch"
+  Assert-True ([Math]::Abs(([double]$bike.world_m.up) - $explicitWorldUp) -lt 0.001) "SIMULATION explicit obstacle world_m.up mismatch"
+  Assert-True ([Math]::Abs(([double]$bike.yaw_deg) - 90.0) -lt 0.001) "SIMULATION did not convert heading_rad to yaw_deg"
 
   $report.simulation = [ordered]@{
     status_workflow = [string]$status.workflow
@@ -637,6 +658,13 @@ try {
     waypoints_count = @($ui1.waypoints).Count
     unauthorized_post_rejected = ($unauthCode -eq 401)
     canonical_bike_ok = ([string]$bike.object_type -eq "bike")
+    explicit_world_m_ok = (
+      $null -ne $bike.world_m -and
+      [Math]::Abs(([double]$bike.world_m.north) - $explicitWorldNorth) -lt 0.001 -and
+      [Math]::Abs(([double]$bike.world_m.east) - $explicitWorldEast) -lt 0.001 -and
+      [Math]::Abs(([double]$bike.world_m.up) - $explicitWorldUp) -lt 0.001
+    )
+    heading_rad_to_yaw_deg_ok = ([Math]::Abs(([double]$bike.yaw_deg) - 90.0) -lt 0.001)
     audit_root = $simulationRuntime.AuditRoot
     ok = $true
   }

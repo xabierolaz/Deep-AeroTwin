@@ -696,6 +696,76 @@ def _clean_float(raw_value, default_value: float) -> float:
     return float(value)
 
 
+def _clean_optional_float(raw_value):
+    if raw_value is None:
+        return None
+    try:
+        value = float(raw_value)
+    except Exception:
+        return None
+    if not math.isfinite(value):
+        return None
+    return float(value)
+
+
+def _clean_world_m_payload(raw_obs: dict):
+    if not isinstance(raw_obs, dict):
+        return None
+
+    world_obj = raw_obs.get("world_m")
+    if isinstance(world_obj, dict):
+        north = _clean_optional_float(world_obj.get("north"))
+        east = _clean_optional_float(world_obj.get("east"))
+        up = _clean_optional_float(world_obj.get("up", world_obj.get("z")))
+    else:
+        north = _clean_optional_float(raw_obs.get("world_north_m"))
+        east = _clean_optional_float(raw_obs.get("world_east_m"))
+        up = _clean_optional_float(raw_obs.get("world_up_m"))
+
+    if north is None or east is None:
+        return None
+    return {
+        "north": float(north),
+        "east": float(east),
+        "up": None if up is None else float(up),
+    }
+
+
+def _blend_world_m(prev, new, alpha: float):
+    if not isinstance(new, dict):
+        return prev if isinstance(prev, dict) else None
+    if not isinstance(prev, dict):
+        return dict(new)
+    blended = {}
+    for key in ("north", "east", "up"):
+        new_value = new.get(key)
+        prev_value = prev.get(key)
+        if new_value is None:
+            blended[key] = prev_value
+        elif prev_value is None:
+            blended[key] = new_value
+        else:
+            blended[key] = _blend_float(prev_value, new_value, alpha)
+    return blended
+
+
+def _clean_optional_yaw_deg(raw_obs: dict):
+    if not isinstance(raw_obs, dict):
+        return None
+
+    for key in ("yaw_deg", "heading_deg", "azimuth_deg"):
+        value = _clean_optional_float(raw_obs.get(key))
+        if value is not None:
+            return _normalize_angle_deg(value)
+
+    for key in ("yaw_rad", "heading_rad"):
+        value = _clean_optional_float(raw_obs.get(key))
+        if value is not None:
+            return _normalize_angle_deg(math.degrees(value))
+
+    return None
+
+
 def _normalize_angle_deg(value: float) -> float:
     wrapped = math.fmod(float(value), 360.0)
     if wrapped < 0.0:
@@ -960,6 +1030,16 @@ def _obs_distance_from_tel_m(tel_lat: float, tel_lon: float, obs: dict) -> float
 
 def _obs_track_distance_m(obs: dict, track: dict) -> float:
     try:
+        obs_world = obs.get("world_m")
+        track_world = track.get("world_m")
+        if isinstance(obs_world, dict) and isinstance(track_world, dict):
+            o_north = _clean_optional_float(obs_world.get("north"))
+            o_east = _clean_optional_float(obs_world.get("east"))
+            t_north = _clean_optional_float(track_world.get("north"))
+            t_east = _clean_optional_float(track_world.get("east"))
+            if None not in (o_north, o_east, t_north, t_east):
+                return float(math.hypot(float(o_north) - float(t_north), float(o_east) - float(t_east)))
+
         o_lat = obs.get("lat")
         o_lon = obs.get("lon")
         t_lat = track.get("lat")
@@ -1054,6 +1134,9 @@ def _rebuild_active_obstacles_locked(now_ts: float) -> list[dict]:
                 "confidence": track.get("confidence"),
                 "source": track.get("source"),
                 "bbox": track.get("bbox"),
+                "world_m": track.get("world_m"),
+                "yaw_deg": track.get("yaw_deg"),
+                "heading_deg": track.get("yaw_deg"),
                 "track_age_s": max(0.0, float(now_ts) - float(last_seen)),
                 "track_seen_count": int(track.get("seen_count", 1) or 1),
                 "track_static": bool(track.get("is_static", False)),
@@ -1081,6 +1164,8 @@ def _ingest_obstacles_locked(obs_list: list[dict], now_ts: float) -> list[dict]:
         obs_source = str(obs.get("source") or "").strip().lower()
         obs_source_id = _clean_obs_source_id(obs.get("source_id"))
         obs_entity_id = f"{obs_source}:{obs_source_id}" if obs_source and obs_source_id is not None else None
+        obs_world_m = _clean_world_m_payload(obs)
+        obs_yaw_deg = _clean_optional_yaw_deg(obs)
         assoc_m = float(_obs_assoc_distance_m(class_name))
         ttl_s = float(_obs_track_ttl_s(class_name))
         is_static_class = bool(_obs_is_static(class_name))
@@ -1141,6 +1226,10 @@ def _ingest_obstacles_locked(obs_list: list[dict], now_ts: float) -> list[dict]:
                 _clean_float(track.get("confidence", 0.0), 0.0),
                 _clean_float(obs.get("confidence", 0.0), 0.0),
             )
+            if obs_world_m is not None:
+                track["world_m"] = _blend_world_m(track.get("world_m"), obs_world_m, alpha)
+            if obs_yaw_deg is not None:
+                track["yaw_deg"] = float(obs_yaw_deg)
             track["bbox"] = obs.get("bbox")
             track["source"] = obs.get("source")
             if obs_source_id is not None:
@@ -1169,6 +1258,8 @@ def _ingest_obstacles_locked(obs_list: list[dict], now_ts: float) -> list[dict]:
             "source_id": obs_source_id,
             "entity_id": str(obs_entity_id) if obs_entity_id else f"brain:{int(track_id)}",
             "bbox": obs.get("bbox"),
+            "world_m": obs_world_m,
+            "yaw_deg": None if obs_yaw_deg is None else float(obs_yaw_deg),
             "first_seen_ts": float(now_ts),
             "last_seen_ts": float(now_ts),
             "seen_count": 1,
@@ -1751,8 +1842,10 @@ def rx_obstacles():
             if not math.isfinite(confidence):
                 confidence = 0.0
             canonical_type = _canonical_obs_class_name(o.get('type') or "unknown") or "unknown"
+            world_m = _clean_world_m_payload(o)
+            yaw_deg = _clean_optional_yaw_deg(o)
 
-            clean_obs.append({
+            clean_item = {
                 'id': o.get('id', 0),
                 'source_id': _clean_obs_source_id(o.get('source_id', o.get('id'))),
                 'distance': distance,
@@ -1763,7 +1856,16 @@ def rx_obstacles():
                 'confidence': confidence,
                 'source': source_raw or o.get('source'),
                 'bbox': o.get('bbox'),
-            })
+            }
+            if world_m is not None:
+                clean_item['world_m'] = world_m
+                clean_item['world_north_m'] = world_m['north']
+                clean_item['world_east_m'] = world_m['east']
+                clean_item['world_up_m'] = world_m.get('up')
+            if yaw_deg is not None:
+                clean_item['yaw_deg'] = float(yaw_deg)
+                clean_item['heading_deg'] = float(yaw_deg)
+            clean_obs.append(clean_item)
         with state_lock:
             state['inject_posts_total'] = int(state.get('inject_posts_total', 0)) + 1
             ingest_now = time.time()
@@ -3145,7 +3247,14 @@ def ui_data_endpoint():
 
             obs_lat = obs_payload.get("lat")
             obs_lon = obs_payload.get("lon")
-            if home_lat is not None and home_lon is not None and obs_lat is not None and obs_lon is not None:
+            has_explicit_world_m = isinstance(obs_payload.get("world_m"), dict)
+            if (
+                not has_explicit_world_m
+                and home_lat is not None
+                and home_lon is not None
+                and obs_lat is not None
+                and obs_lon is not None
+            ):
                 try:
                     obs_north_m, obs_east_m = _latlon_to_local_ne_m(
                         float(home_lat),

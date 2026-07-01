@@ -337,6 +337,7 @@ Contrato de payload:
 
 - `telemetry`: posición del dron (`lat`, `lon`, `alt`, `rel_alt`) y `world_m` (`north`, `east`, `up`) relativo a `home`.
 - `obstacles[]`: incluye `entity_id`, `object_id`, `type/object_type`, `confidence`, `lat`, `lon`, `world_m`.
+- Si `POST /api/obstacles` aporta `world_m`, el Brain lo conserva en `GET /api/ui/data`; `yaw_deg`, `heading_deg`, `azimuth_deg`, `yaw_rad` y `heading_rad` se normalizan a `yaw_deg`.
 - El componente C++ prioriza `world_m`; si no existe, usa `lat/lon`.
 
 Config mínima en Unreal:
