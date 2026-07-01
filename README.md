@@ -348,7 +348,7 @@ Spawn sintético antiguo:
 
 El switch en viewport y la API Blueprint se documentan en `Unreal\Plugins\PorceTelemetry\README_SPPA_BACKEND.md`.
 
-Smoke de reflexión del backend SPPA:
+Smoke de reflexión y generación del backend SPPA:
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_sppa_backend.ps1`
 - Incluido por defecto en `powershell -NoProfile -ExecutionPolicy Bypass -File tools\audit_zero_trust_e2e.ps1`.

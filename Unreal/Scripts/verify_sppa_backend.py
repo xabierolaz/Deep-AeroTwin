@@ -83,6 +83,147 @@ def enum_values(enum_cls):
     return sorted(values)
 
 
+def actor_subsystem():
+    return unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
+
+def editor_world():
+    subsystem_class = getattr(unreal, "UnrealEditorSubsystem", None)
+    if subsystem_class is not None:
+        try:
+            subsystem = unreal.get_editor_subsystem(subsystem_class)
+            if subsystem is not None:
+                world = subsystem.get_editor_world()
+                if world is not None:
+                    return world
+        except Exception:
+            pass
+    try:
+        return unreal.EditorLevelLibrary.get_editor_world()
+    except Exception:
+        return None
+
+def ensure_editor_world():
+    world = editor_world()
+    if world is not None:
+        return world
+    unreal.EditorLoadingAndSavingUtils.load_map("/Game/Ejea")
+    world = editor_world()
+    if world is None:
+        raise RuntimeError("Could not obtain an editor world for SPPA proxy spawn smoke")
+    return world
+
+def destroy_actor(actor):
+    if actor is None:
+        return
+    try:
+        actor_subsystem().destroy_actor(actor)
+    except Exception:
+        try:
+            actor.destroy_actor()
+        except Exception:
+            pass
+
+def spawn_proxy_actor(proxy_cls, label):
+    ensure_editor_world()
+    actor = unreal.EditorLevelLibrary.spawn_actor_from_class(
+        proxy_cls,
+        unreal.Vector(0.0, 0.0, 0.0),
+        unreal.Rotator(0.0, 0.0, 0.0),
+    )
+    if actor is None:
+        raise RuntimeError("spawn_actor_from_class returned None for PorceSemanticProxyActor")
+    try:
+        actor.set_actor_label(label)
+    except Exception:
+        pass
+    return actor
+
+def static_mesh_components(actor):
+    try:
+        return list(actor.get_components_by_class(unreal.StaticMeshComponent))
+    except Exception:
+        return []
+
+def component_has_mesh(component):
+    try:
+        return component.get_static_mesh() is not None
+    except Exception:
+        try:
+            return component.get_editor_property("static_mesh") is not None
+        except Exception:
+            return False
+
+def collision_text(component):
+    try:
+        return str(component.get_collision_enabled())
+    except Exception:
+        try:
+            value = component.get_editor_property("collision_enabled")
+            if hasattr(value, "value"):
+                value = value.value
+            return str(value)
+        except Exception:
+            return ""
+
+def has_enabled_collision(component):
+    return "NO_COLLISION" not in collision_text(component).upper()
+
+def configure_proxy(actor, class_name, confidence, confirmed):
+    method = getattr(actor, "configure_proxy", None)
+    if method is None:
+        method = getattr(actor, "ConfigureProxy", None)
+    if method is None:
+        raise RuntimeError("PorceSemanticProxyActor instance has no configure_proxy method")
+    method(class_name, float(confidence), bool(confirmed))
+
+def verify_proxy_generation(proxy_cls):
+    expected_min_parts = {
+        "bike": 6,
+        "cow": 7,
+        "tower": 4,
+        "unknown": 3,
+    }
+    rows = []
+    failures = []
+    actors = []
+    try:
+        for class_name, expected_min in expected_min_parts.items():
+            actor = spawn_proxy_actor(proxy_cls, "DAT_SPPA_Verify_" + class_name)
+            actors.append(actor)
+            confirmed = class_name != "unknown"
+            configure_proxy(actor, class_name, 0.95 if confirmed else 0.25, confirmed)
+            components = static_mesh_components(actor)
+            mesh_count = sum(1 for component in components if component_has_mesh(component))
+            collision_count = sum(1 for component in components if has_enabled_collision(component))
+            tags = [str(tag) for tag in getattr(actor, "tags", [])]
+            rows.append(
+                {
+                    "class_name": class_name,
+                    "confirmed": confirmed,
+                    "component_count": len(components),
+                    "mesh_component_count": mesh_count,
+                    "collision_enabled_count": collision_count,
+                    "tags": tags,
+                }
+            )
+
+            if mesh_count < expected_min:
+                failures.append(
+                    "SPPA proxy %s generated %d mesh parts, expected at least %d"
+                    % (class_name, mesh_count, expected_min)
+                )
+            if "PORCE_SPPA_PROXY" not in tags:
+                failures.append("SPPA proxy %s missing PORCE_SPPA_PROXY tag" % class_name)
+            if confirmed and collision_count < 1:
+                failures.append("Confirmed SPPA proxy %s did not enable collision on any part" % class_name)
+            if not confirmed and collision_count != 0:
+                failures.append("Tentative SPPA proxy %s enabled collision unexpectedly" % class_name)
+    finally:
+        for actor in actors:
+            destroy_actor(actor)
+
+    return {"rows": rows, "failures": failures}
+
 def main():
     component_cls, component_py_name = get_unreal_type("PorceTelemetryComponent")
     proxy_cls, proxy_py_name = get_unreal_type("PorceSemanticProxyActor")
@@ -179,6 +320,14 @@ def main():
     if backend_enum_cls is not None and ("ASSET" not in enum_text or "PROXY" not in enum_text):
         failures.append("PorceTwinSpawnBackend enum does not expose both asset and proxy modes")
 
+    proxy_generation = {"rows": [], "failures": []}
+    if proxy_cls is not None and not proxy_method_check.get("missing"):
+        try:
+            proxy_generation = verify_proxy_generation(proxy_cls)
+            failures.extend(proxy_generation["failures"])
+        except Exception as exc:
+            failures.append("SPPA proxy generation smoke failed: %s" % exc)
+
     payload = {
         "ok": len(failures) == 0,
         "component_python_name": component_py_name,
@@ -189,6 +338,7 @@ def main():
         "component_methods": component_method_check,
         "proxy_properties": proxy_property_check,
         "proxy_methods": proxy_method_check,
+        "proxy_generation": proxy_generation,
         "failures": failures,
     }
 
