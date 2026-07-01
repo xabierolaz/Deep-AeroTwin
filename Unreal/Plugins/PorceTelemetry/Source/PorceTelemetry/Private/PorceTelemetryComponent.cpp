@@ -418,6 +418,20 @@ TSubclassOf<AActor> UPorceTelemetryComponent::ResolveActorClassForType(const FSt
     return DefaultObstacleActorClass;
 }
 
+TSubclassOf<AActor> UPorceTelemetryComponent::ResolveActorClassForState(const FPorceTwinEntityState& State) const
+{
+    if (SpawnBackend == EPorceTwinSpawnBackend::SemanticProxy)
+    {
+        if (SemanticProxyActorClass != nullptr)
+        {
+            return SemanticProxyActorClass;
+        }
+        return APorceSemanticProxyActor::StaticClass();
+    }
+
+    return ResolveActorClassForType(State.ClassName);
+}
+
 void UPorceTelemetryComponent::StartPollRequest(double NowTs)
 {
     if (bRequestInFlight)
@@ -688,6 +702,28 @@ void UPorceTelemetryComponent::UpsertObstacle(
         : Clamp01(TentativeSmoothingAlpha);
     Existing->SmoothedWorldLocation = FMath::Lerp(Existing->SmoothedWorldLocation, MeasuredWorldCm, Alpha);
 
+    if (Existing->SpawnedActor.IsValid())
+    {
+        const TSubclassOf<AActor> DesiredActorClass = ResolveActorClassForState(*Existing);
+        const UClass* DesiredClass = DesiredActorClass.Get();
+        const UClass* SpawnedClass = Existing->SpawnedActorClass.Get();
+        if (
+            DesiredClass != SpawnedClass
+            || Existing->SpawnedBackend != SpawnBackend
+        )
+        {
+            UE_LOG(
+                LogPorceTelemetry,
+                Log,
+                TEXT("PORCE Twin V2 RESPAWN entity=%s type=%s backend=%s"),
+                *EntityId,
+                *ClassName,
+                SpawnBackend == EPorceTwinSpawnBackend::SemanticProxy ? TEXT("sppa") : TEXT("assets")
+            );
+            DestroySpawnedActorForState(*Existing);
+        }
+    }
+
     if (!Existing->SpawnedActor.IsValid())
     {
         SpawnActorForState(*Existing);
@@ -788,12 +824,19 @@ void UPorceTelemetryComponent::DestroyAllSpawnedActors()
 {
     for (TPair<FString, FPorceTwinEntityState>& Pair : EntityStates)
     {
-        if (Pair.Value.SpawnedActor.IsValid())
-        {
-            Pair.Value.SpawnedActor->Destroy();
-        }
-        Pair.Value.SpawnedActor.Reset();
+        DestroySpawnedActorForState(Pair.Value);
     }
+}
+
+void UPorceTelemetryComponent::DestroySpawnedActorForState(FPorceTwinEntityState& State)
+{
+    if (State.SpawnedActor.IsValid())
+    {
+        State.SpawnedActor->Destroy();
+    }
+    State.SpawnedActor.Reset();
+    State.SpawnedActorClass = nullptr;
+    State.SpawnedBackend = SpawnBackend;
 }
 
 AActor* UPorceTelemetryComponent::SpawnActorForState(FPorceTwinEntityState& State)
@@ -804,20 +847,7 @@ AActor* UPorceTelemetryComponent::SpawnActorForState(FPorceTwinEntityState& Stat
         return nullptr;
     }
 
-    TSubclassOf<AActor> ActorClass = nullptr;
-    if (SpawnBackend == EPorceTwinSpawnBackend::SemanticProxy)
-    {
-        ActorClass = SemanticProxyActorClass;
-        if (ActorClass == nullptr)
-        {
-            ActorClass = APorceSemanticProxyActor::StaticClass();
-        }
-    }
-    else
-    {
-        ActorClass = ResolveActorClassForType(State.ClassName);
-    }
-
+    TSubclassOf<AActor> ActorClass = ResolveActorClassForState(State);
     if (ActorClass == nullptr)
     {
         return nullptr;
@@ -842,6 +872,8 @@ AActor* UPorceTelemetryComponent::SpawnActorForState(FPorceTwinEntityState& Stat
     if (IsValid(Spawned))
     {
         State.SpawnedActor = Spawned;
+        State.SpawnedActorClass = ActorClass;
+        State.SpawnedBackend = SpawnBackend;
         ConfigureSpawnedActor(State);
     }
     return Spawned;
@@ -868,11 +900,7 @@ void UPorceTelemetryComponent::RebuildSpawnedActorsForCurrentBackend()
 {
     for (TPair<FString, FPorceTwinEntityState>& Pair : EntityStates)
     {
-        if (Pair.Value.SpawnedActor.IsValid())
-        {
-            Pair.Value.SpawnedActor->Destroy();
-            Pair.Value.SpawnedActor.Reset();
-        }
+        DestroySpawnedActorForState(Pair.Value);
     }
 
     for (TPair<FString, FPorceTwinEntityState>& Pair : EntityStates)

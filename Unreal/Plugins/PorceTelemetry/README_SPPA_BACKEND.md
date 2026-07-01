@@ -18,6 +18,8 @@ PORCE Twin: SPPA Proxy
 
 Clicking it calls `ToggleSpawnBackend()`. Only actors managed by this telemetry component are destroyed and respawned. Existing placed actors, maps, Cesium setup, and configured asset classes are not modified.
 
+If an existing `entity_id` changes canonical class, the asset backend respawns the managed actor with the matching configured class. The SPPA backend keeps the same proxy actor and reconfigures its generated primitive parts.
+
 ## Blueprint / Details API
 
 Useful properties and functions:

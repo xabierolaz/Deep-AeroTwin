@@ -697,5 +697,7 @@ if ($SkipUnrealBuild) {
 $report.ended_at = (Get-Date).ToString("o")
 $report.overall_ok = $true
 $report | ConvertTo-Json -Depth 8 | Set-Content -Path $reportPath -Encoding UTF8
+$latestRunPath = Join-Path (Split-Path -Parent $reportRoot) "LATEST_RUN.txt"
+Set-Content -Path $latestRunPath -Encoding UTF8 -Value $reportRoot
 Info "Audit report written to $reportPath"
 Info "Zero-trust E2E audit PASSED"

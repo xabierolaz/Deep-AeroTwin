@@ -28,6 +28,8 @@ struct FPorceTwinEntityState
     double LastSeenTs = 0.0;
     FVector SmoothedWorldLocation = FVector::ZeroVector;
     TWeakObjectPtr<AActor> SpawnedActor;
+    TSubclassOf<AActor> SpawnedActorClass;
+    EPorceTwinSpawnBackend SpawnedBackend = EPorceTwinSpawnBackend::UnrealAssets;
     bool bCesiumBaseHeightInitialized = false;
     double CesiumBaseHeightM = 0.0;
 };
@@ -151,6 +153,7 @@ private:
     bool TryNEDToWorldCm(double NorthM, double EastM, double UpM, FVector& OutWorldCm) const;
     bool TryLatLonToWorldCm(double LatDeg, double LonDeg, FVector& OutWorldCm) const;
     TSubclassOf<AActor> ResolveActorClassForType(const FString& RawType) const;
+    TSubclassOf<AActor> ResolveActorClassForState(const FPorceTwinEntityState& State) const;
     void StartPollRequest(double NowTs);
     void OnPollResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
     void ApplyObstacleBatch(const TArray<TSharedPtr<FJsonValue>>& Obstacles, double NowTs);
@@ -171,6 +174,7 @@ private:
     );
     void PruneStaleEntities(double NowTs);
     void DestroyAllSpawnedActors();
+    void DestroySpawnedActorForState(FPorceTwinEntityState& State);
     AActor* SpawnActorForState(FPorceTwinEntityState& State);
     void ConfigureSpawnedActor(FPorceTwinEntityState& State);
     void RebuildSpawnedActorsForCurrentBackend();
