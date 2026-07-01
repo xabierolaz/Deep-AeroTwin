@@ -19,6 +19,13 @@ This is the only Markdown file maintained inside this paper folder. The manuscri
 
 Journal URL: https://www.keaipublishing.com/en/journals/virtual-reality-and-intelligent-hardware/
 
+Editorial status:
+
+- Preliminary details were sent to VRIH.
+- On 2026-07-01 at 10:44, Ms. Zhengfang Wu replied that the academic editor completed the initial assessment and encouraged full submission through Editorial Manager.
+- This is a positive scope signal, not acceptance and not peer review. The full submission will still undergo comprehensive academic-editor assessment.
+- Evidence file: `vrih_scope_encouragement_2026-07-01.txt`.
+
 Why it fits:
 
 - The paper is now framed as a VR digital-twin operator display, not as a pure UAV telemetry paper.
@@ -53,7 +60,7 @@ Operational conclusion:
 
 - The UPNA A2 rule gives the strong points to JCR-indexed journals: Q1 up to 3, Q2 up to 2, Q3 up to 1.
 - VRIH is strategically attractive only if we can document the JCR status and quartile for the relevant year.
-- The VRIH email and KeAi page mention high CiteScore and Scopus Q1 categories; those are useful quality indicators, but the local baremo says JCR quartile is the safe evidence for Q1/Q2/Q3 points.
+- The VRIH editorial email states a newly released 2025 Impact Factor of 6.1, and previous editorial material mentions high CiteScore and Scopus Q1 categories. These are useful quality indicators, but the local baremo says JCR quartile is the safe evidence for Q1/Q2/Q3 points.
 - Before counting points, save the official JCR/Clarivate sheet for VRIH, including year, category, Journal Impact Factor, and quartile.
 
 Practical planning value:
