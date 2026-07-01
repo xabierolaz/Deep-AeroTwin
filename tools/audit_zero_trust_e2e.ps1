@@ -211,10 +211,23 @@ function Read-SppaBackendEvidence([string]$ReportPath) {
     Fail "SPPA backend report ok=false: $failures"
   }
 
+  $backendEnumValues = @($sppa.backend_enum_values | ForEach-Object { [string]$_ })
+  foreach ($requiredBackend in @("SEMANTIC_PROXY", "UNREAL_ASSETS")) {
+    if ($backendEnumValues -notcontains $requiredBackend) {
+      Fail "SPPA backend report missing backend enum value: $requiredBackend"
+    }
+  }
+
   $defaults = [ordered]@{}
   if ($sppa.component_defaults -and $sppa.component_defaults.defaults) {
     foreach ($prop in $sppa.component_defaults.defaults.PSObject.Properties) {
       $row = $prop.Value
+      $rowProps = @($row.PSObject.Properties.Name)
+      foreach ($field in @("ok", "expected", "value")) {
+        if ($rowProps -notcontains $field) {
+          Fail "SPPA backend report malformed component default '$($prop.Name)': missing '$field'"
+        }
+      }
       $defaults[$prop.Name] = [ordered]@{
         ok = [bool]$row.ok
         expected = [string]$row.expected
@@ -223,29 +236,107 @@ function Read-SppaBackendEvidence([string]$ReportPath) {
     }
   }
 
-  $switchRows = @(
-    @($sppa.component_switch.rows) | ForEach-Object {
-      [ordered]@{
-        action = [string]$_.action
-        backend = [string]$_.backend
-        is_proxy = [bool]$_.is_proxy
-      }
+  foreach ($requiredDefault in @("SpawnBackend", "EndpointUrl", "bEnabled", "bShowSpawnBackendSwitchUI", "PollRateHz")) {
+    if (-not $defaults.Contains($requiredDefault)) {
+      Fail "SPPA backend report missing component default evidence: $requiredDefault"
     }
-  )
+    if (-not [bool]$defaults[$requiredDefault].ok) {
+      Fail "SPPA backend component default failed for $requiredDefault (expected=$($defaults[$requiredDefault].expected), value=$($defaults[$requiredDefault].value))"
+    }
+  }
 
-  $proxyRows = @(
-    @($sppa.proxy_generation.rows) | ForEach-Object {
-      [ordered]@{
-        class_name = [string]$_.class_name
-        confirmed = [bool]$_.confirmed
-        mesh_component_count = [int]$_.mesh_component_count
-        collision_enabled_count = [int]$_.collision_enabled_count
+  $rawSwitchRows = @($sppa.component_switch.rows)
+  if ($rawSwitchRows.Count -eq 0) {
+    Fail "SPPA backend report missing component switch evidence rows"
+  }
+
+  $switchRows = @()
+  foreach ($rawRow in $rawSwitchRows) {
+    $rowProps = @($rawRow.PSObject.Properties.Name)
+    foreach ($field in @("action", "backend", "is_proxy")) {
+      if ($rowProps -notcontains $field) {
+        Fail "SPPA backend report malformed switch row: missing '$field'"
       }
     }
+    $switchRows += [ordered]@{
+      action = [string]$rawRow.action
+      backend = [string]$rawRow.backend
+      is_proxy = [bool]$rawRow.is_proxy
+    }
+  }
+
+  $expectedSwitchRows = [ordered]@{
+    set_assets = $false
+    set_proxy = $true
+    toggle_to_assets = $false
+    toggle_to_proxy = $true
+  }
+  foreach ($action in $expectedSwitchRows.Keys) {
+    $matches = @($switchRows | Where-Object { $_.action -eq $action })
+    if ($matches.Count -ne 1) {
+      Fail "SPPA backend report expected exactly one switch row for action '$action', found $($matches.Count)"
+    }
+    $expectedIsProxy = [bool]$expectedSwitchRows[$action]
+    $actualIsProxy = [bool](($matches[0]).is_proxy)
+    if ($actualIsProxy -ne $expectedIsProxy) {
+      Fail "SPPA backend switch row '$action' has is_proxy=$actualIsProxy, expected $expectedIsProxy"
+    }
+  }
+
+  $rawProxyRows = @($sppa.proxy_generation.rows)
+  if ($rawProxyRows.Count -eq 0) {
+    Fail "SPPA backend report missing proxy generation evidence rows"
+  }
+
+  $proxyRows = @()
+  foreach ($rawRow in $rawProxyRows) {
+    $rowProps = @($rawRow.PSObject.Properties.Name)
+    foreach ($field in @("class_name", "confirmed", "mesh_component_count", "collision_enabled_count")) {
+      if ($rowProps -notcontains $field) {
+        Fail "SPPA backend report malformed proxy row: missing '$field'"
+      }
+    }
+    $proxyRows += [ordered]@{
+      class_name = [string]$rawRow.class_name
+      confirmed = [bool]$rawRow.confirmed
+      mesh_component_count = [int]$rawRow.mesh_component_count
+      collision_enabled_count = [int]$rawRow.collision_enabled_count
+    }
+  }
+
+  $expectedProxyRows = @(
+    [ordered]@{ class_name = "bike"; min_mesh = 6; min_collision = 1; confirmed = $true },
+    [ordered]@{ class_name = "cow"; min_mesh = 7; min_collision = 1; confirmed = $true },
+    [ordered]@{ class_name = "tower"; min_mesh = 4; min_collision = 1; confirmed = $true },
+    [ordered]@{ class_name = "unknown"; min_mesh = 3; min_collision = 0; max_collision = 0; confirmed = $false }
   )
+  foreach ($expected in $expectedProxyRows) {
+    $className = [string]$expected["class_name"]
+    $matches = @($proxyRows | Where-Object { $_.class_name -eq $className })
+    if ($matches.Count -ne 1) {
+      Fail "SPPA backend report expected exactly one proxy row for class '$className', found $($matches.Count)"
+    }
+
+    $row = $matches[0]
+    $expectedConfirmed = [bool]$expected["confirmed"]
+    $actualConfirmed = [bool]$row.confirmed
+    if ($actualConfirmed -ne $expectedConfirmed) {
+      Fail "SPPA backend proxy row '$className' has confirmed=$actualConfirmed, expected $expectedConfirmed"
+    }
+    if ([int]$row.mesh_component_count -lt [int]$expected["min_mesh"]) {
+      Fail "SPPA backend proxy row '$className' has mesh_component_count=$($row.mesh_component_count), expected at least $($expected["min_mesh"])"
+    }
+    if ([int]$row.collision_enabled_count -lt [int]$expected["min_collision"]) {
+      Fail "SPPA backend proxy row '$className' has collision_enabled_count=$($row.collision_enabled_count), expected at least $($expected["min_collision"])"
+    }
+    if ($expected.Contains("max_collision") -and [int]$row.collision_enabled_count -gt [int]$expected["max_collision"]) {
+      Fail "SPPA backend proxy row '$className' has collision_enabled_count=$($row.collision_enabled_count), expected at most $($expected["max_collision"])"
+    }
+  }
 
   return [ordered]@{
     ok = [bool]$sppa.ok
+    schema_ok = $true
     backend_enum_values = @($sppa.backend_enum_values)
     component_defaults = $defaults
     component_switch = $switchRows
