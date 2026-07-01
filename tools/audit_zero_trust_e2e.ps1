@@ -195,6 +195,64 @@ function Invoke-AlignmentAudit([string]$RepoRoot, [string]$BaseUrl, [double]$War
   return [int]$LASTEXITCODE
 }
 
+function Read-SppaBackendEvidence([string]$ReportPath) {
+  if (-not (Test-Path $ReportPath)) {
+    Fail "SPPA backend report not found after verifier succeeded: $ReportPath"
+  }
+
+  try {
+    $sppa = Get-Content $ReportPath -Raw | ConvertFrom-Json
+  } catch {
+    Fail "Could not parse SPPA backend report JSON: $ReportPath"
+  }
+
+  if (-not [bool]$sppa.ok) {
+    $failures = @($sppa.failures) -join "; "
+    Fail "SPPA backend report ok=false: $failures"
+  }
+
+  $defaults = [ordered]@{}
+  if ($sppa.component_defaults -and $sppa.component_defaults.defaults) {
+    foreach ($prop in $sppa.component_defaults.defaults.PSObject.Properties) {
+      $row = $prop.Value
+      $defaults[$prop.Name] = [ordered]@{
+        ok = [bool]$row.ok
+        expected = [string]$row.expected
+        value = [string]$row.value
+      }
+    }
+  }
+
+  $switchRows = @(
+    @($sppa.component_switch.rows) | ForEach-Object {
+      [ordered]@{
+        action = [string]$_.action
+        backend = [string]$_.backend
+        is_proxy = [bool]$_.is_proxy
+      }
+    }
+  )
+
+  $proxyRows = @(
+    @($sppa.proxy_generation.rows) | ForEach-Object {
+      [ordered]@{
+        class_name = [string]$_.class_name
+        confirmed = [bool]$_.confirmed
+        mesh_component_count = [int]$_.mesh_component_count
+        collision_enabled_count = [int]$_.collision_enabled_count
+      }
+    }
+  )
+
+  return [ordered]@{
+    ok = [bool]$sppa.ok
+    backend_enum_values = @($sppa.backend_enum_values)
+    component_defaults = $defaults
+    component_switch = $switchRows
+    proxy_generation = $proxyRows
+  }
+}
+
 if (-not $RepoRoot) {
   $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 } else {
@@ -247,12 +305,15 @@ if ($SkipSppaReflection) {
   if ($LASTEXITCODE -ne 0) {
     Fail "SPPA backend reflection smoke failed"
   }
+  $sppaReportPath = Join-Path $RepoRoot "pipeline\logs\sppa_backend_verify_latest.json"
+  $sppaEvidence = Read-SppaBackendEvidence -ReportPath $sppaReportPath
   $report.sppa_backend = [ordered]@{
     skipped = $false
     ok = $true
     verifier = $sppaVerifyScript
     log_path = (Join-Path $RepoRoot "pipeline\logs\sppa_backend_verify_latest.log")
-    report_path = (Join-Path $RepoRoot "pipeline\logs\sppa_backend_verify_latest.json")
+    report_path = $sppaReportPath
+    evidence = $sppaEvidence
   }
 }
 
