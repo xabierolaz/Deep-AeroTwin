@@ -45,6 +45,22 @@ Notas:
 - El proyecto Unreal requiere `CesiumForUnreal` y `VaRest` (plugins externos a este repo).
 - Las herramientas Unreal resuelven UE 5.7 desde `PORCE_UNREAL_ENGINE_ROOT` o `UE_ENGINE_ROOT`; si no estan definidos, prueban las rutas Epic Games habituales.
 
+## Bundle AYTE Doctor
+
+Para preparar una copia verificable de los papers en la carpeta externa de baremo:
+
+`powershell -NoProfile -ExecutionPolicy Bypass -File tools\sync_papers_to_ayte_doctor.ps1`
+
+Destino por defecto: `D:\ayte_reclamacion\AYTE_DOCTOR\papers`.
+
+El script copia de forma no destructiva estas carpetas:
+
+- `paper_semantic_proxy_3d` -> `semantic_proxy_3d`
+- `paper_pipeline_B_telemetry` -> `pipeline_b_telemetry_vrih`
+- `paper\Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion` -> `path_planning_collision_evasion`
+
+Al terminar compara recuento de archivos y suma de bytes entre origen y destino, y escribe `COPY_MANIFEST.md` en la carpeta destino.
+
 ## Workflow 1: SIMULATION (flujo validado)
 
 `tools\launch_workflow.bat SIMULATION` carga defaults y levanta:

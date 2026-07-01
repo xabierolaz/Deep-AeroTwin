@@ -80,3 +80,9 @@ Entidades objetivo:
 - El plugin Unreal resuelve de forma directa `tower`, `cow`, `bike` y los aliases `biker`, `person`, `bicycle`.
 - El componente `UPorceTelemetryComponent` puede alternar entre `UnrealAssets` y `SemanticProxy` sin cambiar el input.
 - El Brain normaliza los aliases legacy a `bike` y reemite solo tipos canonicos en `GET /api/ui/data`.
+
+## Papers y baremo AYTE Doctor
+
+- `tools\sync_papers_to_ayte_doctor.ps1` sincroniza las carpetas de paper hacia `D:\ayte_reclamacion\AYTE_DOCTOR\papers`.
+- La copia es no destructiva y queda auditada con `COPY_MANIFEST.md`.
+- El script falla si el destino no coincide en recuento de archivos y suma de bytes con el origen.
