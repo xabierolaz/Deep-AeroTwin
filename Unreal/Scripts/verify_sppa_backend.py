@@ -294,6 +294,68 @@ def verify_proxy_generation(proxy_cls):
 
     return {"rows": rows, "failures": failures}
 
+def verify_proxy_reconfigure(proxy_cls):
+    failures = []
+    actor = None
+    try:
+        cleanup_temp_actors()
+        actor = spawn_proxy_actor(proxy_cls, TEMP_PREFIX + "reconfigure")
+        configure_proxy(actor, "bike", 0.95, True)
+        bike_mesh_count = sum(1 for component in static_mesh_components(actor) if component_has_mesh(component))
+        configure_proxy(actor, "cow", 0.95, True)
+        components = static_mesh_components(actor)
+        cow_mesh_count = sum(1 for component in components if component_has_mesh(component))
+        tags = [str(tag) for tag in getattr(actor, "tags", [])]
+
+        if "PORCE_CLASS_bike" in tags:
+            failures.append("SPPA proxy reconfigure retained stale PORCE_CLASS_bike tag")
+        if "PORCE_CLASS_cow" not in tags:
+            failures.append("SPPA proxy reconfigure did not add PORCE_CLASS_cow tag")
+        if cow_mesh_count < 7:
+            failures.append("SPPA proxy reconfigure cow mesh count %d, expected at least 7" % cow_mesh_count)
+        if cow_mesh_count > 8:
+            failures.append("SPPA proxy reconfigure appears to accumulate mesh components: %d after bike count %d" % (cow_mesh_count, bike_mesh_count))
+
+        return {
+            "bike_mesh_component_count": bike_mesh_count,
+            "cow_mesh_component_count": cow_mesh_count,
+            "tags_after_reconfigure": tags,
+            "failures": failures,
+        }
+    finally:
+        destroy_actor(actor)
+        cleanup_temp_actors()
+
+def verify_proxy_unknown_fallback(proxy_cls):
+    failures = []
+    actor = None
+    try:
+        cleanup_temp_actors()
+        actor = spawn_proxy_actor(proxy_cls, TEMP_PREFIX + "unknown_fallback")
+        configure_proxy(actor, "", 0.10, False)
+        tags = [str(tag) for tag in getattr(actor, "tags", [])]
+        mesh_count = sum(1 for component in static_mesh_components(actor) if component_has_mesh(component))
+        collision_count = sum(1 for component in static_mesh_components(actor) if has_enabled_collision(component))
+
+        if "PORCE_CLASS_unknown" not in tags:
+            failures.append("SPPA empty class fallback did not tag PORCE_CLASS_unknown")
+        if "PORCE_CLASS_" in tags:
+            failures.append("SPPA empty class fallback retained blank PORCE_CLASS_ tag")
+        if mesh_count < 3:
+            failures.append("SPPA empty class fallback generated %d mesh parts, expected at least 3" % mesh_count)
+        if collision_count != 0:
+            failures.append("SPPA empty tentative fallback enabled collision unexpectedly")
+
+        return {
+            "mesh_component_count": mesh_count,
+            "collision_enabled_count": collision_count,
+            "tags": tags,
+            "failures": failures,
+        }
+    finally:
+        destroy_actor(actor)
+        cleanup_temp_actors()
+
 def backend_enum_value(enum_cls, *tokens):
     if enum_cls is None:
         return None
@@ -483,12 +545,24 @@ def main():
         failures.extend(component_switch["failures"])
 
     proxy_generation = {"rows": [], "failures": []}
+    proxy_reconfigure = {"failures": []}
+    proxy_unknown_fallback = {"failures": []}
     if proxy_cls is not None and not proxy_method_check.get("missing"):
         try:
             proxy_generation = verify_proxy_generation(proxy_cls)
             failures.extend(proxy_generation["failures"])
         except Exception as exc:
             failures.append("SPPA proxy generation smoke failed: %s" % exc)
+        try:
+            proxy_reconfigure = verify_proxy_reconfigure(proxy_cls)
+            failures.extend(proxy_reconfigure["failures"])
+        except Exception as exc:
+            failures.append("SPPA proxy reconfigure smoke failed: %s" % exc)
+        try:
+            proxy_unknown_fallback = verify_proxy_unknown_fallback(proxy_cls)
+            failures.extend(proxy_unknown_fallback["failures"])
+        except Exception as exc:
+            failures.append("SPPA proxy unknown fallback smoke failed: %s" % exc)
 
     payload = {
         "ok": len(failures) == 0,
@@ -503,6 +577,8 @@ def main():
         "proxy_properties": proxy_property_check,
         "proxy_methods": proxy_method_check,
         "proxy_generation": proxy_generation,
+        "proxy_reconfigure": proxy_reconfigure,
+        "proxy_unknown_fallback": proxy_unknown_fallback,
         "failures": failures,
     }
 

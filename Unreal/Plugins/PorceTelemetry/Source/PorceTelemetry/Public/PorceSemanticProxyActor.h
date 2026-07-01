@@ -57,6 +57,7 @@ private:
     int32 LastConfiguredConfidenceBucket = -1;
     bool bLastConfiguredConfirmed = false;
 
+    void ClearClassTags();
     void ClearProxy();
     UStaticMesh* ResolveMesh(const FName& ShapeName) const;
     UStaticMeshComponent* AddPart(

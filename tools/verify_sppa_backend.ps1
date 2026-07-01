@@ -98,6 +98,8 @@ foreach ($section in @(
   "component_properties",
   "component_switch",
   "proxy_generation",
+  "proxy_reconfigure",
+  "proxy_unknown_fallback",
   "proxy_methods",
   "proxy_properties"
 )) {

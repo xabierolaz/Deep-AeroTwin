@@ -371,6 +371,46 @@ function Read-SppaBackendEvidence([string]$ReportPath) {
     }
   }
 
+  if (-not $sppa.proxy_reconfigure) {
+    Fail "SPPA backend report missing proxy reconfigure evidence"
+  }
+  $reconfigureProps = @($sppa.proxy_reconfigure.PSObject.Properties.Name)
+  foreach ($field in @("bike_mesh_component_count", "cow_mesh_component_count", "tags_after_reconfigure", "failures")) {
+    if ($reconfigureProps -notcontains $field) {
+      Fail "SPPA backend proxy reconfigure evidence missing '$field'"
+    }
+  }
+  if (@($sppa.proxy_reconfigure.failures).Count -gt 0) {
+    Fail "SPPA backend proxy reconfigure failures: $(@($sppa.proxy_reconfigure.failures) -join '; ')"
+  }
+  $reconfigureTags = @($sppa.proxy_reconfigure.tags_after_reconfigure | ForEach-Object { [string]$_ })
+  if ($reconfigureTags -contains "PORCE_CLASS_bike") {
+    Fail "SPPA backend proxy reconfigure retained stale PORCE_CLASS_bike tag"
+  }
+  if ($reconfigureTags -notcontains "PORCE_CLASS_cow") {
+    Fail "SPPA backend proxy reconfigure did not retain PORCE_CLASS_cow tag"
+  }
+
+  if (-not $sppa.proxy_unknown_fallback) {
+    Fail "SPPA backend report missing proxy unknown fallback evidence"
+  }
+  $unknownFallbackProps = @($sppa.proxy_unknown_fallback.PSObject.Properties.Name)
+  foreach ($field in @("mesh_component_count", "collision_enabled_count", "tags", "failures")) {
+    if ($unknownFallbackProps -notcontains $field) {
+      Fail "SPPA backend proxy unknown fallback evidence missing '$field'"
+    }
+  }
+  if (@($sppa.proxy_unknown_fallback.failures).Count -gt 0) {
+    Fail "SPPA backend proxy unknown fallback failures: $(@($sppa.proxy_unknown_fallback.failures) -join '; ')"
+  }
+  $unknownFallbackTags = @($sppa.proxy_unknown_fallback.tags | ForEach-Object { [string]$_ })
+  if ($unknownFallbackTags -notcontains "PORCE_CLASS_unknown") {
+    Fail "SPPA backend proxy unknown fallback did not tag PORCE_CLASS_unknown"
+  }
+  if ($unknownFallbackTags -contains "PORCE_CLASS_") {
+    Fail "SPPA backend proxy unknown fallback retained blank PORCE_CLASS_ tag"
+  }
+
   return [ordered]@{
     ok = [bool]$sppa.ok
     schema_ok = $true
@@ -378,6 +418,16 @@ function Read-SppaBackendEvidence([string]$ReportPath) {
     component_defaults = $defaults
     component_switch = $switchRows
     proxy_generation = $proxyRows
+    proxy_reconfigure = [ordered]@{
+      bike_mesh_component_count = [int]$sppa.proxy_reconfigure.bike_mesh_component_count
+      cow_mesh_component_count = [int]$sppa.proxy_reconfigure.cow_mesh_component_count
+      tags_after_reconfigure = $reconfigureTags
+    }
+    proxy_unknown_fallback = [ordered]@{
+      mesh_component_count = [int]$sppa.proxy_unknown_fallback.mesh_component_count
+      collision_enabled_count = [int]$sppa.proxy_unknown_fallback.collision_enabled_count
+      tags = $unknownFallbackTags
+    }
   }
 }
 

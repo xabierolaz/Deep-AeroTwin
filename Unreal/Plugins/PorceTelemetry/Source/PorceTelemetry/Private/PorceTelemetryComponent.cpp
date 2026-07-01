@@ -459,14 +459,6 @@ void UPorceTelemetryComponent::OnPollResponse(FHttpRequestPtr Request, FHttpResp
         return;
     }
 
-    TSharedPtr<FJsonObject> Root = MakeShared<FJsonObject>();
-    TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
-    if (!FJsonSerializer::Deserialize(Reader, Root) || !Root.IsValid())
-    {
-        UE_LOG(LogPorceTelemetry, Verbose, TEXT("PORCE Twin V2 poll invalid JSON response."));
-        return;
-    }
-
     const int32 StatusCode = Response->GetResponseCode();
     if (StatusCode < 200 || StatusCode >= 300)
     {
@@ -478,6 +470,14 @@ void UPorceTelemetryComponent::OnPollResponse(FHttpRequestPtr Request, FHttpResp
             Request.IsValid() ? *Request->GetURL() : TEXT(""),
             *Response->GetContentAsString()
         );
+        return;
+    }
+
+    TSharedPtr<FJsonObject> Root = MakeShared<FJsonObject>();
+    TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+    if (!FJsonSerializer::Deserialize(Reader, Root) || !Root.IsValid())
+    {
+        UE_LOG(LogPorceTelemetry, Verbose, TEXT("PORCE Twin V2 poll invalid JSON response."));
         return;
     }
 

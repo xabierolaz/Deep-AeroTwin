@@ -29,7 +29,11 @@ APorceSemanticProxyActor::APorceSemanticProxyActor()
 
 void APorceSemanticProxyActor::ConfigureProxy(const FString& ClassName, float Confidence, bool bConfirmed)
 {
-    const FString TypeKey = ClassName.TrimStartAndEnd().ToLower();
+    FString TypeKey = ClassName.TrimStartAndEnd().ToLower();
+    if (TypeKey.IsEmpty())
+    {
+        TypeKey = TEXT("unknown");
+    }
     const float ConfidenceAlpha = FMath::Clamp(Confidence, 0.0f, 1.0f);
     const int32 ConfidenceBucket = FMath::RoundToInt(ConfidenceAlpha * 20.0f);
     if (
@@ -43,6 +47,7 @@ void APorceSemanticProxyActor::ConfigureProxy(const FString& ClassName, float Co
     }
 
     ClearProxy();
+    ClearClassTags();
     LastConfiguredClassKey = TypeKey;
     LastConfiguredConfidenceBucket = ConfidenceBucket;
     bLastConfiguredConfirmed = bConfirmed;
@@ -76,6 +81,14 @@ void APorceSemanticProxyActor::ConfigureProxy(const FString& ClassName, float Co
 
     Tags.AddUnique(TEXT("PORCE_SPPA_PROXY"));
     Tags.AddUnique(*FString::Printf(TEXT("PORCE_CLASS_%s"), *TypeKey));
+}
+
+void APorceSemanticProxyActor::ClearClassTags()
+{
+    Tags.RemoveAll([](const FName& Tag)
+    {
+        return Tag.ToString().StartsWith(TEXT("PORCE_CLASS_"));
+    });
 }
 
 void APorceSemanticProxyActor::ClearProxy()
