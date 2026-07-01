@@ -1,4 +1,4 @@
-﻿# Deep-AeroTwin (PORCE)
+# Deep-AeroTwin (PORCE)
 
 Repositorio para ejecutar PORCE en Windows + WSL2 con dos workflows distintos:
 
@@ -335,6 +335,16 @@ Spawn sintético antiguo:
 
 - El wrapper `launch_spawner.bat` se retiró del flujo operativo porque dependía de scripts temporales bajo `tmp\`.
 - Para pruebas reproducibles de obstáculos se usa la pipeline normal con logs/auditoría zero-trust, o el harness documentado en `tools\run_paper_wp1_wp2_tower.py` para la Figura 1.
+
+
+### Backend SPPA opcional
+
+`UPorceTelemetryComponent` puede alternar dos backends de spawn que consumen el mismo `GET /api/ui/data`:
+
+- `UnrealAssets`: modo por defecto; spawnea los Blueprints/actores existentes (`BikerActorClass`, `CowActorClass`, `TowerActorClass`, `DefaultObstacleActorClass`).
+- `SemanticProxy`: backend SPPA; genera proxies 3D ligeros con primitivas runtime.
+
+El switch en viewport y la API Blueprint se documentan en `Unreal\Plugins\PorceTelemetry\README_SPPA_BACKEND.md`.
 
 ## Peso YOLO canónico
 

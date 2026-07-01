@@ -22,7 +22,7 @@ Caracteristicas clave:
 - Hay mision cargada desde `pipeline\ejea_default.waypoints`.
 - El dron sigue ruta.
 - Hay logica de evasion, replan, hold, lateral replan y `LAND/RTL`.
-- El launcher raiz validado es `launch.bat`.
+- El launcher raiz validado es LANZAR_TODO_PAPER.bat, que prepara Unreal/PIE y lanza el workflow SIMULATION completo.
 
 ## 2. DIGITAL TWIN / REAL_TWIN
 
@@ -68,14 +68,15 @@ Entidades objetivo:
 
 ## Estado actual del repo
 
-- `launch.bat` fuerza `PORCE_SYSTEM_MODE=SIMULATION`.
-- `launch_digital_twin.bat` arranca `PORCE_SYSTEM_MODE=REAL_TWIN`.
+- LANZAR_TODO_PAPER.bat fuerza el arranque operativo completo en SIMULATION.
+- tools\legacy_root_bats\launch_digital_twin.bat conserva el wrapper historico para REAL_TWIN.
 - El runtime `REAL_TWIN` no carga mision y no arranca control autonomo.
 - `REAL_TWIN` reutiliza el mismo backend y los mismos endpoints que `SIMULATION`.
-- `REAL_TWIN` no levanta `vision_system.py` local en el launcher raiz.
+- REAL_TWIN no levanta vision_system.py local en su wrapper archivado.
 
 ## Notas de implementacion relevantes
 
 - El consumidor Unreal actual usa `GET /api/ui/data`.
 - El plugin Unreal resuelve de forma directa `tower`, `cow`, `bike` y los aliases `biker`, `person`, `bicycle`.
+- El componente `UPorceTelemetryComponent` puede alternar entre `UnrealAssets` y `SemanticProxy` sin cambiar el input.
 - El Brain normaliza los aliases legacy a `bike` y reemite solo tipos canonicos en `GET /api/ui/data`.

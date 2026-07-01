@@ -7,6 +7,15 @@
 #include "PorceTelemetryComponent.generated.h"
 
 class FJsonValue;
+class STextBlock;
+class SWidget;
+
+UENUM(BlueprintType)
+enum class EPorceTwinSpawnBackend : uint8
+{
+    UnrealAssets UMETA(DisplayName="Unreal Assets"),
+    SemanticProxy UMETA(DisplayName="SPPA Semantic Proxy")
+};
 
 struct FPorceTwinEntityState
 {
@@ -14,6 +23,8 @@ struct FPorceTwinEntityState
     FString ClassName;
     float LastConfidence = 0.0f;
     bool bConfirmed = false;
+    bool bHasYawDeg = false;
+    float LastYawDeg = 0.0f;
     double LastSeenTs = 0.0;
     FVector SmoothedWorldLocation = FVector::ZeroVector;
     TWeakObjectPtr<AActor> SpawnedActor;
@@ -38,6 +49,18 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="PORCE Twin V2")
     void SendNow();
+
+    UFUNCTION(BlueprintCallable, Category="PORCE Twin V2|Spawn")
+    void SetSpawnBackend(EPorceTwinSpawnBackend NewBackend);
+
+    UFUNCTION(BlueprintCallable, Category="PORCE Twin V2|Spawn")
+    void ToggleSpawnBackend();
+
+    UFUNCTION(BlueprintCallable, Category="PORCE Twin V2|Spawn")
+    EPorceTwinSpawnBackend GetSpawnBackend() const;
+
+    UFUNCTION(BlueprintCallable, Category="PORCE Twin V2|Spawn")
+    bool IsUsingSemanticProxyBackend() const;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Endpoint")
     bool bEnabled = true;
@@ -83,6 +106,15 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Spawn")
     TSubclassOf<AActor> TowerActorClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Spawn")
+    EPorceTwinSpawnBackend SpawnBackend = EPorceTwinSpawnBackend::UnrealAssets;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Spawn")
+    TSubclassOf<AActor> SemanticProxyActorClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Spawn")
+    bool bShowSpawnBackendSwitchUI = true;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Frame")
     AActor* OriginActor = nullptr;
@@ -132,9 +164,21 @@ private:
         double WorldNorthM,
         double WorldEastM,
         double WorldUpM,
+        bool bHasYawDeg,
+        float YawDeg,
         float Confidence,
         double NowTs
     );
     void PruneStaleEntities(double NowTs);
     void DestroyAllSpawnedActors();
+    AActor* SpawnActorForState(FPorceTwinEntityState& State);
+    void ConfigureSpawnedActor(FPorceTwinEntityState& State);
+    void RebuildSpawnedActorsForCurrentBackend();
+    void ApplyConfiguredSpawnBackendFromEnvironment();
+    void InstallSpawnBackendSwitchUI();
+    void RemoveSpawnBackendSwitchUI();
+    FText GetSpawnBackendSwitchText() const;
+
+    TSharedPtr<SWidget> SpawnBackendSwitchWidget;
+    TSharedPtr<STextBlock> SpawnBackendSwitchText;
 };

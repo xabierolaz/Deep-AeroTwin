@@ -22,7 +22,9 @@ public class PorceTelemetry : ModuleRules
                 "HTTP",
                 "Json",
                 "JsonUtilities",
-                "CesiumRuntime"
+                "CesiumRuntime",
+                "Slate",
+                "SlateCore"
             }
         );
     }

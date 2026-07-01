@@ -1,6 +1,11 @@
 #include "PorceTelemetryComponent.h"
 
+#include "PorceSemanticProxyActor.h"
+
+#include "Components/SceneComponent.h"
 #include "Engine/World.h"
+#include "Engine/Engine.h"
+#include "Engine/GameViewportClient.h"
 #include "GameFramework/Actor.h"
 #include "Dom/JsonObject.h"
 #include "HAL/PlatformMisc.h"
@@ -9,6 +14,10 @@
 #include "Interfaces/IHttpResponse.h"
 #include "Serialization/JsonSerializer.h"
 #include "UObject/UObjectGlobals.h"
+#include "Widgets/Input/SButton.h"
+#include "Widgets/Layout/SBorder.h"
+#include "Widgets/SWeakWidget.h"
+#include "Widgets/Text/STextBlock.h"
 #include "CesiumGlobeAnchorComponent.h"
 
 #ifdef GetEnvironmentVariable
@@ -35,9 +44,57 @@ bool ParseEnvBool(const TCHAR* Key)
     );
 }
 
+bool IsSemanticProxyBackendName(const FString& RawValue)
+{
+    const FString Normalized = RawValue.TrimStartAndEnd().ToLower();
+    return (
+        Normalized == TEXT("sppa")
+        || Normalized == TEXT("semantic_proxy")
+        || Normalized == TEXT("semantic-proxy")
+        || Normalized == TEXT("proxy")
+        || Normalized == TEXT("generated")
+    );
+}
+
 float Clamp01(float Value)
 {
     return FMath::Max(0.0f, FMath::Min(1.0f, Value));
+}
+
+bool TryGetYawDeg(const TSharedPtr<FJsonObject>& Obj, float& OutYawDeg)
+{
+    if (!Obj.IsValid())
+    {
+        return false;
+    }
+
+    double YawCandidate = 0.0;
+    if (
+        Obj->TryGetNumberField(TEXT("yaw_deg"), YawCandidate)
+        || Obj->TryGetNumberField(TEXT("heading_deg"), YawCandidate)
+        || Obj->TryGetNumberField(TEXT("azimuth_deg"), YawCandidate)
+    )
+    {
+        if (FMath::IsFinite(YawCandidate))
+        {
+            OutYawDeg = static_cast<float>(YawCandidate);
+            return true;
+        }
+    }
+
+    if (
+        Obj->TryGetNumberField(TEXT("yaw_rad"), YawCandidate)
+        || Obj->TryGetNumberField(TEXT("heading_rad"), YawCandidate)
+    )
+    {
+        if (FMath::IsFinite(YawCandidate))
+        {
+            OutYawDeg = static_cast<float>(FMath::RadiansToDegrees(YawCandidate));
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void TryLoadConfiguredActorClass(TSubclassOf<AActor>& Slot, const TCHAR* EnvKey, const TCHAR* Label)
@@ -150,10 +207,20 @@ void UPorceTelemetryComponent::BeginPlay()
     TryLoadConfiguredActorClass(TowerActorClass, TEXT("PORCE_UNREAL_TWIN_TOWER_ACTOR_CLASS"), TEXT("tower"));
     TryLoadConfiguredActorClass(CowActorClass, TEXT("PORCE_UNREAL_TWIN_COW_ACTOR_CLASS"), TEXT("cow"));
     TryLoadConfiguredActorClass(BikerActorClass, TEXT("PORCE_UNREAL_TWIN_BIKER_ACTOR_CLASS"), TEXT("biker"));
+    TryLoadConfiguredActorClass(SemanticProxyActorClass, TEXT("PORCE_UNREAL_TWIN_SPPA_ACTOR_CLASS"), TEXT("sppa"));
+
+    if (SemanticProxyActorClass == nullptr)
+    {
+        SemanticProxyActorClass = APorceSemanticProxyActor::StaticClass();
+    }
+
+    ApplyConfiguredSpawnBackendFromEnvironment();
+    InstallSpawnBackendSwitchUI();
 }
 
 void UPorceTelemetryComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    RemoveSpawnBackendSwitchUI();
     DestroyAllSpawnedActors();
     EntityStates.Empty();
     bRequestInFlight = false;
@@ -190,6 +257,42 @@ void UPorceTelemetryComponent::PollNow()
 void UPorceTelemetryComponent::SendNow()
 {
     PollNow();
+}
+
+void UPorceTelemetryComponent::SetSpawnBackend(EPorceTwinSpawnBackend NewBackend)
+{
+    if (SpawnBackend == NewBackend)
+    {
+        return;
+    }
+
+    SpawnBackend = NewBackend;
+    UE_LOG(
+        LogPorceTelemetry,
+        Log,
+        TEXT("PORCE Twin V2 spawn backend switched to %s"),
+        SpawnBackend == EPorceTwinSpawnBackend::SemanticProxy ? TEXT("SemanticProxy") : TEXT("UnrealAssets")
+    );
+    RebuildSpawnedActorsForCurrentBackend();
+}
+
+void UPorceTelemetryComponent::ToggleSpawnBackend()
+{
+    SetSpawnBackend(
+        SpawnBackend == EPorceTwinSpawnBackend::SemanticProxy
+            ? EPorceTwinSpawnBackend::UnrealAssets
+            : EPorceTwinSpawnBackend::SemanticProxy
+    );
+}
+
+EPorceTwinSpawnBackend UPorceTelemetryComponent::GetSpawnBackend() const
+{
+    return SpawnBackend;
+}
+
+bool UPorceTelemetryComponent::IsUsingSemanticProxyBackend() const
+{
+    return SpawnBackend == EPorceTwinSpawnBackend::SemanticProxy;
 }
 
 bool UPorceTelemetryComponent::IsTwinConsumerEnabled() const
@@ -493,6 +596,9 @@ void UPorceTelemetryComponent::ApplyObstacleBatch(const TArray<TSharedPtr<FJsonV
         Obj->TryGetNumberField(TEXT("confidence"), ConfidenceD);
         const float Confidence = Clamp01(static_cast<float>(ConfidenceD));
 
+        float YawDeg = 0.0f;
+        const bool bHasYawDeg = TryGetYawDeg(Obj, YawDeg);
+
         UpsertObstacle(
             EntityId,
             ClassName,
@@ -503,6 +609,8 @@ void UPorceTelemetryComponent::ApplyObstacleBatch(const TArray<TSharedPtr<FJsonV
             WorldNorthM,
             WorldEastM,
             WorldUpM,
+            bHasYawDeg,
+            YawDeg,
             Confidence,
             NowTs
         );
@@ -521,6 +629,8 @@ void UPorceTelemetryComponent::UpsertObstacle(
     double WorldNorthM,
     double WorldEastM,
     double WorldUpM,
+    bool bHasYawDeg,
+    float YawDeg,
     float Confidence,
     double NowTs
 )
@@ -565,6 +675,11 @@ void UPorceTelemetryComponent::UpsertObstacle(
 
     Existing->ClassName = ClassName;
     Existing->LastConfidence = Confidence;
+    Existing->bHasYawDeg = bHasYawDeg;
+    if (bHasYawDeg)
+    {
+        Existing->LastYawDeg = YawDeg;
+    }
     Existing->bConfirmed = Existing->bConfirmed || (Confidence >= ConfirmedConfidenceThreshold);
     Existing->LastSeenTs = NowTs;
 
@@ -575,48 +690,37 @@ void UPorceTelemetryComponent::UpsertObstacle(
 
     if (!Existing->SpawnedActor.IsValid())
     {
-        UWorld* World = GetWorld();
-        TSubclassOf<AActor> ActorClass = ResolveActorClassForType(ClassName);
-        if (World != nullptr && ActorClass != nullptr)
+        SpawnActorForState(*Existing);
+        if (Existing->SpawnedActor.IsValid())
         {
-            FActorSpawnParameters SpawnParams;
-            SpawnParams.Owner = GetOwner();
-            SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-            AActor* Spawned = World->SpawnActor<AActor>(
-                ActorClass,
-                Existing->SmoothedWorldLocation,
-                FRotator::ZeroRotator,
-                SpawnParams
+            UE_LOG(
+                LogPorceTelemetry,
+                Log,
+                TEXT(
+                    "PORCE Twin V2 SPAWN entity=%s type=%s conf=%.3f world_cm=(%.1f, %.1f, %.1f) "
+                    "src_ned_m=(%s, %s, %s) src_latlon=(%s, %s) mode=%s backend=%s"
+                ),
+                *EntityId,
+                *ClassName,
+                static_cast<double>(Confidence),
+                static_cast<double>(Existing->SmoothedWorldLocation.X),
+                static_cast<double>(Existing->SmoothedWorldLocation.Y),
+                static_cast<double>(Existing->SmoothedWorldLocation.Z),
+                bHasWorldNed ? *FString::SanitizeFloat(WorldNorthM) : TEXT("-"),
+                bHasWorldNed ? *FString::SanitizeFloat(WorldEastM) : TEXT("-"),
+                bHasWorldNed ? *FString::SanitizeFloat(WorldUpM) : TEXT("-"),
+                bHasLatLon ? *FString::SanitizeFloat(LatDeg) : TEXT("-"),
+                bHasLatLon ? *FString::SanitizeFloat(LonDeg) : TEXT("-"),
+                bCanUseLatLonForAnchor ? TEXT("cesium") : TEXT("local"),
+                SpawnBackend == EPorceTwinSpawnBackend::SemanticProxy ? TEXT("sppa") : TEXT("assets")
             );
-            if (IsValid(Spawned))
-            {
-                Existing->SpawnedActor = Spawned;
-                UE_LOG(
-                    LogPorceTelemetry,
-                    Log,
-                    TEXT(
-                        "PORCE Twin V2 SPAWN entity=%s type=%s conf=%.3f world_cm=(%.1f, %.1f, %.1f) "
-                        "src_ned_m=(%s, %s, %s) src_latlon=(%s, %s) mode=%s"
-                    ),
-                    *EntityId,
-                    *ClassName,
-                    static_cast<double>(Confidence),
-                    static_cast<double>(Existing->SmoothedWorldLocation.X),
-                    static_cast<double>(Existing->SmoothedWorldLocation.Y),
-                    static_cast<double>(Existing->SmoothedWorldLocation.Z),
-                    bHasWorldNed ? *FString::SanitizeFloat(WorldNorthM) : TEXT("-"),
-                    bHasWorldNed ? *FString::SanitizeFloat(WorldEastM) : TEXT("-"),
-                    bHasWorldNed ? *FString::SanitizeFloat(WorldUpM) : TEXT("-"),
-                    bHasLatLon ? *FString::SanitizeFloat(LatDeg) : TEXT("-"),
-                    bHasLatLon ? *FString::SanitizeFloat(LonDeg) : TEXT("-"),
-                    bCanUseLatLonForAnchor ? TEXT("cesium") : TEXT("local")
-                );
-            }
         }
     }
 
     if (Existing->SpawnedActor.IsValid())
     {
+        ConfigureSpawnedActor(*Existing);
+
         bool bMovedByCesium = false;
         if (bCanUseLatLonForAnchor)
         {
@@ -644,6 +748,12 @@ void UPorceTelemetryComponent::UpsertObstacle(
         if (!bMovedByCesium)
         {
             Existing->SpawnedActor->SetActorLocation(Existing->SmoothedWorldLocation, false, nullptr, ETeleportType::TeleportPhysics);
+        }
+        if (Existing->bHasYawDeg)
+        {
+            FRotator TargetRotation = Existing->SpawnedActor->GetActorRotation();
+            TargetRotation.Yaw = Existing->LastYawDeg;
+            Existing->SpawnedActor->SetActorRotation(TargetRotation, ETeleportType::TeleportPhysics);
         }
         Existing->SpawnedActor->SetActorHiddenInGame(bHideUnconfirmedActors && !Existing->bConfirmed);
         Existing->SpawnedActor->SetActorEnableCollision(Existing->bConfirmed);
@@ -682,5 +792,172 @@ void UPorceTelemetryComponent::DestroyAllSpawnedActors()
         {
             Pair.Value.SpawnedActor->Destroy();
         }
+        Pair.Value.SpawnedActor.Reset();
     }
+}
+
+AActor* UPorceTelemetryComponent::SpawnActorForState(FPorceTwinEntityState& State)
+{
+    UWorld* World = GetWorld();
+    if (World == nullptr)
+    {
+        return nullptr;
+    }
+
+    TSubclassOf<AActor> ActorClass = nullptr;
+    if (SpawnBackend == EPorceTwinSpawnBackend::SemanticProxy)
+    {
+        ActorClass = SemanticProxyActorClass;
+        if (ActorClass == nullptr)
+        {
+            ActorClass = APorceSemanticProxyActor::StaticClass();
+        }
+    }
+    else
+    {
+        ActorClass = ResolveActorClassForType(State.ClassName);
+    }
+
+    if (ActorClass == nullptr)
+    {
+        return nullptr;
+    }
+
+    FRotator SpawnRotation = FRotator::ZeroRotator;
+    if (State.bHasYawDeg)
+    {
+        SpawnRotation.Yaw = State.LastYawDeg;
+    }
+
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.Owner = GetOwner();
+    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    AActor* Spawned = World->SpawnActor<AActor>(
+        ActorClass,
+        State.SmoothedWorldLocation,
+        SpawnRotation,
+        SpawnParams
+    );
+
+    if (IsValid(Spawned))
+    {
+        State.SpawnedActor = Spawned;
+        ConfigureSpawnedActor(State);
+    }
+    return Spawned;
+}
+
+void UPorceTelemetryComponent::ConfigureSpawnedActor(FPorceTwinEntityState& State)
+{
+    AActor* Actor = State.SpawnedActor.Get();
+    if (!IsValid(Actor))
+    {
+        return;
+    }
+
+    Actor->Tags.AddUnique(TEXT("PORCE_TWIN_MANAGED"));
+    Actor->Tags.AddUnique(*FString::Printf(TEXT("PORCE_ENTITY_%s"), *State.EntityId));
+
+    if (APorceSemanticProxyActor* ProxyActor = Cast<APorceSemanticProxyActor>(Actor))
+    {
+        ProxyActor->ConfigureProxy(State.ClassName, State.LastConfidence, State.bConfirmed);
+    }
+}
+
+void UPorceTelemetryComponent::RebuildSpawnedActorsForCurrentBackend()
+{
+    for (TPair<FString, FPorceTwinEntityState>& Pair : EntityStates)
+    {
+        if (Pair.Value.SpawnedActor.IsValid())
+        {
+            Pair.Value.SpawnedActor->Destroy();
+            Pair.Value.SpawnedActor.Reset();
+        }
+    }
+
+    for (TPair<FString, FPorceTwinEntityState>& Pair : EntityStates)
+    {
+        SpawnActorForState(Pair.Value);
+    }
+}
+
+void UPorceTelemetryComponent::ApplyConfiguredSpawnBackendFromEnvironment()
+{
+    const FString RawBackend = FPlatformMisc::GetEnvironmentVariable(TEXT("PORCE_UNREAL_TWIN_SPAWN_BACKEND")).TrimStartAndEnd();
+    if (RawBackend.IsEmpty())
+    {
+        return;
+    }
+
+    if (IsSemanticProxyBackendName(RawBackend))
+    {
+        SpawnBackend = EPorceTwinSpawnBackend::SemanticProxy;
+    }
+    else
+    {
+        SpawnBackend = EPorceTwinSpawnBackend::UnrealAssets;
+    }
+}
+
+void UPorceTelemetryComponent::InstallSpawnBackendSwitchUI()
+{
+    if (!bShowSpawnBackendSwitchUI || SpawnBackendSwitchWidget.IsValid())
+    {
+        return;
+    }
+    if (GEngine == nullptr || GEngine->GameViewport == nullptr)
+    {
+        return;
+    }
+
+    TWeakObjectPtr<UPorceTelemetryComponent> WeakThis(this);
+    SpawnBackendSwitchWidget =
+        SNew(SWeakWidget)
+        .PossiblyNullContent(
+            SNew(SBorder)
+            .Padding(8.0f)
+            .HAlign(HAlign_Left)
+            .VAlign(VAlign_Top)
+            [
+                SNew(SButton)
+                .ToolTipText(FText::FromString(TEXT("Toggle PORCE Twin spawn backend")))
+                .OnClicked_Lambda([WeakThis]()
+                {
+                    if (WeakThis.IsValid())
+                    {
+                        WeakThis->ToggleSpawnBackend();
+                    }
+                    return FReply::Handled();
+                })
+                [
+                    SAssignNew(SpawnBackendSwitchText, STextBlock)
+                    .Text_Lambda([WeakThis]()
+                    {
+                        return WeakThis.IsValid()
+                            ? WeakThis->GetSpawnBackendSwitchText()
+                            : FText::FromString(TEXT("PORCE Twin: unavailable"));
+                    })
+                ]
+            ]
+        );
+
+    GEngine->GameViewport->AddViewportWidgetContent(SpawnBackendSwitchWidget.ToSharedRef(), 20);
+}
+
+void UPorceTelemetryComponent::RemoveSpawnBackendSwitchUI()
+{
+    if (GEngine != nullptr && GEngine->GameViewport != nullptr && SpawnBackendSwitchWidget.IsValid())
+    {
+        GEngine->GameViewport->RemoveViewportWidgetContent(SpawnBackendSwitchWidget.ToSharedRef());
+    }
+    SpawnBackendSwitchWidget.Reset();
+    SpawnBackendSwitchText.Reset();
+}
+
+FText UPorceTelemetryComponent::GetSpawnBackendSwitchText() const
+{
+    const TCHAR* BackendText = SpawnBackend == EPorceTwinSpawnBackend::SemanticProxy
+        ? TEXT("SPPA Proxy")
+        : TEXT("Unreal Assets");
+    return FText::FromString(FString::Printf(TEXT("PORCE Twin: %s"), BackendText));
 }
