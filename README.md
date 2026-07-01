@@ -18,16 +18,16 @@ Documento dedicado en raíz: [`WORKFLOWS.md`](WORKFLOWS.md)
 
 ## Lanzadores
 
-- `launch.bat`: arranque del workflow `SIMULATION`
-- `launch_digital_twin.bat`: arranque del workflow `DIGITAL TWIN` / `REAL_TWIN`
 - `LANZAR_TODO_PAPER.bat`: arranque completo para paper: prepara Unreal, abre PIE y lanza la pipeline.
+- `tools\launch_workflow.bat SIMULATION`: arranque directo del workflow `SIMULATION` si Unreal/PIE ya esta preparado.
+- `tools\launch_workflow.bat REAL_TWIN`: arranque directo del workflow `DIGITAL TWIN` / `REAL_TWIN`.
 - Stop global: `powershell -NoProfile -ExecutionPolicy Bypass -File tools\stop_pipeline.ps1`
 
 Nota:
 
 - Hoy el launcher de raíz validado para el paper es `LANZAR_TODO_PAPER.bat`.
-- `launch.bat` queda como launcher pipeline-only y asume Unreal/PIE ya preparado.
-- `launch_digital_twin.bat` levanta el perfil pasivo `REAL_TWIN` sin SITL ni `vision_system.py` local.
+- Los wrappers historicos de raiz estan archivados en `tools\legacy_root_bats\`.
+- `tools\launch_workflow.bat REAL_TWIN` levanta el perfil pasivo `REAL_TWIN` sin SITL ni `vision_system.py` local.
 
 ## Bootstrap reproducible (zero-trust)
 
@@ -41,12 +41,12 @@ Preparación recomendada para clonado limpio:
 Notas:
 
 - Dependencias Python fijadas en `pipeline\requirements.lock.txt`.
-- `launch.bat` no persiste token por defecto (`PORCE_OBSTACLE_TOKEN_PERSIST=0`).
+- `tools\launch_workflow.bat` no persiste token por defecto (`PORCE_OBSTACLE_TOKEN_PERSIST=0`).
 - El proyecto Unreal requiere `CesiumForUnreal` y `VaRest` (plugins externos a este repo).
 
 ## Workflow 1: SIMULATION (flujo validado)
 
-`launch.bat` carga defaults y levanta:
+`tools\launch_workflow.bat SIMULATION` carga defaults y levanta:
 
 1. `pipeline\log_server.py` (MASTER LOG)
 2. `pipeline\run_sitl.sh` (SITL en WSL)
@@ -84,7 +84,7 @@ Conjunto de entidades objetivo del workflow `DIGITAL TWIN`:
 Estado actual del repo para este workflow:
 
 - El perfil `REAL_TWIN` arranca sin misión y sin `control_loop()` autónomo.
-- El launcher de raíz dedicado es `launch_digital_twin.bat`.
+- El launcher directo dedicado es `tools\launch_workflow.bat REAL_TWIN`.
 - En este workflow no se levanta `vision_system.py`; el YOLO real del dron publica a `POST /api/obstacles`.
 - `GET /api/ui/data` mantiene el mismo shape que en `SIMULATION`, pero en `REAL_TWIN` devuelve `waypoints: []` y un bloque `evasion` inerte.
 - El Brain normaliza `biker` / `person` / `bicycle` a `bike` y reemite solo tipos canónicos.
@@ -288,7 +288,8 @@ Cada sesión escribe en `pipeline\logs\zero_trust\<timestamp>\`:
 
 ## Runbook rapido del workflow SIMULATION
 
-- Cargar y arrancar: `launch.bat`
+- Cargar y arrancar paper completo: `LANZAR_TODO_PAPER.bat`
+- Arranque directo sin preparar Unreal: `tools\launch_workflow.bat SIMULATION`
 - Parar todo: `powershell -NoProfile -ExecutionPolicy Bypass -File tools\stop_pipeline.ps1`
 - Smoke local sin SITL real (mock MAVLink):
 - `set PORCE_MOCK_MAVLINK=1`

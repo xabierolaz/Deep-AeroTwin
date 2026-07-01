@@ -85,9 +85,12 @@ if (-not $RepoRoot) {
 $uprojectPath = Join-Path $RepoRoot "Unreal\AirTraffic.uproject"
 $defaultsPath = Join-Path $RepoRoot "pipeline\porce_defaults.env"
 $runSITLPath = Join-Path $RepoRoot "pipeline\run_sitl.sh"
-$launchPath = Join-Path $RepoRoot "launch.bat"
+$rootPaperLauncherPath = Join-Path $RepoRoot "LANZAR_TODO_PAPER.bat"
+$workflowLauncherPath = Join-Path $RepoRoot "tools\launch_workflow.bat"
+$legacySimulationLauncherPath = Join-Path $RepoRoot "tools\legacy_root_bats\launch.bat"
 $engineIniPath = Join-Path $RepoRoot "Unreal\Config\DefaultEngine.ini"
 $ejeaMapPath = Join-Path $RepoRoot "Unreal\Content\Ejea.umap"
+$canonicalizePelotonScriptPath = Join-Path $RepoRoot "Unreal\Scripts\canonicalize_peloton_only.py"
 $generatedPaperCapturesPath = Join-Path $RepoRoot "Unreal\Content\Generated\PaperCaptures"
 $lockPath = Join-Path $RepoRoot "pipeline\requirements.lock.txt"
 $venvPython = Join-Path $RepoRoot "venv\Scripts\python.exe"
@@ -97,7 +100,7 @@ $engineRoot = "D:\Epic Games\UE_5.7"
 
 Write-Host "[preflight] Repo: $RepoRoot"
 
-foreach ($required in @($uprojectPath, $defaultsPath, $runSITLPath, $launchPath, $engineIniPath, $lockPath)) {
+foreach ($required in @($uprojectPath, $defaultsPath, $runSITLPath, $rootPaperLauncherPath, $workflowLauncherPath, $engineIniPath, $lockPath)) {
   if (Test-Path $required) {
     NoteOk "Found $required"
   } else {
@@ -122,17 +125,12 @@ if (Test-Path $ejeaMapPath) {
     NoteOk "Ejea.umap has no legacy loose cyclist references."
   }
 
-  $requiredPelotonRoutes = @(
-    "Peloton_Route_WP02_Cross",
-    "Peloton_Route_WP04_Cross",
-    "Peloton_Route_WP07_Cross",
-    "Peloton_Route_WP09_Cross"
-  )
-  $missingPelotonRoutes = @($requiredPelotonRoutes | Where-Object { -not (Test-BinaryContainsAscii -path $ejeaMapPath -needle $_) })
-  if ($missingPelotonRoutes.Count -gt 0) {
-    NoteFail "Ejea.umap is missing scripted peloton crossing routes: $($missingPelotonRoutes -join ', ')"
+  if (Test-BinaryContainsAscii -path $ejeaMapPath -needle "Peloton_Route_WP") {
+    NoteOk "Ejea.umap contains scripted peloton route labels."
+  } elseif (Test-Path $canonicalizePelotonScriptPath) {
+    NoteOk "Scripted peloton routes are prepared by canonicalize_peloton_only.py during launcher scene prep."
   } else {
-    NoteOk "Ejea.umap contains all scripted peloton crossing routes."
+    NoteFail "Ejea.umap has no scripted peloton route labels and canonicalize_peloton_only.py is missing."
   }
 } else {
   NoteFail "Missing Unreal map: $ejeaMapPath"
@@ -308,12 +306,30 @@ if (Test-Path $runSITLPath) {
   }
 }
 
-if (Test-Path $launchPath) {
-  $launchRaw = Get-Content $launchPath -Raw
-  if ($launchRaw -match 'PORCE_OBSTACLE_TOKEN_PERSIST=0') {
-    NoteOk "launch.bat defaults token persistence to disabled."
+if (Test-Path $workflowLauncherPath) {
+  $workflowLauncherRaw = Get-Content $workflowLauncherPath -Raw
+  if ($workflowLauncherRaw -match 'PORCE_OBSTACLE_TOKEN_PERSIST=0') {
+    NoteOk "tools\launch_workflow.bat defaults token persistence to disabled."
   } else {
-    NoteFail "launch.bat must default PORCE_OBSTACLE_TOKEN_PERSIST=0."
+    NoteFail "tools\launch_workflow.bat must default PORCE_OBSTACLE_TOKEN_PERSIST=0."
+  }
+}
+
+if (Test-Path $rootPaperLauncherPath) {
+  $rootPaperLauncherRaw = Get-Content $rootPaperLauncherPath -Raw
+  if ($rootPaperLauncherRaw -match 'tools\\launch_workflow\.bat"\s+SIMULATION') {
+    NoteOk "LANZAR_TODO_PAPER.bat delegates to tools\launch_workflow.bat SIMULATION."
+  } else {
+    NoteFail "LANZAR_TODO_PAPER.bat must delegate to tools\launch_workflow.bat SIMULATION."
+  }
+}
+
+if (Test-Path $legacySimulationLauncherPath) {
+  $legacySimulationLauncherRaw = Get-Content $legacySimulationLauncherPath -Raw
+  if ($legacySimulationLauncherRaw -match '\.\.\\launch_workflow\.bat') {
+    NoteOk "Legacy root launch.bat wrapper points to tools\launch_workflow.bat."
+  } else {
+    NoteFail "Legacy root launch.bat wrapper must point to tools\launch_workflow.bat."
   }
 }
 

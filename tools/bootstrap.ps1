@@ -140,7 +140,7 @@ if ($BuildSITL) {
   }
 } elseif (-not (Test-Path $sitlBinary)) {
   Write-Host "[bootstrap] WARN: SITL binary not found at $sitlBinary" -ForegroundColor Yellow
-  Write-Host "[bootstrap] WARN: Run tools\build_sitl_wsl.ps1 before launch.bat" -ForegroundColor Yellow
+  Write-Host "[bootstrap] WARN: Run tools\build_sitl_wsl.ps1 before LANZAR_TODO_PAPER.bat or tools\launch_workflow.bat SIMULATION" -ForegroundColor Yellow
 } else {
   Step "SITL binary already present."
 }
@@ -148,4 +148,4 @@ if ($BuildSITL) {
 Step "Bootstrap completed."
 Write-Host "[bootstrap] Next steps:"
 Write-Host "  1) powershell -NoProfile -ExecutionPolicy Bypass -File tools\preflight_zero_trust.ps1"
-Write-Host "  2) launch.bat"
+Write-Host "  2) LANZAR_TODO_PAPER.bat"

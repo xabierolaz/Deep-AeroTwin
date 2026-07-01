@@ -40,10 +40,10 @@ CESIUM_PAPER_PROFILE = {
     "UnloadEditorTilesInPlayMode": False,
 }
 ROUTES = [
-    {"label": "Peloton_Route_WP02_Cross", "segment_start_seq": 1, "t": 0.56, "height": 500.0},
-    {"label": "Peloton_Route_WP04_Cross", "segment_start_seq": 3, "t": 0.48, "height": 500.0},
-    {"label": "Peloton_Route_WP07_Cross", "segment_start_seq": 6, "t": 0.52, "height": 500.0},
-    {"label": "Peloton_Route_WP09_Cross", "segment_start_seq": 8, "t": 0.50, "height": 500.0},
+    {"label": "Peloton_Route_WP01_T70_Cross", "segment_start_seq": 1, "t": 0.70, "height": 500.0},
+    {"label": "Peloton_Route_WP03_T30_Cross", "segment_start_seq": 3, "t": 0.30, "height": 500.0},
+    {"label": "Peloton_Route_WP06_T70_Cross", "segment_start_seq": 6, "t": 0.70, "height": 500.0},
+    {"label": "Peloton_Route_WP08_T30_Cross", "segment_start_seq": 8, "t": 0.30, "height": 500.0},
 ]
 SAMPLE_OFFSETS_M = (-70.0, -45.0, -24.0, 0.0, 24.0, 45.0, 70.0)
 

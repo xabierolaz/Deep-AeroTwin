@@ -30,7 +30,7 @@ function _env_bool([string]$name, [bool]$default) {
 _log "[stop_pipeline] Stopping Deep-AeroTwin pipeline processes..."
 
 # Match by command line so this works for:
-# - separate cmd.exe windows started by launch.bat
+# - separate cmd.exe windows started by tools\launch_workflow.bat
 # - Windows Terminal tabs (cmd.exe hosted by wt.exe)
 $regex = '(?i)(flight_controller\.py|vision_system\.py|viz_recorder\.py|log_server\.py|tee\.py|sitl_runner\.py|run_sitl\.sh|sim_vehicle\.py|arducopter|mavproxy\.py|porce_tab_[0-9a-f]+\.bat)'
 $terminalTitles = @(
