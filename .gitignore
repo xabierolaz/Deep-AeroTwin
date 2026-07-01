@@ -63,6 +63,7 @@ nul
 brain/
 pipeline/brain/
 pipeline/vision/
+.migration/
 
 # --- Local neural/video worktrees and model caches ---
 neural/FlashVSR/
