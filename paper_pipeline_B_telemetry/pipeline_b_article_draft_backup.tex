@@ -1,18 +1,20 @@
-\documentclass[fleqn]{VRIH2025}
+\documentclass[11pt,a4paper]{article}
 
-\setlength{\mathindent}{0cm}
-\thispagestyle{empty}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{geometry}
 \usepackage{array}
 \usepackage{booktabs}
 \usepackage{enumitem}
 \usepackage{float}
 \usepackage{graphicx}
 \usepackage{longtable}
-\usepackage{multirow}
 \usepackage{xcolor}
 \usepackage{url}
 \usepackage{hyperref}
 
+\geometry{margin=2.3cm}
 \setlist[itemize]{leftmargin=*}
 \setlist[enumerate]{leftmargin=*}
 \definecolor{publicationred}{RGB}{170,0,0}
@@ -21,38 +23,19 @@
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \sloppy
 
+\title{A Virtual-Reality Digital Twin Operator Display for Dynamic UAV Scene Reconstruction from In-Flight Detections}
+\author{Xabier Olaz \and Jes\'us Villadangos \and Daniel Alaez \and Iker Go\~ni}
+\date{}
+
 \begin{document}
 
-\ensubject{Virtual Reality and Intelligent Hardware}
-\qyluntan
-\ArticleType{Article}
-\Year{2026}
-\Month{}
-\Vol{}
-\No{}
-\DOI{}
-\ReceiveDate{}
-\RevisedDate{}
-\AcceptDate{}
-
-\title{A Virtual-Reality Digital Twin Operator Display for Dynamic UAV Scene Reconstruction from In-Flight Detections}{A Virtual-Reality Digital Twin Operator Display for Dynamic UAV Scene Reconstruction}
-
-\author[1]{Xabier OLAZ}{}
-\author[1,2]{Jes\'us VILLADANGOS}{{jesusv@unavarra.es}}
-\author[1]{Daniel ALAEZ}{}
-\author[1]{Iker GO\~NI}{}
-
-\AuthorCitation{Xabier OLAZ, Jes\'us VILLADANGOS, Daniel ALAEZ, Iker GO\~NI}
-
-\address[1]{Mathematical Engineering and Computer Science Department, Public University of Navarre, Pamplona, Spain}
-\address[2]{Institute of Smart Cities, Public University of Navarre, Pamplona, Spain}
-
-\abstract{Remote UAV operation requires the pilot to maintain spatial awareness of the aircraft, terrain, obstacles, and mission-relevant objects when direct visual contact or continuous high-quality video may be unavailable. This working manuscript presents Pipeline B, an implemented virtual-reality digital twin operator display in which a UAV pilot wearing a head-mounted display can inspect a dynamically reconstructed 3D representation of the operational scene. The system converts in-flight object detections into georeferenced semantic telemetry and uses those data to spawn, update, and remove dynamic actors inside an Unreal Engine and Cesium-based environment. The contribution is framed as a human-in-the-loop operator-display architecture, not as autonomous flight control, certified detect-and-avoid, or a replacement for regulatory safety channels. The paper currently defines the runtime contract, interaction concept, evidence map, and validation protocol required for a complete journal submission. Quantitative results are retained as explicit placeholders until the validation experiments, VR demonstration material, and hardware-dependent trials are completed.
-}
-
-\keywords{Virtual reality; UAV; Digital twin; Scene reconstruction; Semantic telemetry; Teleoperation; Situational awareness}
-
 \maketitle
+
+\begin{abstract}
+Remote UAV operation requires the pilot to maintain spatial awareness of the aircraft, terrain, obstacles, and mission-relevant objects when direct visual contact or continuous high-quality video may be unavailable. This working manuscript presents Pipeline B, an implemented virtual-reality digital twin operator display in which a UAV pilot wearing a head-mounted display can inspect a dynamically reconstructed 3D representation of the operational scene. The system converts in-flight object detections into georeferenced semantic telemetry and uses those data to spawn, update, and remove dynamic actors inside an Unreal Engine and Cesium-based environment. The contribution is framed as a human-in-the-loop operator-display architecture, not as autonomous flight control, certified detect-and-avoid, or a replacement for regulatory safety channels. The paper currently defines the runtime contract, interaction concept, evidence map, and validation protocol required for a complete journal submission. Quantitative results are retained as explicit placeholders until the validation experiments, VR demonstration material, and hardware-dependent trials are completed.
+\end{abstract}
+
+\noindent\textbf{Keywords:} virtual reality; UAV; digital twin; scene reconstruction; semantic telemetry; teleoperation; situational awareness
 
 \section{Draft Status, Journal Target, and Placeholder Convention}
 

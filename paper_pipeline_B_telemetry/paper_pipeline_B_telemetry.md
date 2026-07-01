@@ -7,10 +7,13 @@ This is the only Markdown file maintained inside this paper folder. The manuscri
 | File | Role |
 |---|---|
 | `pipeline_b_concept.tex` | Controlled manuscript draft. Edit this for paper content. |
-| `pipeline_b_concept.pdf` | Compiled PDF output. Regenerate after LaTeX edits. |
+| `pipeline_b_concept.pdf` | Compiled VRIH-format PDF output. Regenerate after LaTeX edits. |
+| `VRIH2025.cls` | Official VRIH LaTeX class copied from the 2025 template package. |
 | `vrih_highlights.txt` | VRIH-style highlights draft. |
 | `figures/pipeline_b_architecture.png` | Current architecture figure used in the manuscript. |
 | `generate_pipeline_b_architecture.py` | Reproducible figure generator. |
+| `vrih_template/` | Downloaded official Word and LaTeX templates from the journal guide. |
+| `pipeline_b_article_draft_backup.tex` | Backup of the previous generic `article` draft before VRIH conversion. |
 
 ## Journal Target: Virtual Reality & Intelligent Hardware
 
@@ -31,7 +34,14 @@ Submission constraints currently known from the VRIH guide for authors:
 | Abstract should not exceed 250 words. | Current abstract is below 250 words. |
 | Keywords: 1 to 7. | Current paper has 7 keywords. |
 | Highlights are supported/expected as a separate item. | Drafted in `vrih_highlights.txt`. |
-| Editable manuscript source required. | Current source is LaTeX; final should be migrated to the VRIH template before submission. |
+| Editable manuscript source required. | Current source is LaTeX and now uses the VRIH template class. |
+
+Current format status:
+
+- `pipeline_b_concept.tex` now uses the official `VRIH2025` LaTeX class.
+- Compile with `xelatex`, not `pdflatex`, because the VRIH class loads `fontspec`.
+- Current VRIH-format PDF length: 12 pages.
+- The guide does not state a maximum length for full research papers. The only explicit page cap found is rapid communications: maximum 4 pages, which is not suitable for this work.
 
 ## A2 / Ayudante Doctor Baremo
 
