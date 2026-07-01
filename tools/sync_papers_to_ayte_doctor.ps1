@@ -21,15 +21,46 @@ function Resolve-ExistingDirectory([string]$Path, [string]$Label) {
 }
 
 function Get-TreeStats([string]$Path) {
-  $files = @(Get-ChildItem -LiteralPath $Path -Recurse -File -Force)
+  $root = (Resolve-Path -LiteralPath $Path).Path.TrimEnd([char[]]@('\', '/'))
+  $files = @(
+    Get-ChildItem -LiteralPath $root -Recurse -File -Force |
+      Sort-Object -Property FullName
+  )
   $sum = ($files | Measure-Object -Property Length -Sum).Sum
   if ($null -eq $sum) {
     $sum = 0
   }
+
+  $inventoryLines = @()
+  foreach ($file in $files) {
+    $relativePath = $file.FullName.Substring($root.Length).TrimStart([char[]]@('\', '/')).Replace('\', '/')
+    $hash = (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+    $inventoryLines += "$relativePath`t$($file.Length)`t$hash"
+  }
+
+  $inventoryText = ($inventoryLines -join "`n")
+  $sha256 = [System.Security.Cryptography.SHA256]::Create()
+  try {
+    $inventoryHashBytes = $sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($inventoryText))
+  } finally {
+    $sha256.Dispose()
+  }
+  $inventoryHash = [System.BitConverter]::ToString($inventoryHashBytes).Replace("-", "").ToLowerInvariant()
+
   return [ordered]@{
     files = [int]$files.Count
     bytes = [int64]$sum
+    inventory_hash = $inventoryHash
+    inventory = $inventoryLines
   }
+}
+
+function Compare-TreeStats([hashtable]$SourceStats, [hashtable]$TargetStats) {
+  return (
+    $SourceStats.files -eq $TargetStats.files -and
+    $SourceStats.bytes -eq $TargetStats.bytes -and
+    $SourceStats.inventory_hash -eq $TargetStats.inventory_hash
+  )
 }
 
 function Invoke-RobocopyChecked([string]$Source, [string]$Target) {
@@ -79,12 +110,9 @@ foreach ($paper in $papers) {
 
   $sourceStats = Get-TreeStats -Path $source
   $targetStats = Get-TreeStats -Path $target
-  $match = (
-    $sourceStats.files -eq $targetStats.files -and
-    $sourceStats.bytes -eq $targetStats.bytes
-  )
+  $match = Compare-TreeStats -SourceStats $sourceStats -TargetStats $targetStats
   if (-not $match) {
-    Fail "Copy verification failed for $($paper.name): source files=$($sourceStats.files) bytes=$($sourceStats.bytes), target files=$($targetStats.files) bytes=$($targetStats.bytes)"
+    Fail "Copy verification failed for $($paper.name): source files=$($sourceStats.files) bytes=$($sourceStats.bytes) hash=$($sourceStats.inventory_hash), target files=$($targetStats.files) bytes=$($targetStats.bytes) hash=$($targetStats.inventory_hash)"
   }
 
   $rows += [ordered]@{
@@ -93,6 +121,7 @@ foreach ($paper in $papers) {
     target = (Resolve-Path -LiteralPath $target).Path
     files = [int]$sourceStats.files
     bytes = [int64]$sourceStats.bytes
+    inventory_hash = [string]$sourceStats.inventory_hash
     robocopy_exit_code = $robocopyExitCode
   }
 }
@@ -107,17 +136,17 @@ $lines = @(
   "",
   "## Copied Paper Folders",
   "",
-  "| Paper folder | Source | Target | Files | Bytes | Verified |",
-  "|---|---|---|---:|---:|---|"
+  "| Paper folder | Source | Target | Files | Bytes | Inventory SHA-256 | Verified |",
+  "|---|---|---|---:|---:|---|---|"
 )
 
 foreach ($row in $rows) {
-  $lines += "| $($row.name) | ``$($row.source)`` | ``$($row.target)`` | $($row.files) | $($row.bytes) | yes |"
+  $lines += "| $($row.name) | ``$($row.source)`` | ``$($row.target)`` | $($row.files) | $($row.bytes) | ``$($row.inventory_hash)`` | yes |"
 }
 
 $lines += @(
   "",
-  "Verification method: recursive file count and byte-sum comparison with PowerShell ``Get-ChildItem -Recurse -File -Force | Measure-Object -Property Length -Sum``.",
+  "Verification method: recursive file count, byte-sum, per-file SHA-256, and aggregate inventory SHA-256 comparison.",
   "",
   "Copy method: non-destructive ``robocopy /E``; no target files are deleted."
 )
@@ -130,6 +159,7 @@ $rows | ForEach-Object {
     Paper = $_.name
     Files = $_.files
     Bytes = $_.bytes
+    InventoryHash = $_.inventory_hash
     Target = $_.target
   }
 } | Format-Table -AutoSize

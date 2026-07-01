@@ -85,4 +85,5 @@ Entidades objetivo:
 
 - `tools\sync_papers_to_ayte_doctor.ps1` sincroniza las carpetas de paper hacia `D:\ayte_reclamacion\AYTE_DOCTOR\papers`.
 - La copia es no destructiva y queda auditada con `COPY_MANIFEST.md`.
-- El script falla si el destino no coincide en recuento de archivos y suma de bytes con el origen.
+- El script falla si el destino no coincide en recuento de archivos, suma de bytes y hashes SHA-256 con el origen.
+- `tools\verify_papers.ps1` recompila los PDFs canonicos SPPA y Pipeline B, y falla si quedan citas o referencias sin resolver.

@@ -59,7 +59,20 @@ El script copia de forma no destructiva estas carpetas:
 - `paper_pipeline_B_telemetry` -> `pipeline_b_telemetry_vrih`
 - `paper\Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion` -> `path_planning_collision_evasion`
 
-Al terminar compara recuento de archivos y suma de bytes entre origen y destino, y escribe `COPY_MANIFEST.md` en la carpeta destino.
+Al terminar compara recuento de archivos, suma de bytes y hashes SHA-256 por fichero entre origen y destino, y escribe `COPY_MANIFEST.md` en la carpeta destino.
+
+## Verificacion de papers
+
+Para recompilar los PDFs canonicos y fallar si quedan citas/referencias sin resolver:
+
+`powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_papers.ps1`
+
+El verificador cubre:
+
+- `paper_semantic_proxy_3d\semantic_proxy_3d_paper.tex` con `pdflatex/bibtex/pdflatex/pdflatex`.
+- `paper_pipeline_B_telemetry\pipeline_b_concept.tex` con `xelatex` repetido.
+
+Los logs de verificacion se escriben en `pipeline\logs\paper_verify`.
 
 ## Workflow 1: SIMULATION (flujo validado)
 
