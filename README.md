@@ -350,6 +350,7 @@ El switch en viewport y la API Blueprint se documentan en `Unreal\Plugins\PorceT
 Smoke de reflexión del backend SPPA:
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_sppa_backend.ps1`
+- Incluido por defecto en `powershell -NoProfile -ExecutionPolicy Bypass -File tools\audit_zero_trust_e2e.ps1`.
 
 ## Peso YOLO canónico
 

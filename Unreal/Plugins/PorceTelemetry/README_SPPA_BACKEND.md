@@ -68,3 +68,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_sppa_backend.ps
 ```
 
 The check verifies that the `UPorceTelemetryComponent` backend API, the SPPA actor, and the backend enum are exposed to Unreal reflection/Python.
+
+The full zero-trust audit also runs this smoke by default:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\audit_zero_trust_e2e.ps1
+```

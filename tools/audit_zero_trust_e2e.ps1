@@ -3,6 +3,7 @@ param(
   [string]$EngineBuildBat = "D:\Epic Games\UE_5.7\Engine\Build\BatchFiles\Build.bat",
   [int]$RealTwinPort = 18082,
   [int]$SimulationPort = 18083,
+  [switch]$SkipSppaReflection,
   [switch]$SkipUnrealBuild
 )
 
@@ -164,6 +165,7 @@ $report = [ordered]@{
   repo_root = $RepoRoot
   started_at = (Get-Date).ToString("o")
   preflight = $null
+  sppa_backend = $null
   real_twin = $null
   simulation = $null
   unreal_build = $null
@@ -178,6 +180,30 @@ if ($LASTEXITCODE -ne 0) {
 $report.preflight = [ordered]@{
   strict = $true
   ok = $true
+}
+
+if ($SkipSppaReflection) {
+  $report.sppa_backend = [ordered]@{
+    skipped = $true
+    ok = $true
+  }
+} else {
+  Info "Running SPPA backend Unreal reflection smoke..."
+  $sppaVerifyScript = Join-Path $RepoRoot "tools\verify_sppa_backend.ps1"
+  if (-not (Test-Path $sppaVerifyScript)) {
+    Fail "SPPA backend verifier not found: $sppaVerifyScript"
+  }
+  & powershell -NoProfile -ExecutionPolicy Bypass -File $sppaVerifyScript -RepoRoot $RepoRoot
+  if ($LASTEXITCODE -ne 0) {
+    Fail "SPPA backend reflection smoke failed"
+  }
+  $report.sppa_backend = [ordered]@{
+    skipped = $false
+    ok = $true
+    verifier = $sppaVerifyScript
+    log_path = (Join-Path $RepoRoot "pipeline\logs\sppa_backend_verify_latest.log")
+    report_path = (Join-Path $RepoRoot "pipeline\logs\sppa_backend_verify_latest.json")
+  }
 }
 
 $realTwinToken = "0123456789abcdef0123456789abcdef"
