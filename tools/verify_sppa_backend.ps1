@@ -15,6 +15,7 @@ if (-not $RepoRoot) {
 
 $uprojectPath = Join-Path $RepoRoot "Unreal\AirTraffic.uproject"
 $scriptPath = Join-Path $RepoRoot "Unreal\Scripts\verify_sppa_backend.py"
+$reportPath = Join-Path $RepoRoot "pipeline\logs\sppa_backend_verify_latest.json"
 $enginePaths = $null
 try {
   $enginePaths = Get-PorceUnrealEnginePaths -EngineRoot $EngineRoot
@@ -42,10 +43,14 @@ if (-not (Test-Path $ueCmd)) {
 }
 
 New-Item -ItemType Directory -Force -Path (Split-Path -Parent $LogPath) | Out-Null
+if (Test-Path $reportPath) {
+  Remove-Item -LiteralPath $reportPath -Force
+}
 
 Write-Host "[verify_sppa] Running Unreal reflection smoke..."
 Write-Host "[verify_sppa] Engine: $($enginePaths.Root)"
 Write-Host "[verify_sppa] Log: $LogPath"
+Write-Host "[verify_sppa] Report: $reportPath"
 & $ueCmd $uprojectPath -run=pythonscript "-script=$scriptPath" -unattended -nop4 -nosplash -stdout -FullStdOutLogOutput > $LogPath 2>&1
 $exitCode = $LASTEXITCODE
 
@@ -63,6 +68,43 @@ if ($exitCode -ne 0 -or $logText -notmatch 'SPPA_BACKEND_VERIFY_OK') {
     exit $exitCode
   }
   exit 5
+}
+
+if (-not (Test-Path $reportPath)) {
+  Write-Host "[verify_sppa] ERROR: Unreal smoke did not write report: $reportPath" -ForegroundColor Red
+  exit 6
+}
+
+try {
+  $report = Get-Content $reportPath -Raw | ConvertFrom-Json
+} catch {
+  Write-Host "[verify_sppa] ERROR: Could not parse report JSON: $reportPath" -ForegroundColor Red
+  Write-Host "[verify_sppa] ERROR: $($_.Exception.Message)" -ForegroundColor Red
+  exit 6
+}
+
+if (-not [bool]$report.ok) {
+  Write-Host "[verify_sppa] ERROR: Report JSON has ok=false" -ForegroundColor Red
+  if ($report.failures) {
+    @($report.failures) | ForEach-Object { Write-Host "[verify_sppa] ERROR: $_" -ForegroundColor Red }
+  }
+  exit 6
+}
+
+foreach ($section in @(
+  "backend_enum_values",
+  "component_defaults",
+  "component_methods",
+  "component_properties",
+  "component_switch",
+  "proxy_generation",
+  "proxy_methods",
+  "proxy_properties"
+)) {
+  if ($report.PSObject.Properties.Name -notcontains $section) {
+    Write-Host "[verify_sppa] ERROR: Report JSON missing section: $section" -ForegroundColor Red
+    exit 6
+  }
 }
 
 Write-Host "[verify_sppa] PASSED" -ForegroundColor Green
