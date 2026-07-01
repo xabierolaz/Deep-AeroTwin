@@ -11,14 +11,34 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $LogsRoot = Join-Path $RepoRoot "pipeline\logs"
 
-function _is_inside_repo([string]$Path) {
-  $resolved = (Resolve-Path $Path).Path
-  return $resolved.StartsWith($RepoRoot, [System.StringComparison]::OrdinalIgnoreCase)
+function _full_existing_path([string]$Path) {
+  $resolved = (Resolve-Path -LiteralPath $Path).Path
+  return [System.IO.Path]::GetFullPath($resolved)
+}
+
+function _is_inside_root([string]$Path, [string]$Root) {
+  $separatorChars = [char[]]@(
+    [System.IO.Path]::DirectorySeparatorChar,
+    [System.IO.Path]::AltDirectorySeparatorChar
+  )
+  $resolved = (_full_existing_path $Path).TrimEnd($separatorChars)
+  $resolvedRoot = (_full_existing_path $Root).TrimEnd($separatorChars)
+  return (
+    $resolved.Equals($resolvedRoot, [System.StringComparison]::OrdinalIgnoreCase) -or
+    $resolved.StartsWith(
+      $resolvedRoot + [System.IO.Path]::DirectorySeparatorChar,
+      [System.StringComparison]::OrdinalIgnoreCase
+    )
+  )
+}
+
+function _is_inside_logs_root([string]$Path) {
+  return _is_inside_root $Path $LogsRoot
 }
 
 function _run_name_for_path([System.IO.DirectoryInfo]$Dir) {
   $current = $Dir
-  while ($current -and $current.FullName.StartsWith($LogsRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+  while ($current -and (_is_inside_logs_root $current.FullName)) {
     if ($current.Name -match '^\d{8}_\d{6}$') {
       return $current.Name
     }
@@ -47,8 +67,8 @@ if (Test-Path $vizFrames) {
 
 $targets = @($targets | Sort-Object -Property FullName -Unique)
 $summary = foreach ($target in $targets) {
-  if (-not (_is_inside_repo $target.FullName)) {
-    throw "Refusing to touch path outside repo: $($target.FullName)"
+  if (-not (_is_inside_logs_root $target.FullName)) {
+    throw "Refusing to touch path outside pipeline logs: $($target.FullName)"
   }
   $files = @(Get-ChildItem -Path $target.FullName -Recurse -File -ErrorAction SilentlyContinue)
   [pscustomobject]@{
@@ -71,8 +91,8 @@ if (-not $Apply) {
 }
 
 foreach ($target in $targets) {
-  if (-not (_is_inside_repo $target.FullName)) {
-    throw "Refusing to delete path outside repo: $($target.FullName)"
+  if (-not (_is_inside_logs_root $target.FullName)) {
+    throw "Refusing to delete path outside pipeline logs: $($target.FullName)"
   }
   Remove-Item -LiteralPath $target.FullName -Recurse -Force
 }
