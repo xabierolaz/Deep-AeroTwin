@@ -6,6 +6,7 @@ import unreal
 
 REPO = Path(unreal.Paths.convert_relative_path_to_full(unreal.Paths.project_dir())).parent
 OUT = REPO / "pipeline" / "logs" / "sppa_backend_verify_latest.json"
+TEMP_PREFIX = "DAT_SPPA_Verify_"
 
 
 def snake_case(name):
@@ -123,6 +124,23 @@ def destroy_actor(actor):
         except Exception:
             pass
 
+def actor_label(actor):
+    try:
+        return str(actor.get_actor_label())
+    except Exception:
+        return str(actor.get_name())
+
+def cleanup_temp_actors():
+    try:
+        actors = list(actor_subsystem().get_all_level_actors())
+    except Exception:
+        return
+    for actor in actors:
+        label = actor_label(actor)
+        name = str(actor.get_name())
+        if label.startswith(TEMP_PREFIX) or name.startswith(TEMP_PREFIX):
+            destroy_actor(actor)
+
 def spawn_proxy_actor(proxy_cls, label):
     ensure_editor_world()
     actor = unreal.EditorLevelLibrary.spawn_actor_from_class(
@@ -187,8 +205,9 @@ def verify_proxy_generation(proxy_cls):
     failures = []
     actors = []
     try:
+        cleanup_temp_actors()
         for class_name, expected_min in expected_min_parts.items():
-            actor = spawn_proxy_actor(proxy_cls, "DAT_SPPA_Verify_" + class_name)
+            actor = spawn_proxy_actor(proxy_cls, TEMP_PREFIX + class_name)
             actors.append(actor)
             confirmed = class_name != "unknown"
             configure_proxy(actor, class_name, 0.95 if confirmed else 0.25, confirmed)
@@ -221,6 +240,7 @@ def verify_proxy_generation(proxy_cls):
     finally:
         for actor in actors:
             destroy_actor(actor)
+        cleanup_temp_actors()
 
     return {"rows": rows, "failures": failures}
 

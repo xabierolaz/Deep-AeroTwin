@@ -129,7 +129,7 @@ foreach ($requiredDiagnostic in @($sppaVerifyScriptPath, $sppaVerifyWrapperPath)
 }
 
 if (Test-Path $ejeaMapPath) {
-  $datPatterns = @("DAT_PaperCapture", "DAT_RotProbe", "DAT_PaperRealFlightCamera")
+  $datPatterns = @("DAT_PaperCapture", "DAT_RotProbe", "DAT_PaperRealFlightCamera", "DAT_SPPA_Verify")
   $datHits = @($datPatterns | Where-Object { Test-BinaryContainsAscii -path $ejeaMapPath -needle $_ })
   if ($datHits.Count -gt 0) {
     NoteFail "Unreal\Content\Ejea.umap contains temporary DAT staging markers: $($datHits -join ', ')"
