@@ -94,6 +94,7 @@ $ejeaMapPath = Join-Path $RepoRoot "Unreal\Content\Ejea.umap"
 $canonicalizePelotonScriptPath = Join-Path $RepoRoot "Unreal\Scripts\canonicalize_peloton_only.py"
 $sppaVerifyScriptPath = Join-Path $RepoRoot "Unreal\Scripts\verify_sppa_backend.py"
 $sppaVerifyWrapperPath = Join-Path $RepoRoot "tools\verify_sppa_backend.ps1"
+$repoHygieneScriptPath = Join-Path $RepoRoot "tools\audit_repo_hygiene.ps1"
 $generatedPaperCapturesPath = Join-Path $RepoRoot "Unreal\Content\Generated\PaperCaptures"
 $lockPath = Join-Path $RepoRoot "pipeline\requirements.lock.txt"
 $venvPython = Join-Path $RepoRoot "venv\Scripts\python.exe"
@@ -126,6 +127,17 @@ foreach ($requiredDiagnostic in @($sppaVerifyScriptPath, $sppaVerifyWrapperPath)
   } else {
     NoteFail "Missing SPPA diagnostic: $requiredDiagnostic"
   }
+}
+
+if (Test-Path $repoHygieneScriptPath) {
+  & powershell -NoProfile -ExecutionPolicy Bypass -File $repoHygieneScriptPath -RepoRoot $RepoRoot
+  if ($LASTEXITCODE -eq 0) {
+    NoteOk "Repository hygiene audit passed."
+  } else {
+    NoteFail "Repository hygiene audit failed."
+  }
+} else {
+  NoteFail "Missing repository hygiene audit script: $repoHygieneScriptPath"
 }
 
 if (Test-Path $ejeaMapPath) {

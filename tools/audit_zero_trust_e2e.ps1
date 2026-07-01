@@ -46,6 +46,16 @@ function Format-ProcessInfo($processInfo) {
   return "pid=$($processInfo.ProcessId) name=$($processInfo.Name) exe=$($processInfo.ExecutablePath) cmd=$cmd"
 }
 
+function Get-FreeLocalTcpPort() {
+  $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, 0)
+  try {
+    $listener.Start()
+    return [int]$listener.LocalEndpoint.Port
+  } finally {
+    $listener.Stop()
+  }
+}
+
 function Test-IsOwnedAuditBrainProcess($processInfo, [string]$RepoRoot) {
   if ($null -eq $processInfo) {
     return $false
@@ -62,6 +72,33 @@ function Test-IsOwnedAuditBrainProcess($processInfo, [string]$RepoRoot) {
     $cmd -match 'flight_controller\.py' -and
     $exe.StartsWith($venvPrefix)
   )
+}
+
+function Resolve-AuditPort([string]$Name, [int]$Port, [bool]$Explicit, [string]$RepoRoot) {
+  $listeners = @(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue)
+  if ($listeners.Count -eq 0) {
+    return $Port
+  }
+
+  $foreignListeners = @()
+  foreach ($listener in $listeners) {
+    $owner = Get-ProcessInfoById -ProcessId ([int]$listener.OwningProcess)
+    if (-not (Test-IsOwnedAuditBrainProcess -processInfo $owner -RepoRoot $RepoRoot)) {
+      $foreignListeners += (Format-ProcessInfo $owner)
+    }
+  }
+
+  if ($foreignListeners.Count -eq 0) {
+    return $Port
+  }
+
+  if ($Explicit) {
+    Fail "$Name audit port ${Port} is occupied by non-PORCE listener(s): $($foreignListeners -join '; ')"
+  }
+
+  $fallback = Get-FreeLocalTcpPort
+  Info "$Name audit port ${Port} is occupied by non-PORCE listener(s); using free port ${fallback}."
+  return $fallback
 }
 
 function Stop-PortListeners([int]$Port, [string]$RepoRoot) {
@@ -355,6 +392,18 @@ if (-not $EngineBuildBat) {
   $EngineBuildBat = $enginePaths.BuildBat
 }
 
+$realTwinPortExplicit = $PSBoundParameters.ContainsKey("RealTwinPort")
+$simulationPortExplicit = $PSBoundParameters.ContainsKey("SimulationPort")
+$RealTwinPort = Resolve-AuditPort -Name "REAL_TWIN" -Port $RealTwinPort -Explicit $realTwinPortExplicit -RepoRoot $RepoRoot
+$SimulationPort = Resolve-AuditPort -Name "SIMULATION" -Port $SimulationPort -Explicit $simulationPortExplicit -RepoRoot $RepoRoot
+if ($RealTwinPort -eq $SimulationPort) {
+  if ($realTwinPortExplicit -or $simulationPortExplicit) {
+    Fail "REAL_TWIN and SIMULATION audit ports must differ; both resolved to ${RealTwinPort}."
+  }
+  $SimulationPort = Get-FreeLocalTcpPort
+  Info "SIMULATION audit port collided with REAL_TWIN; using free port ${SimulationPort}."
+}
+
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $reportRoot = Join-Path $RepoRoot "pipeline\logs\zero_trust\$timestamp"
 New-Item -ItemType Directory -Force -Path $reportRoot | Out-Null
@@ -364,6 +413,10 @@ $report = [ordered]@{
   repo_root = $RepoRoot
   started_at = (Get-Date).ToString("o")
   preflight = $null
+  ports = [ordered]@{
+    real_twin = $RealTwinPort
+    simulation = $SimulationPort
+  }
   sppa_backend = $null
   real_twin = $null
   simulation = $null

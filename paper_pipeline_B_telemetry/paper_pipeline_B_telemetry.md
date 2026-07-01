@@ -56,8 +56,9 @@ Submission constraints currently known from the VRIH guide for authors:
 Current format status:
 
 - `pipeline_b_concept.tex` now uses the official `VRIH2025` LaTeX class.
+- Local `VRIH2025.cls` is tracked beside the manuscript and should be kept in sync with the selected VRIH template package.
 - Compile with `xelatex`, not `pdflatex`, because the VRIH class loads `fontspec`.
-- Current VRIH-format PDF length: 12 pages.
+- Last verified build: 2026-07-01 with XeLaTeX; current VRIH-format PDF length: 12 pages.
 - The guide does not state a maximum length for full research papers. The only explicit page cap found is rapid communications: maximum 4 pages, which is not suitable for this work.
 
 ## A2 / Ayudante Doctor Baremo
@@ -161,7 +162,7 @@ Xabier Olaz
 
 ## Immediate Next Actions
 
-1. Compile the rewritten LaTeX and fix errors.
+1. Keep compiling with XeLaTeX after each manuscript edit.
 2. Replace `TBD-BW` with a software-only bandwidth benchmark from replayed or synthetic detections.
 3. Instrument Brain and Unreal timestamps for partial latency.
 4. Capture HMD screenshots/video when the VR setup is available.
