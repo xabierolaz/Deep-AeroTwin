@@ -36,11 +36,21 @@ Submission constraints currently known from the VRIH guide for authors:
 
 | Requirement | Current handling |
 |---|---|
-| Research paper must be grounded in experiments and results. | The draft now contains an explicit evaluation protocol; results remain TBD. |
-| Rapid communications are limited to 4 pages. | Not suitable; target full research paper. |
-| Abstract should not exceed 250 words. | Current abstract is below 250 words. |
-| Keywords: 1 to 7. | Current paper has 7 keywords. |
-| Highlights are supported/expected as a separate item. | Drafted in `vrih_highlights.txt`. |
+| Article type | Target `Research paper`, not `Rapid communication`. |
+| Research paper length | No page minimum or maximum found in the official guide. |
+| Research paper evidence | Must be founded on scientific experiments or trials and include innovative results and conclusions. Current draft still needs measured results. |
+| Rapid communications | Maximum 4 pages. Not suitable for this work. |
+| Abstract | Maximum 250 words. Current abstract is below 250 words. |
+| Keywords | 1 to 7 keywords. Current paper has 7. |
+| Highlights | Optional/encouraged; 3 to 5 bullets, max 85 characters each. Drafted in `vrih_highlights.txt`. |
+| Graphical abstract | Optional/encouraged; separate file, at least 531 x 1328 px or proportional, readable at 5 x 13 cm. |
+| Figures | Submit separate files, cite in text, number by order, caption each figure. |
+| Video | Accepted; preferred max 150 MB per file and 1 GB total. Useful for our HMD demo. |
+| Research data | Data deposit encouraged; Mendeley Data supported. |
+| CRediT statement | Required for co-author contributions. |
+| Competing interests | Declaration document required; "nothing to declare" if applicable. |
+| Generative AI use | Must be declared if used in manuscript preparation; AI cannot be listed as author. |
+| APC | USD 1200 excluding taxes for papers submitted since 2026-01-01. |
 | Editable manuscript source required. | Current source is LaTeX and now uses the VRIH template class. |
 
 Current format status:
