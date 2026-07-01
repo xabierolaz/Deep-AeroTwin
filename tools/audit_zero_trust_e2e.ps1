@@ -27,12 +27,55 @@ function Get-HttpErrorStatusCode($err) {
   }
 }
 
-function Stop-PortListeners([int]$Port) {
+function Get-ProcessInfoById([int]$ProcessId) {
+  try {
+    return Get-CimInstance Win32_Process -Filter ("ProcessId={0}" -f $ProcessId)
+  } catch {
+    return $null
+  }
+}
+
+function Format-ProcessInfo($processInfo) {
+  if ($null -eq $processInfo) {
+    return "<unknown process>"
+  }
+  $cmd = ($processInfo.CommandLine | ForEach-Object { $_ }) -join ""
+  if ($cmd.Length -gt 220) {
+    $cmd = $cmd.Substring(0, 220) + "..."
+  }
+  return "pid=$($processInfo.ProcessId) name=$($processInfo.Name) exe=$($processInfo.ExecutablePath) cmd=$cmd"
+}
+
+function Test-IsOwnedAuditBrainProcess($processInfo, [string]$RepoRoot) {
+  if ($null -eq $processInfo) {
+    return $false
+  }
+
+  $name = (($processInfo.Name | ForEach-Object { $_ }) -join "").ToLowerInvariant()
+  $cmd = (($processInfo.CommandLine | ForEach-Object { $_ }) -join "").ToLowerInvariant()
+  $exe = (($processInfo.ExecutablePath | ForEach-Object { $_ }) -join "").ToLowerInvariant()
+  $repo = $RepoRoot.ToLowerInvariant().TrimEnd([char[]]@('\', '/'))
+  $venvPrefix = (Join-Path $repo "venv\scripts\").ToLowerInvariant()
+
+  return (
+    $name -match '^python(?:3)?(?:w)?\.exe$' -and
+    $cmd -match 'flight_controller\.py' -and
+    $exe.StartsWith($venvPrefix)
+  )
+}
+
+function Stop-PortListeners([int]$Port, [string]$RepoRoot) {
   while ($true) {
     $listeners = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
     if (-not $listeners) { break }
     $listeners | ForEach-Object {
-      Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue
+      $ownerPid = [int]$_.OwningProcess
+      $owner = Get-ProcessInfoById -ProcessId $ownerPid
+      if (-not (Test-IsOwnedAuditBrainProcess -processInfo $owner -RepoRoot $RepoRoot)) {
+        Fail "Refusing to kill non-PORCE listener on audit port ${Port}: $(Format-ProcessInfo $owner)"
+      }
+      Info "Stopping stale PORCE audit listener on port ${Port}: $(Format-ProcessInfo $owner)"
+      Stop-Process -Id $ownerPid -Force -ErrorAction SilentlyContinue
     }
     Start-Sleep -Milliseconds 300
   }
@@ -78,7 +121,7 @@ function Start-BrainRuntime(
     Fail "venv python not found: $venvPython"
   }
 
-  Stop-PortListeners -Port $Port
+  Stop-PortListeners -Port $Port -RepoRoot $RepoRoot
 
   $modeKey = $Mode.Trim().ToUpperInvariant()
   $evasion = if ($modeKey -eq "REAL_TWIN") { "0" } else { "1" }
@@ -118,7 +161,7 @@ function Start-BrainRuntime(
     if ($proc -and -not $proc.HasExited) {
       Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
     }
-    Stop-PortListeners -Port $Port
+    Stop-PortListeners -Port $Port -RepoRoot $RepoRoot
     Fail "$Mode Brain did not become ready on $baseUrl"
   }
 
@@ -134,7 +177,7 @@ function Stop-BrainRuntime($runtime, [int]$Port) {
   if ($runtime -and $runtime.Process -and -not $runtime.Process.HasExited) {
     Stop-Process -Id $runtime.Process.Id -Force -ErrorAction SilentlyContinue
   }
-  Stop-PortListeners -Port $Port
+  Stop-PortListeners -Port $Port -RepoRoot $RepoRoot
 }
 
 function Assert-True([bool]$Condition, [string]$Message) {
