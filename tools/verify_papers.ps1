@@ -22,28 +22,98 @@ function Require-Command([string]$Name) {
   return $command.Source
 }
 
-function Invoke-LoggedCommand([string]$Exe, [string[]]$ArgumentList, [string]$WorkingDirectory, [string]$LogPath) {
-  $commandLine = "$Exe $($ArgumentList -join ' ')"
-  Info $commandLine
-  Push-Location $WorkingDirectory
+function Test-FileWritable([string]$Path) {
+  if (-not $Path -or -not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+    return $true
+  }
+
+  $stream = $null
   try {
-    "=== $commandLine" | Set-Content -LiteralPath $LogPath -Encoding UTF8
-    $previousErrorActionPreference = $ErrorActionPreference
-    $ErrorActionPreference = "Continue"
-    try {
-      & $Exe @ArgumentList 2>&1 |
-        ForEach-Object { $_.ToString() } |
-        Tee-Object -FilePath $LogPath -Append |
-        Out-Host
-      $exitCode = [int]$LASTEXITCODE
-    } finally {
-      $ErrorActionPreference = $previousErrorActionPreference
+    $stream = [System.IO.File]::Open(
+      $Path,
+      [System.IO.FileMode]::Open,
+      [System.IO.FileAccess]::ReadWrite,
+      [System.IO.FileShare]::None
+    )
+    return $true
+  } catch {
+    return $false
+  } finally {
+    if ($null -ne $stream) {
+      $stream.Close()
     }
-    if ($exitCode -ne 0) {
+  }
+}
+
+function Wait-FileWritable([string]$Path, [int]$TimeoutSeconds = 20) {
+  if (-not $Path) {
+    return
+  }
+
+  $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+  while (-not (Test-FileWritable $Path)) {
+    if ($stopwatch.Elapsed.TotalSeconds -ge $TimeoutSeconds) {
+      Fail "Timed out waiting for writable PDF output: $Path"
+    }
+    Start-Sleep -Milliseconds 250
+  }
+}
+
+function Invoke-LoggedCommand(
+  [string]$Exe,
+  [string[]]$ArgumentList,
+  [string]$WorkingDirectory,
+  [string]$LogPath,
+  [string]$OutputPath = "",
+  [int]$Attempts = 1
+) {
+  $commandLine = "$Exe $($ArgumentList -join ' ')"
+
+  for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
+    if ($attempt -gt 1) {
+      Info "$commandLine (retry ${attempt}/${Attempts})"
+    } else {
+      Info $commandLine
+    }
+
+    Wait-FileWritable -Path $OutputPath
+    Push-Location $WorkingDirectory
+    try {
+      "=== $commandLine" | Set-Content -LiteralPath $LogPath -Encoding UTF8
+      $previousErrorActionPreference = $ErrorActionPreference
+      $ErrorActionPreference = "Continue"
+      try {
+        & $Exe @ArgumentList 2>&1 |
+          ForEach-Object { $_.ToString() } |
+          Tee-Object -FilePath $LogPath -Append |
+          Out-Host
+        $exitCode = [int]$LASTEXITCODE
+      } finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+      }
+    } finally {
+      Pop-Location
+    }
+
+    if ($exitCode -eq 0) {
+      return
+    }
+
+    $logText = ""
+    if (Test-Path -LiteralPath $LogPath -PathType Leaf) {
+      $logText = Get-Content -LiteralPath $LogPath -Raw
+    }
+    $canRetryBusyOutput = (
+      $attempt -lt $Attempts -and
+      $OutputPath -and
+      $logText -match "I can't write on file"
+    )
+    if (-not $canRetryBusyOutput) {
       Fail "Command failed with exit code ${exitCode}: $commandLine"
     }
-  } finally {
-    Pop-Location
+
+    Info "PDF output was temporarily busy; waiting before retrying."
+    Start-Sleep -Milliseconds 750
   }
 }
 
@@ -102,10 +172,10 @@ if (-not $SkipSemanticProxy) {
   $log = Join-Path $logRoot "semantic_proxy_3d_paper.log"
   Remove-Item -LiteralPath $log -Force -ErrorAction SilentlyContinue
 
-  Invoke-LoggedCommand -Exe $pdflatex -ArgumentList @("-interaction=nonstopmode", "-halt-on-error", $tex) -WorkingDirectory $paperDir -LogPath $log
+  Invoke-LoggedCommand -Exe $pdflatex -ArgumentList @("-interaction=nonstopmode", "-halt-on-error", $tex) -WorkingDirectory $paperDir -LogPath $log -OutputPath $pdf -Attempts 5
   Invoke-LoggedCommand -Exe $bibtex -ArgumentList @("semantic_proxy_3d_paper") -WorkingDirectory $paperDir -LogPath $log
-  Invoke-LoggedCommand -Exe $pdflatex -ArgumentList @("-interaction=nonstopmode", "-halt-on-error", $tex) -WorkingDirectory $paperDir -LogPath $log
-  Invoke-LoggedCommand -Exe $pdflatex -ArgumentList @("-interaction=nonstopmode", "-halt-on-error", $tex) -WorkingDirectory $paperDir -LogPath $log
+  Invoke-LoggedCommand -Exe $pdflatex -ArgumentList @("-interaction=nonstopmode", "-halt-on-error", $tex) -WorkingDirectory $paperDir -LogPath $log -OutputPath $pdf -Attempts 5
+  Invoke-LoggedCommand -Exe $pdflatex -ArgumentList @("-interaction=nonstopmode", "-halt-on-error", $tex) -WorkingDirectory $paperDir -LogPath $log -OutputPath $pdf -Attempts 5
   Assert-Pdf $pdf
   Assert-LogHasNoUnresolvedRefs $log
   $results += [pscustomobject]@{ Paper = "semantic_proxy_3d"; Pdf = $pdf; Bytes = (Get-Item $pdf).Length }
@@ -118,9 +188,9 @@ if (-not $SkipPipelineB) {
   $log = Join-Path $logRoot "pipeline_b_concept.log"
   Remove-Item -LiteralPath $log -Force -ErrorAction SilentlyContinue
 
-  Invoke-LoggedCommand -Exe $xelatex -ArgumentList @("-interaction=nonstopmode", "-halt-on-error", $tex) -WorkingDirectory $paperDir -LogPath $log
-  Invoke-LoggedCommand -Exe $xelatex -ArgumentList @("-interaction=nonstopmode", "-halt-on-error", $tex) -WorkingDirectory $paperDir -LogPath $log
-  Invoke-LoggedCommand -Exe $xelatex -ArgumentList @("-interaction=nonstopmode", "-halt-on-error", $tex) -WorkingDirectory $paperDir -LogPath $log
+  Invoke-LoggedCommand -Exe $xelatex -ArgumentList @("-interaction=nonstopmode", "-halt-on-error", $tex) -WorkingDirectory $paperDir -LogPath $log -OutputPath $pdf -Attempts 5
+  Invoke-LoggedCommand -Exe $xelatex -ArgumentList @("-interaction=nonstopmode", "-halt-on-error", $tex) -WorkingDirectory $paperDir -LogPath $log -OutputPath $pdf -Attempts 5
+  Invoke-LoggedCommand -Exe $xelatex -ArgumentList @("-interaction=nonstopmode", "-halt-on-error", $tex) -WorkingDirectory $paperDir -LogPath $log -OutputPath $pdf -Attempts 5
   Assert-Pdf $pdf
   Assert-LogHasNoUnresolvedRefs $log
   $results += [pscustomobject]@{ Paper = "pipeline_b_telemetry"; Pdf = $pdf; Bytes = (Get-Item $pdf).Length }
