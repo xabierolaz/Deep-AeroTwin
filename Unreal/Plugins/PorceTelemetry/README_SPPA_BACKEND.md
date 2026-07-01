@@ -67,7 +67,7 @@ Run the Unreal reflection/generation smoke after C++ changes to this plugin:
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_sppa_backend.ps1
 ```
 
-The check verifies that the `UPorceTelemetryComponent` backend API, the SPPA actor, and the backend enum are exposed to Unreal reflection/Python. It creates a transient telemetry component and checks `SetSpawnBackend()` / `ToggleSpawnBackend()` state transitions. It also spawns `APorceSemanticProxyActor`, calls `ConfigureProxy()` for bike/cow/tower/unknown classes, and checks generated primitive component counts, tags, and collision state.
+The check verifies that the `UPorceTelemetryComponent` backend API, default asset-backed mode, `/api/ui/data` endpoint default, the SPPA actor, and the backend enum are exposed to Unreal reflection/Python. It creates a transient telemetry component and checks `SetSpawnBackend()` / `ToggleSpawnBackend()` state transitions. It also spawns `APorceSemanticProxyActor`, calls `ConfigureProxy()` for bike/cow/tower/unknown classes, and checks generated primitive component counts, tags, and collision state.
 
 If Unreal 5.7 is not installed under the usual Epic Games paths, set:
 

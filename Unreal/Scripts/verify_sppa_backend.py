@@ -33,6 +33,14 @@ def has_property(obj, name):
     return False, None
 
 
+def get_property_value(obj, name):
+    for candidate in (name, name[0].lower() + name[1:], snake_case(name)):
+        try:
+            return obj.get_editor_property(candidate), candidate
+        except Exception:
+            pass
+    return None, None
+
 def has_method(cls, name):
     for candidate in (name, name[0].lower() + name[1:], snake_case(name)):
         if hasattr(cls, candidate):
@@ -60,6 +68,48 @@ def check_properties(label, obj, required):
             missing.append(name)
     return {"label": label, "properties": rows, "missing": missing}
 
+
+def check_component_defaults(component_cdo):
+    rows = {}
+    failures = []
+    expected = {
+        "SpawnBackend": "ASSET",
+        "EndpointUrl": "/api/ui/data",
+        "bEnabled": True,
+        "bShowSpawnBackendSwitchUI": True,
+    }
+
+    for name, expected_value in expected.items():
+        value, property_name = get_property_value(component_cdo, name)
+        text = str(value)
+        if isinstance(expected_value, bool):
+            ok = bool(value) is expected_value
+        else:
+            ok = expected_value.upper() in text.upper()
+        rows[name] = {
+            "property": property_name,
+            "value": text,
+            "expected": str(expected_value),
+            "ok": ok,
+        }
+        if not ok:
+            failures.append("PorceTelemetryComponent default %s expected %s, got %s" % (name, expected_value, text))
+
+    poll_rate, poll_property = get_property_value(component_cdo, "PollRateHz")
+    try:
+        poll_ok = float(poll_rate) > 0.0
+    except Exception:
+        poll_ok = False
+    rows["PollRateHz"] = {
+        "property": poll_property,
+        "value": str(poll_rate),
+        "expected": ">0",
+        "ok": poll_ok,
+    }
+    if not poll_ok:
+        failures.append("PorceTelemetryComponent default PollRateHz must be > 0, got %s" % poll_rate)
+
+    return {"label": "PorceTelemetryComponent", "defaults": rows, "failures": failures}
 
 def check_methods(label, cls, required):
     rows = {}
@@ -347,6 +397,7 @@ def main():
         failures.append("PorceSemanticProxyActor default object is unavailable")
 
     component_property_check = {"missing": []}
+    component_default_check = {"failures": []}
     proxy_property_check = {"missing": []}
     component_method_check = {"missing": []}
     proxy_method_check = {"missing": []}
@@ -366,12 +417,16 @@ def main():
                 "DefaultObstacleActorClass",
                 "EndpointUrl",
                 "AuthToken",
+                "bEnabled",
+                "PollRateHz",
             ],
         )
         failures.extend(
             "PorceTelemetryComponent missing property: " + item
             for item in component_property_check["missing"]
         )
+        component_default_check = check_component_defaults(component_cdo)
+        failures.extend(component_default_check["failures"])
 
     if component_cls is not None:
         component_method_check = check_methods(
@@ -442,6 +497,7 @@ def main():
         "backend_enum_python_name": backend_enum_py_name,
         "backend_enum_values": enum_names,
         "component_properties": component_property_check,
+        "component_defaults": component_default_check,
         "component_methods": component_method_check,
         "component_switch": component_switch,
         "proxy_properties": proxy_property_check,
