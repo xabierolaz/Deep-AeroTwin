@@ -43,6 +43,7 @@ Notas:
 - Dependencias Python fijadas en `pipeline\requirements.lock.txt`.
 - `tools\launch_workflow.bat` no persiste token por defecto (`PORCE_OBSTACLE_TOKEN_PERSIST=0`).
 - El proyecto Unreal requiere `CesiumForUnreal` y `VaRest` (plugins externos a este repo).
+- Las herramientas Unreal resuelven UE 5.7 desde `PORCE_UNREAL_ENGINE_ROOT` o `UE_ENGINE_ROOT`; si no estan definidos, prueban las rutas Epic Games habituales.
 
 ## Workflow 1: SIMULATION (flujo validado)
 
@@ -351,6 +352,7 @@ Smoke de reflexión del backend SPPA:
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_sppa_backend.ps1`
 - Incluido por defecto en `powershell -NoProfile -ExecutionPolicy Bypass -File tools\audit_zero_trust_e2e.ps1`.
+- Para una instalación no estándar de UE 5.7: `$env:PORCE_UNREAL_ENGINE_ROOT="D:\Ruta\UE_5.7"`.
 
 ## Peso YOLO canónico
 

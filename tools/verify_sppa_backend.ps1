@@ -1,10 +1,11 @@
 param(
   [string]$RepoRoot = "",
-  [string]$EngineRoot = "D:\Epic Games\UE_5.7",
+  [string]$EngineRoot = "",
   [string]$LogPath = ""
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "unreal_engine_paths.ps1")
 
 if (-not $RepoRoot) {
   $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
@@ -14,7 +15,14 @@ if (-not $RepoRoot) {
 
 $uprojectPath = Join-Path $RepoRoot "Unreal\AirTraffic.uproject"
 $scriptPath = Join-Path $RepoRoot "Unreal\Scripts\verify_sppa_backend.py"
-$ueCmd = Join-Path $EngineRoot "Engine\Binaries\Win64\UnrealEditor-Cmd.exe"
+$enginePaths = $null
+try {
+  $enginePaths = Get-PorceUnrealEnginePaths -EngineRoot $EngineRoot
+} catch {
+  Write-Host "[verify_sppa] ERROR: $($_.Exception.Message)" -ForegroundColor Red
+  exit 4
+}
+$ueCmd = $enginePaths.UnrealEditorCmd
 
 if (-not $LogPath) {
   $LogPath = Join-Path $RepoRoot "pipeline\logs\sppa_backend_verify_latest.log"
@@ -36,6 +44,7 @@ if (-not (Test-Path $ueCmd)) {
 New-Item -ItemType Directory -Force -Path (Split-Path -Parent $LogPath) | Out-Null
 
 Write-Host "[verify_sppa] Running Unreal reflection smoke..."
+Write-Host "[verify_sppa] Engine: $($enginePaths.Root)"
 Write-Host "[verify_sppa] Log: $LogPath"
 & $ueCmd $uprojectPath -run=pythonscript "-script=$scriptPath" -unattended -nop4 -nosplash -stdout -FullStdOutLogOutput > $LogPath 2>&1
 $exitCode = $LASTEXITCODE

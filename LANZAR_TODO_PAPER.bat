@@ -4,8 +4,15 @@ setlocal EnableExtensions
 set "PROJECT_ROOT=%~dp0"
 if "%PROJECT_ROOT:~-1%"=="\" set "PROJECT_ROOT=%PROJECT_ROOT:~0,-1%"
 
-set "UE_EDITOR=D:\Epic Games\UE_5.7\Engine\Binaries\Win64\UnrealEditor.exe"
-set "UE_CMD=D:\Epic Games\UE_5.7\Engine\Binaries\Win64\UnrealEditor-Cmd.exe"
+if not defined PORCE_UNREAL_ENGINE_ROOT if defined UE_ENGINE_ROOT set "PORCE_UNREAL_ENGINE_ROOT=%UE_ENGINE_ROOT%"
+if not defined PORCE_UNREAL_ENGINE_ROOT set "PORCE_UNREAL_ENGINE_ROOT=D:\Epic Games\UE_5.7"
+if not defined UE_EDITOR set "UE_EDITOR=%PORCE_UNREAL_ENGINE_ROOT%\Engine\Binaries\Win64\UnrealEditor.exe"
+if not defined UE_CMD set "UE_CMD=%PORCE_UNREAL_ENGINE_ROOT%\Engine\Binaries\Win64\UnrealEditor-Cmd.exe"
+if not exist "%UE_EDITOR%" if exist "%ProgramFiles%\Epic Games\UE_5.7\Engine\Binaries\Win64\UnrealEditor.exe" (
+  set "PORCE_UNREAL_ENGINE_ROOT=%ProgramFiles%\Epic Games\UE_5.7"
+  set "UE_EDITOR=%ProgramFiles%\Epic Games\UE_5.7\Engine\Binaries\Win64\UnrealEditor.exe"
+  set "UE_CMD=%ProgramFiles%\Epic Games\UE_5.7\Engine\Binaries\Win64\UnrealEditor-Cmd.exe"
+)
 set "UPROJECT=%PROJECT_ROOT%\Unreal\AirTraffic.uproject"
 set "PYTHON=%PROJECT_ROOT%\venv\Scripts\python.exe"
 if not exist "%PYTHON%" set "PYTHON=python"

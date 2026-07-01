@@ -4,6 +4,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "unreal_engine_paths.ps1")
 
 function NoteOk([string]$message) {
   Write-Host "[preflight] OK   $message" -ForegroundColor Green
@@ -98,9 +99,18 @@ $lockPath = Join-Path $RepoRoot "pipeline\requirements.lock.txt"
 $venvPython = Join-Path $RepoRoot "venv\Scripts\python.exe"
 $yoloConfigDir = Join-Path $RepoRoot "pipeline\logs\ultralytics"
 $sitlBinary = Join-Path $RepoRoot "ardupilot\build\sitl\bin\arducopter"
-$engineRoot = "D:\Epic Games\UE_5.7"
+$engineRoot = ""
+$enginePaths = $null
 
 Write-Host "[preflight] Repo: $RepoRoot"
+
+try {
+  $enginePaths = Get-PorceUnrealEnginePaths
+  $engineRoot = $enginePaths.Root
+  NoteOk "Unreal Engine 5.7 root resolved: $engineRoot"
+} catch {
+  NoteFail "$($_.Exception.Message)"
+}
 
 foreach ($required in @($uprojectPath, $defaultsPath, $runSITLPath, $rootPaperLauncherPath, $workflowLauncherPath, $engineIniPath, $lockPath)) {
   if (Test-Path $required) {

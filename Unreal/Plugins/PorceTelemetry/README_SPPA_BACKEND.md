@@ -69,6 +69,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_sppa_backend.ps
 
 The check verifies that the `UPorceTelemetryComponent` backend API, the SPPA actor, and the backend enum are exposed to Unreal reflection/Python.
 
+If Unreal 5.7 is not installed under the usual Epic Games paths, set:
+
+```powershell
+$env:PORCE_UNREAL_ENGINE_ROOT = "D:\Path\To\UE_5.7"
+```
+
 The full zero-trust audit also runs this smoke by default:
 
 ```powershell

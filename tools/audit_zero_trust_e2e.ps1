@@ -1,6 +1,7 @@
 param(
   [string]$RepoRoot = "",
-  [string]$EngineBuildBat = "D:\Epic Games\UE_5.7\Engine\Build\BatchFiles\Build.bat",
+  [string]$EngineRoot = "",
+  [string]$EngineBuildBat = "",
   [int]$RealTwinPort = 18082,
   [int]$SimulationPort = 18083,
   [switch]$SkipSppaReflection,
@@ -8,6 +9,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "unreal_engine_paths.ps1")
 
 function Fail([string]$message) {
   throw $message
@@ -156,6 +158,11 @@ if (-not $RepoRoot) {
   $RepoRoot = (Resolve-Path $RepoRoot).Path
 }
 
+$enginePaths = Get-PorceUnrealEnginePaths -EngineRoot $EngineRoot
+if (-not $EngineBuildBat) {
+  $EngineBuildBat = $enginePaths.BuildBat
+}
+
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $reportRoot = Join-Path $RepoRoot "pipeline\logs\zero_trust\$timestamp"
 New-Item -ItemType Directory -Force -Path $reportRoot | Out-Null
@@ -193,7 +200,7 @@ if ($SkipSppaReflection) {
   if (-not (Test-Path $sppaVerifyScript)) {
     Fail "SPPA backend verifier not found: $sppaVerifyScript"
   }
-  & powershell -NoProfile -ExecutionPolicy Bypass -File $sppaVerifyScript -RepoRoot $RepoRoot
+  & powershell -NoProfile -ExecutionPolicy Bypass -File $sppaVerifyScript -RepoRoot $RepoRoot -EngineRoot $enginePaths.Root
   if ($LASTEXITCODE -ne 0) {
     Fail "SPPA backend reflection smoke failed"
   }
@@ -356,6 +363,7 @@ if ($SkipUnrealBuild) {
   $report.unreal_build = [ordered]@{
     skipped = $false
     ok = $true
+    engine_root = $enginePaths.Root
     build_bat = $EngineBuildBat
   }
 }
