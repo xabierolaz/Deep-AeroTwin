@@ -91,6 +91,8 @@ $legacySimulationLauncherPath = Join-Path $RepoRoot "tools\legacy_root_bats\laun
 $engineIniPath = Join-Path $RepoRoot "Unreal\Config\DefaultEngine.ini"
 $ejeaMapPath = Join-Path $RepoRoot "Unreal\Content\Ejea.umap"
 $canonicalizePelotonScriptPath = Join-Path $RepoRoot "Unreal\Scripts\canonicalize_peloton_only.py"
+$sppaVerifyScriptPath = Join-Path $RepoRoot "Unreal\Scripts\verify_sppa_backend.py"
+$sppaVerifyWrapperPath = Join-Path $RepoRoot "tools\verify_sppa_backend.ps1"
 $generatedPaperCapturesPath = Join-Path $RepoRoot "Unreal\Content\Generated\PaperCaptures"
 $lockPath = Join-Path $RepoRoot "pipeline\requirements.lock.txt"
 $venvPython = Join-Path $RepoRoot "venv\Scripts\python.exe"
@@ -105,6 +107,14 @@ foreach ($required in @($uprojectPath, $defaultsPath, $runSITLPath, $rootPaperLa
     NoteOk "Found $required"
   } else {
     NoteFail "Missing required file: $required"
+  }
+}
+
+foreach ($requiredDiagnostic in @($sppaVerifyScriptPath, $sppaVerifyWrapperPath)) {
+  if (Test-Path $requiredDiagnostic) {
+    NoteOk "Found SPPA diagnostic: $requiredDiagnostic"
+  } else {
+    NoteFail "Missing SPPA diagnostic: $requiredDiagnostic"
   }
 }
 

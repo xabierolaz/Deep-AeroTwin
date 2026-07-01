@@ -347,6 +347,10 @@ Spawn sintético antiguo:
 
 El switch en viewport y la API Blueprint se documentan en `Unreal\Plugins\PorceTelemetry\README_SPPA_BACKEND.md`.
 
+Smoke de reflexión del backend SPPA:
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_sppa_backend.ps1`
+
 ## Peso YOLO canónico
 
 Peso único del repo:

@@ -22,6 +22,11 @@ Manual/diagnostic tools:
 - `apply_runtime_paper_quality_cvars.py`
 - `audit_ejea_spawn_state.py`
 - `paper_scenario_visibility.py`
+- `verify_sppa_backend.py`
+
+SPPA backend reflection smoke:
+
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_sppa_backend.ps1`
 
 Figure-2 capture experiments, not part of the automatic launcher:
 

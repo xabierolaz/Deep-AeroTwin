@@ -58,3 +58,13 @@ Both backends consume the existing obstacle fields already used by the Unreal te
 - Optional heading: `yaw_deg`, `heading_deg`, `azimuth_deg`, `yaw_rad`, or `heading_rad`.
 
 SPPA does not introduce a new endpoint. It is a rendering/backend layer behind the current AeroTwin telemetry path.
+
+## Verification
+
+Run the Unreal reflection smoke after C++ changes to this plugin:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\verify_sppa_backend.ps1
+```
+
+The check verifies that the `UPorceTelemetryComponent` backend API, the SPPA actor, and the backend enum are exposed to Unreal reflection/Python.
