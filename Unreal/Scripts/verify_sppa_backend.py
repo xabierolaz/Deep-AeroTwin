@@ -244,6 +244,88 @@ def verify_proxy_generation(proxy_cls):
 
     return {"rows": rows, "failures": failures}
 
+def backend_enum_value(enum_cls, *tokens):
+    if enum_cls is None:
+        return None
+    wanted = [token.upper() for token in tokens]
+    for name in dir(enum_cls):
+        upper = name.upper()
+        if all(token in upper for token in wanted):
+            return getattr(enum_cls, name)
+    return None
+
+def get_component_backend(component):
+    method = getattr(component, "get_spawn_backend", None)
+    if method is None:
+        method = getattr(component, "GetSpawnBackend", None)
+    if method is not None:
+        return method()
+    try:
+        return component.get_editor_property("SpawnBackend")
+    except Exception:
+        return None
+
+def is_component_using_proxy(component):
+    method = getattr(component, "is_using_semantic_proxy_backend", None)
+    if method is None:
+        method = getattr(component, "IsUsingSemanticProxyBackend", None)
+    if method is not None:
+        return bool(method())
+    backend = get_component_backend(component)
+    return "PROXY" in str(backend).upper()
+
+def call_component_backend_method(component, name, *args):
+    method = getattr(component, snake_case(name), None)
+    if method is None:
+        method = getattr(component, name, None)
+    if method is None:
+        raise RuntimeError("PorceTelemetryComponent instance has no %s method" % name)
+    return method(*args)
+
+def verify_component_backend_switch(component_cls, backend_enum_cls):
+    rows = []
+    failures = []
+    unreal_assets = backend_enum_value(backend_enum_cls, "ASSET")
+    semantic_proxy = backend_enum_value(backend_enum_cls, "PROXY")
+    if unreal_assets is None or semantic_proxy is None:
+        return {
+            "rows": rows,
+            "failures": ["Could not resolve backend enum values for component switch smoke"],
+        }
+
+    try:
+        component = unreal.new_object(component_cls)
+    except Exception as exc:
+        return {
+            "rows": rows,
+            "failures": ["Could not create transient PorceTelemetryComponent: %s" % exc],
+        }
+
+    try:
+        call_component_backend_method(component, "SetSpawnBackend", unreal_assets)
+        rows.append({"action": "set_assets", "backend": str(get_component_backend(component)), "is_proxy": is_component_using_proxy(component)})
+        if is_component_using_proxy(component):
+            failures.append("SetSpawnBackend(UnrealAssets) left component in proxy mode")
+
+        call_component_backend_method(component, "SetSpawnBackend", semantic_proxy)
+        rows.append({"action": "set_proxy", "backend": str(get_component_backend(component)), "is_proxy": is_component_using_proxy(component)})
+        if not is_component_using_proxy(component):
+            failures.append("SetSpawnBackend(SemanticProxy) did not switch component to proxy mode")
+
+        call_component_backend_method(component, "ToggleSpawnBackend")
+        rows.append({"action": "toggle_to_assets", "backend": str(get_component_backend(component)), "is_proxy": is_component_using_proxy(component)})
+        if is_component_using_proxy(component):
+            failures.append("ToggleSpawnBackend() did not switch proxy -> assets")
+
+        call_component_backend_method(component, "ToggleSpawnBackend")
+        rows.append({"action": "toggle_to_proxy", "backend": str(get_component_backend(component)), "is_proxy": is_component_using_proxy(component)})
+        if not is_component_using_proxy(component):
+            failures.append("ToggleSpawnBackend() did not switch assets -> proxy")
+    except Exception as exc:
+        failures.append("Component backend switch smoke failed: %s" % exc)
+
+    return {"rows": rows, "failures": failures}
+
 def main():
     component_cls, component_py_name = get_unreal_type("PorceTelemetryComponent")
     proxy_cls, proxy_py_name = get_unreal_type("PorceSemanticProxyActor")
@@ -340,6 +422,11 @@ def main():
     if backend_enum_cls is not None and ("ASSET" not in enum_text or "PROXY" not in enum_text):
         failures.append("PorceTwinSpawnBackend enum does not expose both asset and proxy modes")
 
+    component_switch = {"rows": [], "failures": []}
+    if component_cls is not None and backend_enum_cls is not None and not component_method_check.get("missing"):
+        component_switch = verify_component_backend_switch(component_cls, backend_enum_cls)
+        failures.extend(component_switch["failures"])
+
     proxy_generation = {"rows": [], "failures": []}
     if proxy_cls is not None and not proxy_method_check.get("missing"):
         try:
@@ -356,6 +443,7 @@ def main():
         "backend_enum_values": enum_names,
         "component_properties": component_property_check,
         "component_methods": component_method_check,
+        "component_switch": component_switch,
         "proxy_properties": proxy_property_check,
         "proxy_methods": proxy_method_check,
         "proxy_generation": proxy_generation,
