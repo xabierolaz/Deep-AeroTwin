@@ -1,0 +1,1312 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit}
+
+\geometry{margin=2.3cm}
+\setlist[itemize]{leftmargin=*}
+\setlist[enumerate]{leftmargin=*}
+\newcommand{\pending}[1]{{\tiny\texttt{#1}}}
+
+\title{SPPA: Scale-Adaptive Semantic Primitive Proxy Assembly for Real-Time UAV Digital Twins}
+\author{Deep-AeroTwin Project}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Telemetry-driven UAV digital twins convert onboard perception into object-level
+messages that should be rendered as intended pilot-facing actors in a real-time
+virtual-reality interface. This creates a semantic telemetry-to-VR actor gap:
+the detector may provide a class, confidence, pose estimate, bounding region, or
+footprint, while the pilot needs an immediately visible object with meaningful
+occupied volume. Curated assets are incomplete, fixed-scale, and expensive to
+manage at runtime; high-fidelity image-to-3D models optimize a different
+contract. This paper specifies Semantic Primitive Proxy Assembly (SPPA), a
+bounded representation layer intended to compile semantic labels into
+low-polygon part graphs made of boxes, cylinders, ellipsoids, cones, and tori.
+The specification separates semantic compilation, primitive part graphs,
+measurement-conditioned pose/proportion fitting, uncertainty metadata, and
+conservative display fallback. SPPA is not a 3D reconstruction method and is
+not yet evaluated as a UAV/VR teleoperation system. It is a proposed operational
+proxy representation: the output is intended to preserve class family,
+approximate scale, pose, uncertainty, and occupied volume at predictable
+rendering cost. We provide the runtime contract, descriptor schema, algorithmic
+formulation, evidence-status table, and preregistered evaluation plan. The
+implemented artifact is limited to a debug prototype that generates seven
+fixed-template proxy classes through a batch/OBJ path in 60--80 ms per object.
+All claims about dense VR frame rate, end-to-end UAV telemetry integration,
+operator readability, conservative fallback behavior, and bandwidth reduction
+are marked as pending empirical validation.
+\end{abstract}
+
+\section{Motivation}
+
+Pipeline B replaces continuous video transmission with lightweight semantic
+telemetry. The UAV does not transmit every pixel of the camera stream; it
+transmits object-level meaning: class label, confidence, position, timestamp,
+and approximate geometry. The ground station reconstructs the operational scene
+inside a Cesium-enabled Unreal Engine digital twin for a remote pilot wearing VR
+goggles.
+
+This architecture creates a practical rendering problem. A detector may report
+many classes: people, cyclists, cars, trucks, animals, vegetation, poles,
+barriers, construction machinery, unknown obstacles, and rare objects. A digital
+twin cannot realistically maintain a complete, manually curated 3D asset library
+for every object that might appear during real-world UAV operation. Even if a
+large library is available, asset retrieval, licensing, semantic matching,
+level-of-detail management, and runtime loading remain operational problems.
+
+Modern image-to-3D and text-to-3D models address a different objective. They are
+designed to create visually rich 3D assets from images or prompts. This is
+valuable for content creation, simulation authoring, games, and design. However,
+remote UAV piloting has a different priority: a detected object must appear in
+the pilot's synthetic world almost immediately, with minimal polygon count and
+stable rendering cost. A visually impressive mesh generated several seconds
+later is less useful than a coarse obstacle volume generated in milliseconds.
+
+\section{Core Idea}
+
+The proposed system performs semantic primitive proxy generation. The key claim
+is simple:
+
+\begin{quote}
+For real-time UAV teleoperation, the digital twin does not need to reconstruct
+the true mesh of every detected object. It needs to reconstruct a low-latency,
+low-polygon, semantically recognizable volume that is sufficient for pilot
+situational awareness and obstacle avoidance.
+\end{quote}
+
+Instead of producing a detailed mesh, the system assembles predefined geometric
+primitives into a proxy structure. The proxy is not only selected by class name;
+it is selected by a lightweight semantic and morphological interpretation of
+that class. If the detector reports \texttt{cow}, the system can infer that the
+object is an animal, a mammal, and a quadruped. That immediately constrains the
+proxy to include a body volume, a head volume, four legs, and an orientation
+hypothesis. If the detector reports \texttt{truck}, the system can infer a long
+vehicle body, a cab, wheels, and an elongated footprint. The silhouette then
+adjusts the proportions: a long truck and a short truck share the same semantic
+template, but the cargo body is scaled differently. For example:
+
+\begin{itemize}
+    \item a cow may be represented by ellipsoids for body and head, cylinders
+    for legs, and cones for horns;
+    \item a cyclist may be represented by two torus wheels, a simple bicycle
+    frame, and a human torso/head proxy;
+    \item a tree may be represented by a cylinder trunk and clustered green
+    volumes;
+    \item a car or truck may be represented by boxes and wheel tori;
+    \item a bush may be represented by overlapping green ellipsoids.
+\end{itemize}
+
+The exact geometry is intentionally crude. Its purpose is to preserve, pending
+empirical validation:
+
+\begin{itemize}
+    \item approximate occupied volume;
+    \item object class recognizability;
+    \item spatial location;
+    \item scale relative to the scene;
+    \item extremely low rendering complexity.
+\end{itemize}
+
+An important property is that the proxy is scale-adaptive and
+proportion-adaptive. The system does not assume that all instances of a class
+have the same dimensions. A short truck, a long truck, a calf, an adult cow, a
+small bush, or a wide bush can share the same semantic part graph while
+receiving different part scales from the observed silhouette, bounding box, or
+estimated footprint. This is important for UAV piloting: when flying over an
+object, the relevant question is not whether the rendered actor is visually
+beautiful, but whether its occupied volume is approximately correct for
+navigation and operator interpretation. That claim remains a validation target
+until the planned volume-error and operator studies are completed.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+    node distance=7mm and 8mm,
+    block/.style={draw, rounded corners, align=center, minimum width=28mm, minimum height=9mm, font=\small},
+    smallblock/.style={draw, rounded corners, align=center, minimum width=24mm, minimum height=8mm, font=\scriptsize},
+    arrow/.style={-{Latex[length=2mm]}, thick}
+]
+\node[block] (det) {Semantic\\detection};
+\node[block, right=of det] (geom) {Silhouette / bbox\\footprint / scale};
+\node[block, right=of geom] (onto) {Semantic\\compiler};
+\node[block, below=of onto] (graph) {Morphological\\part graph};
+\node[block, left=of graph] (fit) {Pose and\\proportion fitting};
+\node[block, left=of fit] (asm) {Primitive\\assembly};
+\node[block, below=of fit] (proxy) {SPPA proxy\\descriptor};
+\node[block, right=of proxy] (vr) {Unreal / VR\\digital twin};
+
+\draw[arrow] (det) -- (geom);
+\draw[arrow] (geom) -- (onto);
+\draw[arrow] (onto) -- (graph);
+\draw[arrow] (graph) -- (fit);
+\draw[arrow] (geom.south) |- (fit.north);
+\draw[arrow] (fit) -- (asm);
+\draw[arrow] (asm) |- (proxy);
+\draw[arrow] (proxy) -- (vr);
+
+\node[smallblock, below=of det] (fallback) {Unknown class:\\generic volume};
+\draw[arrow] (det) -- (fallback);
+\draw[arrow] (fallback) |- (asm);
+
+\node[draw, dashed, rounded corners, fit=(onto)(graph)(fit)(asm), inner sep=3mm,
+      label={[font=\scriptsize]above:Semantic Primitive Proxy Assembly}] {};
+\end{tikzpicture}
+\caption{SPPA is specified to convert semantic telemetry into a low-polygon,
+proportion-adaptive proxy. The semantic compiler maps a detected label to a constrained
+morphological archetype and part graph, while the silhouette, bounding box,
+footprint, and temporal track constrain orientation, scale, and part
+proportions. The output is an operational volume for real-time VR rendering,
+not a high-fidelity mesh.}
+\label{fig:sppa-flow}
+\end{figure}
+
+\section{Contributions}
+
+This manuscript is intentionally framed as a specification and validation plan.
+It separates what is specified, what is implemented, and what remains pending:
+
+\begin{enumerate}
+    \item \textbf{Specified.} It defines \emph{Semantic Primitive Proxy Assembly} (SPPA), a
+    lightweight reconstruction layer that converts object-level UAV telemetry
+    into class-conditioned geometric proxies.
+    \item \textbf{Specified.} It proposes a bounded semantic-to-part compiler that maps detected
+    labels to constrained morphological archetypes, semantic part
+    graphs, and finite primitive geometry.
+    \item \textbf{Specified.} It introduces a scale-adaptive part-graph formulation in which a
+    detected class activates a morphological prior, while silhouette or
+    footprint evidence adapts the proportions of the parts.
+    \item \textbf{Positioned.} It positions primitive proxy assembly as a different operating point
+    from neural image-to-3D generation: SPPA optimizes latency, polygon budget,
+    proportional volume, and VR stability rather than visual fidelity.
+    \item \textbf{Implemented.} It reports a minimal debug prototype with seven
+    fixed-template OBJ/MTL generators. This artifact demonstrates the visual
+    style and debug-path generation timing only; it does not implement live
+    telemetry, scale adaptation, descriptor-based Unreal spawning, or fallback
+    behavior.
+    \item \textbf{Pending validation.} It defines experimental hypotheses and evaluation criteria for
+    testing whether such proxies preserve enough operational information for
+    remote UAV piloting under dense scene and degraded video-link conditions
+    (\pending{PENDING-EXP}, \pending{PENDING-BENCH}, \pending{PENDING-USER}).
+\end{enumerate}
+
+\section{Research Question and Hypotheses}
+
+The scientific question behind SPPA is not whether primitive geometry can look
+realistic. It is:
+
+\begin{quote}
+What is the minimum semantic-volumetric representation that preserves enough
+operational information for remote UAV piloting in a real-time VR digital twin?
+\end{quote}
+
+This question leads to falsifiable hypotheses. None of H1--H5 is claimed as
+evaluated by the current prototype:
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\caption{Falsifiable SPPA hypotheses and current evidence status.}
+\label{tab:hypotheses-status}
+\begin{tabular}{@{}p{1.1cm}p{4.1cm}p{3.7cm}p{3.8cm}p{2.2cm}@{}}
+\toprule
+ID & Hypothesis to test & Required baselines & Primary metrics & Status \\
+\midrule
+H1 & SPPA is designed to reduce detection-to-visible-actor latency relative to
+runtime asset loading or neural generation. & box, capsule, low-poly asset load,
+image-to-3D & P50/P95 latency, triangles, descriptor bytes &
+\pending{PENDING-EXP} \\
+H2 & SPPA is hypothesized to increase class-family recognition relative to
+generic boxes, capsules, or label billboards at comparable rendering cost. &
+3D box, capsule/ellipsoid, billboard label & recognition accuracy, response time,
+confusion matrix & \pending{PENDING-USER} \\
+H3 & SPPA is designed to preserve footprint and occupied volume better than
+fixed-scale templates when object proportions vary. & fixed template, bbox-only
+scale, curated low-poly asset & BEV IoU, volume error, height error &
+\pending{PENDING-EXP} \\
+H4 & SPPA is hypothesized to scale to dense VR scenes with more predictable
+rendering cost than detailed mesh assets. & boxes, capsules, low-poly assets,
+detailed meshes & FPS, CPU/GPU frame time, draw calls &
+\pending{PENDING-BENCH} \\
+H5 & SPPA is designed to fall back to conservative display volumes under
+uncertain class, scale, silhouette, or yaw evidence. & no rendering, box,
+uncertainty volume & containment rate, false-confidence events, operator
+interpretation & \pending{PENDING-SAFETY} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{A Different Runtime Contract from 3D Generation}
+
+Recent 3D generative methods have advanced rapidly. DreamFusion introduced a
+text-to-3D optimization approach using a pretrained 2D diffusion model and score
+distillation sampling \cite{poole2022dreamfusion}. Magic3D improved quality and
+speed with a coarse-to-fine strategy, but still reports mesh creation times on
+the order of tens of minutes \cite{lin2022magic3d}. Point-E reduced generation
+time substantially, producing point clouds in roughly 1--2 minutes on a single
+GPU, while explicitly trading quality for speed \cite{nichol2022pointe}.
+Shap-E further generates implicit 3D functions from text or image conditions in
+a matter of seconds \cite{jun2023shape}.
+
+More recent feed-forward methods are faster. InstantMesh reports diverse
+single-image 3D assets within approximately 10 seconds
+\cite{xu2024instantmesh}. Stable Fast 3D reports textured mesh reconstruction
+from a single input image in approximately 0.5 seconds
+\cite{stability2024sf3d,sf3d2024}. TRELLIS and Hunyuan3D 2.0 focus on
+high-quality, versatile, textured 3D asset generation using large-scale latent
+or diffusion architectures \cite{xiang2024trellis,zhao2025hunyuan3d}.
+
+These methods are impressive, but they are not optimized for the same operating
+point. In UAV VR teleoperation, several constraints become dominant:
+
+\begin{itemize}
+    \item \textbf{Per-object latency:} dynamic detections must appear in the
+    digital twin immediately, not after seconds of neural inference.
+    \item \textbf{Scene density:} the scene may contain hundreds of people,
+    animals, vehicles, trees, or temporary obstacles.
+    \item \textbf{VR frame rate:} the pilot interface must remain stable and
+    comfortable; geometric complexity must be predictable.
+    \item \textbf{Input availability:} a clean cropped image suitable for
+    image-to-3D generation may not be available under poor visibility, motion
+    blur, compression, occlusion, or low-confidence detection.
+    \item \textbf{Operational sufficiency:} collision avoidance and situational
+    awareness require approximate volume, not photorealistic surface detail.
+\end{itemize}
+
+The proposed primitive-proxy system therefore does not compete with neural
+asset generation in fidelity. It occupies a different region of the design
+space: millisecond-scale, low-polygon, class-conditioned volumetric
+representation.
+
+\begin{table}[h]
+\centering
+\caption{Operating point of SPPA compared with nearby representation choices.}
+\label{tab:operating-point}
+\begin{tabular}{@{}p{2.6cm}p{2.5cm}p{2.6cm}p{5.0cm}@{}}
+\toprule
+Method family & Primary output & Optimized for & Limitation for UAV/VR \\
+\midrule
+Bounding box & cuboid & speed & weak semantic readability \\
+Curated asset & mesh actor & visual quality & incomplete library, fixed scale \\
+Image-to-3D & detailed mesh & fidelity & latency and mesh complexity \\
+3D detection & 3D box/state & localization & not an intended pilot-facing actor \\
+SPPA & part proxy & operational volume & coarse geometry \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Relation to 3D Detection, Primitive Representations, and Human Factors}
+
+The proposed approach is related to several existing research directions. The
+claim is not that primitive part-based representation is new in isolation. The
+claim to be tested is narrower: SPPA is a proposed rendering/backend layer that
+turns semantic telemetry into bounded, low-polygon proxy actors for a UAV
+digital twin when exact assets or dense reconstruction are unavailable.
+
+\subsection{Monocular 3D Object Detection}
+
+Monocular 3D object detection predicts 3D properties such as object depth,
+dimensions, rotation, and oriented 3D bounding boxes from a single image.
+Omni3D introduced a large benchmark with 234k images, more than 3 million
+instances, and 98 categories, together with Cube R-CNN as a unified detector
+across diverse camera and scene types \cite{brazil2022omni3d}. Recent work also
+studies open-vocabulary monocular 3D detection, aiming to lift 2D detections
+into metric 3D space beyond closed class vocabularies
+\cite{yao2024ovmono3d}.
+
+These methods are highly relevant because they can provide exactly the
+parameters that semantic primitive proxies need: approximate depth, orientation,
+and dimensions. However, their output is normally a 3D bounding cuboid or object
+state, not a semantically readable, part-based VR actor. Our proposal can use
+monocular 3D detection as an upstream estimator, then convert the detected class
+and dimensions into a low-polygon operational proxy.
+
+\subsection{Animal Pose and Animal 3D Reconstruction}
+
+For animals, the state of the art includes keypoint-based pose estimation and
+model-based reconstruction. AP-10K provides a benchmark for mammal pose
+estimation across 23 animal families and 54 species \cite{yu2021ap10k}.
+3D-Fauna reconstructs articulated 3D meshes of quadruped animals from a single
+image within seconds using a pan-category animal model \cite{li20243dfauna}.
+More recent work such as SAM 3D Animal uses prompts such as masks and keypoints
+to reconstruct multiple animals in the wild using SMAL-based priors
+\cite{hu2026sam3danimal}.
+
+These systems demonstrate that richer animal reconstruction is possible. The
+operational question is whether such reconstruction is necessary for UAV
+teleoperation. For a pilot, the immediate need is often not fur texture, exact
+limb articulation, or animatable mesh quality. The immediate need is: a large
+quadruped occupies this volume, its body is oriented in this direction, and this
+space should be avoided. A primitive proxy can represent that information
+with substantially lower geometric and runtime cost.
+
+\subsection{Primitive and Superquadric Decomposition}
+
+Representing objects as combinations of simple shapes is a long-standing idea
+in computer vision and robotics. Superquadrics are especially relevant because
+they compactly represent boxes, cylinders, spheres, ellipsoids, and related
+forms with few parameters. Earlier shape-representation work used generalized
+cylinders and volumetric components to describe object structure
+\cite{marr1978representation}, and recognition-by-components proposed that
+objects can be recognized from arrangements of simple geon-like parts
+\cite{biederman1987recognition}. Superquadric recovery and parsing further
+developed compact primitive models for object abstraction
+\cite{solina1990recovery,paschalidou2019superquadrics}. Learned volumetric
+primitive abstraction also shows that primitive assemblies can capture
+consistent part structure across shape collections \cite{tulsiani2017learning},
+while recent systems such as SuperDec explicitly use superquadric primitives as
+a compact representation for 3D scene decomposition \cite{fedele2025superdec}.
+
+This literature is a direct prior, not a minor analogy. SPPA must therefore be
+judged as an operational telemetry-to-rendering contract rather than as a new
+theory of primitive shape representation. The remaining open question is
+whether a constrained primitive representation is useful in the specific
+Pipeline B setting, compared with simpler boxes/capsules and with existing
+asset or mapping representations.
+
+\subsection{Procedural Actors, LOD, and Scene Graphs}
+
+SPPA is also related to procedural modeling, shape grammars, level-of-detail
+systems, impostors, semantic scene graphs, and bounding-box visualization. These
+are closer baselines than slow text-to-3D systems. Procedural modeling and CGA
+shape grammars generate structured geometry from compact rules
+\cite{mueller2006procedural}. ShapeAssembly similarly uses executable programs
+to assemble cuboid part proxies and represent families of related shapes
+\cite{jones2020shapeassembly}. Against this literature, SPPA's proposed
+difference is not procedural generation itself; it is the use of a bounded
+procedural descriptor as an online telemetry rendering fallback.
+
+Real-time graphics has long used hierarchical level of detail, impostors, and
+extreme simplification to control rendering cost
+\cite{clark1976hierarchical,decoret2003billboard}. Modern engines and geospatial
+standards continue this line through virtualized geometry, instancing, and tiled
+streaming representations \cite{epic2024nanite,ogc2023tiles}. SPPA must
+therefore be benchmarked against low-poly assets, LOD, impostors, and instanced
+primitive rendering rather than only against neural 3D asset generators.
+
+Semantic scene graphs are another direct neighbor. 3D scene graphs and dynamic
+scene graphs connect objects, semantics, geometry, dynamics, and actionability
+\cite{armeni2019scenegraph,rosinol2020dynamic}. SceneGraphFusion shows that
+incremental 3D semantic graph prediction can run online from RGB-D sequences
+\cite{wu2021scenegraphfusion}. SPPA can be interpreted as a rendering/backend
+layer for such semantic state, not as a replacement for scene-graph perception.
+This framing reduces the novelty claim but makes the system boundary clearer.
+
+\subsection{Human Factors, Display Uncertainty, and Mapping Baselines}
+
+Because the intended output is for a remote pilot, SPPA cannot rely on visual
+plausibility alone. Situation awareness and workload should be evaluated with
+established human-factors instruments such as SAGAT and NASA-TLX
+\cite{endsley1988sagat,endsley1995situation,hart1988nasatlx}. Any claim about
+operator readability, obstacle-avoidance usefulness, or workload reduction is
+therefore marked \pending{PENDING-USER} until controlled operator studies are
+performed.
+
+SPPA also overlaps with robotic mapping representations. Occupancy grids,
+OctoMap, TSDFs, and ESDFs provide spatial volumes and obstacle-distance
+information for planning and navigation
+\cite{hornung2013octomap,oleynikova2017voxblox}. These representations are not
+intended to be semantic proxy actors by themselves, but they are essential
+baselines for any claim about operational volume. The publishable evaluation
+must therefore distinguish pilot-facing semantic readability from collision or
+planning utility.
+
+The closest practical comparison is therefore not ``SPPA versus high-fidelity
+3D generation,'' but SPPA versus no rendering, 3D boxes, capsules/ellipsoids,
+billboard labels, curated low-poly assets, procedural actors, occupancy-style
+volumes, and instanced rendering in the target Unreal/VR environment.
+
+\section{Operation Inside Pipeline B}
+
+SPPA is intended to run at the ground station or inside the rendering component
+of the digital twin. The onboard UAV system detects objects and transmits
+semantic telemetry rather than full video frames. The ground station receives
+this telemetry, updates tracked entity states, and invokes SPPA only when an
+entity must be created, updated, or reparameterized.
+
+The runtime loop is:
+
+\begin{enumerate}
+    \item The UAV detects an object and estimates its class, confidence, image
+    region, and geospatial position.
+    \item The ground station associates the detection with an entity track.
+    \item SPPA selects or updates a semantic part graph for that entity.
+    \item The silhouette, footprint, and temporal track adjust orientation,
+    scale, and part proportions.
+    \item Unreal Engine instantiates or updates primitive components using the
+    resulting proxy descriptor.
+    \item The pilot sees a stable, low-polygon operational representation of
+    the object in VR.
+\end{enumerate}
+
+This loop separates perception from visual fidelity. If a high-quality asset is
+available and affordable, it may be used. If not, SPPA is designed to ensure that the
+entity still receives a proportional, semantically meaningful obstacle volume.
+
+\section{Proposed Runtime Contract}
+
+The system is designed as a fallback or primary lightweight rendering layer
+inside Pipeline B. Its inputs are semantic detections and geometric estimates
+from the perception pipeline. Its outputs are low-polygon proxy actors spawned
+in the digital twin.
+
+\begin{table}[h]
+\centering
+\caption{Semantic primitive proxy runtime contract.}
+\label{tab:runtime-contract}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Stage & Input & Output \\
+\midrule
+Detection & image frame & class, confidence, silhouette/bounding box \\
+Georeferencing & UAV pose + camera model & world position and scale estimate \\
+Proxy selection & object class & primitive template or generic fallback \\
+Primitive scaling & silhouette/footprint/volume & scaled proxy geometry \\
+Actor spawning & proxy mesh + transform & Unreal digital twin actor \\
+Runtime update & tracked entity state & pose, scale, confidence, uncertainty \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The expected telemetry fields are:
+
+\begin{itemize}
+    \item stable entity identifier;
+    \item detected class label;
+    \item confidence score;
+    \item geospatial position;
+    \item estimated footprint, height, or bounding volume;
+    \item silhouette or 2D bounding box when available;
+    \item timestamp and sensor source;
+    \item uncertainty estimate.
+\end{itemize}
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\caption{Evidence status for the SPPA manuscript.}
+\label{tab:evidence-status}
+\begin{tabular}{@{}p{4.1cm}p{4.8cm}p{4.9cm}@{}}
+\toprule
+Claim or component & Current evidence & Status \\
+\midrule
+Seven fixed proxy templates & Implemented in the debug OBJ/MTL generator and
+timed through the batch path. & Implemented \\
+SPPA descriptor contract & Specified as a compact part/pose/uncertainty
+descriptor; not yet deployed as an Unreal runtime API. & Specified only
+(\pending{PENDING-IMPL}) \\
+Scale- and footprint-conditioned fitting & Defined algorithmically, but not
+implemented in the current prototype. & Specified only (\pending{PENDING-SPEC}) \\
+Unknown-class conservative display fallback & Specified as required behavior;
+the current prototype exits on unsupported labels. & Pending empirical validation
+(\pending{PENDING-SAFETY}) \\
+End-to-end UAV-to-VR loop & No live YOLO tracks, camera calibration,
+georeferenced footprints, or Unreal actor spawning are evaluated here. & Pending
+implementation (\pending{PENDING-IMPL}) \\
+Dense VR performance & No headset, Unreal, CPU/GPU, draw-call, or FPS
+benchmark is reported. & Pending empirical validation (\pending{PENDING-BENCH}) \\
+Operator readability and situational awareness & No pilot or user study is
+reported. & Pending empirical validation (\pending{PENDING-USER}) \\
+Bandwidth reduction & No comparison with encoded video, telemetry packet
+rates, retransmission, or full-mesh transfer is reported. & Pending empirical
+validation (\pending{PENDING-EXP}) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{SPPA Algorithm}
+
+SPPA is designed as a deterministic, low-latency algorithm. It should not call a
+large generative model at runtime, and it should not search a large asset
+library. Its task is to transform the minimum available semantic and geometric
+evidence into an operational 3D proxy. The algorithm can be summarized as:
+
+\begin{enumerate}
+    \item \textbf{Normalize the semantic label.} The detector output is mapped
+    to a semantic path such as
+    \(\texttt{cow}\rightarrow\texttt{animal}\rightarrow\texttt{mammal}
+    \rightarrow\texttt{quadruped}\) or
+    \(\texttt{truck}\rightarrow\texttt{vehicle}\rightarrow
+    \texttt{cargo vehicle}\).
+    \item \textbf{Select a morphological archetype.} The semantic path selects
+    a small family of part graphs, such as \texttt{quadruped},
+    \texttt{biped}, \texttt{long vehicle}, \texttt{vegetation blob},
+    \texttt{tree-like}, \texttt{pole-like}, or \texttt{generic obstacle}.
+    \item \textbf{Extract geometric measurements.} The system estimates major
+    and minor footprint axes, aspect ratio, height, ground contact, and yaw
+    candidates from the bounding box, mask, footprint, previous track, and UAV
+    camera geometry.
+    \item \textbf{Fit pose and proportions.} The algorithm chooses a yaw angle
+    and assigns length, width, and height to semantic parts while respecting
+    class-level priors and observed silhouette proportions.
+    \item \textbf{Assemble primitives.} Each semantic part is instantiated as a
+    low-resolution primitive: box, cylinder, ellipsoid, cone, torus, capsule, or
+    superquadric-like approximation.
+    \item \textbf{Estimate uncertainty and fallback.} If class, orientation, or
+    scale is ambiguous, the output includes uncertainty metadata or falls back
+    to a conservative generic volume.
+\end{enumerate}
+
+\subsection{Semantic Normalization}
+
+SPPA should support many class labels without requiring a manually authored
+asset for each one. The label is therefore mapped to a compact ontology of
+morphological archetypes. The ontology does not need to be large; it only needs
+to capture the body plan relevant for operational volume:
+
+\begin{table}[h]
+\centering
+\caption{Examples of semantic normalization and archetype selection.}
+\label{tab:archetypes}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Detected label & Semantic path & Archetype \\
+\midrule
+cow, horse, dog & animal / mammal / quadruped & quadruped \\
+person, pedestrian & human / biped & biped \\
+biker, cyclist & human + two-wheel vehicle & rider vehicle \\
+car, van & vehicle / wheeled & compact vehicle \\
+truck, bus & vehicle / long wheeled & long vehicle \\
+tree & vegetation / trunk + canopy & tree-like \\
+bush, shrub & vegetation / low blob & vegetation blob \\
+pole, mast, tower & vertical structure & pole-like \\
+unknown & obstacle & generic volume \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Bounded Semantic-to-Part Compiler}
+
+The important architectural step in SPPA is the conversion from a detected
+semantic label to a constrained geometric part graph. This can be viewed as a
+semantic compiler. The input vocabulary may be open-ended, but the output is
+restricted to a finite set of morphological archetypes, semantic
+roles, and primitive geometries.
+
+Let \(c\) be the detected label. A language model, knowledge graph, or manually
+curated ontology maps \(c\) to a semantic descriptor:
+
+\[
+z_c = \mathcal{L}(c) =
+\left(h_c, a_c, q_c, d_c\right),
+\]
+
+where \(h_c\) is a category hierarchy, \(a_c\) is a set of expected attributes,
+\(q_c\) is a set of qualitative morphology cues, and \(d_c\) contains coarse
+dimension priors. For example, a descriptor for \texttt{cow} may include
+\texttt{animal}, \texttt{mammal}, \texttt{quadruped}, \texttt{has head},
+\texttt{has torso}, and \texttt{four legs}; a descriptor for \texttt{truck} may
+include \texttt{vehicle}, \texttt{wheeled}, \texttt{cab}, \texttt{cargo body},
+and \texttt{elongated footprint}.
+
+The semantic descriptor selects the closest morphological archetype:
+
+\[
+A^*(c) =
+\arg\max_{A \in \mathcal{A}}
+\operatorname{sim}\!\left(\phi(A), z_c\right)
+\quad
+\text{s.t.}\quad
+\operatorname{risk}(A,z_c) \leq \rho_{\max},
+\]
+
+where \(\mathcal{A}\) is a compact library of archetypes, \(\phi(A)\) is the
+semantic signature of an archetype, and the risk constraint is a
+\pending{PENDING-SPEC} validation rule that should prevent over-specific
+mappings when semantic evidence is weak. The functions \(\operatorname{sim}\),
+\(\operatorname{risk}\), descriptor calibration, and threshold \(\rho_{\max}\)
+are not fixed by the current prototype; they must be specified before claiming
+open-vocabulary coverage. If no archetype is sufficiently reliable, the compiler
+selects a conservative display obstacle.
+
+The selected archetype is expanded into a semantic part graph:
+
+\[
+G_c = \Gamma(A^*, z_c) = (V_c, E_c),
+\]
+
+with nodes
+
+\[
+v_i =
+\left(r_i, \omega_i, \pi_i, \alpha_i, \kappa_i\right).
+\]
+
+Here \(r_i\) is the semantic role of the part, \(\omega_i\) is the primitive
+type selected from a finite primitive alphabet
+\(\Omega=\{\text{box},\text{cylinder},\text{ellipsoid},\text{cone},
+\text{torus},\text{capsule}\}\), \(\pi_i\) is the anchor relative to the parent
+part, \(\alpha_i\) stores allowed aspect-ratio ranges, and \(\kappa_i\) stores
+importance and uncertainty metadata. Edges \(E_c\) encode attachment and
+relative placement constraints, such as head-attached-to-torso,
+wheels-attached-to-chassis, or canopy-above-trunk.
+
+Finally, the graph is instantiated as geometry:
+
+\[
+\mathcal{P}(G_c,\theta) =
+\bigcup_{v_i \in V_c}
+T(\pi_i,\theta_i)\,\omega_i(\alpha_i),
+\]
+
+where \(\theta_i\) contains the fitted pose and scale parameters of each part.
+This equation is the architectural core of SPPA: arbitrary semantic labels are
+not converted directly into arbitrary meshes; they are compiled into a bounded,
+low-polygon graph of semantic parts drawn from a finite primitive vocabulary.
+
+This gives SPPA bounded semantic coverage. Any label that can be
+mapped to a morphological descriptor can be represented by a proxy, even if no
+exact asset exists. The quality of the proxy depends on the quality of the
+semantic descriptor and visual evidence, but the system always degrades toward
+a conservative display volume rather than silently dropping the object.
+
+\subsection{Part Graphs}
+
+Each archetype is represented by a semantic part graph. Nodes are parts and
+edges encode relative placement constraints. A node contains:
+
+\begin{itemize}
+    \item semantic role, such as torso, head, leg, cab, cargo body, wheel, trunk,
+    canopy, or shaft;
+    \item primitive type, such as box, ellipsoid, cylinder, cone, or torus;
+    \item relative anchor and transform;
+    \item allowed aspect-ratio and scale range;
+    \item recognition importance;
+    \item polygon budget.
+\end{itemize}
+
+For example, a quadruped graph contains a body ellipsoid, a head ellipsoid, a
+short neck cylinder, four leg cylinders, and an optional tail. A long-vehicle
+graph contains a cargo box, cab box, wheels, and optional windshield marker. The
+same graph can represent many real dimensions because part scales are not fixed.
+
+\subsection{Measurement Extraction}
+
+The system can operate with different levels of geometric evidence:
+
+\begin{itemize}
+    \item \textbf{Footprint available:} fit a minimum-area oriented rectangle
+    and extract length, width, aspect ratio, and yaw candidates.
+    \item \textbf{Silhouette mask available:} use principal axes, asymmetry,
+    protrusions, and lower contact regions to refine orientation and part
+    allocation.
+    \item \textbf{Bounding box only:} combine image-space extent with class
+    priors, UAV pose, and ground-plane assumptions to estimate a conservative
+    volume.
+    \item \textbf{Temporal track available:} use velocity and previous yaw to
+    reduce front/back ambiguity and jitter.
+\end{itemize}
+
+This makes the method applicable under degraded sensing. A mask can improve the proxy,
+but the algorithm still produces a useful volume with only a class label and a
+bounding region.
+
+\subsection{Conservative Fallback}
+
+The SPPA specification requires a usable display volume, even when the class is unknown or the
+silhouette is too weak for reliable part assignment. The fallback is selected
+from simple geometric evidence:
+
+\begin{itemize}
+    \item elongated and low footprint: oriented capsule or elongated box;
+    \item small footprint and large height: pole-like cylinder;
+    \item low circular footprint: vegetation blob or generic ellipsoid;
+    \item upright human-scale region: biped proxy or vertical capsule;
+    \item ambiguous region: conservative oriented bounding volume.
+\end{itemize}
+
+The fallback is not treated as a successful reconstruction. It is a conservative
+display mechanism intended to preserve operational continuity when semantic
+detail is missing. The operator sees a volume with uncertainty, and the digital
+twin does not silently drop an obstacle. Whether this reduces risk or creates
+false confidence is a \pending{PENDING-SAFETY} validation question.
+
+\subsection{Pose and Proportion Fitting}
+
+SPPA estimates orientation and dimensions by combining weak cues, but the yaw
+estimate must distinguish axial and directional evidence. Footprint principal
+axes and silhouette PCA normally provide an unoriented axis modulo \(\pi\),
+while velocity, asymmetric part evidence, or a previous signed track yaw can
+provide a direction modulo \(2\pi\). The implementation therefore first estimates
+an axial orientation
+
+\[
+\bar{\psi}^{\mathrm{axis}}_t =
+\frac{1}{2}\operatorname{atan2}\left(
+\sum_k w_k \sin 2\psi^{\mathrm{axis}}_k,
+\sum_k w_k \cos 2\psi^{\mathrm{axis}}_k
+\right),
+\]
+
+and then assigns the front/back sign only when directional evidence is
+available:
+
+\[
+(\psi_t,\mathrm{yaw\_ambiguous}) =
+\operatorname{orient}\left(
+\bar{\psi}^{\mathrm{axis}}_t,
+\{\psi^{\mathrm{dir}}_j,w_j\}_j
+\right).
+\]
+
+For vehicles, the cabin or velocity may identify the front. For quadrupeds, a
+head-like protrusion or motion direction may identify the head. If the evidence
+is weak, \(\mathrm{yaw\_ambiguous}=\texttt{true}\) and the proxy remains a
+symmetric obstacle volume. The exact confidence thresholds for
+\(\operatorname{orient}\) are \pending{PENDING-SPEC}.
+
+Part dimensions are fitted analytically when possible. For a long vehicle:
+
+\[
+L_\mathrm{cargo} = \alpha L,\quad
+L_\mathrm{cab} = (1-\alpha)L,\quad
+\alpha \in [0.55,0.80],
+\]
+
+where \(L\) is the measured footprint length. Thus a short truck and a long
+truck are represented by the same graph but different cargo-body scale. For a
+quadruped:
+
+\[
+L_\mathrm{body}=\beta L,\quad
+L_\mathrm{head}=(1-\beta)L,\quad
+H_\mathrm{leg}=\lambda H,
+\]
+
+with \(\beta\) and \(\lambda\) constrained by the quadruped prior and by the
+observed silhouette. In an implementation, the fitting can be performed by a
+small discrete hypothesis search over 8--32 candidates rather than a heavy
+optimization loop.
+
+\subsection{SPPA Objective}
+
+The full SPPA target is specified as a finite hypothesis selection problem, not
+as an expensive continuous optimizer. Given a detection \(D_t\), an archetype
+\(A\), measurements such as footprint \(F_t\), optional mask \(M_t\), and
+previous track state \(x_{t-1}\), SPPA constructs a small candidate set
+\(\mathcal{H}(A,F_t,M_t,x_{t-1})\). Each candidate separates global pose
+\(\xi_t=(p_t,\psi_t)\) from part parameters \(q_t\), including part scales, local
+anchors, and fallback mode. The selected proxy is:
+
+\[
+\left(\xi_t^*,q_t^*\right) =
+\arg\min_{(\xi,q) \in \mathcal{H}(A,F_t,M_t,x_{t-1})}
+\begin{aligned}[t]
+&w_F\left(1-\operatorname{IoU}_{BEV}(P_{\xi,q},F_t)\right)
++ w_S\left(1-\operatorname{IoU}_{mask}(\Pi(P_{\xi,q}),M_t)\right)\\
+&+ w_T d_{SE(2)}(\xi,\xi_{t-1})
++ w_A \ell_A(q)
+\end{aligned}
+\]
+
+\[
+\text{s.t.}\quad
+\operatorname{tri}(P_{\xi,q}) \leq N_{\max},
+\qquad
+\widehat{\tau}(P_{\xi,q};E,H) \leq \tau_{\max}.
+\]
+
+Here \(P_{\xi,q}\) is the candidate primitive proxy, \(\operatorname{IoU}_{BEV}\)
+measures footprint overlap in bird's-eye view, \(\operatorname{IoU}_{mask}\)
+measures optional image-mask agreement, \(d_{SE(2)}\) penalizes pose jitter, and
+\(\ell_A\) penalizes proportions outside the selected archetype's allowed
+ranges. If \(M_t\) is unavailable, \(w_S=0\); if no reliable footprint exists,
+SPPA uses class priors and conservative fallback volumes. The runtime term
+\(\widehat{\tau}\) is explicitly hardware- and engine-dependent: \(E\) denotes
+the rendering engine/runtime path and \(H\) denotes target hardware. It cannot
+be proven from triangle count alone and must be measured in Unreal/VR
+(\pending{PENDING-BENCH}). The weights \(w_F,w_S,w_T,w_A\), normalization of
+objective terms, and candidate-generation policy are \pending{PENDING-SPEC}.
+
+\subsection{Role of a Language Model}
+
+A language model is not required to generate geometry at frame rate. In SPPA,
+its role is better understood as a semantic compiler or cache builder. When a
+new label appears, the language model can propose a descriptor \(z_c\), a parent
+archetype, and a minimal part graph. That proposal is then reviewed against the
+finite primitive vocabulary, polygon budget, and conservative display rules of
+SPPA. Once reviewed and accepted, the mapping can be cached and reused
+deterministically. The review procedure, prompt/model version, cache contents,
+and rejection criteria are \pending{PENDING-SPEC}.
+
+This distinction matters for real-time UAV operation. The runtime loop should
+not depend on a slow or nondeterministic text-to-geometry call. The language
+model helps extend the open vocabulary; the real-time system still executes a
+bounded geometric program. For example, if the detector reports
+\texttt{camel}, the compiler may map it to a quadruped with a larger torso, long
+neck, and optional hump. If it reports \texttt{excavator}, it may map it to a
+vehicle-like body with tracks, cabin, and arm proxy. If the proposal is
+uncertain, SPPA falls back to the nearest parent archetype or to a conservative
+generic volume.
+
+The coverage claim is therefore conditional and operational, not
+photorealistic. SPPA can generate a useful geometric proxy for many arbitrary
+semantic labels if those labels can be mapped to a morphological descriptor or
+a conservative fallback. It does not guarantee an exact mesh for every object in
+the world, and it does not yet establish reliable open-vocabulary behavior. This
+distinction is central: the method specifies bounded semantic proxy coverage,
+not universal 3D reconstruction.
+
+\subsection{Runtime Output}
+
+At runtime, the preferred output is not an OBJ mesh. OBJ export is useful for
+debugging and paper figures, but a deployed Unreal system should receive a
+compact proxy descriptor that can be rendered using instancing or procedural
+mesh components:
+
+\begin{verbatim}
+{
+  "label": "cow",
+  "archetype": "quadruped",
+  "pose": {"position": [x, y, z], "yaw": psi},
+  "parts": [
+    {"role": "body", "type": "ellipsoid", "scale": [2.1, 0.7, 0.8]},
+    {"role": "head", "type": "ellipsoid", "scale": [0.45, 0.35, 0.35]},
+    {"role": "leg", "type": "cylinder", "count": 4}
+  ],
+  "uncertainty": {"scale": 0.22, "yaw_deg": 35, "semantic": 0.81}
+}
+\end{verbatim}
+
+This descriptor is small enough to transmit, cache, smooth over time, and render
+at large scale.
+
+\subsection{Pseudocode}
+
+\begin{verbatim}
+function SPPA(detection, track_state, ontology, archetypes):
+    label = normalize_label(detection.class_label)
+    semantic_path = ontology.resolve(label)
+    measurements = extract_measurements(detection)
+
+    archetype = select_archetype(semantic_path, measurements)
+    part_graph = archetypes[archetype]
+
+    pose = fit_pose(
+        measurements,
+        previous = track_state[detection.track_id],
+        semantic_path = semantic_path
+    )
+
+    dimensions = fit_dimensions(
+        part_graph,
+        measurements,
+        confidence = detection.confidence
+    )
+
+    params0 = analytic_initialization(part_graph, dimensions)
+    params = small_hypothesis_search(
+        part_graph,
+        params0,
+        measurements,
+        pose,
+        max_candidates = 32
+    )
+
+    parts = instantiate_primitives(part_graph, pose, dimensions, params)
+    parts = enforce_polygon_budget(parts, detection.distance_to_pilot)
+
+    uncertainty = estimate_uncertainty(
+        detection, measurements, pose, dimensions, semantic_path
+    )
+
+    if uncertainty.too_high:
+        parts = conservative_fallback_volume(measurements, semantic_path)
+
+    proxy = make_proxy_descriptor(label, semantic_path, pose, parts, uncertainty)
+    track_state.update(detection.track_id, proxy)
+    return proxy
+\end{verbatim}
+
+\section{Part-Fitting Examples}
+
+This section illustrates how the SPPA specification is applied to two common
+object families. The examples are not special cases; they show how a class prior
+and observed geometry jointly determine a part graph and its proportions.
+
+The class prior is modeled as a semantic part graph. A class label activates
+both a category hierarchy and a minimal part structure. For instance:
+
+\[
+\texttt{cow} \rightarrow \texttt{animal} \rightarrow \texttt{mammal}
+\rightarrow \texttt{quadruped}
+\]
+
+From this hierarchy the system can infer that a proxy should contain at least a
+body, a head, and four leg supports. Similarly:
+
+\[
+\texttt{truck} \rightarrow \texttt{vehicle} \rightarrow
+\{\texttt{cab}, \texttt{cargo body}, \texttt{wheels}\}
+\]
+
+This makes the reconstruction compositional. The system is not generating an
+arbitrary mesh; it is fitting a small semantic graph of geometric parts to the
+detected silhouette and estimated world scale.
+
+Let a detection be represented as:
+
+\[
+D_t = (c, p, B, s, \gamma, t)
+\]
+
+where \(c\) is the detected class, \(p\) is the estimated world position, \(B\)
+is the image-space bounding box or silhouette, \(s\) is an approximate world
+scale, \(\gamma\) is confidence, and \(t\) is timestamp. The proxy generator
+selects a primitive template:
+
+\[
+T_c = \{(g_i, r_i, m_i)\}_{i=1}^{n_c}
+\]
+
+where \(g_i\) is a primitive geometry type, \(r_i\) is its relative transform
+within the object, and \(m_i\) is its semantic material. More explicitly, each
+primitive belongs to a semantic part:
+
+\[
+T_c = \{(a_i, g_i, r_i, \theta_i, m_i)\}_{i=1}^{n_c}
+\]
+
+where \(a_i\) is a part label such as torso, head, leg, cab, cargo body, or
+wheel, and \(\theta_i\) contains part-specific scale limits and deformation
+rules. The final proxy separates global pose, local part transform, and
+primitive dimensions:
+
+\[
+P_t =
+\bigcup_{i=1}^{n_c}
+T_{\mathrm{world}}(p_t,\psi_t)\,
+T_i(a_i,\delta_i)\,
+\omega_i(q_i),
+\]
+
+where \(T_{\mathrm{world}}\) places the object in the digital twin,
+\(T_i\) places part \(i\) relative to its parent, \(\omega_i\) is the selected
+primitive, and \(q_i\) contains the fitted primitive dimensions.
+
+The silhouette is used to estimate a coarse yaw angle and to allocate scale to
+the most likely parts. For a quadruped, the largest elongated region is treated
+as the torso candidate; smaller protrusions near one end suggest head position;
+thin lower protrusions suggest legs. For a truck, the elongated body region
+sets the cargo body length, while a shorter high-volume region can become the
+cab. In ambiguous cases, the proxy should preserve uncertainty rather than
+claiming a precise pose.
+
+This proportional fitting is one of the central differences between a fixed
+asset lookup and a semantic primitive proxy. A conventional asset library may
+contain a single truck mesh or several manually authored variants. A neural
+generator may produce a plausible truck mesh, but it is not necessarily
+conditioned on the real detected footprint in a way that enforces a
+low-polygon, VR-stable obstacle volume. The primitive proxy instead treats the
+detected silhouette as a constraint on part proportions. The same template can
+therefore represent both a short utility truck and a long cargo truck by
+stretching the cargo body while preserving cab and wheel semantics.
+
+This formulation makes three design choices explicit:
+
+\begin{enumerate}
+    \item the proxy is conditioned by semantic class and category hierarchy;
+    \item the proxy is decomposed into a small graph of semantic parts;
+    \item the proxy is oriented and scaled by the detected silhouette or
+    estimated footprint;
+    \item the geometry is intentionally constrained to a small number of
+    primitives.
+\end{enumerate}
+
+If the class is unknown, the system can fall back to a generic uncertainty
+volume, such as a translucent bounding box, ellipsoid, or vertical cylinder.
+This is operationally preferable to failing to render an object.
+
+\section{Implementation Status}
+
+To avoid overstating the current prototype, Table~\ref{tab:implementation-status}
+separates implemented functionality from the full SPPA architecture.
+
+\begin{table}[h]
+\centering
+\caption{Current prototype versus full SPPA architecture.}
+\label{tab:implementation-status}
+\begin{tabular}{@{}p{3.2cm}p{5.1cm}p{5.1cm}@{}}
+\toprule
+Component & Current prototype & Full SPPA target \\
+\midrule
+Semantic input & Single text label entered via batch script & Detection message with label, confidence, track ID, pose, bbox, mask, footprint, and uncertainty \\
+Class handling & Seven manually authored templates; unsupported labels abort in
+the current script & Bounded semantic compiler with archetypes, reviewed
+descriptors, cache, and conservative display fallback \\
+Geometry scaling & Fixed class-level proportions & Footprint-, silhouette-, and track-conditioned part scaling \\
+Orientation & Template default orientation & Fused yaw from footprint, silhouette, velocity, and previous track \\
+Runtime output & OBJ/MTL files for visual debugging & Compact primitive descriptor for instanced Unreal rendering \\
+Evaluation & Per-object generation timing through batch/OBJ path & Latency, polygon budget, dense-scene FPS, footprint/volume error, recognition, and pilot-task metrics \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Prototype}
+
+We implemented a minimal procedural prototype named
+\texttt{XYT-xabi-yolo-telemetry}. The prototype receives a word from a Windows
+batch file and exports an OBJ/MTL mesh using only procedural geometry. The
+current supported classes include:
+
+\begin{itemize}
+    \item \texttt{cow};
+    \item \texttt{biker};
+    \item \texttt{tree};
+    \item \texttt{car};
+    \item \texttt{truck};
+    \item \texttt{bush};
+    \item \texttt{tractor}.
+\end{itemize}
+
+This prototype is intentionally simple. It demonstrates the speed and geometry
+style of the approach, not a full UAV perception integration. In the current
+implementation, each class is mapped to a fixed lightweight primitive template.
+The prototype does not consume detections, tracks, masks, camera calibration,
+georeferenced footprints, or uncertainty. It also does not implement the
+unknown-class conservative display fallback specified above; unsupported labels
+currently terminate with an error. In the full Pipeline B target
+(\pending{PENDING-IMPL}), templates would be scaled using the detected
+silhouette, estimated depth, or geospatial footprint.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/sppa_proxy_contact_sheet.png}
+\caption{Example primitive proxies generated by the current prototype. The
+figures are deliberately low fidelity: their role is to communicate class,
+approximate orientation, and occupied volume with minimal geometry. In a runtime
+Unreal implementation, these proxies should be instantiated from primitive
+descriptors rather than loaded as high-detail meshes.}
+\label{fig:prototype-proxies}
+\end{figure}
+
+\section{Prototype Timing and Geometry Complexity}
+
+The prototype was measured by invoking the actual batch interface used by the
+operator. The observed wall-clock generation times and exported geometry sizes
+were:
+
+\begin{table}[h]
+\centering
+\caption{Prototype OBJ generation time and geometry complexity. These values
+measure the observed debug path only, not a deployed Unreal instancing runtime
+and not an end-to-end UAV/VR path.}
+\label{tab:timing}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Class & Time (s) & Vertices & Faces & OBJ bytes \\
+\midrule
+biker & 0.061 & 488 & 396 & 21,263 \\
+bush & 0.081 & 256 & 210 & 10,888 \\
+car & 0.062 & 448 & 408 & 20,268 \\
+cow & 0.065 & 612 & 502 & 26,533 \\
+tractor & 0.074 & 500 & 450 & 22,629 \\
+tree & 0.062 & 288 & 236 & 12,308 \\
+truck & 0.076 & 856 & 786 & 39,182 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+These values include Python process startup and file export overhead. They are
+reported only as debug-path observations. They do not establish the latency of a
+descriptor-based Unreal implementation, dense-scene rendering, headset frame
+rate, or detection-to-visible-actor latency. Those measurements are
+\pending{PENDING-BENCH}. The relevant prototype result is modest: seven fixed
+low-polygon templates can be exported through the current batch/OBJ path in
+under 0.1 s per object.
+
+\section{Operational Claim To Be Tested}
+
+The scientific contribution is not a new high-fidelity 3D generator. The
+testable claim is instead:
+
+\begin{quote}
+For telemetry-driven UAV digital twins, class-conditioned primitive assemblies
+may provide a bounded, uncertainty-aware, intended pilot-facing obstacle volume
+when a curated asset is unavailable or too costly to render.
+\end{quote}
+
+This is a \pending{PENDING-EXP} claim. It must be evaluated empirically through
+generation latency, polygon and draw-call budget, dense-scene VR frame rate,
+operator recognition of class and occupied volume, navigation usefulness under
+degraded video, unknown-class fallback behavior, and bandwidth comparison
+against encoded video, telemetry-only boxes, and full-mesh transfer.
+
+\section{Preregistered Evaluation Protocol}
+
+For a Q1-level validation, SPPA must be evaluated as an operational
+representation, not as a visual asset generator. The central comparison is
+against representation choices that a UAV digital twin would realistically use:
+no rendering, 3D bounding boxes, generic capsules or ellipsoids, billboard
+labels, curated low-poly assets when available, procedural actors, occupancy
+style volumes, and SPPA.
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\caption{Preregistered experimental matrix for testing SPPA.}
+\label{tab:experimental-matrix}
+\begin{tabular}{@{}p{2.4cm}p{3.2cm}p{3.5cm}p{3.0cm}p{1.9cm}@{}}
+\toprule
+Experiment & Baselines & Metrics & Required dataset/artifact & Status \\
+\midrule
+Runtime generation & 3D box, capsule/ellipsoid, billboard label, curated
+low-poly asset load, procedural proxy, SPPA & P50/P95 latency, descriptor bytes,
+triangles, memory & scripted object-spawn benchmark with cold/warm starts &
+\pending{PENDING-BENCH} \\
+Dense VR scene & boxes, capsules, billboards, low-poly assets, instanced
+primitive proxies, detailed meshes & FPS, CPU/GPU frame time, draw calls at
+10/50/100/500 entities & Unreal scene and target headset/hardware profile &
+\pending{PENDING-BENCH} \\
+Proportional adaptation & fixed template, bbox-only scale, curated low-poly
+asset, SPPA & length/width/height error, BEV IoU, volume over/under-estimation,
+yaw error & synthetic variants plus real or simulated UAV-view detections &
+\pending{PENDING-EXP} \\
+Recognition & boxes, capsule/ellipsoid, billboard label, curated low-poly asset,
+SPPA & class-family accuracy, response time, confusion matrix & randomized
+operator recognition task & \pending{PENDING-USER} \\
+Operational navigation & no rendering, boxes, occupancy volume, SPPA & near
+misses, clearance, task time, NASA-TLX, SAGAT-style situation-awareness probes &
+degraded-video VR navigation scenario & \pending{PENDING-USER} \\
+Fallback and uncertainty & no rendering, generic box, uncertainty shell, SPPA
+fallback & containment rate, false-confidence events, operator interpretation,
+unknown-class failure rate & unknown or ambiguous class set with occlusions &
+\pending{PENDING-SAFETY} \\
+Ablation & SPPA variants without silhouette, footprint, track smoothing,
+semantic part graph, or uncertainty display & BEV IoU, yaw error, jitter,
+recognition accuracy & shared benchmark scenes and tracks &
+\pending{PENDING-EXP} \\
+Bandwidth & compressed video, telemetry boxes, SPPA descriptors, full meshes &
+bytes/s, packet rate, retransmission cost, stale-object rate & network replay
+or controlled link emulator & \pending{PENDING-EXP} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+A minimal publishable benchmark should include both synthetic scale variants and
+real or simulated UAV-view detections. Synthetic variants test whether the same
+semantic graph adapts to different proportions, such as a short truck versus a
+long truck. UAV-view detections test the harder case: imperfect bounding boxes,
+partial silhouettes, top-down perspectives, and uncertain yaw. The evaluation
+must report failure cases, including occlusion, truncated detections, ambiguous
+front/back orientation, unknown classes, and misleading confidence displays.
+
+\section{Threats to Validity}
+
+Primitive proxies can misrepresent fine geometry, pose, articulation, and
+object-specific hazards. A proxy cow or tractor is not a true reconstruction of
+the observed object. The visual style may also create false confidence: a clean
+proxy can look more certain than the underlying detector, georeference, or scale
+estimate. This must be tested with uncertainty visualization rather than assumed.
+
+Top-down UAV viewpoints, occlusion, motion blur, image compression, and partial
+detections can remove the evidence needed for part placement or signed yaw.
+The yaw model therefore exposes \(\mathrm{yaw\_ambiguous}\), but the thresholds
+and display behavior are \pending{PENDING-SPEC}. Template bias is another risk:
+the seven current classes are too small to support broad claims about arbitrary
+semantic labels.
+
+Language-guided semantic compilation introduces hallucination and certification
+risk. A language model may propose an implausible part graph for rare or
+ambiguous labels. SPPA must therefore review language-derived mappings against a
+finite archetype library, dimension priors, polygon budgets, and conservative
+fallback rules before runtime use. This review protocol is \pending{PENDING-SPEC}.
+
+Finally, runtime performance is hardware- and engine-dependent. Triangle count
+alone does not predict headset frame rate, draw-call pressure, material cost, or
+tracking comfort. All dense-scene claims remain \pending{PENDING-BENCH}.
+
+\section{Minimum Work Remaining To Publish}
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\caption{Minimum missing evidence required to avoid the current rejection conditions.}
+\label{tab:minimum-work}
+\begin{tabular}{@{}p{4.0cm}p{4.7cm}p{4.7cm}@{}}
+\toprule
+Rejection condition & Missing evidence & Required artifact \\
+\midrule
+Prototype is not the claimed system & No live detections, tracks, calibration,
+georeferencing, or Unreal spawning & End-to-end Pipeline B replay that creates
+SPPA descriptors and Unreal actors from recorded or simulated detections
+(\pending{PENDING-IMPL}) \\
+No baseline comparison & Boxes, capsules, billboards, low-poly assets,
+occupancy volumes, and procedural actors are not evaluated & Benchmark scripts
+and tables comparing latency, geometry, frame rate, and recognition
+(\pending{PENDING-EXP}) \\
+No scale-adaptation evidence & Current templates are fixed scale & Dataset with
+ground-truth or simulated footprints plus BEV IoU, volume error, and yaw error
+(\pending{PENDING-EXP}) \\
+No VR runtime evidence & OBJ timing is not headset frame timing & Unreal/VR
+dense-scene benchmark with CPU/GPU frame time, FPS, draw calls, memory, and
+entity count scaling (\pending{PENDING-BENCH}) \\
+No operator evidence & Readability and situation-awareness claims are untested
+& Controlled user study with recognition, response time, navigation outcome,
+NASA-TLX, and SAGAT-style probes (\pending{PENDING-USER}) \\
+No fallback evidence & Conservative display fallback may create false
+confidence & Unknown-class and ambiguous-detection study with containment,
+operator interpretation, and failure analysis (\pending{PENDING-SAFETY}) \\
+No bandwidth evidence & Descriptor cost is not compared with video or meshes &
+Network replay/link-emulation report with bytes/s, packet rate, staleness, and
+failure modes (\pending{PENDING-EXP}) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Limitations}
+
+The current prototype is class-template based and does not infer volumetric
+scale from a real detection pipeline. It does not consume live YOLO tracks,
+instance masks, calibrated camera geometry, georeferenced footprints, or
+uncertainty estimates. It has not been benchmarked inside Unreal with headset
+frame-rate constraints. The current timings measure a debug OBJ-export path,
+not a final instanced primitive runtime.
+
+The paper also does not include a pilot or user study. Claims about operator
+readability, situation awareness, workload, or navigation usefulness remain
+hypotheses until evaluated. The specified fallback behavior is not implemented
+in the current prototype and is not yet shown to reduce operational risk.
+
+The next step is to connect the proxy generator to YOLO detections, instance
+masks or bounding boxes, UAV pose, camera calibration, georeferenced placement,
+and Unreal actor spawning. The contribution becomes publishable only if it is
+evaluated under the intended operational constraints: remote piloting, degraded
+video links, semantic telemetry, and VR real-time rendering.
+
+\section{Conclusion}
+
+SPPA, as presented here, is a specification for a semantic proxy rendering layer
+for telemetry-driven UAV digital twins. Static asset libraries cannot cover
+every possible detected object, and neural image-to-3D systems optimize asset
+fidelity rather than bounded low-polygon display. Primitive proxy assembly is a
+plausible operating point for this gap, but the current evidence is limited to a
+seven-class fixed-template OBJ debug prototype.
+
+The manuscript therefore should not be read as an evaluated UAV/VR system. It
+defines a runtime contract, descriptor shape, bounded compiler concept,
+mathematical fitting target, and preregistered evaluation plan. Publication as a
+full experimental contribution requires the pending implementation, benchmark,
+fallback, bandwidth, and operator-study artifacts listed above.
+
+\bibliographystyle{plain}
+\bibliography{semantic_proxy_3d_references}
+
+\end{document}
