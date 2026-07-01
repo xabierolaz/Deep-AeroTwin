@@ -9,12 +9,12 @@
     ],
     "view_m": {
       "xlim": [
-        -45.0,
-        155.0
+        -100.0,
+        200.0
       ],
       "ylim": [
-        -160.0,
-        40.0
+        -230.0,
+        70.0
       ]
     },
     "source_run": "pipeline\\logs\\paper_wp1_wp2_tower\\paper_wp1_wp2_tower_p0.56_l+8.0_20260617_120539"

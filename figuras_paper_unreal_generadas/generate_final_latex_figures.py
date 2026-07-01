@@ -83,8 +83,8 @@ g.MOVING_RUN = MOVING_REAL_RUN
 if MOVING_REAL_EVASION_TS is not None:
     g.MOVING_EVASION_TS = MOVING_REAL_EVASION_TS
 
-FIG1_XLIM = (-45.0, 155.0)
-FIG1_YLIM = (-160.0, 40.0)
+FIG1_XLIM = (-100.0, 200.0)
+FIG1_YLIM = (-230.0, 70.0)
 
 
 def copy_to_latex_images(source: Path, filename: str) -> list[str]:
@@ -132,8 +132,8 @@ def _panel_title(ax, panel: str, title: str) -> None:
     )
 
 
-def _style_axis(ax) -> None:
-    g.style_ax(ax)
+def _style_axis(ax, *, map_grid: bool = True) -> None:
+    g.style_ax(ax, map_grid=map_grid)
     ax.tick_params(labelsize=6.8)
     ax.xaxis.label.set_size(7.4)
     ax.yaxis.label.set_size(7.4)
@@ -141,9 +141,12 @@ def _style_axis(ax) -> None:
 
 def _base_fig1(ax, d: dict, *, grid: bool = False) -> None:
     if grid:
-        g.draw_grid(ax, d["occupied"], d["route_cells"], d["route_xy"], origin_xy=d["plan_origin_xy"])
-    g.plot_wp1_wp2_segment(ax, d["mission"], d["lat_ref"], d["lon_ref"])
-    _style_axis(ax)
+        grid_spec = g.draw_grid(ax, d["occupied"], d["route_cells"], d["route_xy"], origin_xy=d["plan_origin_xy"])
+        wp2_xy = g.latlon_to_enu(d["lat_ref"], d["lon_ref"], d["mission"][2]["lat"], d["mission"][2]["lon"])
+        g.plot_grid_planned_segment(ax, d["plan_origin_xy"], wp2_xy, grid_spec)
+    else:
+        g.plot_wp1_wp2_segment(ax, d["mission"], d["lat_ref"], d["lon_ref"])
+    _style_axis(ax, map_grid=not grid)
     _apply_fig1_view(ax)
 
 

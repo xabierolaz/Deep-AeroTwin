@@ -7,7 +7,7 @@ Esta carpeta contiene las figuras compuestas pedidas en la conversacion.
 - `System Workflow.png`: diagrama de flujo del sistema regenerado por script y copiado a las dos carpetas `Imagenes/` usadas por LaTeX.
 - `Pipeline A.png`: diagrama de arquitectura del workflow de simulacion regenerado por script y copiado a las dos carpetas `Imagenes/` usadas por LaTeX.
 - `paper_figure_1_static_tower_sequence.png`: Figura 1 final para LaTeX, copiada tambien a las carpetas `Imagenes/` del paper raiz y de la plantilla IEEE.
-- `paper_figure_2_moving_peloton_sequence.png`: Figura 2 final pendiente. Debe regenerarse solo desde una captura Unreal real actualizada, con pelotones `APelotonSplineActor` simples moviendose izquierda-derecha, torres/vacas activas segun el experimento completo, sin predicciones visuales y con YOLO en modo `paper`.
+- `paper_figure_2_moving_peloton_sequence.png`: Figura 2 final regenerada desde la captura Unreal/YOLO actual `pipeline/logs/zero_trust/20260620_084932`, con artefactos fuente trazados en `yolo_crossing_precheck/final_artifacts/`.
 - `paper_figure_3_e2e_ablation.png`: Figura de ablacion E2E reconstruida desde la campana `pipeline/logs/e2e/campaign_20260612_174114.json`, copiada tambien a las carpetas `Imagenes/` del paper raiz y de la plantilla IEEE.
 - `paper_figure_4_audited_collision_evasion.png`: Figura de validacion auditada del run `pipeline/logs/zero_trust/20260220_092802`, con reduccion de percepcion, grilla local y serie temporal de margen, copiada tambien a las carpetas `Imagenes/` del paper raiz y de la plantilla IEEE.
 - `generate_architecture_latex_figures.py`: regenerador de `System Workflow.png`, `Pipeline A.png` y `architecture_manifest.json`.
@@ -21,7 +21,7 @@ Esta carpeta contiene las figuras compuestas pedidas en la conversacion.
 
 ## Version activa en LaTeX
 
-La version activa del paper usa `System Workflow.png`, `Pipeline A.png`, `paper_figure_1_static_tower_sequence.png`, `paper_figure_2_moving_peloton_sequence.png`, `paper_figure_3_e2e_ablation.png` y `paper_figure_4_audited_collision_evasion.png`. De esas figuras, la unica pendiente es `paper_figure_2_moving_peloton_sequence.png`, porque debe salir de una ejecucion Unreal + ArduPilot + YOLO actualizada. Las seis capturas antiguas del bloque de resultados estan preservadas en el `.tex` dentro de `\iffalse ... \fi`, pero no se compilan.
+La version activa del paper usa `System Workflow.png`, `Pipeline A.png`, `paper_figure_1_static_tower_sequence.png`, `paper_figure_2_moving_peloton_sequence.png`, `paper_figure_3_e2e_ablation.png` y `paper_figure_4_audited_collision_evasion.png`. La Figura 2 ya fue sustituida por una ejecucion Unreal + ArduPilot + YOLO actualizada del run `pipeline/logs/zero_trust/20260620_084932`. Las seis capturas antiguas del bloque de resultados estan preservadas en el `.tex` dentro de `\iffalse ... \fi`, pero no se compilan.
 
 La Figura 3 usa cuatro runs representativos de la campana E2E y las medias de diez runs por escenario. La Figura 4 no usa la captura visual del run historico porque esa ventana no corresponde a Unreal; usa los conteos y cajas serializados en `vision/events.jsonl`, los tres tracks proxy publicados justo antes del disparo y la trayectoria real de `brain/trajectory.csv`.
 
@@ -31,7 +31,7 @@ La Figura 3 usa cuatro runs representativos de la campana E2E y las medias de di
 - La torre usada esta en `lat=42.22904865463611`, `lon=-1.234404232738992`, progreso `0.56` del tramo WP1->WP2 y desplazamiento lateral `+8 m`.
 - Orden activo de lectura: `1A` navegacion nominal, `1B` deteccion sin accion cerca del umbral, `1C` ultima deteccion sin accion con radios, `1D` inicio de evasion A*, `1E` evasion en curso, `1F` resumen final de ruta.
 - Decision actual: los seis paneles de Figura 1 deben ser cenitales/top-down y compartir ejes. El `Local A* occupancy grid` no es absoluto ni permanente; se muestra solo en `1D` y `1E`, cuando el planner ya ha discretizado el vecindario local relativo al UAS.
-- Los seis paneles usan el mismo encuadre fijo activo: eje X `[-40, 160]` m y eje Y `[-165, 35]` m, con las mismas etiquetas `East (m)` y `North (m)`. Es un encuadre cuadrado `1:1` de 200 m x 200 m centrado en el tramo WP1->WP2, con mas aire por encima de WP1 y menos espacio muerto bajo WP2.
+- Los seis paneles usan el mismo encuadre fijo activo: eje X `[-100, 200]` m y eje Y `[-230, 70]` m, con las mismas etiquetas `East (m)` y `North (m)`. Es un encuadre cuadrado `1:1` de 300 m x 300 m. En `1D` y `1E`, el grid de referencia del mapa se desactiva y se dibuja una unica grilla local A* resaltada de 15 x 15 celdas visibles. En esos paneles no se usa la diagonal continua WP1->WP2: el recorrido planificado se discretiza desde la posicion actual del UAS hasta WP2 y se dibuja de vertice a vertice dentro de la grilla; la ruta A* de evasion se muestra como la alternativa local tambien contenida en esa grilla.
 - `1B` usa una deteccion sin accion a `75.1 m`; `1C` usa una deteccion sin accion a `67.1 m`, todavia fuera de `reaction_distance_eval_m=61 m`.
 - Validacion del run: `accepted_types=["tower"]`, `clean_detection_count=9`, `valid_plan_count=1`, `valid_completion_count=1`, `failure_count=0`, evasion activa de progreso `0.2085` a `0.9412` antes de WP2.
 

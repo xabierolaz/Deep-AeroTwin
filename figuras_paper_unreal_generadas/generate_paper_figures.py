@@ -33,6 +33,9 @@ RS_M = 12.0
 BASE_REACTION_M = 45.0
 CELL_SIZE_M = 6.0
 GRID_RADIUS_CELLS = 40
+GRID_MAJOR_STRIDE_CELLS = 3
+GRID_DISPLAY_MAJOR_CELLS = 15
+GRID_DISPLAY_CELLS = GRID_MAJOR_STRIDE_CELLS * GRID_DISPLAY_MAJOR_CELLS
 
 INK = "#23313f"
 NOMINAL = "#7b8794"
@@ -54,8 +57,8 @@ LABEL_BASE_REACTION = "Base reaction distance"
 LABEL_PELOTON_POSITIONS = "Peloton positions over time"
 LABEL_LOCAL_GRID = "Local A* occupancy grid"
 
-FIG1_XLIM = (-40.0, 160.0)
-FIG1_YLIM = (-165.0, 35.0)
+FIG1_XLIM = (-100.0, 200.0)
+FIG1_YLIM = (-230.0, 70.0)
 FIG1_PANEL_FIGSIZE = (5.8, 5.8)
 
 
@@ -145,8 +148,11 @@ def nearest_archived_frame(run: Path, frame_idx: int) -> Path | None:
     return None
 
 
-def style_ax(ax) -> None:
-    ax.grid(color=GRID, linestyle=":", linewidth=0.75)
+def style_ax(ax, *, map_grid: bool = True) -> None:
+    if map_grid:
+        ax.grid(color=GRID, linestyle=":", linewidth=0.75)
+    else:
+        ax.grid(False)
     for spine in ax.spines.values():
         spine.set_color("#8a96a3")
         spine.set_linewidth(0.8)
@@ -347,35 +353,270 @@ def reconstruct_route(
     return route_xy, occupied, route_cells
 
 
+def _route_graph_points(
+    route_xy: list[tuple[float, float]],
+    route_cells: list[tuple[int, int]],
+    origin_xy: tuple[float, float],
+) -> list[tuple[float, float]]:
+    ox, oy = origin_xy
+    if route_xy:
+        points = []
+        for x, y in route_xy:
+            gx = ox + round((x - ox) / CELL_SIZE_M) * CELL_SIZE_M
+            gy = oy + round((y - oy) / CELL_SIZE_M) * CELL_SIZE_M
+            points.append((gx, gy))
+    else:
+        points = [(ox + cx * CELL_SIZE_M, oy + cy * CELL_SIZE_M) for cx, cy in route_cells]
+    out: list[tuple[float, float]] = []
+    for point in points:
+        if not out or point != out[-1]:
+            out.append(point)
+    return out
+
+
+def _grid_display_window(
+    route_graph_xy: list[tuple[float, float]],
+    occupied: set[tuple[int, int]],
+    origin_xy: tuple[float, float],
+) -> tuple[int, int, int, int]:
+    ox, oy = origin_xy
+    content_cells = list(occupied)
+    content_cells.extend(
+        (
+            int(round((x - ox) / CELL_SIZE_M)),
+            int(round((y - oy) / CELL_SIZE_M)),
+        )
+        for x, y in route_graph_xy
+    )
+    if content_cells:
+        min_content_x = min(cx for cx, _ in content_cells) - GRID_MAJOR_STRIDE_CELLS
+        max_content_x = max(cx for cx, _ in content_cells) + GRID_MAJOR_STRIDE_CELLS
+        min_content_y = min(cy for _, cy in content_cells) - GRID_MAJOR_STRIDE_CELLS
+        max_content_y = max(cy for _, cy in content_cells) + GRID_MAJOR_STRIDE_CELLS
+        center_x = int(round((min_content_x + max_content_x) / 2))
+        center_y = int(round((min_content_y + max_content_y) / 2))
+    else:
+        center_x = 0
+        center_y = 0
+        min_content_x = max_content_x = min_content_y = max_content_y = 0
+
+    span = max(
+        GRID_DISPLAY_CELLS,
+        max_content_x - min_content_x,
+        max_content_y - min_content_y,
+    )
+    span = int(math.ceil(span / GRID_MAJOR_STRIDE_CELLS) * GRID_MAJOR_STRIDE_CELLS)
+    min_cell_x = int(math.floor((center_x - span / 2) / GRID_MAJOR_STRIDE_CELLS) * GRID_MAJOR_STRIDE_CELLS)
+    min_cell_y = int(math.floor((center_y - span / 2) / GRID_MAJOR_STRIDE_CELLS) * GRID_MAJOR_STRIDE_CELLS)
+    max_cell_x = min_cell_x + span
+    max_cell_y = min_cell_y + span
+
+    if min_cell_x > min_content_x:
+        shift = math.ceil((min_cell_x - min_content_x) / GRID_MAJOR_STRIDE_CELLS) * GRID_MAJOR_STRIDE_CELLS
+        min_cell_x -= shift
+        max_cell_x -= shift
+    if max_cell_x < max_content_x:
+        shift = math.ceil((max_content_x - max_cell_x) / GRID_MAJOR_STRIDE_CELLS) * GRID_MAJOR_STRIDE_CELLS
+        min_cell_x += shift
+        max_cell_x += shift
+    if min_cell_y > min_content_y:
+        shift = math.ceil((min_cell_y - min_content_y) / GRID_MAJOR_STRIDE_CELLS) * GRID_MAJOR_STRIDE_CELLS
+        min_cell_y -= shift
+        max_cell_y -= shift
+    if max_cell_y < max_content_y:
+        shift = math.ceil((max_content_y - max_cell_y) / GRID_MAJOR_STRIDE_CELLS) * GRID_MAJOR_STRIDE_CELLS
+        min_cell_y += shift
+        max_cell_y += shift
+
+    return min_cell_x, max_cell_x, min_cell_y, max_cell_y
+
+
+def _snap_cell_to_display_grid(cell: int, min_cell: int) -> int:
+    offset = round((cell - min_cell) / GRID_MAJOR_STRIDE_CELLS) * GRID_MAJOR_STRIDE_CELLS
+    return min_cell + offset
+
+
+def _snap_route_to_display_grid(
+    route_graph_xy: list[tuple[float, float]],
+    origin_xy: tuple[float, float],
+    min_cell_x: int,
+    min_cell_y: int,
+) -> list[tuple[float, float]]:
+    ox, oy = origin_xy
+    out: list[tuple[float, float]] = []
+    for x, y in route_graph_xy:
+        cell_x = int(round((x - ox) / CELL_SIZE_M))
+        cell_y = int(round((y - oy) / CELL_SIZE_M))
+        snapped_x = _snap_cell_to_display_grid(cell_x, min_cell_x)
+        snapped_y = _snap_cell_to_display_grid(cell_y, min_cell_y)
+        point = (ox + snapped_x * CELL_SIZE_M, oy + snapped_y * CELL_SIZE_M)
+        if not out or point != out[-1]:
+            out.append(point)
+    return out
+
+
+def _display_block_for_cell(cell: tuple[int, int], min_cell_x: int, min_cell_y: int) -> tuple[int, int]:
+    cx, cy = cell
+    bx = min_cell_x + math.floor((cx - min_cell_x) / GRID_MAJOR_STRIDE_CELLS) * GRID_MAJOR_STRIDE_CELLS
+    by = min_cell_y + math.floor((cy - min_cell_y) / GRID_MAJOR_STRIDE_CELLS) * GRID_MAJOR_STRIDE_CELLS
+    return int(bx), int(by)
+
+
+def _display_grid_cell_for_xy(xy: tuple[float, float], grid_spec: dict) -> tuple[int, int]:
+    ox, oy = grid_spec["origin_xy"]
+    cell_x = int(round((xy[0] - ox) / CELL_SIZE_M))
+    cell_y = int(round((xy[1] - oy) / CELL_SIZE_M))
+    snapped_x = _snap_cell_to_display_grid(cell_x, int(grid_spec["min_cell_x"]))
+    snapped_y = _snap_cell_to_display_grid(cell_y, int(grid_spec["min_cell_y"]))
+    snapped_x = min(max(snapped_x, int(grid_spec["min_cell_x"])), int(grid_spec["max_cell_x"]))
+    snapped_y = min(max(snapped_y, int(grid_spec["min_cell_y"])), int(grid_spec["max_cell_y"]))
+    return snapped_x, snapped_y
+
+
+def _bresenham_indices(start: tuple[int, int], end: tuple[int, int]) -> list[tuple[int, int]]:
+    x0, y0 = start
+    x1, y1 = end
+    dx = abs(x1 - x0)
+    dy = abs(y1 - y0)
+    sx = 1 if x0 < x1 else -1
+    sy = 1 if y0 < y1 else -1
+    err = dx - dy
+    out: list[tuple[int, int]] = []
+    while True:
+        out.append((x0, y0))
+        if x0 == x1 and y0 == y1:
+            break
+        e2 = 2 * err
+        if e2 > -dy:
+            err -= dy
+            x0 += sx
+        if e2 < dx:
+            err += dx
+            y0 += sy
+    return out
+
+
+def _display_grid_path_cells(start_cell: tuple[int, int], end_cell: tuple[int, int], grid_spec: dict) -> list[tuple[int, int]]:
+    stride = GRID_MAJOR_STRIDE_CELLS
+    min_cell_x = int(grid_spec["min_cell_x"])
+    min_cell_y = int(grid_spec["min_cell_y"])
+    start_idx = ((start_cell[0] - min_cell_x) // stride, (start_cell[1] - min_cell_y) // stride)
+    end_idx = ((end_cell[0] - min_cell_x) // stride, (end_cell[1] - min_cell_y) // stride)
+    return [(min_cell_x + ix * stride, min_cell_y + iy * stride) for ix, iy in _bresenham_indices(start_idx, end_idx)]
+
+
+def _cells_to_xy(cells: list[tuple[int, int]], origin_xy: tuple[float, float]) -> list[tuple[float, float]]:
+    ox, oy = origin_xy
+    return [(ox + cx * CELL_SIZE_M, oy + cy * CELL_SIZE_M) for cx, cy in cells]
+
+
 def draw_grid(
     ax,
     occupied: set[tuple[int, int]],
     route_cells: list[tuple[int, int]],
     route_xy: list[tuple[float, float]],
     origin_xy: tuple[float, float] = (0.0, 0.0),
-) -> None:
+) -> dict:
     ox, oy = origin_xy
-    half = GRID_RADIUS_CELLS * CELL_SIZE_M
-    for v in np.arange(-half, half + CELL_SIZE_M, CELL_SIZE_M):
-        is_major = abs((v / CELL_SIZE_M) % 10) < 1e-6
-        ax.axvline(ox + v, color="#b9c3cf", linewidth=0.58 if is_major else 0.36, alpha=0.55 if is_major else 0.34, zorder=0)
-        ax.axhline(oy + v, color="#b9c3cf", linewidth=0.58 if is_major else 0.36, alpha=0.55 if is_major else 0.34, zorder=0)
+    route_graph_xy_raw = _route_graph_points(route_xy, route_cells, origin_xy)
+    min_cell_x, max_cell_x, min_cell_y, max_cell_y = _grid_display_window(route_graph_xy_raw, occupied, origin_xy)
+    route_graph_xy = _snap_route_to_display_grid(route_graph_xy_raw, origin_xy, min_cell_x, min_cell_y)
+    grid_spec = {
+        "origin_xy": origin_xy,
+        "min_cell_x": min_cell_x,
+        "max_cell_x": max_cell_x,
+        "min_cell_y": min_cell_y,
+        "max_cell_y": max_cell_y,
+    }
+    min_x, max_x = ox + min_cell_x * CELL_SIZE_M, ox + max_cell_x * CELL_SIZE_M
+    min_y, max_y = oy + min_cell_y * CELL_SIZE_M, oy + max_cell_y * CELL_SIZE_M
+    ax.add_patch(
+        patches.Rectangle(
+            (min_x, min_y),
+            max_x - min_x,
+            max_y - min_y,
+            facecolor=(0.91, 0.95, 0.98, 0.11),
+            edgecolor="#7d8da0",
+            linewidth=0.9,
+            zorder=-1,
+        )
+    )
+    for cell_x in range(min_cell_x, max_cell_x + 1, GRID_MAJOR_STRIDE_CELLS):
+        x = ox + cell_x * CELL_SIZE_M
+        ax.plot([x, x], [min_y, max_y], color="#9fb0c0", linewidth=0.62, alpha=0.68, zorder=0)
+    for cell_y in range(min_cell_y, max_cell_y + 1, GRID_MAJOR_STRIDE_CELLS):
+        y = oy + cell_y * CELL_SIZE_M
+        ax.plot([min_x, max_x], [y, y], color="#9fb0c0", linewidth=0.62, alpha=0.68, zorder=0)
     if route_xy or occupied:
         ax.plot([], [], color="#9aa6b2", linewidth=0.8, alpha=0.8, label=LABEL_LOCAL_GRID)
-    for cx, cy in sorted(occupied):
+    display_occupied = sorted({_display_block_for_cell(cell, min_cell_x, min_cell_y) for cell in occupied})
+    for cx, cy in display_occupied:
+        if not (min_cell_x <= cx < max_cell_x and min_cell_y <= cy < max_cell_y):
+            continue
         ax.add_patch(
             patches.Rectangle(
-                (ox + cx * CELL_SIZE_M - CELL_SIZE_M / 2, oy + cy * CELL_SIZE_M - CELL_SIZE_M / 2),
-                CELL_SIZE_M,
-                CELL_SIZE_M,
+                (ox + cx * CELL_SIZE_M, oy + cy * CELL_SIZE_M),
+                GRID_MAJOR_STRIDE_CELLS * CELL_SIZE_M,
+                GRID_MAJOR_STRIDE_CELLS * CELL_SIZE_M,
                 facecolor=(0.25, 0.30, 0.35, 0.16),
                 edgecolor="#768290",
                 linewidth=0.35,
                 zorder=2,
             )
         )
-    if route_xy:
-        ax.plot([p[0] for p in route_xy], [p[1] for p in route_xy], color=EVASION, linewidth=1.8, zorder=5, label=LABEL_LOCAL_EVASION_PATH)
+    if route_graph_xy:
+        xs = [p[0] for p in route_graph_xy]
+        ys = [p[1] for p in route_graph_xy]
+        ax.plot(
+            xs,
+            ys,
+            color=EVASION,
+            linewidth=2.0,
+            solid_capstyle="round",
+            solid_joinstyle="round",
+            zorder=6,
+            label=LABEL_LOCAL_EVASION_PATH,
+        )
+        ax.scatter(xs, ys, s=13, facecolor="#fff8ee", edgecolor=EVASION, linewidth=0.65, zorder=7)
+        arrow_step = max(1, len(route_graph_xy) // 7)
+        for idx in range(0, len(route_graph_xy) - 1, arrow_step):
+            ax.add_patch(
+                patches.FancyArrowPatch(
+                    route_graph_xy[idx],
+                    route_graph_xy[idx + 1],
+                    arrowstyle="-|>",
+                    mutation_scale=7.0,
+                    color=EVASION,
+                    linewidth=0.75,
+                    alpha=0.82,
+                    zorder=8,
+                    shrinkA=2.0,
+                    shrinkB=2.0,
+                )
+            )
+    return grid_spec
+
+
+def plot_grid_planned_segment(
+    ax,
+    start_xy: tuple[float, float],
+    target_xy: tuple[float, float],
+    grid_spec: dict,
+    target_label: str = "WP2",
+) -> list[tuple[float, float]]:
+    start_cell = _display_grid_cell_for_xy(start_xy, grid_spec)
+    target_cell = _display_grid_cell_for_xy(target_xy, grid_spec)
+    path_cells = _display_grid_path_cells(start_cell, target_cell, grid_spec)
+    path_xy = _cells_to_xy(path_cells, grid_spec["origin_xy"])
+    xs = [p[0] for p in path_xy]
+    ys = [p[1] for p in path_xy]
+    ax.plot(xs, ys, "--", color=NOMINAL, linewidth=1.25, zorder=3, label=LABEL_PLANNED_PATH)
+    ax.scatter(xs, ys, s=10, facecolor="white", edgecolor=NOMINAL, linewidth=0.55, zorder=4)
+    if path_xy:
+        target = path_xy[-1]
+        ax.scatter([target[0]], [target[1]], s=22, color="#476f9f", zorder=5)
+        ax.text(target[0] + 4, target[1] + 4, target_label, fontsize=7, color="#476f9f", zorder=6, clip_on=True)
+    return path_xy
 
 def select_unique_obstacle(obs: list[dict]) -> list[dict]:
     valid = [item for item in obs if math.isfinite(float(item.get("distance", float("nan"))))]
@@ -553,15 +794,16 @@ def build_static_figure() -> dict:
         ax.legend(loc="lower left", fontsize=6.8)
 
     def draw_evasion(ax, panel: str, tower_label: str, uas_xy: tuple[float, float], show_flown: bool = False) -> None:
-        draw_grid(ax, occupied, route_cells, route_xy, origin_xy=plan_origin_xy)
-        plot_wp1_wp2_segment(ax, mission, d["lat_ref"], d["lon_ref"])
+        grid_spec = draw_grid(ax, occupied, route_cells, route_xy, origin_xy=plan_origin_xy)
+        wp2_xy = latlon_to_enu(d["lat_ref"], d["lon_ref"], mission[2]["lat"], mission[2]["lon"])
+        plot_grid_planned_segment(ax, plan_origin_xy, wp2_xy, grid_spec)
         if show_flown:
             flown = traj[(traj["ts"] >= float(evasion_evt["ts"])) & (traj["ts"] <= float(d["mid_evasion_row"]["ts"]))]
             ax.plot(flown["east"], flown["north"], color=FLOWN, linewidth=1.2, alpha=0.75, label=LABEL_ACTUAL_TRAJECTORY)
         ax.scatter([uas_xy[0]], [uas_xy[1]], marker="^", s=65, color=INK, zorder=9, label=LABEL_UAS)
         draw_obstacles(ax, eva_obs, TOWER, radius=True, label=tower_label)
         draw_label(ax, panel, "Evasion Stage. Safety Action")
-        style_ax(ax)
+        style_ax(ax, map_grid=False)
         apply_figure1_view(ax)
         ax.legend(loc="lower left", fontsize=6.8)
 
