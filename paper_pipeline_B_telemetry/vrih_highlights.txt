@@ -1,5 +1,3 @@
-Highlights
-
 - A VR digital-twin display reconstructs UAV scenes from in-flight detections.
 - Georeferenced semantic telemetry drives live actor spawn, update, and despawn.
 - The runtime contract links detection ingest, Brain, and Unreal/Cesium.

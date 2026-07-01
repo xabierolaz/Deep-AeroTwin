@@ -47,8 +47,7 @@
 \address[1]{Mathematical Engineering and Computer Science Department, Public University of Navarre, Pamplona, Spain}
 \address[2]{Institute of Smart Cities, Public University of Navarre, Pamplona, Spain}
 
-\abstract{Remote UAV operation requires the pilot to maintain spatial awareness of the aircraft, terrain, obstacles, and mission-relevant objects when direct visual contact or continuous high-quality video may be unavailable. This working manuscript presents Pipeline B, an implemented virtual-reality digital twin operator display in which a UAV pilot wearing a head-mounted display can inspect a dynamically reconstructed 3D representation of the operational scene. The system converts in-flight object detections into georeferenced semantic telemetry and uses those data to spawn, update, and remove dynamic actors inside an Unreal Engine and Cesium-based environment. The contribution is framed as a human-in-the-loop operator-display architecture, not as autonomous flight control, certified detect-and-avoid, or a replacement for regulatory safety channels. The paper currently defines the runtime contract, interaction concept, evidence map, and validation protocol required for a complete journal submission. Quantitative results are retained as explicit placeholders until the validation experiments, VR demonstration material, and hardware-dependent trials are completed.
-}
+\abstract{Remote UAV operation requires the pilot to maintain spatial awareness of aircraft state, terrain, obstacles, and mission-relevant objects when direct visual contact or continuous high-quality video may be unavailable. This manuscript presents Pipeline B, a virtual-reality digital-twin operator display in which a pilot wearing a head-mounted display inspects a dynamically reconstructed 3D representation of the operational scene. The implemented runtime path converts in-flight object detections into georeferenced semantic telemetry and uses those data to spawn, update, mark stale, and remove dynamic actors inside an Unreal Engine and Cesium-based environment. The contribution is framed as a human-in-the-loop auxiliary operator display, not as autonomous flight control, certified detect-and-avoid, or a replacement for regulatory safety channels. The paper defines the runtime contract, entity lifecycle, georeferencing assumptions, VR interaction requirements, safety envelope, claim-to-evidence map, and validation protocol required for a complete VRIH submission. Quantitative results are retained as explicit placeholders until validation experiments, VR demonstration material, geospatial ground truth, network-degradation trials, and human-operator studies are completed.}
 
 \keywords{Virtual reality; UAV; Digital twin; Scene reconstruction; Semantic telemetry; Teleoperation; Situational awareness}
 
@@ -56,191 +55,451 @@
 
 \section{Draft Status, Journal Target, and Placeholder Convention}
 
-This manuscript is a working architecture and evaluation draft for \emph{Virtual Reality \& Intelligent Hardware} (VRIH). The target article type is a full research paper rather than a rapid communication, because the argument requires architecture, runtime contract, prototype evidence, quantitative evaluation, and human-operator validation. VRIH rapid communications are capped at four printed pages, which is incompatible with the evidence burden of this paper.
+This manuscript is a controlled working draft for \emph{Virtual Reality \& Intelligent Hardware} (VRIH). The intended article type is a full research paper, not a rapid communication. The reason is evidentiary: the argument requires an architecture, an implemented runtime contract, an immersive display concept, software instrumentation, quantitative results, and a human-operator validation. VRIH rapid communications are limited to four pages, whereas this work needs a complete method and validation package.
 
-The current version is not a submission-ready experimental article. It is a controlled draft that makes every missing result visible. Any unmeasured quantity is marked with \tbd{identifier and required evidence}. These placeholders must be replaced by measured results, figures, tables, or explicitly scoped limitations before journal submission.
+This version is not yet a submission-ready experimental article. It is deliberately honest: every unmeasured result, missing figure, unconfirmed hardware detail, statistical test, declaration, or physical-trial outcome is marked with \tbd{identifier and required evidence}. No quantitative claim should be treated as demonstrated until the corresponding placeholder has been replaced by measured evidence.
 
-The required placeholder identifiers are:
+The placeholder convention used throughout the paper is:
 
 \begin{itemize}
-    \item \textbf{TBD-DEMO}: screenshots, video captures, configuration records, and execution logs showing the implemented system operating in the VR display.
+    \item \textbf{TBD-DEMO}: screenshots, HMD captures, video material, configuration records, and execution logs showing the implemented system operating in the VR display.
     \item \textbf{TBD-BW}: semantic telemetry bitrate, p95 bandwidth, packet rate, and comparison with H.264, H.265, or WebRTC video baselines.
-    \item \textbf{TBD-LAT}: communication delay from the UAV or detection source to the pilot equipped with the VR headset, including Brain ingest, Unreal actor update, and visible headset refresh.
-    \item \textbf{TBD-GEO}: two-dimensional and three-dimensional reconstruction error against ground truth.
-    \item \textbf{TBD-LOSS}: behavior under controlled packet loss, jitter, and link interruption.
-    \item \textbf{TBD-TRACK}: identity switches, stale-object duration, and track fragmentation.
-    \item \textbf{TBD-HUMAN}: pilot task success, near misses, workload, and situational-awareness measures.
-    \item \textbf{TBD-SAFETY}: operating limits, fallback rules, confidence thresholds, and uncertainty-display thresholds.
-    \item \textbf{TBD-LOWVIS}: sensor-specific validation in night, smoke, fog, haze, glare, or other degraded-visibility conditions.
+    \item \textbf{TBD-LAT}: latency from detection publication to Brain ingest, Unreal actor update, and visible headset refresh.
+    \item \textbf{TBD-GEO}: 2D and 3D reconstruction error against surveyed, RTK/GNSS, motion-capture, or otherwise defensible ground truth.
+    \item \textbf{TBD-LOSS}: behavior under controlled packet loss, jitter, delay, and link interruption.
+    \item \textbf{TBD-TRACK}: identity switches, stale-object duration, despawn correctness, and track fragmentation.
+    \item \textbf{TBD-HUMAN}: pilot task success, near misses, workload, spatial awareness, cybersickness, and overtrust measures.
+    \item \textbf{TBD-SAFETY}: operating limits, fallback rules, confidence thresholds, uncertainty thresholds, and stale-state visualization policy.
+    \item \textbf{TBD-LOWVIS}: sensor-specific validation under night, smoke, fog, haze, glare, or equivalent degraded-visibility conditions.
+    \item \textbf{TBD-FIG}: missing figures, HMD screenshots, video stills, diagrams, or graphical abstract assets.
+    \item \textbf{TBD-STAT}: sample size, statistical model, effect size, confidence interval, and correction for multiple comparisons.
+    \item \textbf{TBD-ETHICS}: ethics review or exemption for human-operator experiments, participant consent, and data protection.
+    \item \textbf{TBD-REPRO}: dataset, code, log, configuration, and software-version release package.
 \end{itemize}
 
-\section{Motivation and Operator Task}
+\section{Introduction}
 
-Remote UAV pilots often depend on a video feed and a map view to infer the spatial relationship between the aircraft, terrain, obstacles, and mission-relevant objects. That interface can become insufficient when the video link is bandwidth-limited, delayed, compressed, interrupted, or constrained to a narrow camera field of view. The problem is not simply that video consumes bandwidth. The deeper problem is that the pilot must reconstruct a three-dimensional operational scene mentally from incomplete two-dimensional evidence.
+Remote UAV operation is a spatial decision-making problem. A pilot or mission operator must reason about aircraft pose, terrain, hazards, people, vehicles, mission targets, visibility, and communication degradation while often relying on a video stream and a map display. Video provides rich evidence, but it also binds the operator to a camera viewpoint, consumes bandwidth, degrades under compression, and can fail to show objects outside the current field of view. Map displays provide geospatial context, but they usually lack the immediacy and embodied spatial interpretation of a three-dimensional scene. The central problem is therefore not only communication load. It is the pilot's need to maintain situation awareness from partial, delayed, and heterogeneous evidence.
 
-Pipeline B addresses this human-interface problem by converting detected objects into a persistent, spatially organized digital-twin layer. The pilot-side display is intended for a head-mounted VR device, where the operator can inspect the reconstructed scene from an egocentric or external viewpoint. The task is not safety-critical flight control. The task is auxiliary situational awareness: keeping track of selected objects, obstacles, stale detections, and uncertainty while video, map, and semantic channels degrade differently.
+Virtual reality and telepresence research provide the conceptual basis for this operator-display problem. Virtual reality can be understood through the dimensions that determine telepresence, including sensory richness and vividness \cite{steuer1992vr}, while telepresence research distinguishes mediated presence from direct physical presence \cite{sheridan1992telepresence}. In dynamic systems, situation awareness includes perception of relevant elements, comprehension of their meaning, and projection of their future status \cite{endsley1995theory}. Its measurement is nontrivial and must be designed explicitly rather than inferred from subjective impressions alone \cite{endsley1995measurement,moens2026meta}. Workload and human-factor measures such as NASA-TLX, SAGAT, SART, and simulator-sickness questionnaires are therefore part of the evidence burden for a VR operator display \cite{hart1988tlx,hart2006tlx,endsley1998sagat_sart,kennedy1993ssq}.
 
-The paper should therefore be evaluated around a concrete operator task:
+Pipeline B addresses this problem by converting detected objects into a persistent, spatially organized digital-twin layer. A detection source sends object-class, confidence, identity, timestamp, and estimated position data to a ground-station service called Brain. Brain normalizes and publishes the live entity layer, and Unreal Engine renders the resulting actors over Cesium geospatial context for an operator wearing a head-mounted display. The reconstructed scene is not presented as ground truth. It is an auxiliary operator display in which every dynamic actor must carry freshness, confidence, source, and uncertainty semantics.
+
+The main research question is:
 
 \begin{quote}
-Given a UAV mission with terrain context, detected dynamic or static objects, and a constrained communication link, can a VR-equipped operator preserve better spatial awareness of mission-relevant entities than with video-only, map-only, or non-immersive hybrid displays?
+Can a VR-equipped UAV operator maintain better spatial awareness of mission-relevant objects under constrained or degraded communication than with video-only, map-only, or non-immersive hybrid displays, while preserving explicit visibility of stale, uncertain, or missing information?
 \end{quote}
 
-The answer cannot be asserted from architecture alone. It requires demonstration evidence, communication measurements, geospatial validation, degradation tests, and human-operator assessment.
+This question cannot be answered by architecture alone. It requires a system demonstration, bandwidth measurements, latency measurements, geospatial error validation, degradation tests, and a human-operator study. This paper therefore separates what has already been implemented or specified from the physical and human evidence still required.
+
+The intended contributions are:
+
+\begin{itemize}
+    \item a VR digital-twin operator-display architecture for dynamic UAV scene reconstruction from in-flight detections;
+    \item a concrete runtime contract linking detection ingestion, Brain state publication, Unreal/Cesium actor lifecycle, and HMD visualization;
+    \item a formalized entity model, georeferencing model, latency model, bandwidth model, stale-state policy, and uncertainty-display requirement;
+    \item a claim-to-evidence map that prevents architecture claims from being confused with validated experimental results;
+    \item a VRIH-oriented validation protocol covering bandwidth, latency, geospatial accuracy, packet loss, tracking stability, human utility, low-visibility limits, safety envelope, and reproducibility.
+\end{itemize}
 
 \section{Related Work and Positioning}
 
-The contribution is not YOLO object detection, Unreal Engine simulation, Cesium geospatial rendering, ArduPilot telemetry, VR hardware, or UAV target geolocation in isolation. Those components are established. The contribution is the integration of in-flight detections, georeferenced semantic telemetry, runtime actor management, and immersive operator visualization into an evaluable VR digital-twin display.
+Pipeline B sits at the intersection of immersive teleoperation, digital twins, semantic/task-oriented communication, UAV perception, UAV geolocation, and degraded-link human-computer interaction. Its novelty is not the invention of any one of those areas. The novelty claim must be narrower: an implemented and measurable runtime path for reconstructing UAV mission-relevant entities inside a VR digital twin from in-flight detections.
 
-Task-oriented and semantic communication already study transmitting task-relevant information rather than reconstructing full source signals, especially for edge video analytics \cite{shao2022task}. Synthetic and hybrid vision systems for remotely piloted vehicles also predate this work; NASA's SmartCam3D combined live sensor information with synthetic visual context for improved operator awareness \cite{nasa2005smartcam}. Digital-twin support for UAV teleoperation over constrained networks has been studied with field trials \cite{sehad2023digitaltwin}. Unreal-based UAV simulation and MAVLink integration are established by systems such as AirSim \cite{shah2017airsim}. UAV real-time object detection is a mature research area with extensive surveys \cite{cao2023uavdetection}. Vision-based UAV target geolocation from camera pixels, pose, and attitude has also been studied with flight tests and filtering methods \cite{barber2006geolocation,isprs2016geolocation}. BVLOS operations further require explicit treatment of detect-and-avoid, command-and-control reliability, operational envelopes, and regulatory compliance \cite{faa2025bvlos}.
+\subsection{Immersive Teleoperation and Situation Awareness}
 
-Pipeline B must therefore be evaluated as a human-in-the-loop VR operator-display architecture. The paper should not overclaim novelty over perception, networking, geolocation, or VR rendering individually. Its novelty claim must be narrower: an implemented runtime path and evaluation protocol for reconstructing UAV mission-relevant entities inside a VR digital twin from in-flight detections.
+Immersive interfaces have been studied as a way to improve operator perception in unmanned-vehicle control. Immersive telepresence with mixed reality has been evaluated for unmanned vehicle operation and situation awareness \cite{fabris2021immersive}. Multi-robot interface studies show that immersion and predictive display elements can affect operator situation awareness \cite{roldan2017multirobot}. Recent work on VR teleoperation has also explored visual augmentation of live streams for unmanned vehicles \cite{luo2024visual} and compared 3D visualization and VR display designs for remote monitoring tasks \cite{buchner2025remote}. These studies support the premise that immersion may change operator awareness, but they also show that the effect must be measured rather than assumed.
 
-\section{System Architecture}
+UAV-specific VR and digital-twin studies are directly relevant. Augmented-reality mobile digital twins have been proposed for UAV wildfire-prevention workflows \cite{costa2025ardigitaltwin}. VR-based teleoperation has been applied to UAV-manipulator systems \cite{yang2025uavmanipulator}. Recent VR digital-twin work on UAV control studies how different points of view affect user experience and performance \cite{vona2025uavdt}. Pipeline B differs from these works by focusing on dynamic reconstruction from semantic detections rather than only viewpoint control, simulated piloting, or manipulation interfaces.
 
-Pipeline B converts onboard or upstream object detections into a compact entity stream. For each relevant object, the system publishes an identity, class label, confidence score, estimated position, timestamp, and optional geometry. At the ground station, the Brain service normalizes and tracks these entities, then publishes the current entity layer to Unreal Engine. Unreal renders static terrain and map context through Cesium while spawning, updating, and despawning dynamic actors from the semantic entity stream.
+\subsection{Digital Twins for VR and UAV Systems}
 
-The VR headset is the key operator-facing endpoint. The visual scene is not presented as an evidentiary truth layer. It is a synthetic operator display whose objects must carry confidence, age, source, and uncertainty semantics.
+Digital twin research has established terminology, design implications, and system taxonomies. VRIH has explicitly highlighted the connection between virtual reality, intelligent hardware, and digital twins \cite{lv2022vrihdt}; VRIH has also published digital-twin work in applied AI contexts \cite{ahmed2022vrihdt}. Broader surveys characterize digital twins as cyber-physical representations requiring data synchronization, modeling, and operational purpose \cite{jones2020dt,barricelli2019dt,singh2021dt}. For UAVs, digital twins have been discussed in beyond-5G contexts \cite{lv2021uavdt} and UAV-swarm cooperation \cite{lei2021uavswarms}. These works motivate digital twins as data-driven operational interfaces, but they do not by themselves validate a specific UAV-to-HMD operator workflow.
 
-Figure~\ref{fig:pipeline-b-architecture} summarizes the runtime flow. The figure is an architecture diagram, not experimental evidence. Demonstration evidence must come from screenshots, videos, and logs from the real prototype; quantitative validation must come from communication-delay, bandwidth, geospatial-error, robustness, and user-task measurements.
+\subsection{Semantic and Task-Oriented Communication}
+
+Semantic communication and task-oriented communication shift the objective from reconstructing every bit of a source signal to transmitting information useful for a downstream task. Surveys and early systems describe semantic communication as a future wireless-network paradigm \cite{luo2022semantic}, while deep-learning semantic communication systems demonstrate end-to-end learned communication mechanisms \cite{xie2021semantic}. Task-oriented edge inference uses information bottleneck ideas to trade communication cost against task performance \cite{shao2022edgeinference}. Edge-video analytics extends the idea to video-derived features rather than full video reconstruction \cite{shao2024edgevideo}, and cooperative edge inference studies multi-device task-oriented communication \cite{shao2023multidevice}.
+
+Pipeline B should not claim to solve semantic communication theory. Its object stream is closer to engineered semantic telemetry: it sends detected entities and their display-relevant attributes instead of a full video stream. The correct claim is operational and measurable: for the selected operator task, entity telemetry may reduce bandwidth while preserving relevant spatial information. That claim remains \tbd{TBD-BW bandwidth evidence and task-completeness evidence}.
+
+\subsection{UAV Detection, Geolocation, and Communication Constraints}
+
+UAV object detection is mature enough that this paper should not frame detector choice as its primary novelty. Real-time object detection based on UAV remote sensing has been extensively reviewed, including hardware, latency, energy, and onboard processing concerns \cite{cao2023uavdetection}. Pipeline B can use YOLO or another detector as a source, but the contribution begins after detection: entity encoding, georeferencing assumptions, live actor management, stale-state display, and operator use.
+
+Vision-based UAV target geolocation has a long literature. Fixed-wing miniature air vehicle work localized ground targets from image pixels, pose, and camera geometry \cite{barber2006geolocation}. UAV video imagery studies have combined target geolocation, tracking, and filtering \cite{hosseinpoor2016geolocation}. Vision-based tracking and motion estimation for moving targets has been demonstrated with UAV video and telemetry \cite{dobrokhodov2008tracking}. More recent work improves target geolocation using multi-view aerial images in long-range oblique photography \cite{liu2024multiview}. These references make a strict point: Pipeline B must say ``estimated georeferencing under calibrated camera and pose assumptions'', not ``triangulation'' or ``ground-truth localization'' unless \tbd{TBD-GEO} is completed.
+
+UAV communication constraints are also well established. UAV wireless communications bring opportunities and link-design challenges \cite{zeng2016uavcomm}. Surveys identify connectivity, reliability, routing, security, and quality-of-service issues in UAV communication networks \cite{gupta2016uavcomm,hayat2016uavnetworks}. Multi-tier drone architectures for 5G/B5G networks further underline the role of aerial platforms in constrained and heterogeneous communication systems \cite{sekander2018multitier}. Pipeline B therefore cannot assume that video, semantic telemetry, command-and-control, and pose channels degrade identically. Robustness must be tested under explicit packet loss, jitter, interruption, and stale-state conditions.
+
+\subsection{Simulation, Runtime Engines, and Software Infrastructure}
+
+Unreal-based vehicle simulation and MAVLink-oriented tooling are not novel by themselves. AirSim provides high-fidelity visual and physical simulation for autonomous vehicles \cite{shah2017airsim}, and DroneVR demonstrates a web virtual-reality simulator for drone operators \cite{nguyen2019dronevr}. Pipeline B uses Unreal Engine and Cesium as rendering and geospatial infrastructure. Those components are implementation choices. Their use is relevant to reproducibility and HMD performance, but the paper's scientific argument depends on whether dynamic semantic telemetry produces a useful, measurable operator display.
+
+\subsection{Positioning Statement}
+
+The paper's novelty should be stated conservatively:
+
+\begin{quote}
+Pipeline B integrates detection-derived semantic telemetry, estimated georeferencing, Brain-mediated runtime state, Unreal/Cesium dynamic actor reconstruction, and HMD-facing VR interaction into a single evaluable UAV operator-display workflow.
+\end{quote}
+
+The paper should avoid claiming that it substitutes for video, proves information-theoretic semantic optimality, guarantees safety for piloting, performs certified detect-and-avoid, or solves BVLOS regulation. Those claims are outside the available evidence and outside the proper scope of the architecture.
+
+\section{System Overview}
+
+\subsection{Operator Scenario}
+
+The target scenario is a UAV mission in which a remote operator needs to monitor terrain, aircraft state, obstacles, people, vehicles, or mission objects while communication quality is constrained or intermittently degraded. The operator wears an HMD and can inspect a synthetic 3D scene containing terrain context, UAV pose, detected entities, freshness indicators, and uncertainty indicators.
+
+The proposed display is auxiliary. It is not the primary command-and-control safety channel. It should be used alongside regulatory control links, video when available, map displays, flight telemetry, and operational procedures. The display is valuable only if it helps the operator understand spatial relationships and object persistence without hiding uncertainty.
+
+\subsection{Architecture}
+
+Pipeline B has five runtime layers:
+
+\begin{enumerate}
+    \item \textbf{Detection layer}: a YOLO or other detection source observes image frames or sensor data and emits object detections.
+    \item \textbf{Georeferencing layer}: detections are associated with estimated world coordinates using camera, pose, attitude, and terrain assumptions.
+    \item \textbf{Brain layer}: the ground-station service ingests detections, normalizes entities, manages freshness, and publishes operator-display state.
+    \item \textbf{Rendering layer}: Unreal Engine, Cesium terrain, and a telemetry component reconstruct dynamic actors from the current entity layer.
+    \item \textbf{Operator layer}: the HMD presents an immersive scene with entity class, confidence, age, uncertainty, and stale-state encodings.
+\end{enumerate}
+
+Figure~\ref{fig:pipeline-b-architecture} summarizes the proposed runtime flow. It is an architecture figure, not experimental evidence.
 
 \begin{figure}[t]
     \centering
     \includegraphics[width=\linewidth]{figures/pipeline_b_architecture.png}
-    \caption{Pipeline B runtime flow. The UAV or upstream perception source detects objects with YOLO or another detector, estimates object world coordinates under calibrated camera and pose assumptions, and sends compact semantic telemetry to the ground station. Brain publishes the live entity layer, while Unreal Engine, Cesium terrain, ArduPilot telemetry, and the live object layer are fused into an auxiliary VR operator display. Solid arrows denote semantic object telemetry, dashed arrows denote flight-control and pose feedback, and thin gray arrows denote local dependencies.}
+    \caption{Pipeline B runtime flow. The UAV or upstream perception source detects objects with YOLO or another detector, estimates world coordinates under calibrated camera, pose, and terrain assumptions, and sends compact semantic telemetry to Brain. Brain publishes the live entity layer, while Unreal Engine, Cesium terrain, ArduPilot telemetry, and the live object layer are fused into an auxiliary VR operator display. Solid arrows denote semantic object telemetry, dashed arrows denote flight-control and pose feedback, and thin gray arrows denote local dependencies.}
     \label{fig:pipeline-b-architecture}
 \end{figure}
 
-\subsection{Runtime Data Flow}
+\subsection{Implemented Runtime Path}
 
-The implemented runtime contract is organized around two HTTP interfaces:
+The current implemented path is organized around two HTTP interfaces:
 
 \begin{enumerate}
-    \item A detection source publishes objects to \code{POST /api/obstacles}.
-    \item Brain normalizes source identity, class, confidence, timestamp, and position.
-    \item Brain exposes the current operator-display state through \code{GET /api/ui/data}.
-    \item \code{UPorceTelemetryComponent} in Unreal polls the state endpoint.
-    \item Unreal spawns, updates, or despawns actors using \code{entity\_id} or \code{object\_id}.
-    \item The VR-equipped operator observes the reconstructed entity layer in the digital twin.
+    \item a detection source publishes objects to \code{POST /api/obstacles};
+    \item Brain normalizes source identity, class, confidence, timestamp, and position;
+    \item Brain exposes the current operator-display state through \code{GET /api/ui/data};
+    \item \code{UPorceTelemetryComponent} in Unreal polls the state endpoint;
+    \item Unreal spawns, updates, marks stale, or despawns actors using \code{entity\_id} or \code{object\_id};
+    \item the VR-equipped operator observes the reconstructed entity layer in the digital twin.
 \end{enumerate}
 
 \begin{table}[H]
 \centering
+\small
 \caption{Pipeline B runtime data flow.}
 \label{tab:pipeline-b-runtime}
-\begin{tabular}{@{}lll@{}}
+\begin{tabular}{@{}L{0.22\linewidth}L{0.30\linewidth}L{0.34\linewidth}@{}}
 \toprule
-Stage & Producer & Consumer \\
+Stage & Producer & Consumer and required evidence \\
 \midrule
-Object detection & YOLO or detection source & Telemetry encoder \\
-Estimated georeferencing & UAV pose + camera assumptions & Detection message \\
-Object ingest & Detection sender & Brain endpoint \\
-State publication & Brain & Unreal component \\
-Actor reconstruction & Unreal component & VR operator display \\
+Object detection & YOLO or detection source & Telemetry encoder; detector model and confidence threshold \tbd{TBD-DEMO detector configuration} \\
+Estimated georeferencing & UAV pose, camera model, terrain assumption & Detection message; calibration and uncertainty model \tbd{TBD-GEO calibration package} \\
+Object ingest & Detection sender & Brain endpoint; request schema, timing logs, validation errors \tbd{TBD-LAT Brain ingest logs} \\
+State publication & Brain & Unreal component; polling interval and JSON schema \tbd{TBD-REPRO API schema} \\
+Actor reconstruction & Unreal component & VR operator display; spawn/update/despawn logs \tbd{TBD-DEMO actor lifecycle logs} \\
+Immersive display & Unreal/Cesium runtime & HMD pilot view; screenshots, videos, headset runtime \tbd{TBD-DEMO HMD capture} \\
 \bottomrule
 \end{tabular}
+\normalsize
 \end{table}
 
 \subsection{Entity Contract}
 
-The essential telemetry fields are:
+Each reconstructed object is represented as a display entity:
+
+\begin{equation}
+e_i(t) = \{ id_i, c_i, q_i, p_i, \Sigma_i, s_i, a_i, g_i, m_i \},
+\label{eq:entity}
+\end{equation}
+
+where \(id_i\) is a stable identity, \(c_i\) is the class label, \(q_i\) is detector confidence, \(p_i\) is estimated position, \(\Sigma_i\) is position uncertainty, \(s_i\) is source identifier, \(a_i\) is age or freshness, \(g_i\) is optional geometry, and \(m_i\) is metadata for display and logging.
+
+The minimum runtime fields are:
 
 \begin{itemize}
-    \item stable \code{entity\_id} or \code{object\_id};
-    \item object class;
-    \item confidence score;
-    \item \code{lat}/\code{lon} geospatial position when available;
-    \item \code{world\_m} local coordinates when available;
-    \item approximate footprint, volume, or class-specific geometry;
-    \item timestamp, source identifier, and source metadata;
-    \item stale-state and uncertainty fields for operator display \tbd{TBD-SAFETY freshness and uncertainty fields}.
+    \item \code{entity\_id} or \code{object\_id};
+    \item object class and optional subclass;
+    \item confidence score and confidence-threshold policy;
+    \item source frame timestamp and Brain receive timestamp;
+    \item geospatial position \code{lat}/\code{lon}/\code{alt} when available;
+    \item local coordinates \code{world\_m} when available;
+    \item approximate footprint, bounding volume, or class-specific geometry;
+    \item source identifier and detector metadata;
+    \item freshness, stale flag, and uncertainty fields \tbd{TBD-SAFETY freshness and uncertainty schema}.
 \end{itemize}
+
+\subsection{Actor Lifecycle}
+
+The display actor lifecycle is:
+
+\begin{equation}
+\text{new} \rightarrow \text{confirmed} \rightarrow \text{updated} \rightarrow \text{stale} \rightarrow \text{removed}.
+\label{eq:lifecycle}
+\end{equation}
+
+An entity is marked stale when:
+
+\begin{equation}
+a_i(t) = t - t_i > \tau_{\mathrm{stale}},
+\label{eq:stale}
+\end{equation}
+
+where \(t_i\) is the last valid update time and \(\tau_{\mathrm{stale}}\) is the maximum age allowed before the display visually demotes the actor. The threshold must be selected from the operator task and verified experimentally \tbd{TBD-SAFETY max stale age}. An actor may be removed when:
+
+\begin{equation}
+a_i(t) > \tau_{\mathrm{remove}},
+\label{eq:remove}
+\end{equation}
+
+with \(\tau_{\mathrm{remove}} > \tau_{\mathrm{stale}}\), unless the system policy requires persistent ghost actors for recent hazards \tbd{TBD-SAFETY despawn policy}.
+
+\section{Method}
+
+\subsection{Detection-to-World Projection}
+
+The georeferencing step must be framed as estimated world-coordinate assignment under calibrated camera and pose assumptions. For a pixel observation \(z=[u,v]^T\), the normalized camera ray is:
+
+\begin{equation}
+\tilde{r}_c = K^{-1}
+\begin{bmatrix}
+u \\
+v \\
+1
+\end{bmatrix},
+\quad
+r_c = \frac{\tilde{r}_c}{\|\tilde{r}_c\|},
+\label{eq:camera-ray}
+\end{equation}
+
+where \(K\) is the camera intrinsic matrix. The corresponding world-frame ray is:
+
+\begin{equation}
+r_w = R_{wb} R_{bc} r_c,
+\label{eq:world-ray}
+\end{equation}
+
+where \(R_{bc}\) maps camera coordinates into the UAV body frame and \(R_{wb}\) maps the body frame into the world frame. Given UAV position \(p_u\), an estimated object position is:
+
+\begin{equation}
+\hat{p}_o = p_u + \lambda r_w.
+\label{eq:object-position}
+\end{equation}
+
+For a local planar ground assumption \(z=z_g\), \(\lambda\) is:
+
+\begin{equation}
+\lambda = \frac{z_g - p_{u,z}}{r_{w,z}}.
+\label{eq:lambda-plane}
+\end{equation}
+
+For terrain intersection, \(z_g\) must be replaced by a terrain or map model \tbd{TBD-GEO terrain intersection model}. This projection is sensitive to camera calibration, UAV attitude, timestamp synchronization, terrain height, lens distortion, and the chosen pixel point for the detection. Therefore, the projected object position is an estimate, not a proof of target location.
+
+\subsection{Uncertainty Propagation}
+
+The display must avoid overconfidence. The uncertainty of the estimated object position can be approximated by first-order propagation:
+
+\begin{equation}
+\Sigma_p \approx J_x \Sigma_x J_x^T,
+\label{eq:uncertainty}
+\end{equation}
+
+where \(x\) contains pixel coordinates, intrinsics, extrinsics, UAV pose, attitude, and terrain parameters, \(\Sigma_x\) is their covariance, and \(J_x\) is the Jacobian of the projection model with respect to those variables. The current draft does not yet have calibrated covariance values \tbd{TBD-GEO covariance inputs}. At minimum, the display must show a conservative uncertainty radius or confidence band \tbd{TBD-SAFETY uncertainty visualization}.
+
+\subsection{Semantic Telemetry Bandwidth}
+
+For a mission interval of duration \(T\), with \(N\) entity messages of serialized size \(|m_k|\) bytes, semantic telemetry bitrate is:
+
+\begin{equation}
+B_{\mathrm{sem}} = \frac{8}{T}\sum_{k=1}^{N} |m_k|.
+\label{eq:bandwidth}
+\end{equation}
+
+Packet rate is:
+
+\begin{equation}
+R_{\mathrm{pkt}} = \frac{N}{T}.
+\label{eq:packet-rate}
+\end{equation}
+
+The corresponding video baseline must be measured over the same mission duration, scene, and link profile:
+
+\begin{equation}
+\Delta B = \frac{B_{\mathrm{video}} - B_{\mathrm{sem}}}{B_{\mathrm{video}}}.
+\label{eq:bandwidth-reduction}
+\end{equation}
+
+A bandwidth reduction is only meaningful if the semantic display preserves the entities needed for the operator task \tbd{TBD-BW entity completeness}.
+
+\subsection{Latency Decomposition}
+
+End-to-end latency from source event to visible HMD update is:
+
+\begin{equation}
+L_{\mathrm{e2e}} = t_{\mathrm{hmd}} - t_{\mathrm{det}},
+\label{eq:e2e-latency}
+\end{equation}
+
+and should be decomposed as:
+
+\begin{equation}
+L_{\mathrm{e2e}} =
+L_{\mathrm{det}} +
+L_{\mathrm{uplink}} +
+L_{\mathrm{brain}} +
+L_{\mathrm{poll}} +
+L_{\mathrm{actor}} +
+L_{\mathrm{render}} +
+L_{\mathrm{hmd}}.
+\label{eq:latency-components}
+\end{equation}
+
+The software-only segments \(L_{\mathrm{brain}}\), \(L_{\mathrm{poll}}\), and \(L_{\mathrm{actor}}\) can be instrumented immediately. The complete source-to-HMD measurement requires an HMD and a real or instrumented detection source \tbd{TBD-LAT e2e measurement}.
 
 \subsection{VR Operator Display Requirements}
 
-For VRIH, the display must be specified as an immersive operator interface rather than a generic 3D visualization. A publishable method section must define:
+The VRIH submission must describe the display as an immersive human-computer interface, not as a generic 3D plot. The paper therefore needs the following details:
 
 \begin{itemize}
-    \item headset or head-mounted display model and runtime \tbd{TBD-DEMO HMD configuration};
-    \item viewpoint modes, such as UAV-centric, external chase, top-down inspection, or operator-selected viewpoints \tbd{TBD-DEMO viewpoint modes};
-    \item visual encoding of class, confidence, age, and stale state \tbd{TBD-SAFETY display encoding};
-    \item interaction model for inspecting entities, filtering classes, and reading uncertainty \tbd{TBD-HUMAN interaction model};
-    \item fallback behavior when detections, pose, or network updates are stale \tbd{TBD-SAFETY fallback rule}.
+    \item HMD model, runtime, refresh rate, resolution, tracking mode, and seated/standing configuration \tbd{TBD-DEMO HMD configuration};
+    \item viewpoint modes: UAV-centric, external chase, top-down inspection, operator-selected orbit, or fixed mission overview \tbd{TBD-DEMO viewpoint modes};
+    \item visual encodings for class, confidence, age, source, stale state, and uncertainty \tbd{TBD-SAFETY display encoding};
+    \item interaction primitives: inspect entity, filter class, freeze history, recenter view, zoom, switch viewpoint, show raw source, and display uncertainty \tbd{TBD-HUMAN interaction model};
+    \item fallback state when detections, pose, map, or network updates are stale \tbd{TBD-SAFETY fallback rule};
+    \item comfort safeguards: frame rate, locomotion mode, camera motion, cybersickness screening, and session duration \tbd{TBD-HUMAN comfort protocol}.
 \end{itemize}
 
-\subsection{Georeferencing Assumptions}
+Figure~\ref{fig:hmd-placeholder} reserves the first missing HMD-facing figure.
 
-The current georeferencing claim must be treated as estimated georeferencing under calibrated camera and pose assumptions, not as a proven localization result. A publishable method section must specify:
+\begin{figure}[H]
+    \centering
+    \fbox{\begin{minipage}[c][0.25\textheight][c]{0.92\linewidth}
+    \centering
+    \tbd{TBD-FIG-HMD: replace with HMD screenshot showing terrain, UAV pose, live actor, confidence, age, and uncertainty encoding.}
+    \end{minipage}}
+    \caption{Placeholder for the pilot-facing VR digital-twin display. The final figure must be captured from the implemented HMD or HMD-mirrored runtime, not drawn as a mockup.}
+    \label{fig:hmd-placeholder}
+\end{figure}
 
-\begin{itemize}
-    \item camera intrinsics, distortion model, and image resolution \tbd{TBD-GEO camera calibration};
-    \item camera-to-body extrinsics and mount roll, pitch, and yaw \tbd{TBD-GEO extrinsic calibration};
-    \item UAV pose, attitude, GNSS source, and timestamp synchronization \tbd{TBD-GEO synchronization error};
-    \item terrain or ground-plane intersection assumptions \tbd{TBD-GEO terrain model};
-    \item propagation of bounding-box, pose, attitude, and map uncertainty into object-position uncertainty \tbd{TBD-SAFETY uncertainty radius};
-    \item operating envelope where projection error remains acceptable \tbd{TBD-SAFETY allowed operating envelope}.
-\end{itemize}
+\subsection{Software and Hardware Configuration}
+
+The reproducibility package must identify all software and hardware versions. The required configuration table is currently incomplete.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Implementation configuration placeholders.}
+\label{tab:configuration}
+\begin{tabular}{@{}L{0.24\linewidth}L{0.30\linewidth}L{0.32\linewidth}@{}}
+\toprule
+Component & Current requirement & Status \\
+\midrule
+Detection model & Architecture, weights, training domain, confidence threshold, class set & \tbd{TBD-REPRO YOLO/detector version and weights} \\
+UAV platform & Airframe, autopilot, telemetry source, pose source, camera mount & \tbd{TBD-DEMO UAV or instrumented source} \\
+Camera & Intrinsics, distortion, resolution, frame rate, exposure, calibration date & \tbd{TBD-GEO camera calibration} \\
+Ground station & Brain host, OS, CPU/GPU, network adapter, clock sync & \tbd{TBD-REPRO Brain host configuration} \\
+Unreal project & Unreal version, Cesium plugin version, project commit, map origin & \tbd{TBD-REPRO Unreal/Cesium versions} \\
+VR headset & Device, runtime, refresh rate, tracking mode, capture method & \tbd{TBD-DEMO HMD configuration} \\
+Network & Link type, bandwidth limit, packet-loss emulator, jitter profile & \tbd{TBD-LOSS network profile} \\
+\bottomrule
+\end{tabular}
+\normalsize
+\end{table}
 
 \section{Current Readiness and Hardware Dependence}
 
-Some parts of the paper can be completed immediately from the existing software, logs, simulator, and controlled replay tools. These software-only tests are preparatory evidence; they are not sufficient on their own for a VRIH research-paper claim about a VR headset operator display. The submission-critical evidence still requires the real UAV or instrumented detection source, calibrated camera assumptions, VR headset, and human operators. Table~\ref{tab:readiness} separates those two categories so that the remaining work is explicit.
+Software-only work can make the paper much stronger, but it cannot complete the VRIH research-paper claim. The submission-critical evidence still requires a real UAV or instrumented detection source, calibrated camera assumptions, an HMD, and human operators. Table~\ref{tab:readiness} separates what can be done immediately from what is physically blocked.
 
 \begin{table}[H]
 \centering
 \small
 \caption{Work packages that can be completed now versus work requiring hardware.}
 \label{tab:readiness}
-\begin{tabular}{@{}L{0.22\linewidth}L{0.30\linewidth}L{0.24\linewidth}L{0.14\linewidth}@{}}
+\begin{tabular}{@{}L{0.22\linewidth}L{0.32\linewidth}L{0.26\linewidth}L{0.10\linewidth}@{}}
 \toprule
 Evidence item & Can be completed now & Requires hardware & Status \\
 \midrule
-VRIH framing & Rewrite title, abstract, introduction, contribution, and conclusion around VR/HMD operator display. & No. & Done in this draft \\
-Runtime contract & Document \code{POST /api/obstacles}, \code{GET /api/ui/data}, entity fields, actor lifecycle, and display semantics. & No. & Drafted \\
-Bandwidth benchmark & Compute message size, update rate, mean bitrate, p95 bitrate, and packet rate from logs or synthetic/replayed detections. & Real mission logs improve validity but are not strictly required for first benchmark. & \tbd{TBD-BW} \\
-Brain-to-Unreal latency & Instrument sender, Brain ingest, state publication, Unreal polling, and actor update on local or lab network. & HMD not needed for this partial latency segment. & \tbd{TBD-LAT partial} \\
-Packet loss and jitter & Inject controlled delay, drop, and interruption into semantic telemetry and observe stale-state behavior. & No, unless validating over a real radio link. & \tbd{TBD-LOSS} \\
-Synthetic tracking & Replay known trajectories and measure ID switches, stale duration, and fragmentation. & No for synthetic validation; yes for real motion validation. & \tbd{TBD-TRACK synthetic} \\
-VR demonstration & Capture screenshots and video of pilot-side VR display running the implemented prototype. & Yes: HMD and running Unreal VR configuration. & \tbd{TBD-DEMO} \\
-Drone-to-VR latency & Measure source event to visible headset update. & Yes: real or instrumented detection source plus HMD timing/capture. & \tbd{TBD-LAT e2e} \\
-Geospatial error & Compare reconstructed object positions against surveyed or RTK/GNSS ground truth. & Yes: calibrated camera/pose and ground truth objects or controlled flight. & \tbd{TBD-GEO} \\
-Human operator utility & Compare video-only, map-only, non-immersive hybrid, and VR digital twin conditions. & Yes: HMD, task scenarios, participants, and protocol approval if needed. & \tbd{TBD-HUMAN} \\
-Low-visibility claims & Validate RGB/thermal/LiDAR/radar behavior in night, fog, glare, smoke, or equivalent conditions. & Yes: sensor and environment-specific trials. & \tbd{TBD-LOWVIS} \\
+VRIH framing & Title, abstract, contribution, method, protocol, and limitations aligned to VR/HMD operator display. & No. & Done \\
+Runtime contract & Document endpoints, schema, actor lifecycle, and display semantics. & No. & Drafted \\
+API schema validation & Add JSON schema, accepted units, rejected fields, and log examples. & No. & \tbd{TBD-REPRO schema} \\
+Bandwidth benchmark & Compute serialized message size, update rate, mean bitrate, p95 bitrate, and packet rate from replayed/synthetic streams. & Real mission logs improve validity. & \tbd{TBD-BW} \\
+Brain-to-Unreal latency & Instrument sender, Brain ingest, state publication, Unreal polling, and actor update. & HMD not needed for partial segment. & \tbd{TBD-LAT partial} \\
+Packet loss and jitter & Inject delay, loss, jitter, and interruption into semantic telemetry and observe stale behavior. & Real radio link optional for first test. & \tbd{TBD-LOSS} \\
+Synthetic tracking & Replay known trajectories and measure ID switches, stale duration, fragmentation, and despawn. & No for synthetic validation. & \tbd{TBD-TRACK synthetic} \\
+VR demonstration & Capture pilot-side HMD screenshots/video of the implemented prototype. & Yes: HMD and running Unreal VR configuration. & \tbd{TBD-DEMO} \\
+Drone-to-VR latency & Measure source event to visible HMD update. & Yes: instrumented source plus HMD timing/capture. & \tbd{TBD-LAT e2e} \\
+Geospatial error & Compare reconstructed positions against surveyed, RTK/GNSS, or motion-capture ground truth. & Yes: calibrated camera/pose and ground truth. & \tbd{TBD-GEO} \\
+Human utility & Compare video-only, map-only, non-immersive hybrid, and VR digital twin conditions. & Yes: HMD, scenarios, participants, and ethics review/exemption. & \tbd{TBD-HUMAN} \\
+Low visibility & Validate sensor behavior in night, fog, glare, smoke, or equivalent conditions. & Yes: sensor and environment-specific trials. & \tbd{TBD-LOWVIS} \\
 \bottomrule
 \end{tabular}
 \normalsize
 \end{table}
 
-\section{Claim-to-Evidence Map}
-
-\small
-\begin{longtable}{@{}L{0.24\linewidth}L{0.34\linewidth}L{0.14\linewidth}L{0.18\linewidth}@{}}
-\caption{Claims retained in the paper and evidence required before submission.}
-\label{tab:claim-evidence}\\
-\toprule
-Claim & Required evidence & Status & Acceptance criterion \\
-\midrule
-\endfirsthead
-\toprule
-Claim & Required evidence & Status & Acceptance criterion \\
-\midrule
-\endhead
-A real VR digital-twin operator display has been developed. & Screenshots, videos, configuration records, and execution logs showing the UAV-to-Brain-to-Unreal/VR path operating end to end. & \tbd{TBD-DEMO} & Demonstration material shows object ingestion, actor update, and pilot-side VR visualization without relying only on mock diagrams. \\
-Semantic telemetry can reduce communication load relative to video. & Bitrate comparison against fixed video baselines with identical mission duration. & \tbd{TBD-BW} & Semantic stream uses substantially less bandwidth while preserving required entity state. \\
-Actor updates can be shown with low drone-to-pilot delay. & Synchronized timing from UAV or detector publication to Brain ingest, state publication, Unreal update, and VR-headset-visible actor refresh. & \tbd{TBD-LAT} & P95 latency stays below the operator-display threshold selected in the experiment. \\
-Estimated object positions are operationally useful. & Ground-truth comparison over range, altitude, class, and terrain conditions. & \tbd{TBD-GEO} & Error distribution remains inside the declared uncertainty envelope. \\
-The display degrades gracefully under packet loss. & Controlled loss, jitter, and interruption experiments against video-only and hybrid baselines. & \tbd{TBD-LOSS} & Stale entities are visible as stale and do not appear as fresh truth. \\
-Entity persistence improves operator context. & Tracking metrics, stale-object duration, identity switches, and fragmentation. & \tbd{TBD-TRACK} & Identity stability improves without hiding missed detections. \\
-The display helps human operators. & Controlled pilot study with task success, near misses, workload, NASA-TLX, SAGAT, SART, or equivalent awareness measures. & \tbd{TBD-HUMAN} & Operator benefit is statistically or operationally meaningful without increased overtrust. \\
-Low-visibility rendering is useful only when sensors still detect hazards. & Sensor-specific trials for RGB, thermal, LiDAR, radar, or other inputs. & \tbd{TBD-LOWVIS} & Display explicitly distinguishes observed, inferred, stale, and missing objects. \\
-\bottomrule
-\end{longtable}
-\normalsize
-
 \section{Evaluation Protocol}
 
-\subsection{Real-System Demonstration Artifacts}
+\subsection{Research Questions and Hypotheses}
 
-The first submission-critical evidence is not a metric but proof that the implemented prototype actually runs as claimed. The demonstration package should show the runtime chain from detections to Brain state to Unreal actor reconstruction to pilot-side VR display.
+The evaluation should answer the following research questions:
+
+\begin{itemize}
+    \item \textbf{RQ1}: Does semantic entity telemetry reduce bandwidth compared with video baselines for the same mission interval?
+    \item \textbf{RQ2}: Is the source-to-HMD latency low enough for an auxiliary operator display?
+    \item \textbf{RQ3}: Are estimated actor positions accurate enough, and is displayed uncertainty calibrated?
+    \item \textbf{RQ4}: Does the display expose loss, jitter, interruption, stale detections, and tracking fragmentation without false freshness?
+    \item \textbf{RQ5}: Does the VR display improve operator spatial awareness or task success relative to video-only, map-only, or non-immersive hybrid baselines?
+    \item \textbf{RQ6}: Do low-visibility conditions change the system from useful to misleading when the sensor layer fails?
+\end{itemize}
+
+The corresponding hypotheses are:
+
+\begin{itemize}
+    \item \textbf{H1}: semantic telemetry has lower mean and p95 bandwidth than video baselines while preserving required entity state \tbd{TBD-BW};
+    \item \textbf{H2}: actor updates become visible in the HMD below a declared auxiliary-display latency threshold \tbd{TBD-LAT threshold};
+    \item \textbf{H3}: geospatial error remains inside the displayed uncertainty envelope \tbd{TBD-GEO};
+    \item \textbf{H4}: stale or uncertain actors are not perceived as fresh truth under link degradation \tbd{TBD-LOSS and TBD-HUMAN overtrust};
+    \item \textbf{H5}: VR improves spatial awareness or task success without unacceptable workload or cybersickness \tbd{TBD-HUMAN};
+    \item \textbf{H6}: any low-visibility benefit is conditional on validated sensor detections \tbd{TBD-LOWVIS}.
+\end{itemize}
+
+\subsection{Baselines}
+
+The minimum baselines are:
+
+\begin{itemize}
+    \item \textbf{Video-only}: compressed camera feed with flight telemetry but no semantic reconstruction.
+    \item \textbf{Map-only}: map or Cesium terrain with UAV pose but no dynamic semantic actors.
+    \item \textbf{Non-immersive hybrid}: desktop or monitor view with map/video plus semantic overlays.
+    \item \textbf{VR digital twin}: HMD display with terrain, UAV pose, dynamic actors, freshness, confidence, and uncertainty.
+\end{itemize}
+
+The final experiment must specify whether all baselines receive the same underlying detections, video source, network profile, and task instructions \tbd{TBD-HUMAN baseline parity}.
+
+\subsection{Statistical Analysis Plan}
+
+The statistical plan must be written before collecting human-subject results. At minimum, the paper should report:
+
+\begin{itemize}
+    \item sample size rationale and power or precision target \tbd{TBD-STAT sample size};
+    \item within-subject or between-subject design, counterbalancing, and randomization \tbd{TBD-STAT design};
+    \item primary endpoint, likely task success or spatial-awareness score \tbd{TBD-STAT primary endpoint};
+    \item secondary endpoints: workload, near misses, overtrust, completion time, cybersickness \tbd{TBD-STAT secondary endpoints};
+    \item model family, e.g., repeated-measures ANOVA, linear mixed model, generalized mixed model, or nonparametric alternative \tbd{TBD-STAT model};
+    \item effect sizes and confidence intervals \tbd{TBD-STAT effect sizes};
+    \item correction for multiple comparisons where needed \tbd{TBD-STAT multiplicity};
+    \item exclusion criteria for simulator sickness, tracking failure, or incomplete trials \tbd{TBD-STAT exclusions}.
+\end{itemize}
+
+This plan is intentionally included before results to prevent post-hoc metric selection.
+
+\section{Evaluation Results Pending Validation}
+
+This section reserves the exact structure of the final results. Each table is a placeholder and must be filled with measured values or replaced by a scoped limitation.
+
+\subsection{Real-System Demonstration}
 
 \begin{table}[H]
 \centering
@@ -251,17 +510,16 @@ The first submission-critical evidence is not a metric but proof that the implem
 \toprule
 Artifact & Purpose & Status & Acceptance criterion \\
 \midrule
-Screenshots from the VR digital twin & Show the HMD-facing view, terrain context, reconstructed dynamic entities, confidence, and stale-state encoding. & \tbd{TBD-DEMO screenshots} & Captures correspond to the implemented system rather than illustrative mockups. \\
-Video of system operation & Show live spawn, update, persistence, and despawn behavior during operation. & \tbd{TBD-DEMO video} & Video includes enough context to connect detections, telemetry, and VR visualization. \\
-Runtime logs and configuration & Support reproducibility of the demonstrated setup. & \tbd{TBD-DEMO logs} & Logs identify endpoints, polling rate, timestamps, HMD runtime, headset mode, and display configuration. \\
+HMD screenshots & Show terrain context, UAV pose, live actors, confidence, age, and uncertainty encoding. & \tbd{TBD-DEMO screenshots} & Captures come from the implemented HMD or HMD-mirrored runtime. \\
+Operation video & Show spawn, update, stale marking, persistence, and despawn during operation. & \tbd{TBD-DEMO video} & Video links detections, telemetry, Brain state, and VR visualization. \\
+Runtime logs & Support reproducibility of the demonstrated setup. & \tbd{TBD-DEMO logs} & Logs include endpoints, timestamps, HMD runtime, project commit, and display mode. \\
+Supplementary stills & Provide VRIH video stills and graphical abstract candidates. & \tbd{TBD-FIG supplementary stills} & Still images are captured from real execution, not mockups. \\
 \bottomrule
 \end{tabular}
 \normalsize
 \end{table}
 
 \subsection{Bandwidth Versus Video}
-
-This experiment can be prepared immediately from synthetic or replayed detection streams. It becomes stronger when repeated with real mission logs and synchronized video baselines.
 
 \begin{table}[H]
 \centering
@@ -275,15 +533,13 @@ Metric & Baseline & Pipeline B & Status & Acceptance criterion \\
 Mean bitrate & H.264, H.265, WebRTC FPV & \tbd{TBD-BW mean bitrate} & TBD & Lower bitrate for same scenario duration \\
 P95 bitrate & Same codec and link profile & \tbd{TBD-BW p95 bitrate} & TBD & Reduced p95 load without entity loss \\
 Packet rate & Same mission duration & \tbd{TBD-BW packet rate} & TBD & Compatible with target link budget \\
-Entity completeness & Ground-truth or replayed entity stream & \tbd{TBD-BW completeness} & TBD & Bandwidth reduction does not hide required entity state \\
+Entity completeness & Ground truth or replayed stream & \tbd{TBD-BW completeness} & TBD & Bandwidth reduction does not hide required state \\
 \bottomrule
 \end{tabular}
 \normalsize
 \end{table}
 
 \subsection{End-to-End Latency}
-
-Latency must be decomposed because some segments can be measured now and some require the HMD. Brain ingest, state publication, and Unreal actor update can be instrumented without a real drone. Drone-to-pilot visible latency requires the HMD and a real or instrumented detection source.
 
 \begin{table}[H]
 \centering
@@ -294,18 +550,26 @@ Latency must be decomposed because some segments can be measured now and some re
 \toprule
 Metric & Baseline & Pipeline B & Status & Acceptance criterion \\
 \midrule
-Detector publication to Brain ingest & Synchronized detector timestamp and Brain receive log & \tbd{TBD-LAT detector-to-brain} & TBD & Below selected runtime threshold \\
-Brain to Unreal actor update & Polling and render logs & \tbd{TBD-LAT actor update} & TBD & P95 below operator-display threshold \\
-Unreal update to VR headset display & Unreal timing, headset capture, or instrumented presentation timestamp & \tbd{TBD-LAT vr-display} & TBD & Visible update remains within the declared pilot-display threshold \\
-End-to-end source-to-HMD visible update & Detector event to actor visible to the VR-equipped pilot & \tbd{TBD-LAT e2e-source-to-vr} & TBD & No unnoticed stale display \\
+Detector to Brain & Synchronized detector timestamp and Brain receive log & \tbd{TBD-LAT detector-to-brain} & TBD & Below selected runtime threshold \\
+Brain to Unreal actor & Polling and render logs & \tbd{TBD-LAT actor update} & TBD & P95 below operator-display threshold \\
+Unreal to HMD display & Unreal timing and headset capture & \tbd{TBD-LAT vr-display} & TBD & Visible update within threshold \\
+Source-to-HMD e2e & Detector event to actor visible in HMD & \tbd{TBD-LAT e2e-source-to-vr} & TBD & No unnoticed stale display \\
 \bottomrule
 \end{tabular}
 \normalsize
 \end{table}
 
-\subsection{Geospatial Error}
+\begin{figure}[H]
+    \centering
+    \fbox{\begin{minipage}[c][0.22\textheight][c]{0.92\linewidth}
+    \centering
+    \tbd{TBD-FIG-LAT: replace with timestamp instrumentation diagram and latency waterfall.}
+    \end{minipage}}
+    \caption{Placeholder for latency instrumentation. The final figure should show detector timestamp, Brain receive time, state publication, Unreal polling/update, render time, and HMD-visible update.}
+    \label{fig:latency-placeholder}
+\end{figure}
 
-This validation is hardware-dependent if the paper claims real-world positioning accuracy. Synthetic coordinates or manually injected positions can test software consistency, but not camera-to-world georeferencing.
+\subsection{Geospatial Error}
 
 \begin{table}[H]
 \centering
@@ -327,8 +591,6 @@ Uncertainty calibration & Measured error versus displayed uncertainty & \tbd{TBD
 
 \subsection{Packet Loss and Jitter Robustness}
 
-This experiment can be implemented now with a network impairment layer or replay tool. It should test the semantic display against video-only and hybrid baselines, with special attention to stale-state visualization.
-
 \begin{table}[H]
 \centering
 \small
@@ -341,15 +603,13 @@ Metric & Baseline & Pipeline B & Status & Acceptance criterion \\
 Packet loss degradation & Video-only and hybrid display & \tbd{TBD-LOSS loss sweep} & TBD & Graceful stale-state behavior \\
 Jitter sensitivity & Fixed jitter profiles & \tbd{TBD-LOSS jitter sweep} & TBD & No false freshness under delayed updates \\
 Interruption recovery & Link interruption scenario & \tbd{TBD-LOSS recovery} & TBD & Recovery state visible to operator \\
-False freshness rate & Delayed or dropped updates & \tbd{TBD-LOSS false freshness} & TBD & Stale data is not presented as fresh state \\
+False freshness rate & Delayed or dropped updates & \tbd{TBD-LOSS false freshness} & TBD & Stale data is not presented as fresh \\
 \bottomrule
 \end{tabular}
 \normalsize
 \end{table}
 
 \subsection{Dynamic Object Tracking}
-
-Tracking can first be evaluated with replayed or synthetic trajectories. A stronger validation requires real moving objects, synchronized ground truth, and class-specific occlusion or detection-loss scenarios.
 
 \begin{table}[H]
 \centering
@@ -362,16 +622,14 @@ Metric & Baseline & Pipeline B & Status & Acceptance criterion \\
 \midrule
 ID switches & Ground-truth trajectories & \tbd{TBD-TRACK ID switches} & TBD & ID switches reported and bounded \\
 Track fragmentation & Moving-object trial & \tbd{TBD-TRACK fragmentation} & TBD & Fragmentation does not hide uncertainty \\
-Stale-object duration & Controlled occlusion/loss & \tbd{TBD-TRACK stale duration} & TBD & Stale state visibly encoded \\
-Despawn correctness & Known disappearance events & \tbd{TBD-TRACK despawn} & TBD & Actors are removed or marked stale according to declared policy \\
+Stale-object duration & Controlled occlusion or loss & \tbd{TBD-TRACK stale duration} & TBD & Stale state visibly encoded \\
+Despawn correctness & Known disappearance events & \tbd{TBD-TRACK despawn} & TBD & Actors removed or demoted according to policy \\
 \bottomrule
 \end{tabular}
 \normalsize
 \end{table}
 
 \subsection{Human Operator Utility}
-
-For a VR-focused journal, the human-operator evaluation is not decorative. It is the evidence that the immersive display changes the operator task. A minimum study should compare video-only, map-only, non-immersive hybrid, and VR digital-twin conditions on the same mission scenarios.
 
 \begin{table}[H]
 \centering
@@ -383,18 +641,17 @@ For a VR-focused journal, the human-operator evaluation is not decorative. It is
 Metric & Baseline & Pipeline B & Status & Acceptance criterion \\
 \midrule
 Task success & Video-only, map-only, hybrid & \tbd{TBD-HUMAN task success} & TBD & Improvement or non-inferiority with lower link load \\
-Spatial awareness & SAGAT, SART, or equivalent & \tbd{TBD-HUMAN awareness} & TBD & Operators better identify object position, age, and relevance \\
+Spatial awareness & SAGAT, SART, or equivalent & \tbd{TBD-HUMAN awareness} & TBD & Operators identify object position, age, and relevance \\
 Workload & NASA-TLX or equivalent & \tbd{TBD-HUMAN workload} & TBD & Benefit without unacceptable cognitive load \\
-Near misses or unsafe decisions & Same operator tasks & \tbd{TBD-HUMAN near misses} & TBD & No increase in safety-relevant events \\
-Overtrust & Post-task questionnaire and stale-state trials & \tbd{TBD-HUMAN overtrust} & TBD & Operators notice uncertainty and stale objects \\
+Near misses & Same mission task & \tbd{TBD-HUMAN near misses} & TBD & No increase in safety-relevant events \\
+Overtrust & Stale-state trials and questionnaire & \tbd{TBD-HUMAN overtrust} & TBD & Operators notice uncertainty and stale actors \\
+Cybersickness & SSQ or equivalent & \tbd{TBD-HUMAN cybersickness} & TBD & No unacceptable sickness or dropout rate \\
 \bottomrule
 \end{tabular}
 \normalsize
 \end{table}
 
 \subsection{Low-Visibility and Sensor Dependence}
-
-Low-visibility claims must remain out of the main contribution unless sensor-specific evidence is collected. The current paper can define the protocol now, but the claim requires hardware and environmental trials.
 
 \begin{table}[H]
 \centering
@@ -406,6 +663,7 @@ Low-visibility claims must remain out of the main contribution unless sensor-spe
 Metric & Baseline & Pipeline B & Status & Acceptance criterion \\
 \midrule
 RGB night or glare & Raw video and semantic display & \tbd{TBD-LOWVIS RGB} & TBD & Missed detections explicitly represented \\
+Fog, smoke, or haze & Same mission with visibility degradation & \tbd{TBD-LOWVIS obscurant} & TBD & Sensor failure does not appear as clear scene \\
 Sensor fallback & Thermal, LiDAR, radar, or equivalent & \tbd{TBD-LOWVIS sensor fallback} & TBD & Sensor limits reported by condition \\
 Uncertainty display & Display variants & \tbd{TBD-LOWVIS uncertainty} & TBD & Operator can identify missing or stale state \\
 \bottomrule
@@ -413,78 +671,231 @@ Uncertainty display & Display variants & \tbd{TBD-LOWVIS uncertainty} & TBD & Op
 \normalsize
 \end{table}
 
+\section{Claim-to-Evidence Map}
+
+\small
+\begin{longtable}{@{}L{0.24\linewidth}L{0.34\linewidth}L{0.14\linewidth}L{0.18\linewidth}@{}}
+\caption{Claims retained in the paper and evidence required before submission.}
+\label{tab:claim-evidence}\\
+\toprule
+Claim & Required evidence & Status & Acceptance criterion \\
+\midrule
+\endfirsthead
+\toprule
+Claim & Required evidence & Status & Acceptance criterion \\
+\midrule
+\endhead
+A VR digital-twin operator display has been implemented. & HMD screenshots, video, configuration records, and runtime logs showing detection-to-Brain-to-Unreal/VR operation. & \tbd{TBD-DEMO} & Demonstration material shows real execution, not only diagrams. \\
+Semantic telemetry is hypothesized to reduce communication load relative to video. & Bitrate comparison against H.264, H.265, or WebRTC baselines for identical mission intervals. & \tbd{TBD-BW} & Semantic stream uses lower bandwidth while preserving task-relevant entities. \\
+Actor updates are required to appear with acceptable delay. & Synchronized source, Brain, Unreal, and HMD timestamps. & \tbd{TBD-LAT} & P95 latency below declared auxiliary-display threshold. \\
+Estimated actor positions are operationally useful. & Ground-truth comparison over range, altitude, class, terrain, and sensor conditions. & \tbd{TBD-GEO} & Error distribution inside declared uncertainty envelope. \\
+The display exposes packet-loss degradation without false freshness. & Loss, jitter, and interruption experiments against video-only and hybrid baselines. & \tbd{TBD-LOSS} & Stale entities are visible as stale and never appear fresh. \\
+Entity persistence is hypothesized to improve operator context. & Tracking metrics, stale-object duration, identity switches, fragmentation, and despawn correctness. & \tbd{TBD-TRACK} & Persistence helps memory without hiding uncertainty. \\
+Human-operator benefit remains unvalidated. & Controlled study with task success, near misses, workload, spatial awareness, and overtrust. & \tbd{TBD-HUMAN} & Benefit is statistically or operationally meaningful. \\
+Low-visibility operation is useful only with validated sensors. & Sensor-specific trials for RGB, thermal, LiDAR, radar, or equivalent inputs. & \tbd{TBD-LOWVIS} & Display distinguishes observed, inferred, stale, and missing objects. \\
+The system is reproducible. & Code, schema, logs, versions, fixtures, and experimental scripts. & \tbd{TBD-REPRO} & Independent reader can replay or inspect the runtime path. \\
+\bottomrule
+\end{longtable}
+\normalsize
+
 \section{Limitations and Safety Envelope}
 
-Pipeline B can mislead an operator if its uncertainty is hidden. The following limitations are part of the current system definition:
+Pipeline B can mislead an operator if uncertainty is hidden. The following limitations are part of the system definition:
 
 \begin{itemize}
-    \item False negatives are safety-critical because absent objects may simply be undetected.
-    \item Stale actors can look authoritative unless age and confidence are visualized.
-    \item A visually stable synthetic scene can increase overtrust.
-    \item Object metadata, timestamps, and geolocation can still be privacy-sensitive.
-    \item Night, smoke, fog, haze, glare, and occlusion reduce sensor performance unless alternative sensors are validated.
-    \item Cesium, map, terrain, and home-origin errors can become actor-placement errors.
-    \item BVLOS use requires detect-and-avoid, command-and-control reliability, operational-design-domain limits, and regulatory compliance beyond this display.
-    \item VR can introduce simulator sickness, attentional tunneling, fatigue, and display occlusion that must be considered in the human study.
+    \item false negatives are critical because an absent actor may mean an undetected object, not a safe empty space;
+    \item stale actors can look authoritative unless age, source, and confidence are visible;
+    \item a visually stable synthetic scene can increase overtrust;
+    \item object metadata, timestamps, and geolocation can leak privacy-sensitive information;
+    \item low visibility, glare, occlusion, or smoke reduce sensor performance unless alternative sensors are validated;
+    \item Cesium, map, terrain, geoid, origin, or coordinate-system errors can become actor-placement errors;
+    \item timestamp drift can turn correct detections into incorrect moving-object states;
+    \item VR can introduce cybersickness, attentional tunneling, fatigue, and display occlusion;
+    \item BVLOS use requires detect-and-avoid, command-and-control reliability, operational design-domain limits, and regulatory compliance beyond this display.
 \end{itemize}
 
-Before any safety-relevant claim, the following thresholds must be defined and measured:
+The safety envelope must define:
 
 \begin{itemize}
     \item maximum stale-object age \tbd{TBD-SAFETY max stale age};
     \item maximum position uncertainty radius \tbd{TBD-SAFETY max uncertainty radius};
     \item minimum detection confidence for confirmed actor display \tbd{TBD-SAFETY minimum confidence};
-    \item fallback rule when telemetry, detections, or pose become stale \tbd{TBD-SAFETY fallback rule};
-    \item allowed operating envelope by altitude, range, speed, terrain, lighting, and sensor configuration \tbd{TBD-SAFETY allowed operating envelope}.
+    \item fallback rule when telemetry, detections, pose, or map context become stale \tbd{TBD-SAFETY fallback rule};
+    \item allowed operating envelope by altitude, range, speed, terrain, lighting, link type, and sensor configuration \tbd{TBD-SAFETY allowed operating envelope};
+    \item explicit prohibition against using the display as certified detect-and-avoid unless separate certification evidence exists \tbd{TBD-SAFETY regulatory wording}.
 \end{itemize}
 
-\section{VRIH Submission Package Still Required}
+\section{Discussion}
 
-Before submission, the working draft must be converted to the VRIH author template and accompanied by the journal's required submission materials. The following items can be prepared now:
+The central scientific risk is overclaiming. A reviewer can accept a paper that defines an honest VR operator-display architecture and validates it carefully. A reviewer should reject a paper that implies safe piloting, primary navigation, or BVLOS compliance from a visual prototype. Pipeline B is therefore framed as an auxiliary display for spatial awareness under degraded or constrained communication.
 
-\begin{itemize}
-    \item title page with all author affiliations and corresponding author details \tbd{author affiliations and corresponding author};
-    \item abstract under 250 words, already satisfied in this draft;
-    \item one to seven keywords, already satisfied in this draft;
-    \item highlights file with three to five concise bullet points \tbd{VRIH highlights file};
-    \item graphical abstract or representative visual, if used \tbd{VR digital-twin screenshot};
-    \item author contribution statement using CRediT roles \tbd{CRediT roles};
-    \item conflict-of-interest statement \tbd{declarations};
-    \item data and code availability statement \tbd{data/code availability};
-    \item ethics statement if human-operator tests are performed \tbd{human-study ethics requirement}.
-\end{itemize}
+The second risk is treating a beautiful HMD scene as evidence. The scene only becomes evidence when it is tied to logs, timestamps, ground truth, and user-task outcomes. This is why the manuscript includes the claim-to-evidence map and placeholder result tables. Those tables are not decoration; they are the minimum conditions for the final paper.
+
+The third risk is confusing semantic telemetry with semantic communication theory. Pipeline B transmits task-relevant entity state, but it does not currently prove semantic optimality, mutual information bounds, or learned communication objectives. The paper should therefore use ``semantic telemetry'' in an engineering sense and reserve stronger theoretical language for future work.
+
+The fourth risk is human factors. VR may improve spatial awareness, but it may also increase workload, sickness, distraction, or overtrust. A VRIH submission must therefore include a real HMD task, baselines, subjective and objective measures, and a statistical plan.
 
 \section{Conclusion}
 
-Pipeline B is best framed for VRIH as a human-in-the-loop VR digital-twin operator display for dynamic UAV scene reconstruction from in-flight detections. Its current contribution is the implemented integration path from detection messages through Brain state publication into Unreal/Cesium actor reconstruction, together with a concrete validation protocol for measuring whether the approach improves operator awareness under degraded communication conditions.
+Pipeline B is best framed for VRIH as a human-in-the-loop VR digital-twin operator display for dynamic UAV scene reconstruction from in-flight detections. The implemented runtime path converts detected objects into semantic telemetry, publishes a live entity layer through Brain, and reconstructs dynamic actors inside an Unreal/Cesium scene for HMD-based operator inspection.
 
-The manuscript is not yet a completed experimental paper. The work that can be completed immediately is now explicit: VRIH-aligned framing, runtime contract, instrumentation plan, bandwidth benchmark design, partial latency instrumentation, packet-loss testing, and synthetic tracking evaluation. The remaining publication-critical evidence requires hardware: HMD demonstration, source-to-headset latency, calibrated geospatial error, human-operator study, and any low-visibility sensor claims.
+The paper does not yet contain final experimental evidence. It now contains the full structure needed to reach a submission-ready version: state-of-the-art positioning, a conservative novelty claim, runtime contract, formal georeferencing and latency models, bandwidth and stale-state definitions, VR interaction requirements, evaluation protocol, placeholder result tables, safety envelope, statistical plan, and declarations. The remaining blockers are physical and experimental: HMD demonstration, real or instrumented source-to-HMD latency, calibrated geospatial validation, packet-loss trials, dynamic tracking validation, human-operator study, and low-visibility sensor evidence.
 
-\begin{thebibliography}{9}
+\section*{Acknowledgements}
 
-\bibitem{shao2022task}
-J. Shao, X. Zhang, and J. Zhang, ``Task-Oriented Communication for Edge Video Analytics,'' arXiv:2211.14049, 2022. \url{https://arxiv.org/abs/2211.14049}
+\tbd{Acknowledgements, funding source, project name, grant numbers, and institutional support. If no specific funding supported this research, insert the journal-recommended no-funding statement.}
 
-\bibitem{nasa2005smartcam}
-NASA NTRS, ``A Hybrid Synthetic Vision System for the Tele-operation of Unmanned Vehicles,'' 2005. \url{https://ntrs.nasa.gov/citations/20050217300}
+\section*{CRediT Author Statement}
 
-\bibitem{sehad2023digitaltwin}
-N. Sehad et al., ``Towards Enabling Reliable Immersive Teleoperation Through Digital Twin: A UAV Command and Control Use Case,'' arXiv:2308.14524, 2023. \url{https://arxiv.org/abs/2308.14524}
+\tbd{CRediT roles for Xabier Olaz, Jes\'us Villadangos, Daniel Alaez, and Iker Go\~ni. Required roles may include conceptualization, methodology, software, validation, formal analysis, investigation, resources, data curation, writing-original draft, writing-review and editing, visualization, supervision, project administration, and funding acquisition. Confirm author order and corresponding author before submission.}
 
-\bibitem{shah2017airsim}
-S. Shah, D. Dey, C. Lovett, and A. Kapoor, ``AirSim: High-Fidelity Visual and Physical Simulation for Autonomous Vehicles,'' arXiv:1705.05065, 2017. \url{https://arxiv.org/abs/1705.05065}
+\section*{Declaration of Competing Interest}
+
+\tbd{Declaration of competing interests. If none, use the journal's declaration-tool wording and upload the required declaration document.}
+
+\section*{Data and Code Availability}
+
+\tbd{Repository, commit hash, dataset/log availability, synthetic replay fixtures, JSON schemas, analysis scripts, video artifacts, HMD screenshots, and any restrictions caused by privacy, UAV flight rules, or third-party software.}
+
+\section*{Ethics Statement}
+
+\tbd{Human-operator study ethics approval or exemption, informed consent procedure, participant inclusion/exclusion criteria, simulator-sickness handling, data anonymization, and withdrawal protocol.}
+
+\section*{Declaration of Generative AI and AI-Assisted Technologies}
+
+\tbd{Final declaration required by VRIH/Elsevier if AI tools were used in manuscript preparation. The final authors must review, verify, and take responsibility for all content, references, and claims. AI tools cannot be listed as authors.}
+
+\section*{Submission Materials Still Required}
+
+\begin{itemize}
+    \item final title page with complete affiliations, postal address, phone number, email, and ORCID where available \tbd{TBD-SUBMISSION title page};
+    \item final abstract under 250 words and 1--7 keywords \tbd{TBD-SUBMISSION final abstract check};
+    \item highlights file with 3--5 bullets, each under 85 characters \tbd{TBD-SUBMISSION highlights final};
+    \item graphical abstract if used \tbd{TBD-SUBMISSION graphical abstract};
+    \item separate figure files following VRIH artwork resolution requirements \tbd{TBD-SUBMISSION artwork};
+    \item video files or links plus still images if supplementary video is submitted \tbd{TBD-SUBMISSION video};
+    \item editable LaTeX source, VRIH class file, figures, and any supplementary files \tbd{TBD-SUBMISSION editable source};
+    \item reference audit confirming cited sources, DOI links, and citation-list consistency \tbd{TBD-SUBMISSION reference audit}.
+\end{itemize}
+
+\begin{thebibliography}{40}
+
+\bibitem{steuer1992vr}
+Steuer J. Defining virtual reality: Dimensions determining telepresence. Journal of Communication, 1992, 42(4): 73--93. doi: \url{https://doi.org/10.1111/j.1460-2466.1992.tb00812.x}
+
+\bibitem{sheridan1992telepresence}
+Sheridan T B. Musings on telepresence and virtual presence. Presence: Teleoperators and Virtual Environments, 1992, 1(1): 120--126. doi: \url{https://doi.org/10.1162/pres.1992.1.1.120}
+
+\bibitem{endsley1995theory}
+Endsley M R. Toward a theory of situation awareness in dynamic systems. Human Factors, 1995, 37(1): 32--64. doi: \url{https://doi.org/10.1518/001872095779049543}
+
+\bibitem{endsley1995measurement}
+Endsley M R. Measurement of situation awareness in dynamic systems. Human Factors, 1995, 37(1): 65--84. doi: \url{https://doi.org/10.1518/001872095779049499}
+
+\bibitem{moens2026meta}
+Moens L L, Lydon S, Cucurachi S, et al. Measuring situation awareness: A meta-review across domains. Human Factors, 2026, 68(5): 632--672. doi: \url{https://doi.org/10.1177/00187208251412110}
+
+\bibitem{hart1988tlx}
+Hart S G, Staveland L E. Development of NASA-TLX (Task Load Index): Results of empirical and theoretical research. In: Hancock P A, Meshkati N, eds. Human Mental Workload. Amsterdam: North-Holland, 1988. 139--183. doi: \url{https://doi.org/10.1016/S0166-4115(08)62386-9}
+
+\bibitem{hart2006tlx}
+Hart S G. NASA-Task Load Index (NASA-TLX); 20 years later. Proceedings of the Human Factors and Ergonomics Society Annual Meeting, 2006, 50(9): 904--908. doi: \url{https://doi.org/10.1177/154193120605000909}
+
+\bibitem{endsley1998sagat_sart}
+Endsley M R, Selcon S J, Hardiman T D, et al. A comparative analysis of SAGAT and SART for evaluations of situation awareness. Proceedings of the Human Factors and Ergonomics Society Annual Meeting, 1998, 42(1): 82--86. doi: \url{https://doi.org/10.1177/154193129804200119}
+
+\bibitem{kennedy1993ssq}
+Kennedy R S, Lane N E, Berbaum K S, et al. Simulator sickness questionnaire: An enhanced method for quantifying simulator sickness. The International Journal of Aviation Psychology, 1993, 3(3): 203--220. doi: \url{https://doi.org/10.1207/s15327108ijap0303_3}
+
+\bibitem{fabris2021immersive}
+Fabris E J, Sangalli V A, Soares L P, et al. Immersive telepresence on the operation of unmanned vehicles. International Journal of Advanced Robotic Systems, 2021, 18(1). doi: \url{https://doi.org/10.1177/1729881420978544}
+
+\bibitem{roldan2017multirobot}
+Rold\'an J, Pe\~na-Tapia E, Mart\'in-Barrio A, et al. Multi-robot interfaces and operator situational awareness: Study of the impact of immersion and prediction. Sensors, 2017, 17(8): 1720. doi: \url{https://doi.org/10.3390/s17081720}
+
+\bibitem{luo2024visual}
+Luo Y, Wang J, Pan Y, et al. Visual augmentation of live-streaming images in virtual reality to enhance teleoperation of unmanned ground vehicles. Frontiers in Virtual Reality, 2024, 5. doi: \url{https://doi.org/10.3389/frvir.2024.1230885}
+
+\bibitem{buchner2025remote}
+Buchner S L, Rindfuss A, Wood J, et al. Impacts of 3D visualizations and virtual reality in display designs for remote monitoring of satellite operations. Frontiers in Virtual Reality, 2025, 6. doi: \url{https://doi.org/10.3389/frvir.2025.1487281}
+
+\bibitem{costa2025ardigitaltwin}
+Costa C, Gomes E, Rodrigues N, et al. Augmented reality mobile digital twin for unmanned aerial vehicle wildfire prevention. Virtual Reality, 2025, 29(2). doi: \url{https://doi.org/10.1007/s10055-025-01145-w}
+
+\bibitem{yang2025uavmanipulator}
+Yang Z, Tomita K, Kamimura A. VR-based teleoperation of UAV--manipulator systems: From single-UAV control to dual-UAV cooperative manipulation. Applied Sciences, 2025, 15(20): 11086. doi: \url{https://doi.org/10.3390/app152011086}
+
+\bibitem{vona2025uavdt}
+Vona F, Amer M, Abdellatif O, et al. Unmanned aerial vehicles control in a digital twin: Exploring the effect of different points of view on user experience in virtual reality. Proceedings of the 2025 31st ACM Symposium on Virtual Reality Software and Technology, 2025: 1--11. doi: \url{https://doi.org/10.1145/3756884.3766010}
+
+\bibitem{lv2022vrihdt}
+Lv Z, Marfia G, Poiesi F, et al. Virtual-reality and intelligent hardware in digital twins. Virtual Reality \& Intelligent Hardware, 2022, 4(4): ii--iv. doi: \url{https://doi.org/10.1016/j.vrih.2022.08.002}
+
+\bibitem{ahmed2022vrihdt}
+Ahmed I, Ahmad M, Jeon G. Integrating digital twins and deep learning for medical image analysis in the era of COVID-19. Virtual Reality \& Intelligent Hardware, 2022, 4(4): 292--305. doi: \url{https://doi.org/10.1016/j.vrih.2022.03.002}
+
+\bibitem{jones2020dt}
+Jones D, Snider C, Nassehi A, et al. Characterising the digital twin: A systematic literature review. CIRP Journal of Manufacturing Science and Technology, 2020, 29: 36--52. doi: \url{https://doi.org/10.1016/j.cirpj.2020.02.002}
+
+\bibitem{barricelli2019dt}
+Barricelli B R, Casiraghi E, Fogli D. A survey on digital twin: Definitions, characteristics, applications, and design implications. IEEE Access, 2019, 7: 167653--167671. doi: \url{https://doi.org/10.1109/ACCESS.2019.2953499}
+
+\bibitem{singh2021dt}
+Singh M, Fuenmayor E, Hinchy E, et al. Digital twin: Origin to future. Applied System Innovation, 2021, 4(2): 36. doi: \url{https://doi.org/10.3390/asi4020036}
+
+\bibitem{lv2021uavdt}
+Lv Z, Chen D, Feng H, et al. Beyond 5G for digital twins of UAVs. Computer Networks, 2021, 197: 108366. doi: \url{https://doi.org/10.1016/j.comnet.2021.108366}
+
+\bibitem{lei2021uavswarms}
+Lei L, Shen G, Zhang L, et al. Toward intelligent cooperation of UAV swarms: When machine learning meets digital twin. IEEE Network, 2021, 35(1): 386--392. doi: \url{https://doi.org/10.1109/MNET.011.2000388}
+
+\bibitem{luo2022semantic}
+Luo X, Chen H H, Guo Q. Semantic communications: Overview, open issues, and future research directions. IEEE Wireless Communications, 2022, 29(1): 210--219. doi: \url{https://doi.org/10.1109/MWC.101.2100269}
+
+\bibitem{xie2021semantic}
+Xie H, Qin Z, Li G Y, et al. Deep learning enabled semantic communication systems. IEEE Transactions on Signal Processing, 2021, 69: 2663--2675. doi: \url{https://doi.org/10.1109/TSP.2021.3071210}
+
+\bibitem{shao2022edgeinference}
+Shao J, Mao Y, Zhang J. Learning task-oriented communication for edge inference: An information bottleneck approach. IEEE Journal on Selected Areas in Communications, 2022, 40(1): 197--211. doi: \url{https://doi.org/10.1109/JSAC.2021.3126087}
+
+\bibitem{shao2024edgevideo}
+Shao J, Zhang X, Zhang J. Task-oriented communication for edge video analytics. IEEE Transactions on Wireless Communications, 2024, 23(5): 4141--4154. doi: \url{https://doi.org/10.1109/TWC.2023.3314888}
+
+\bibitem{shao2023multidevice}
+Shao J, Mao Y, Zhang J. Task-oriented communication for multidevice cooperative edge inference. IEEE Transactions on Wireless Communications, 2023, 22(1): 73--87. doi: \url{https://doi.org/10.1109/TWC.2022.3191118}
 
 \bibitem{cao2023uavdetection}
-Z. Cao, L. Kooistra, W. Wang, L. Guo, and J. Valente, ``Real-Time Object Detection Based on UAV Remote Sensing: A Systematic Literature Review,'' \emph{Drones}, vol. 7, no. 10, 620, 2023. \url{https://www.mdpi.com/2504-446X/7/10/620}
+Cao Z, Kooistra L, Wang W, et al. Real-time object detection based on UAV remote sensing: A systematic literature review. Drones, 2023, 7(10): 620. doi: \url{https://doi.org/10.3390/drones7100620}
 
 \bibitem{barber2006geolocation}
-D. B. Barber, J. D. Redding, T. W. McLain, R. W. Beard, and C. N. Taylor, ``Vision-based Target Geo-location Using a Fixed-wing Miniature Air Vehicle,'' \emph{Journal of Intelligent and Robotic Systems}, 2006. \url{https://scholarsarchive.byu.edu/facpub/1502/}
+Barber D B, Redding J D, McLain T W, et al. Vision-based target geo-location using a fixed-wing miniature air vehicle. Journal of Intelligent and Robotic Systems, 2006, 47(4): 361--382. doi: \url{https://doi.org/10.1007/s10846-006-9088-7}
 
-\bibitem{isprs2016geolocation}
-ISPRS Archives, ``Precise Target Geolocation and Tracking Based on UAV Video Imagery,'' 2016. \url{https://isprs-archives.copernicus.org/articles/XLI-B6/243/2016/}
+\bibitem{hosseinpoor2016geolocation}
+Hosseinpoor H R, Samadzadegan F, Dadrasjavan F. Precise target geolocation and tracking based on UAV video imagery. ISPRS - International Archives of the Photogrammetry, Remote Sensing and Spatial Information Sciences, 2016, XLI-B6: 243--249. doi: \url{https://doi.org/10.5194/isprsarchives-XLI-B6-243-2016}
 
-\bibitem{faa2025bvlos}
-Federal Register, ``Normalizing Unmanned Aircraft Systems Beyond Visual Line of Sight Operations,'' 2025. \url{https://www.federalregister.gov/documents/2025/08/07/2025-14992/normalizing-unmanned-aircraft-systems-beyond-visual-line-of-sight-operations}
+\bibitem{dobrokhodov2008tracking}
+Dobrokhodov V N, Kaminer I I, Jones K D, et al. Vision-based tracking and motion estimation for moving targets using unmanned air vehicles. Journal of Guidance, Control, and Dynamics, 2008, 31(4): 907--917. doi: \url{https://doi.org/10.2514/1.33206}
+
+\bibitem{liu2024multiview}
+Liu C, Ding Y, Zhang H, et al. Improving target geolocation accuracy with multi-view aerial images in long-range oblique photography. Drones, 2024, 8(5): 177. doi: \url{https://doi.org/10.3390/drones8050177}
+
+\bibitem{zeng2016uavcomm}
+Zeng Y, Zhang R, Lim T J. Wireless communications with unmanned aerial vehicles: Opportunities and challenges. IEEE Communications Magazine, 2016, 54(5): 36--42. doi: \url{https://doi.org/10.1109/MCOM.2016.7470933}
+
+\bibitem{gupta2016uavcomm}
+Gupta L, Jain R, Vaszkun G. Survey of important issues in UAV communication networks. IEEE Communications Surveys \& Tutorials, 2016, 18(2): 1123--1152. doi: \url{https://doi.org/10.1109/COMST.2015.2495297}
+
+\bibitem{hayat2016uavnetworks}
+Hayat S, Yanmaz E, Muzaffar R. Survey on unmanned aerial vehicle networks for civil applications: A communications viewpoint. IEEE Communications Surveys \& Tutorials, 2016, 18(4): 2624--2661. doi: \url{https://doi.org/10.1109/COMST.2016.2560343}
+
+\bibitem{sekander2018multitier}
+Sekander S, Tabassum H, Hossain E. Multi-tier drone architecture for 5G/B5G cellular networks: Challenges, trends, and prospects. IEEE Communications Magazine, 2018, 56(3): 96--103. doi: \url{https://doi.org/10.1109/MCOM.2018.1700666}
+
+\bibitem{shah2017airsim}
+Shah S, Dey D, Lovett C, et al. AirSim: High-fidelity visual and physical simulation for autonomous vehicles. In: Hutter M, Siegwart R, eds. Field and Service Robotics. Cham: Springer, 2017. doi: \url{https://doi.org/10.1007/978-3-319-67361-5_40}
+
+\bibitem{nguyen2019dronevr}
+Nguyen V T, Jung K, Dang T. DroneVR: A web virtual reality simulator for drone operator. 2019 IEEE International Conference on Artificial Intelligence and Virtual Reality, 2019: 257--2575. doi: \url{https://doi.org/10.1109/AIVR46125.2019.00060}
 
 \end{thebibliography}
 

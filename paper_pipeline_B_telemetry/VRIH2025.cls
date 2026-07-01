@@ -7,7 +7,7 @@
 \def\@website{\url{phys.scichina.com}~~~~\url{link.springer.com}}
 
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
-\ProvidesClass{VRIH2025}[\sci@filedate, \sci@fileversion]
+\ProvidesClass{SCIS}[\sci@filedate, \sci@fileversion]
 
 \LoadClass[twoside]{article}%twocolumn,
 %% math packages
@@ -36,8 +36,8 @@
 \usepackage{rotating}% sidewayfigure 和 sidewaystable 环境来使图形或表格横排%rotcaption
 
 %\RequirePackage[citebordercolor={1 1 1},linkbordercolor={1 1 1},menubordercolor={1 1 1},pagebordercolor={1 1 1},urlbordercolor={1 1 1}]{hyperref}
-%\RequirePackage[hyperindex=true,pdfstartview=FitH,breakline=true,CJKbookmarks=blue,bookmarksnumbered=blue,bookmarksopen=true,colorlinks,pdfborder=001,linkcolor=blue,anchorcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
-\RequirePackage[pdfstartview=FitH,hyperindex=true,colorlinks=true,linkcolor=blue,breaklinks,urlcolor=blue,bookmarksopen=true,citecolor=blue]{hyperref}
+%\RequirePackage[hyperindex=true,pdfstartview=FitH,breakline=true,CJKbookmarks=blue,bookmarksnumbered=blue,bookmarksopen=blue,colorlinks,pdfborder=001,linkcolor=blue,anchorcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\RequirePackage[pdfstartview=FitH,hyperindex=true,colorlinks=true,linkcolor=blue,breaklinks,urlcolor=blue,bookmarksopen=blue,citecolor=blue]{hyperref}
 
 
 

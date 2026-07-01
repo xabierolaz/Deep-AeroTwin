@@ -9,6 +9,7 @@ This is the only Markdown file maintained inside this paper folder. The manuscri
 | `pipeline_b_concept.tex` | Controlled manuscript draft. Edit this for paper content. |
 | `pipeline_b_concept.pdf` | Compiled VRIH-format PDF output. Regenerate after LaTeX edits. |
 | `VRIH2025.cls` | Official VRIH LaTeX class copied from the 2025 template package. |
+| `vrih_reference_audit.csv` | DOI and Crossref verification for all manuscript references. |
 | `vrih_highlights.txt` | VRIH-style highlights draft. |
 | `figures/pipeline_b_architecture.png` | Current architecture figure used in the manuscript. |
 | `generate_pipeline_b_architecture.py` | Reproducible figure generator. |
@@ -56,10 +57,21 @@ Submission constraints currently known from the VRIH guide for authors:
 Current format status:
 
 - `pipeline_b_concept.tex` now uses the official `VRIH2025` LaTeX class.
-- Local `VRIH2025.cls` is tracked beside the manuscript and should be kept in sync with the selected VRIH template package.
+- Local `VRIH2025.cls` is byte-identical to `vrih_template/latex/VRIH2025.cls` from the downloaded official VRIH LaTeX package.
+- Official class SHA-256: `B257C6CB84927DE0347691A82DE248A5AB80264F6E39D27379456FD054343FF4`.
 - Compile with `xelatex`, not `pdflatex`, because the VRIH class loads `fontspec`.
-- Last verified build: 2026-07-01 with XeLaTeX; current VRIH-format PDF length: 12 pages.
+- Last verified build: 2026-07-01 with XeLaTeX; current VRIH-format PDF length: 20 pages.
+- Current source uses inline `thebibliography`, matching the official VRIH LaTeX example. No external `.bib` file is required unless we later decide to manage references with BibTeX before flattening them for submission.
+- Official-template warnings remain: the class internally provides `SCIS` and passes `bookmarksopen=blue` to `hyperref`. These warnings come from the downloaded template class and do not block PDF generation.
 - The guide does not state a maximum length for full research papers. The only explicit page cap found is rapid communications: maximum 4 pages, which is not suitable for this work.
+
+Reference status:
+
+- Current manuscript contains 39 references.
+- DOI resolver check: 39/39 DOI links resolve through `doi.org`.
+- Crossref classification: 35 journal articles, 2 proceedings articles, 2 book chapters.
+- The four non-journal items are retained because they support standard human-factors instrumentation, direct VR/UAV digital-twin work, AirSim infrastructure, and DroneVR infrastructure.
+- Citation consistency check: 39 citation keys used and 39 bibliography entries present; no missing or uncited entries.
 
 ## A2 / Ayudante Doctor Baremo
 
@@ -93,11 +105,17 @@ Core claim:
 
 An implemented human-in-the-loop VR operator display reconstructs a dynamic UAV scene from in-flight object detections by converting them into georeferenced semantic telemetry and rendering persistent actors inside an Unreal/Cesium digital twin.
 
+Current manuscript content:
+
+- Full VRIH-format working draft with title, abstract, introduction, related work, system overview, method, formal equations, evaluation protocol, pending-results tables, claim-to-evidence map, limitations, discussion, conclusion, declarations, submission-material placeholders, and bibliography.
+- Placeholders remain visible for every unmeasured result, missing figure, missing table value, missing equation input, missing declaration, missing statistical plan, and missing hardware-dependent trial.
+- The manuscript is intentionally not submission-ready until physical validation replaces the `TBD` markers.
+
 Claims deliberately avoided:
 
-- No claim that the system replaces video.
-- No claim that it is a primary piloting interface.
-- No claim that it guarantees safe human piloting.
+- No claim that the system substitutes for video.
+- No claim that it is the main piloting interface.
+- No claim that it guarantees piloting safety.
 - No claim that semantic telemetry alone is sufficient for detect-and-avoid or BVLOS compliance.
 
 ## What Can Be Completed Now
@@ -109,6 +127,9 @@ Important: these items are preparatory evidence. They reduce risk and make the e
 | VRIH-focused rewrite | Done in `pipeline_b_concept.tex`: title, abstract, motivation, contribution, conclusion. |
 | Runtime contract documentation | Done in draft: `POST /api/obstacles`, `GET /api/ui/data`, entity lifecycle. |
 | Evidence map | Done in draft: claim-to-evidence table. |
+| Related work expansion | Done in draft: 39 references, 35 journal articles, DOI audit in `vrih_reference_audit.csv`. |
+| Method formalization | Done in draft: entity model, projection equations, uncertainty propagation, bandwidth equation, latency decomposition, stale/despawn policy. |
+| Placeholder result structure | Done in draft: demonstration, bandwidth, latency, geospatial error, loss/jitter, tracking, human utility, low-visibility, safety, statistics, ethics, reproducibility. |
 | Software-only bandwidth benchmark | Still to run: semantic message sizes, mean bitrate, p95 bitrate, packet rate. |
 | Partial latency benchmark | Still to instrument: detector/sender to Brain to Unreal actor update. |
 | Packet loss/jitter robustness | Still to implement with replay or impairment layer. |
@@ -165,5 +186,8 @@ Xabier Olaz
 1. Keep compiling with XeLaTeX after each manuscript edit.
 2. Replace `TBD-BW` with a software-only bandwidth benchmark from replayed or synthetic detections.
 3. Instrument Brain and Unreal timestamps for partial latency.
-4. Capture HMD screenshots/video when the VR setup is available.
-5. Retrieve and archive the VRIH JCR/Clarivate evidence before relying on Q1/Q2 A2 points.
+4. Implement packet-loss, jitter, stale-state, and synthetic tracking replay tests.
+5. Capture HMD screenshots/video when the VR setup is available.
+6. Run calibrated geospatial validation with surveyed or RTK/GNSS ground truth.
+7. Prepare ethics/exemption and run the human-operator study.
+8. Retrieve and archive the VRIH JCR/Clarivate evidence before relying on Q1/Q2 A2 points.

@@ -84,6 +84,7 @@ Unreal/**/Saved/
 # --- Local paper/render scratch ---
 /figures/
 /paper_pipeline_B_telemetry_local_backup_*/
+/paper_pipeline_B_telemetry/tmp/
 /semantic_proxy_3d_paper.*
 /semantic_proxy_3d_references.bib
 Unreal/**/.vs/
