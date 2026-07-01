@@ -37,6 +37,7 @@ Thumbs.db
 *.bak
 *.swp
 *~
+/tmp/
 
 # --- LaTeX build artifacts ---
 *.aux
@@ -78,6 +79,12 @@ Unreal/**/Build/
 Unreal/**/DerivedDataCache/
 Unreal/**/Intermediate/
 Unreal/**/Saved/
+
+# --- Local paper/render scratch ---
+/figures/
+/paper_pipeline_B_telemetry_local_backup_*/
+/semantic_proxy_3d_paper.*
+/semantic_proxy_3d_references.bib
 Unreal/**/.vs/
 Unreal/**/.vscode/
 Unreal/*.sln

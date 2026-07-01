@@ -23,11 +23,11 @@ if not exist "%UE_EDITOR%" (
 title Deep-AeroTwin paper launcher
 echo [Deep-AeroTwin] Paper launcher
 echo [ALL-IN-ONE] Use this file to launch Unreal + PIE + full paper pipeline.
-echo [NOTE] launch.bat is pipeline-only and assumes Unreal/PIE is already ready.
+echo [NOTE] This is the canonical root launcher. Pipeline-only wrappers live under tools.
 echo [ROOT] %PROJECT_ROOT%
 echo.
 
-rem Final paper capture defaults. launch.bat keeps these because PORCE_DEFAULTS_FORCE=0.
+rem Final paper capture defaults. tools\launch_workflow.bat keeps these because PORCE_DEFAULTS_FORCE=0.
 set "PORCE_DEFAULTS_FORCE=0"
 set "PORCE_SYSTEM_MODE=SIMULATION"
 set "PORCE_VISION_RECORD_ENABLE=1"
@@ -74,7 +74,7 @@ if not defined PORCE_PREPARE_UNREAL set "PORCE_PREPARE_UNREAL=1"
 if /I "%PORCE_LAUNCH_DRY_RUN%"=="1" (
   echo [DRY-RUN] Launcher syntax and paths are OK.
   echo [DRY-RUN] This is the root all-in-one launcher: %PROJECT_ROOT%\LANZAR_TODO_PAPER.bat
-  echo [DRY-RUN] Pipeline-only launcher remains: %PROJECT_ROOT%\launch.bat
+  echo [DRY-RUN] Pipeline entrypoint: %PROJECT_ROOT%\tools\launch_workflow.bat SIMULATION
   exit /b 0
 )
 
@@ -113,7 +113,8 @@ echo [PIE] Stopping any previous Play-In-Editor session before pipeline restart.
 
 echo.
 echo [4/5] Launching full SIMULATION pipeline in Windows Terminal tabs...
-call "%PROJECT_ROOT%\launch.bat"
+if not defined PORCE_OBSTACLE_TOKEN_PERSIST set "PORCE_OBSTACLE_TOKEN_PERSIST=0"
+call "%PROJECT_ROOT%\tools\launch_workflow.bat" SIMULATION
 if errorlevel 1 exit /b %errorlevel%
 
 echo.
@@ -163,7 +164,6 @@ if not "%BRAIN_HTTP_READY%"=="1" (
   echo [OK] Brain HTTP ready.
 )
 exit /b 0
-
 :run_unreal_script
 set "SCRIPT_NAME=%~1"
 set "SCRIPT_PATH=%PROJECT_ROOT%\Unreal\Scripts\%SCRIPT_NAME%"
