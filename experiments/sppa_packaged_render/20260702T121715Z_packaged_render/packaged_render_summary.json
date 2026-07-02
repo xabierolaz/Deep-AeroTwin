@@ -1,0 +1,279 @@
+{
+  "claim_scope": "Packaged executable internal obstacle replay with rendered frames. This summary uses Tick delta frame time and estimated triangles/draw calls from static mesh components; it is not an HTTP/network replay unless stated by the manifest.",
+  "manifest": {
+    "mode": "packaged_internal_replay_render_stats",
+    "claim_scope": "Packaged executable internal obstacle replay with rendered frames; not live HTTP/network telemetry and estimated draw/triangle counts unless CSV profiler is parsed separately.",
+    "created_utc": "20260702T121744Z",
+    "engine_version": "5.7.4-51494982+++UE5+Release-5.7",
+    "command_line": "-PorceSPPAPackagedBenchmark -PorceSPPABenchmarkOutDir=D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_packaged_render\\20260702T121715Z_packaged_render -PorceSPPABenchmarkCounts=2 -PorceSPPABenchmarkBackends=no_render,unreal_assets,semantic_proxy -PorceSPPABenchmarkRepetitions=1 -PorceSPPABenchmarkWarmupFrames=3 -PorceSPPABenchmarkMeasureFrames=6 -PorceSPPABenchmarkUpdateEveryFrames=2 -PorceSPPABenchmarkSeed=20260702 -PorceSPPABenchmarkResX=1280 -PorceSPPABenchmarkResY=720 -windowed -ResX=1280 -ResY=720 -NoSound -Unattended -abslog=D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_packaged_render\\20260702T121715Z_packaged_render\\packaged_render_run.log -PorceSPPABenchmarkNoCsvProfile",
+    "out_dir": "D:/Deep-AeroTwin-UE57-Test/experiments/sppa_packaged_render/20260702T121715Z_packaged_render",
+    "repetitions": 1,
+    "warmup_frames": 3,
+    "measure_frames": 6,
+    "update_every_frames": 2,
+    "seed": 20260702,
+    "csv_profile_requested": false,
+    "counts": [
+      2
+    ],
+    "backends": [
+      "no_render"
+    ],
+    "artifacts": [
+      "packaged_frame_stats.csv",
+      "packaged_action_rows.csv",
+      "packaged_failures.csv",
+      "run_manifest.json"
+    ]
+  },
+  "frame_summary": [
+    {
+      "backend": "no_render",
+      "count": 2,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 6,
+        "mean": 15.929533166666666,
+        "p50": 10.4344995,
+        "p95": 42.215276249999995,
+        "p99": 50.38433605000001,
+        "max": 52.426601,
+        "min": 5.265299
+      },
+      "fps": {
+        "n": 6,
+        "mean": 111.99984333333333,
+        "p50": 96.33162300000001,
+        "p95": 188.44022725,
+        "p99": 189.62622865,
+        "max": 189.922729,
+        "min": 19.074286
+      },
+      "hitch_frames_gt_33ms": 1,
+      "hitch_frames_gt_50ms": 1,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 2,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 6,
+        "mean": 11.898466333333333,
+        "p50": 11.8143985,
+        "p95": 13.87390075,
+        "p99": 13.98182095,
+        "max": 14.008801,
+        "min": 10.134302
+      },
+      "fps": {
+        "n": 6,
+        "mean": 85.36256416666667,
+        "p50": 84.674183,
+        "p95": 98.63735374999999,
+        "p99": 98.66728995,
+        "max": 98.674774,
+        "min": 71.383698
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 2,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 6,
+        "mean": 37.478283,
+        "p50": 10.964000500000001,
+        "p95": 131.44969700000001,
+        "p99": 162.83361620000002,
+        "max": 170.679596,
+        "min": 8.852701
+      },
+      "fps": {
+        "n": 6,
+        "mean": 79.6542915,
+        "p50": 91.39957050000001,
+        "p95": 110.62824975,
+        "p99": 112.49354515,
+        "max": 112.959869,
+        "min": 5.858931
+      },
+      "hitch_frames_gt_33ms": 1,
+      "hitch_frames_gt_50ms": 1,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    }
+  ],
+  "frame_summary_by_repetition": [
+    {
+      "backend": "no_render",
+      "count": 2,
+      "repetition": 0,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 6,
+        "mean": 15.929533166666666,
+        "p50": 10.4344995,
+        "p95": 42.215276249999995,
+        "p99": 50.38433605000001,
+        "max": 52.426601,
+        "min": 5.265299
+      },
+      "fps": {
+        "n": 6,
+        "mean": 111.99984333333333,
+        "p50": 96.33162300000001,
+        "p95": 188.44022725,
+        "p99": 189.62622865,
+        "max": 189.922729,
+        "min": 19.074286
+      },
+      "hitch_frames_gt_33ms": 1,
+      "hitch_frames_gt_50ms": 1,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 2,
+      "repetition": 0,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 6,
+        "mean": 11.898466333333333,
+        "p50": 11.8143985,
+        "p95": 13.87390075,
+        "p99": 13.98182095,
+        "max": 14.008801,
+        "min": 10.134302
+      },
+      "fps": {
+        "n": 6,
+        "mean": 85.36256416666667,
+        "p50": 84.674183,
+        "p95": 98.63735374999999,
+        "p99": 98.66728995,
+        "max": 98.674774,
+        "min": 71.383698
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 2,
+      "repetition": 0,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 6,
+        "mean": 37.478283,
+        "p50": 10.964000500000001,
+        "p95": 131.44969700000001,
+        "p99": 162.83361620000002,
+        "max": 170.679596,
+        "min": 8.852701
+      },
+      "fps": {
+        "n": 6,
+        "mean": 79.6542915,
+        "p50": 91.39957050000001,
+        "p95": 110.62824975,
+        "p99": 112.49354515,
+        "max": 112.959869,
+        "min": 5.858931
+      },
+      "hitch_frames_gt_33ms": 1,
+      "hitch_frames_gt_50ms": 1,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    }
+  ],
+  "action_summary": [
+    {
+      "backend": "no_render",
+      "count": 2,
+      "action": "create",
+      "elapsed_ms": {
+        "n": 1,
+        "mean": 0.076,
+        "p50": 0.076,
+        "p95": 0.076,
+        "p99": 0.076,
+        "max": 0.076,
+        "min": 0.076
+      },
+      "ok_rows": 1,
+      "rows": 1,
+      "static_mesh_components_p50": 0
+    },
+    {
+      "backend": "no_render",
+      "count": 2,
+      "action": "pose_update",
+      "elapsed_ms": {
+        "n": 5,
+        "mean": 0.050539999999999995,
+        "p50": 0.0514,
+        "p95": 0.05844,
+        "p99": 0.059608,
+        "max": 0.0599,
+        "min": 0.0407
+      },
+      "ok_rows": 5,
+      "rows": 5,
+      "static_mesh_components_p50": 0
+    },
+    {
+      "backend": "no_render",
+      "count": 2,
+      "action": "shape_param_update",
+      "elapsed_ms": {
+        "n": 5,
+        "mean": 0.04906,
+        "p50": 0.0474,
+        "p95": 0.053259999999999995,
+        "p99": 0.053852,
+        "max": 0.054,
+        "min": 0.0466
+      },
+      "ok_rows": 5,
+      "rows": 5,
+      "static_mesh_components_p50": 0
+    }
+  ],
+  "max_density": {
+    "no_render": {
+      "create_steady": {
+        "max_count_at_30fps_p95": null,
+        "max_count_at_60fps_p95": null
+      },
+      "pose_stream": {
+        "max_count_at_30fps_p95": 2,
+        "max_count_at_60fps_p95": 2
+      },
+      "shape_stream": {
+        "max_count_at_30fps_p95": null,
+        "max_count_at_60fps_p95": null
+      }
+    }
+  }
+}

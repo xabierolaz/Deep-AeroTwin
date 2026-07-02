@@ -72,6 +72,37 @@ neural/ckpts/
 neural/models/
 neural/wan_models/
 neural/__pycache__/
+third_party/sota_3d_generators/
+experiments/sppa_sota_benchmark/outputs/
+experiments/sppa_sota_benchmark/runs/
+shap_e_model_cache/
+point_e_model_cache/
+experiments/sppa_sota_benchmark/runs/*/outputs/
+experiments/sppa_sota_benchmark/inputs/*.png
+
+# --- SPPA experiment policy ---
+# Keep scripts, manifests, summaries, aggregate CSV/JSON and paper figures.
+# Exclude local packages, generated meshes/views and full per-frame traces.
+experiments/**/package/
+experiments/**/outputs/
+experiments/**/runs/
+experiments/**/views/models/
+experiments/**/*.glb
+experiments/**/*.obj
+experiments/**/*.mtl
+experiments/**/*.ply
+experiments/**/*.npz
+experiments/**/policy_lifecycle_events.csv
+experiments/**/replay_update_rows.csv
+experiments/**/sppa_runtime_update_trace.csv
+experiments/**/packaged_frame_stats.csv
+experiments/**/packaged_render_run.log
+experiments/**/*.jsonl
+experiments/**/*_trace.csv
+experiments/**/http_poll_replay_order_trace.csv
+experiments/**/http_poll_replay_pose_poll_rows.csv
+experiments/**/http_poll_replay_rows.csv
+paper_semantic_proxy_3d/semantic_proxy_3d_paper_verify.*
 
 # --- Unreal Engine ---
 # Keep source/assets under Unreal/, ignore generated output (Binaries/Intermediate/Saved/DerivedDataCache) and IDE files.

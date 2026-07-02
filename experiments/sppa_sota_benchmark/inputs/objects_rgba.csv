@@ -1,0 +1,7 @@
+label,prompt,image
+cow,cow,experiments/sppa_sota_benchmark/inputs/cow_rgba.png
+biker,bicycle with rider,experiments/sppa_sota_benchmark/inputs/biker_rgba.png
+tree,tree,experiments/sppa_sota_benchmark/inputs/tree_rgba.png
+car,car,experiments/sppa_sota_benchmark/inputs/car_rgba.png
+truck,truck,experiments/sppa_sota_benchmark/inputs/truck_rgba.png
+tractor,tractor,experiments/sppa_sota_benchmark/inputs/tractor_rgba.png

@@ -10,9 +10,11 @@
 #include "Dom/JsonObject.h"
 #include "HAL/PlatformMisc.h"
 #include "HttpModule.h"
+#include "HttpManager.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Serialization/JsonSerializer.h"
+#include "Serialization/JsonWriter.h"
 #include "UObject/UObjectGlobals.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SBorder.h"
@@ -90,6 +92,50 @@ bool TryGetYawDeg(const TSharedPtr<FJsonObject>& Obj, float& OutYawDeg)
         if (FMath::IsFinite(YawCandidate))
         {
             OutYawDeg = static_cast<float>(FMath::RadiansToDegrees(YawCandidate));
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool TrySerializeJsonObject(const TSharedPtr<FJsonObject>& Obj, FString& OutJson)
+{
+    if (!Obj.IsValid())
+    {
+        return false;
+    }
+    OutJson.Reset();
+    TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutJson);
+    return FJsonSerializer::Serialize(Obj.ToSharedRef(), Writer) && !OutJson.IsEmpty();
+}
+
+bool TryExtractJsonPayload(
+    const TSharedPtr<FJsonObject>& Obj,
+    const TCHAR* ObjectField,
+    const TCHAR* StringField,
+    FString& OutJson
+)
+{
+    OutJson.Reset();
+    if (!Obj.IsValid())
+    {
+        return false;
+    }
+
+    const TSharedPtr<FJsonObject>* PayloadObj = nullptr;
+    if (Obj->TryGetObjectField(ObjectField, PayloadObj) && PayloadObj != nullptr && PayloadObj->IsValid())
+    {
+        return TrySerializeJsonObject(*PayloadObj, OutJson);
+    }
+
+    FString PayloadString;
+    if (Obj->TryGetStringField(StringField, PayloadString))
+    {
+        PayloadString = PayloadString.TrimStartAndEnd();
+        if (!PayloadString.IsEmpty())
+        {
+            OutJson = PayloadString;
             return true;
         }
     }
@@ -257,6 +303,76 @@ void UPorceTelemetryComponent::PollNow()
 void UPorceTelemetryComponent::SendNow()
 {
     PollNow();
+}
+
+bool UPorceTelemetryComponent::PollNowBlockingForTest(float TimeoutS)
+{
+    if (!bEnabled || !IsTwinConsumerEnabled() || bRequestInFlight)
+    {
+        return false;
+    }
+
+    bLastPollSucceededForTest = false;
+
+    const double StartTs = FPlatformTime::Seconds();
+    StartPollRequest(StartTs);
+    if (!bRequestInFlight)
+    {
+        return bLastPollSucceededForTest;
+    }
+
+    FHttpManager& HttpManager = FHttpModule::Get().GetHttpManager();
+    const double DeadlineTs = StartTs + FMath::Max(0.01, static_cast<double>(TimeoutS));
+    double LastTickTs = StartTs;
+    while (bRequestInFlight && FPlatformTime::Seconds() < DeadlineTs)
+    {
+        const double NowTs = FPlatformTime::Seconds();
+        const float DeltaSeconds = static_cast<float>(FMath::Max(0.0, NowTs - LastTickTs));
+        LastTickTs = NowTs;
+        HttpManager.Tick(DeltaSeconds);
+        FPlatformProcess::Sleep(0.001f);
+    }
+
+    if (bRequestInFlight)
+    {
+        UE_LOG(LogPorceTelemetry, Warning, TEXT("PORCE Twin V2 blocking test poll timed out after %.3f s."), TimeoutS);
+        return false;
+    }
+
+    return bLastPollSucceededForTest;
+}
+
+bool UPorceTelemetryComponent::ApplyObstacleBatchJson(const FString& PayloadJson)
+{
+    const FString TrimmedPayload = PayloadJson.TrimStartAndEnd();
+    if (TrimmedPayload.IsEmpty())
+    {
+        return false;
+    }
+
+    {
+        TSharedPtr<FJsonObject> Root = MakeShared<FJsonObject>();
+        TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(TrimmedPayload);
+        if (FJsonSerializer::Deserialize(Reader, Root) && Root.IsValid())
+        {
+            const TArray<TSharedPtr<FJsonValue>>* Obstacles = nullptr;
+            if (Root->TryGetArrayField(TEXT("obstacles"), Obstacles) && Obstacles != nullptr)
+            {
+                ApplyObstacleBatch(*Obstacles, FPlatformTime::Seconds());
+                return true;
+            }
+        }
+    }
+
+    TArray<TSharedPtr<FJsonValue>> Obstacles;
+    TSharedRef<TJsonReader<>> ArrayReader = TJsonReaderFactory<>::Create(TrimmedPayload);
+    if (FJsonSerializer::Deserialize(ArrayReader, Obstacles))
+    {
+        ApplyObstacleBatch(Obstacles, FPlatformTime::Seconds());
+        return true;
+    }
+
+    return false;
 }
 
 void UPorceTelemetryComponent::SetSpawnBackend(EPorceTwinSpawnBackend NewBackend)
@@ -438,6 +554,7 @@ void UPorceTelemetryComponent::StartPollRequest(double NowTs)
     {
         return;
     }
+    bLastPollSucceededForTest = false;
     const FString Url = EndpointUrl.TrimStartAndEnd();
     if (Url.IsEmpty())
     {
@@ -503,6 +620,7 @@ void UPorceTelemetryComponent::OnPollResponse(FHttpRequestPtr Request, FHttpResp
     }
 
     ApplyObstacleBatch(*Obstacles, FPlatformTime::Seconds());
+    bLastPollSucceededForTest = true;
 }
 
 void UPorceTelemetryComponent::ApplyObstacleBatch(const TArray<TSharedPtr<FJsonValue>>& Obstacles, double NowTs)
@@ -613,6 +731,11 @@ void UPorceTelemetryComponent::ApplyObstacleBatch(const TArray<TSharedPtr<FJsonV
         float YawDeg = 0.0f;
         const bool bHasYawDeg = TryGetYawDeg(Obj, YawDeg);
 
+        FString SppaDescriptorJson;
+        TryExtractJsonPayload(Obj, TEXT("sppa_descriptor"), TEXT("sppa_descriptor_json"), SppaDescriptorJson);
+        FString SppaUpdatePacketJson;
+        TryExtractJsonPayload(Obj, TEXT("sppa_update_packet"), TEXT("sppa_update_packet_json"), SppaUpdatePacketJson);
+
         UpsertObstacle(
             EntityId,
             ClassName,
@@ -626,6 +749,8 @@ void UPorceTelemetryComponent::ApplyObstacleBatch(const TArray<TSharedPtr<FJsonV
             bHasYawDeg,
             YawDeg,
             Confidence,
+            SppaDescriptorJson,
+            SppaUpdatePacketJson,
             NowTs
         );
     }
@@ -646,6 +771,8 @@ void UPorceTelemetryComponent::UpsertObstacle(
     bool bHasYawDeg,
     float YawDeg,
     float Confidence,
+    const FString& SppaDescriptorJson,
+    const FString& SppaUpdatePacketJson,
     double NowTs
 )
 {
@@ -669,6 +796,11 @@ void UPorceTelemetryComponent::UpsertObstacle(
         return;
     }
 
+    const FString CleanSppaDescriptorJson = SppaDescriptorJson.TrimStartAndEnd();
+    const FString CleanSppaUpdatePacketJson = SppaUpdatePacketJson.TrimStartAndEnd();
+    const bool bNewSppaDescriptorJson = !CleanSppaDescriptorJson.IsEmpty();
+    const bool bNewSppaUpdatePacketJson = !CleanSppaUpdatePacketJson.IsEmpty();
+
     FPorceTwinEntityState* Existing = EntityStates.Find(EntityId);
     if (Existing == nullptr)
     {
@@ -679,6 +811,10 @@ void UPorceTelemetryComponent::UpsertObstacle(
         NewState.bConfirmed = Confidence >= ConfirmedConfidenceThreshold;
         NewState.LastSeenTs = NowTs;
         NewState.SmoothedWorldLocation = MeasuredWorldCm;
+        NewState.bHasSppaDescriptorJson = bNewSppaDescriptorJson;
+        NewState.LastSppaDescriptorJson = CleanSppaDescriptorJson;
+        NewState.bHasSppaUpdatePacketJson = bNewSppaUpdatePacketJson;
+        NewState.LastSppaUpdatePacketJson = CleanSppaUpdatePacketJson;
         EntityStates.Add(EntityId, NewState);
         Existing = EntityStates.Find(EntityId);
     }
@@ -689,6 +825,21 @@ void UPorceTelemetryComponent::UpsertObstacle(
 
     Existing->ClassName = ClassName;
     Existing->LastConfidence = Confidence;
+    if (bNewSppaDescriptorJson)
+    {
+        Existing->bHasSppaDescriptorJson = true;
+        Existing->LastSppaDescriptorJson = CleanSppaDescriptorJson;
+    }
+    if (bNewSppaUpdatePacketJson)
+    {
+        Existing->bHasSppaUpdatePacketJson = true;
+        Existing->LastSppaUpdatePacketJson = CleanSppaUpdatePacketJson;
+    }
+    else
+    {
+        Existing->bHasSppaUpdatePacketJson = false;
+        Existing->LastSppaUpdatePacketJson.Reset();
+    }
     Existing->bHasYawDeg = bHasYawDeg;
     if (bHasYawDeg)
     {
@@ -701,6 +852,15 @@ void UPorceTelemetryComponent::UpsertObstacle(
         ? Clamp01(ConfirmedSmoothingAlpha)
         : Clamp01(TentativeSmoothingAlpha);
     Existing->SmoothedWorldLocation = FMath::Lerp(Existing->SmoothedWorldLocation, MeasuredWorldCm, Alpha);
+
+    if (bBenchmarkDisableActorSpawning)
+    {
+        if (Existing->SpawnedActor.IsValid())
+        {
+            DestroySpawnedActorForState(*Existing);
+        }
+        return;
+    }
 
     if (Existing->SpawnedActor.IsValid())
     {
@@ -892,6 +1052,17 @@ void UPorceTelemetryComponent::ConfigureSpawnedActor(FPorceTwinEntityState& Stat
 
     if (APorceSemanticProxyActor* ProxyActor = Cast<APorceSemanticProxyActor>(Actor))
     {
+        if (SpawnBackend == EPorceTwinSpawnBackend::SemanticProxy)
+        {
+            if (State.bHasSppaUpdatePacketJson && ProxyActor->ApplyProxyUpdatePacketJson(State.LastSppaUpdatePacketJson, State.bConfirmed))
+            {
+                return;
+            }
+            if (State.bHasSppaDescriptorJson && ProxyActor->ConfigureProxyFromDescriptorJson(State.LastSppaDescriptorJson, State.bConfirmed))
+            {
+                return;
+            }
+        }
         ProxyActor->ConfigureProxy(State.ClassName, State.LastConfidence, State.bConfirmed);
     }
 }

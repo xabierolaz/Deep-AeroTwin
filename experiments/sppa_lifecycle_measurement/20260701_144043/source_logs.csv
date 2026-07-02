@@ -1,0 +1,3 @@
+path,status,events,observations,truncated_obstacle_ingest_events
+D:\Deep-AeroTwin-UE57-Test\pipeline\logs\zero_trust\20260701_144043\real_twin\brain\events.jsonl,ok,6,6,0
+D:\Deep-AeroTwin-UE57-Test\pipeline\logs\zero_trust\20260701_144043\simulation\brain\events.jsonl,ok,4,1,0

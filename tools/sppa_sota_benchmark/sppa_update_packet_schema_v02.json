@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "SPPA-UPD-0.2",
+  "title": "SPPA update packet schema v0.2",
+  "type": "object",
+  "required": [
+    "packet_schema",
+    "descriptor_schema",
+    "descriptor_id",
+    "cache_key",
+    "action",
+    "reason",
+    "thresholds",
+    "track",
+    "semantic",
+    "pose",
+    "uncertainty",
+    "packet_bytes"
+  ],
+  "properties": {
+    "packet_schema": {"const": "SPPA-UPD-0.2"},
+    "descriptor_schema": {"const": "SPPA-DESC-0.2"},
+    "descriptor_id": {"type": "string"},
+    "cache_key": {"type": "string"},
+    "action": {"type": "string"},
+    "packet_bytes": {"type": "number"},
+    "scale": {"type": "object"},
+    "parts": {"type": "array"},
+    "mesh": {"type": "object"}
+  },
+  "x-requiredPaths": [
+    "semantic.archetype",
+    "semantic.resolution_status",
+    "semantic.class_confidence",
+    "pose.yaw_source",
+    "pose.yaw_modulo",
+    "pose.yaw_ambiguous",
+    "uncertainty.confidence"
+  ]
+}

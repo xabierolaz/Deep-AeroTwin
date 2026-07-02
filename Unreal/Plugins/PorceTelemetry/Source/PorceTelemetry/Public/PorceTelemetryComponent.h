@@ -27,6 +27,10 @@ struct FPorceTwinEntityState
     float LastYawDeg = 0.0f;
     double LastSeenTs = 0.0;
     FVector SmoothedWorldLocation = FVector::ZeroVector;
+    bool bHasSppaDescriptorJson = false;
+    FString LastSppaDescriptorJson;
+    bool bHasSppaUpdatePacketJson = false;
+    FString LastSppaUpdatePacketJson;
     TWeakObjectPtr<AActor> SpawnedActor;
     TSubclassOf<AActor> SpawnedActorClass;
     EPorceTwinSpawnBackend SpawnedBackend = EPorceTwinSpawnBackend::UnrealAssets;
@@ -51,6 +55,12 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="PORCE Twin V2")
     void SendNow();
+
+    UFUNCTION(BlueprintCallable, Category="PORCE Twin V2|Debug")
+    bool ApplyObstacleBatchJson(const FString& PayloadJson);
+
+    UFUNCTION(BlueprintCallable, Category="PORCE Twin V2|Debug")
+    bool PollNowBlockingForTest(float TimeoutS = 2.0f);
 
     UFUNCTION(BlueprintCallable, Category="PORCE Twin V2|Spawn")
     void SetSpawnBackend(EPorceTwinSpawnBackend NewBackend);
@@ -118,6 +128,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Spawn")
     bool bShowSpawnBackendSwitchUI = true;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Debug", AdvancedDisplay)
+    bool bBenchmarkDisableActorSpawning = false;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PORCE Twin V2|Frame")
     AActor* OriginActor = nullptr;
 
@@ -145,6 +158,7 @@ public:
 private:
     double LastPollTs = 0.0;
     bool bRequestInFlight = false;
+    bool bLastPollSucceededForTest = false;
     TMap<FString, FPorceTwinEntityState> EntityStates;
 
     bool IsTwinConsumerEnabled() const;
@@ -170,6 +184,8 @@ private:
         bool bHasYawDeg,
         float YawDeg,
         float Confidence,
+        const FString& SppaDescriptorJson,
+        const FString& SppaUpdatePacketJson,
         double NowTs
     );
     void PruneStaleEntities(double NowTs);

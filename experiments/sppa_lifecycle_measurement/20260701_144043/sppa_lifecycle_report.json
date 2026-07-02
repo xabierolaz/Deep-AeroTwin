@@ -1,0 +1,94 @@
+{
+  "measurement_type": "python_cpu_and_policy_derived_from_logs",
+  "generator": "D:\\Deep-AeroTwin-UE57-Test\\XYT-xabi-yolo-telemetry\\xyt_generate_3d.py",
+  "events": [
+    "D:\\Deep-AeroTwin-UE57-Test\\pipeline\\logs\\zero_trust\\20260701_144043\\real_twin\\brain\\events.jsonl",
+    "D:\\Deep-AeroTwin-UE57-Test\\pipeline\\logs\\zero_trust\\20260701_144043\\simulation\\brain\\events.jsonl"
+  ],
+  "creation_cpu_us": {
+    "n": 60000,
+    "min_us": 102.0,
+    "mean_us": 205.02955666666668,
+    "p50_us": 175.1,
+    "p95_us": 349.4,
+    "p99_us": 514.4,
+    "max_us": 4181.1
+  },
+  "debug_obj_export_cpu_us": {
+    "n": 600,
+    "min_us": 736.2,
+    "mean_us": 1307.3706666666667,
+    "p50_us": 1265.3,
+    "p95_us": 1754.5,
+    "p99_us": 2068.5,
+    "max_us": 3609.6
+  },
+  "update_policy_cpu_us": {
+    "n": 7,
+    "min_us": 0.3,
+    "mean_us": 0.8857142857142858,
+    "p50_us": 0.7,
+    "p95_us": 2.1,
+    "p99_us": 2.1,
+    "max_us": 2.1
+  },
+  "track_policy": {
+    "observations": 7,
+    "tracks": 4,
+    "actions": {
+      "create": 4,
+      "update": 3,
+      "regenerate": 0
+    },
+    "reason_counts": {
+      "first_observation_for_track": 4,
+      "pose_or_confidence_update": 3
+    },
+    "sources": [
+      {
+        "source_path": "D:\\Deep-AeroTwin-UE57-Test\\pipeline\\logs\\zero_trust\\20260701_144043\\real_twin\\brain\\events.jsonl",
+        "duration_s": 1.0757982730865479,
+        "observations": 6,
+        "tracks": 3,
+        "create": 3,
+        "update": 3,
+        "regenerate": 0,
+        "regenerations_per_track": 0.0,
+        "regenerations_per_minute": 0.0
+      },
+      {
+        "source_path": "D:\\Deep-AeroTwin-UE57-Test\\pipeline\\logs\\zero_trust\\20260701_144043\\simulation\\brain\\events.jsonl",
+        "duration_s": 0.0,
+        "observations": 1,
+        "tracks": 1,
+        "create": 1,
+        "update": 0,
+        "regenerate": 0,
+        "regenerations_per_track": 0.0,
+        "regenerations_per_minute": 0.0
+      }
+    ]
+  },
+  "source_logs": [
+    {
+      "path": "D:\\Deep-AeroTwin-UE57-Test\\pipeline\\logs\\zero_trust\\20260701_144043\\real_twin\\brain\\events.jsonl",
+      "status": "ok",
+      "events": 6,
+      "observations": 6,
+      "truncated_obstacle_ingest_events": 0
+    },
+    {
+      "path": "D:\\Deep-AeroTwin-UE57-Test\\pipeline\\logs\\zero_trust\\20260701_144043\\simulation\\brain\\events.jsonl",
+      "status": "ok",
+      "events": 4,
+      "observations": 1,
+      "truncated_obstacle_ingest_events": 0
+    }
+  ],
+  "caveats": [
+    "Creation cost is Python procedural template construction, not Unreal actor spawn.",
+    "Debug OBJ/MTL export is not the intended runtime path and is reported separately.",
+    "Update cost is descriptor/pose state update only, not Unreal render-thread frame time.",
+    "Regenerations are policy-implied from obstacle_ingest logs; native SPPA runtime events were not present in the source logs."
+  ]
+}

@@ -1,0 +1,298 @@
+{
+  "descriptor_schema": "SPPA-DESC-0.2",
+  "gpu_before": {
+    "driver": "610.62",
+    "memory_total_mb": 32607,
+    "memory_used_mb": 25187,
+    "name": "NVIDIA GeForce RTX 5090",
+    "utilization_gpu_pct": 10
+  },
+  "replay": {
+    "action_counts": {
+      "create": 232,
+      "no_op": 68341,
+      "pose_update": 7732,
+      "shape_param_update": 3695
+    },
+    "descriptor_build_us": {
+      "max": 187969.8,
+      "mean": 224.2641425,
+      "min": 51.4,
+      "n": 80000,
+      "p50": 197.9,
+      "p95": 400.1,
+      "p99": 429.0
+    },
+    "descriptor_bytes": {
+      "max": 6385.0,
+      "mean": 5294.545025,
+      "min": 3709.0,
+      "n": 80000,
+      "p50": 6151.0,
+      "p95": 6374.0,
+      "p99": 6378.0
+    },
+    "effective_create_us": {
+      "max": 1208.0,
+      "mean": 396.45474137931035,
+      "min": 31.9,
+      "n": 232,
+      "p50": 434.0,
+      "p95": 587.9,
+      "p99": 762.2
+    },
+    "packet_bytes": {
+      "max": 5206.0,
+      "mean": 1049.3612375,
+      "min": 1006.0,
+      "n": 80000,
+      "p50": 1026.0,
+      "p95": 1037.0,
+      "p99": 1379.0
+    },
+    "rows": 80000,
+    "schedule_us": {
+      "max": 391.1,
+      "mean": 6.707285000000001,
+      "min": 0.8,
+      "n": 80000,
+      "p50": 6.5,
+      "p95": 10.4,
+      "p99": 12.9
+    },
+    "threshold_action_counts": {
+      "0.05": {
+        "create": 58,
+        "no_op": 17739,
+        "pose_update": 417,
+        "shape_param_update": 1786
+      },
+      "0.1": {
+        "create": 58,
+        "no_op": 17655,
+        "pose_update": 1174,
+        "shape_param_update": 1113
+      },
+      "0.2": {
+        "create": 58,
+        "no_op": 17044,
+        "pose_update": 2370,
+        "shape_param_update": 528
+      },
+      "0.3": {
+        "create": 58,
+        "no_op": 15903,
+        "pose_update": 3771,
+        "shape_param_update": 268
+      }
+    }
+  },
+  "replay_events_found": [
+    "pipeline\\logs\\zero_trust\\20260219_212154\\brain\\events.jsonl",
+    "pipeline\\logs\\zero_trust\\20260618_124757\\brain\\events.jsonl",
+    "pipeline\\logs\\zero_trust\\20260220_035901\\brain\\events.jsonl",
+    "pipeline\\logs\\zero_trust\\20260219_091623\\brain\\events.jsonl",
+    "pipeline\\logs\\zero_trust\\20260618_131747\\brain\\events.jsonl",
+    "pipeline\\logs\\zero_trust\\20260218_234222\\brain\\events.jsonl",
+    "pipeline\\logs\\zero_trust\\20260620_071403\\brain\\events.jsonl"
+  ],
+  "replay_sources": [
+    {
+      "active_count_events": 4333,
+      "active_count_sum": 176986,
+      "control_mode": null,
+      "events": 7936,
+      "observations": 83344,
+      "obstacle_token_enabled": true,
+      "path": "pipeline\\logs\\zero_trust\\20260219_212154\\brain\\events.jsonl",
+      "porce_enable_evasion": true,
+      "status": "ok",
+      "truncated_obstacle_ingest_events": 3959,
+      "workflow": null
+    },
+    {
+      "active_count_events": 4185,
+      "active_count_sum": 95465,
+      "control_mode": "AUTONOMOUS",
+      "events": 6124,
+      "observations": 80002,
+      "obstacle_token_enabled": true,
+      "path": "pipeline\\logs\\zero_trust\\20260618_124757\\brain\\events.jsonl",
+      "porce_enable_evasion": true,
+      "status": "ok",
+      "truncated_obstacle_ingest_events": 3062,
+      "workflow": "SIMULATION"
+    },
+    {
+      "active_count_events": 6195,
+      "active_count_sum": 203617,
+      "control_mode": null,
+      "events": 8084,
+      "observations": 78869,
+      "obstacle_token_enabled": true,
+      "path": "pipeline\\logs\\zero_trust\\20260220_035901\\brain\\events.jsonl",
+      "porce_enable_evasion": true,
+      "status": "ok",
+      "truncated_obstacle_ingest_events": 2371,
+      "workflow": null
+    },
+    {
+      "active_count_events": 32320,
+      "active_count_sum": 76548,
+      "control_mode": null,
+      "events": 36288,
+      "observations": 76417,
+      "obstacle_token_enabled": true,
+      "path": "pipeline\\logs\\zero_trust\\20260219_091623\\brain\\events.jsonl",
+      "porce_enable_evasion": true,
+      "status": "ok",
+      "truncated_obstacle_ingest_events": 69,
+      "workflow": null
+    },
+    {
+      "active_count_events": 3524,
+      "active_count_sum": 103367,
+      "control_mode": "AUTONOMOUS",
+      "events": 4930,
+      "observations": 68768,
+      "obstacle_token_enabled": true,
+      "path": "pipeline\\logs\\zero_trust\\20260618_131747\\brain\\events.jsonl",
+      "porce_enable_evasion": true,
+      "status": "ok",
+      "truncated_obstacle_ingest_events": 3138,
+      "workflow": "SIMULATION"
+    },
+    {
+      "active_count_events": 4714,
+      "active_count_sum": 46860,
+      "control_mode": null,
+      "events": 10312,
+      "observations": 46860,
+      "obstacle_token_enabled": true,
+      "path": "pipeline\\logs\\zero_trust\\20260218_234222\\brain\\events.jsonl",
+      "porce_enable_evasion": true,
+      "status": "ok",
+      "truncated_obstacle_ingest_events": 0,
+      "workflow": null
+    },
+    {
+      "active_count_events": 844,
+      "active_count_sum": 2392,
+      "control_mode": "AUTONOMOUS",
+      "events": 1935,
+      "observations": 2392,
+      "obstacle_token_enabled": true,
+      "path": "pipeline\\logs\\zero_trust\\20260620_071403\\brain\\events.jsonl",
+      "porce_enable_evasion": true,
+      "status": "ok",
+      "truncated_obstacle_ingest_events": 0,
+      "workflow": "SIMULATION"
+    }
+  ],
+  "shape_thresholds": [
+    0.05,
+    0.1,
+    0.2,
+    0.3
+  ],
+  "smoke_by_kind": {
+    "known": {
+      "n": 6,
+      "unknown": 0
+    },
+    "open_keyword": {
+      "n": 3,
+      "unknown": 0
+    },
+    "unknown_fallback": {
+      "n": 3,
+      "unknown": 3
+    }
+  },
+  "synthetic": {
+    "action_counts": {
+      "create": 16,
+      "no_op": 36,
+      "pose_update": 94,
+      "regenerate_topology": 4,
+      "shape_param_update": 10
+    },
+    "descriptor_build_us": {
+      "max": 315.3,
+      "mean": 205.019375,
+      "min": 80.7,
+      "n": 160,
+      "p50": 189.2,
+      "p95": 304.0,
+      "p99": 312.8
+    },
+    "descriptor_bytes": {
+      "max": 8100.0,
+      "mean": 6359.75625,
+      "min": 4094.0,
+      "n": 160,
+      "p50": 6161.0,
+      "p95": 8099.0,
+      "p99": 8100.0
+    },
+    "effective_create_us": {
+      "max": 498.8,
+      "mean": 294.03499999999997,
+      "min": 37.1,
+      "n": 20,
+      "p50": 241.6,
+      "p95": 496.6,
+      "p99": 498.8
+    },
+    "packet_bytes": {
+      "max": 6566.0,
+      "mean": 1456.3375,
+      "min": 902.0,
+      "n": 160,
+      "p50": 924.0,
+      "p95": 4659.0,
+      "p99": 6565.0
+    },
+    "rows": 160,
+    "schedule_us": {
+      "max": 8.6,
+      "mean": 3.393125,
+      "min": 0.8,
+      "n": 160,
+      "p50": 3.5,
+      "p95": 4.4,
+      "p99": 5.7
+    },
+    "threshold_action_counts": {
+      "0.05": {
+        "create": 4,
+        "no_op": 9,
+        "pose_update": 21,
+        "regenerate_topology": 1,
+        "shape_param_update": 5
+      },
+      "0.1": {
+        "create": 4,
+        "no_op": 9,
+        "pose_update": 23,
+        "regenerate_topology": 1,
+        "shape_param_update": 3
+      },
+      "0.2": {
+        "create": 4,
+        "no_op": 9,
+        "pose_update": 25,
+        "regenerate_topology": 1,
+        "shape_param_update": 1
+      },
+      "0.3": {
+        "create": 4,
+        "no_op": 9,
+        "pose_update": 25,
+        "regenerate_topology": 1,
+        "shape_param_update": 1
+      }
+    }
+  },
+  "update_packet_schema": "SPPA-UPD-0.2"
+}

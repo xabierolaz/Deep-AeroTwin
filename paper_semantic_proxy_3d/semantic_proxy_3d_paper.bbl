@@ -46,6 +46,12 @@ Mica~R. Endsley.
 {Epic Games}.
 \newblock Nanite virtualized geometry in unreal engine, 2024.
 
+\bibitem{epic2026uehardware}
+{Epic Games}.
+\newblock {Hardware and Software Specifications for Unreal Engine}.
+\newblock Unreal Engine documentation, 2026.
+\newblock Accessed 2026-07-01.
+
 \bibitem{fedele2025superdec}
 Elisabetta Fedele, Boyang Sun, Leonidas Guibas, Marc Pollefeys, and Francis
   Engelmann.
@@ -115,6 +121,12 @@ Alex Nichol, Heewoo Jun, Prafulla Dhariwal, Pamela Mishkin, and Mark Chen.
   prompts.
 \newblock {\em arXiv preprint arXiv:2212.08751}, 2022.
 
+\bibitem{nvidia2026rtx50laptop}
+{NVIDIA}.
+\newblock {GeForce RTX 50 Series Gaming Laptops: Compare Specs}.
+\newblock Web page, 2026.
+\newblock Accessed 2026-07-01.
+
 \bibitem{oleynikova2017voxblox}
 Helen Oleynikova, Zachary Taylor, Marius Fehr, Juan Nieto, and Roland Siegwart.
 \newblock Voxblox: Incremental 3d euclidean signed distance fields for on-board
@@ -136,6 +148,12 @@ Despoina Paschalidou, Ali~Osman Ulusoy, and Andreas Geiger.
 Ben Poole, Ajay Jain, Jonathan~T. Barron, and Ben Mildenhall.
 \newblock Dreamfusion: Text-to-3d using 2d diffusion.
 \newblock {\em arXiv preprint arXiv:2209.14988}, 2022.
+
+\bibitem{pytorch2026memoryfraction}
+{PyTorch Contributors}.
+\newblock {torch.cuda.memory.set\_per\_process\_memory\_fraction}.
+\newblock PyTorch documentation, 2026.
+\newblock Accessed 2026-07-01.
 
 \bibitem{rosinol2020dynamic}
 Antoni Rosinol, Arjun Gupta, Marcus Abate, Jingnan Shi, and Luca Carlone.
@@ -161,12 +179,45 @@ Franc Solina and Ruzena Bajcsy.
   illumination disentanglement.
 \newblock {\em arXiv preprint arXiv:2408.00653}, 2024.
 
+\bibitem{tang2024lgm}
+Jiaxiang Tang, Zhaoxi Chen, Xiaokang Chen, Tengfei Wang, Gang Zeng, and Ziwei
+  Liu.
+\newblock Lgm: Large multi-view gaussian model for high-resolution 3d content
+  creation.
+\newblock {\em arXiv preprint arXiv:2402.05054}, 2024.
+
+\bibitem{tochilkin2024triposr}
+Dmitry Tochilkin, David Pankratz, Zexiang Liu, Zixuan Huang, Adam Letts,
+  Yangguang Li, Ding Liang, Christian Laforte, Varun Jampani, and Yan-Pei Cao.
+\newblock Triposr: Fast 3d object reconstruction from a single image.
+\newblock {\em arXiv preprint arXiv:2403.02151}, 2024.
+
 \bibitem{tulsiani2017learning}
 Shubham Tulsiani, Hao Su, Leonidas~J. Guibas, Alexei~A. Efros, and Jitendra
   Malik.
 \newblock Learning shape abstractions by assembling volumetric primitives.
 \newblock In {\em Proceedings of the IEEE Conference on Computer Vision and
   Pattern Recognition}, pages 2635--2643, 2017.
+
+\bibitem{steam2026hardware}
+{Valve Corporation}.
+\newblock {Steam Hardware \& Software Survey: May 2026}.
+\newblock Web survey, 2026.
+\newblock Accessed 2026-07-01.
+
+\bibitem{wang2024crm}
+Zhengyi Wang, Yikai Wang, Yifei Chen, Chendong Xiang, Shuo Chen, Dajiang Yu,
+  Chongxuan Li, Hang Su, and Jun Zhu.
+\newblock Crm: Single image to 3d textured mesh with convolutional
+  reconstruction model.
+\newblock {\em arXiv preprint arXiv:2403.05034}, 2024.
+
+\bibitem{wu2024unique3d}
+Kailu Wu, Fangfu Liu, Zhihan Cai, Runjie Yan, Hanyang Wang, Yating Hu, Yueqi
+  Duan, and Kaisheng Ma.
+\newblock Unique3d: High-quality and efficient 3d mesh generation from a single
+  image.
+\newblock {\em arXiv preprint arXiv:2405.20343}, 2024.
 
 \bibitem{wu2021scenegraphfusion}
 Shun-Cheng Wu, Johanna Wald, Keisuke Tateno, Nassir Navab, and Federico

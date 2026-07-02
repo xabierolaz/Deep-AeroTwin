@@ -1,0 +1,28 @@
+{
+	"mode": "packaged_internal_replay_render_stats",
+	"claim_scope": "Packaged executable internal obstacle replay with rendered frames; not live HTTP/network telemetry and estimated draw/triangle counts unless CSV profiler is parsed separately.",
+	"created_utc": "20260702T122253Z",
+	"engine_version": "5.7.4-51494982+++UE5+Release-5.7",
+	"command_line": "/Game/Default -PorceSPPAPackagedBenchmark -PorceSPPABenchmarkOutDir=D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_packaged_render\\20260702T122231Z_packaged_render -PorceSPPABenchmarkCounts=2 -PorceSPPABenchmarkBackends=no_render,unreal_assets,semantic_proxy -PorceSPPABenchmarkRepetitions=1 -PorceSPPABenchmarkWarmupFrames=3 -PorceSPPABenchmarkMeasureFrames=6 -PorceSPPABenchmarkUpdateEveryFrames=2 -PorceSPPABenchmarkSeed=20260702 -PorceSPPABenchmarkResX=1280 -PorceSPPABenchmarkResY=720 -windowed -ResX=1280 -ResY=720 -NoSound -Unattended -abslog=D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_packaged_render\\20260702T122231Z_packaged_render\\packaged_render_run.log -PorceSPPABenchmarkNoCsvProfile",
+	"out_dir": "D:/Deep-AeroTwin-UE57-Test/experiments/sppa_packaged_render/20260702T122231Z_packaged_render",
+	"repetitions": 1,
+	"warmup_frames": 3,
+	"measure_frames": 6,
+	"update_every_frames": 2,
+	"seed": 20260702,
+	"csv_profile_requested": false,
+	"counts": [
+		2
+	],
+	"backends": [
+		"no_render",
+		"unreal_assets",
+		"semantic_proxy"
+	],
+	"artifacts": [
+		"packaged_frame_stats.csv",
+		"packaged_action_rows.csv",
+		"packaged_failures.csv",
+		"run_manifest.json"
+	]
+}

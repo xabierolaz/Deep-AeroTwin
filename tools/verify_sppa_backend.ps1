@@ -97,6 +97,7 @@ foreach ($section in @(
   "component_methods",
   "component_properties",
   "component_switch",
+  "proxy_descriptor_ingestion",
   "proxy_generation",
   "proxy_reconfigure",
   "proxy_unknown_fallback",

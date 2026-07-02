@@ -1,0 +1,45 @@
+{
+  "artifacts": [
+    "run_manifest.json",
+    "input_descriptors.jsonl",
+    "actor_component_trace.jsonl",
+    "unreal_actor_microbenchmark_rows.csv",
+    "unreal_actor_microbenchmark_action_trace.csv",
+    "unreal_actor_microbenchmark_summary.json"
+  ],
+  "baselines": [
+    "no_render",
+    "billboard_label",
+    "box_proxy",
+    "ellipsoid_proxy",
+    "legacy_semantic_proxy",
+    "sppa_desc"
+  ],
+  "claim_scope": "Preliminary actor-level Unreal timings only; not /api/ui/data replay, not packaged build, not VR frame-time.",
+  "counts": [
+    10,
+    50,
+    100,
+    250,
+    500
+  ],
+  "created_utc": "20260702T085004Z",
+  "descriptor_count_loaded": 52,
+  "descriptor_input_hash": "459d477d66f5b9af",
+  "engine_version": "5.7.4-51494982+++UE5+Release-5.7",
+  "failures": [],
+  "git_dirty": true,
+  "git_head": "e7ec1ff80b96f4335599221e243d70f3e62dd716",
+  "mode": "Editor-Cmd actor microbenchmark",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "python": "3.11.8",
+  "repetitions": 10,
+  "repo": "D:\\Deep-AeroTwin-UE57-Test",
+  "row_failure_totals": {
+    "create_failures": 0,
+    "no_op_failures": 0,
+    "pose_failures": 0,
+    "shape_failures": 0
+  },
+  "updates_per_actor": 5
+}

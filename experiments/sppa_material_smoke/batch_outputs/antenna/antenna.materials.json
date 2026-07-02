@@ -1,0 +1,25 @@
+{
+  "archetype": "vertical_structure",
+  "confidence": 1.0,
+  "descriptor_schema": "SPPA-MAT-0.1",
+  "input_label": "antenna",
+  "material_policy": "evidence_calibrated_procedural_roles",
+  "materials": [
+    {
+      "alpha": 1.0,
+      "evidence_source": "semantic_prior",
+      "face_count": 39,
+      "material_role": "vertical_structure_metal",
+      "name": "structure_metal_prior",
+      "rgb": [
+        0.62,
+        0.62,
+        0.6
+      ],
+      "triangle_count": 90,
+      "uncertainty_visual_style": "none"
+    }
+  ],
+  "observed_material_policy": "not_used_unless_explicit_sensor_or_operator_evidence_is_provided",
+  "resolution_status": "keyword_archetype"
+}

@@ -1,0 +1,53 @@
+{
+  "archetype": "unknown",
+  "confidence": 1.0,
+  "descriptor_schema": "SPPA-MAT-0.1",
+  "input_label": "mystery_object",
+  "material_policy": "evidence_calibrated_procedural_roles",
+  "materials": [
+    {
+      "alpha": 0.85,
+      "evidence_source": "fallback_unknown",
+      "face_count": 13,
+      "material_role": "uncertainty_marker",
+      "name": "uncertainty_marker_fallback",
+      "rgb": [
+        0.95,
+        0.72,
+        0.06
+      ],
+      "triangle_count": 22,
+      "uncertainty_visual_style": "warning_marker"
+    },
+    {
+      "alpha": 0.65,
+      "evidence_source": "fallback_unknown",
+      "face_count": 18,
+      "material_role": "unknown_footprint",
+      "name": "unknown_footprint_fallback",
+      "rgb": [
+        0.38,
+        0.38,
+        0.4
+      ],
+      "triangle_count": 60,
+      "uncertainty_visual_style": "desaturated_unknown"
+    },
+    {
+      "alpha": 0.72,
+      "evidence_source": "fallback_unknown",
+      "face_count": 6,
+      "material_role": "unknown_conservative_volume",
+      "name": "unknown_volume_fallback",
+      "rgb": [
+        0.55,
+        0.55,
+        0.58
+      ],
+      "triangle_count": 12,
+      "uncertainty_visual_style": "desaturated_unknown"
+    }
+  ],
+  "observed_material_policy": "not_used_unless_explicit_sensor_or_operator_evidence_is_provided",
+  "resolution_status": "fallback_unknown_label"
+}

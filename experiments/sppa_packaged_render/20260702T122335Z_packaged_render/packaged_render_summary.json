@@ -1,0 +1,3755 @@
+{
+  "claim_scope": "Packaged executable internal obstacle replay with rendered frames. This summary uses Tick delta frame time and estimated triangles/draw calls from static mesh components; it is not an HTTP/network replay unless stated by the manifest.",
+  "manifest": {
+    "mode": "packaged_internal_replay_render_stats",
+    "claim_scope": "Packaged executable internal obstacle replay with rendered frames; not live HTTP/network telemetry and estimated draw/triangle counts unless CSV profiler is parsed separately.",
+    "created_utc": "20260702T122501Z",
+    "engine_version": "5.7.4-51494982+++UE5+Release-5.7",
+    "command_line": "/Game/Default -PorceSPPAPackagedBenchmark -PorceSPPABenchmarkOutDir=D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_packaged_render\\20260702T122335Z_packaged_render -PorceSPPABenchmarkCounts=10,50,100 -PorceSPPABenchmarkBackends=no_render,unreal_assets,semantic_proxy -PorceSPPABenchmarkRepetitions=3 -PorceSPPABenchmarkWarmupFrames=30 -PorceSPPABenchmarkMeasureFrames=120 -PorceSPPABenchmarkUpdateEveryFrames=15 -PorceSPPABenchmarkSeed=20260702 -PorceSPPABenchmarkResX=1280 -PorceSPPABenchmarkResY=720 -windowed -ResX=1280 -ResY=720 -NoSound -Unattended -abslog=D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_packaged_render\\20260702T122335Z_packaged_render\\packaged_render_run.log -PorceSPPABenchmarkNoCsvProfile",
+    "out_dir": "D:/Deep-AeroTwin-UE57-Test/experiments/sppa_packaged_render/20260702T122335Z_packaged_render",
+    "repetitions": 3,
+    "warmup_frames": 30,
+    "measure_frames": 120,
+    "update_every_frames": 15,
+    "seed": 20260702,
+    "csv_profile_requested": false,
+    "counts": [
+      10,
+      50,
+      100
+    ],
+    "backends": [
+      "no_render",
+      "unreal_assets",
+      "semantic_proxy"
+    ],
+    "artifacts": [
+      "packaged_frame_stats.csv",
+      "packaged_action_rows.csv",
+      "packaged_failures.csv",
+      "run_manifest.json"
+    ]
+  },
+  "frame_summary": [
+    {
+      "backend": "no_render",
+      "count": 10,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 360,
+        "mean": 8.113607794444444,
+        "p50": 8.394299499999999,
+        "p95": 9.87720585,
+        "p99": 12.685944000000005,
+        "max": 25.690596,
+        "min": 4.320402
+      },
+      "fps": {
+        "n": 360,
+        "mean": 128.09391899444444,
+        "p50": 119.1284675,
+        "p95": 173.23994455000002,
+        "p99": 181.52212482000004,
+        "max": 231.459961,
+        "min": 38.924747
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 10,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 7.224782755555556,
+        "p50": 6.638998,
+        "p95": 9.268896849999999,
+        "p99": 9.739451770000002,
+        "max": 12.0917,
+        "min": 5.3824
+      },
+      "fps": {
+        "n": 360,
+        "mean": 142.7299628861111,
+        "p50": 150.625183,
+        "p95": 175.3968556,
+        "p99": 181.45655872,
+        "max": 185.790726,
+        "min": 82.701355
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 10,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 7.346179727777778,
+        "p50": 6.77445,
+        "p95": 9.691045000000003,
+        "p99": 10.706811000000004,
+        "max": 14.514599,
+        "min": 5.285699
+      },
+      "fps": {
+        "n": 360,
+        "mean": 141.62922245000001,
+        "p50": 147.61362450000001,
+        "p95": 179.11292745,
+        "p99": 185.39443945000008,
+        "max": 189.189743,
+        "min": 68.896149
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 50,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 360,
+        "mean": 6.468286972222222,
+        "p50": 6.391551,
+        "p95": 7.5281827,
+        "p99": 8.712711180000007,
+        "max": 10.911502,
+        "min": 5.3051
+      },
+      "fps": {
+        "n": 360,
+        "mean": 156.01501729722222,
+        "p50": 156.456558,
+        "p95": 177.57625615000003,
+        "p99": 184.44901837,
+        "max": 188.497849,
+        "min": 91.646408
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 50,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 6.353756394444444,
+        "p50": 6.303852,
+        "p95": 7.24133195,
+        "p99": 7.663843000000003,
+        "max": 8.2541,
+        "min": 5.396999
+      },
+      "fps": {
+        "n": 360,
+        "mean": 158.14834360555557,
+        "p50": 158.63315599999999,
+        "p95": 174.31366764999999,
+        "p99": 179.73266913,
+        "max": 185.288147,
+        "min": 121.151917
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 50,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 6.418360266666666,
+        "p50": 6.329199,
+        "p95": 7.42410005,
+        "p99": 8.154738820000002,
+        "max": 9.330101,
+        "min": 5.248301
+      },
+      "fps": {
+        "n": 360,
+        "mean": 157.0339621777778,
+        "p50": 157.997902,
+        "p95": 178.0005924,
+        "p99": 184.40020246000012,
+        "max": 190.537857,
+        "min": 107.17997
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 100,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 360,
+        "mean": 6.342493886111111,
+        "p50": 6.2577,
+        "p95": 7.45608685,
+        "p99": 8.239292,
+        "max": 8.778199,
+        "min": 5.188901
+      },
+      "fps": {
+        "n": 360,
+        "mean": 158.87630591944446,
+        "p50": 159.803154,
+        "p95": 179.56193295,
+        "p99": 188.07949056,
+        "max": 192.71904,
+        "min": 113.918579
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 100,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 6.3718152888888895,
+        "p50": 6.3050014999999995,
+        "p95": 7.37643295,
+        "p99": 7.851693230000001,
+        "max": 9.2576,
+        "min": 4.242301
+      },
+      "fps": {
+        "n": 360,
+        "mean": 158.13224107777776,
+        "p50": 158.6042635,
+        "p95": 177.57280980000002,
+        "p99": 185.16855404000006,
+        "max": 235.72113,
+        "min": 108.019363
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 100,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 6.3030652666666676,
+        "p50": 6.200051,
+        "p95": 7.34727095,
+        "p99": 8.081859230000001,
+        "max": 8.352798,
+        "min": 3.893301
+      },
+      "fps": {
+        "n": 360,
+        "mean": 159.9419795,
+        "p50": 161.28900149999998,
+        "p95": 180.66995450000002,
+        "p99": 188.57034091000008,
+        "max": 256.85144,
+        "min": 119.720367
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 10,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 360,
+        "mean": 6.885846422222222,
+        "p50": 6.831251,
+        "p95": 8.1067521,
+        "p99": 8.713620000000002,
+        "max": 9.378098,
+        "min": 5.164198
+      },
+      "fps": {
+        "n": 360,
+        "mean": 147.11353127777778,
+        "p50": 146.3860705,
+        "p95": 174.07969275000002,
+        "p99": 181.56375541000006,
+        "max": 193.640884,
+        "min": 106.631432
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 44.0,
+      "estimated_triangles_p50": 23760.0,
+      "estimated_draw_calls_p50": 44.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 10,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 6.785383075,
+        "p50": 6.8113,
+        "p95": 7.87599795,
+        "p99": 8.36306641,
+        "max": 10.5762,
+        "min": 5.341902
+      },
+      "fps": {
+        "n": 360,
+        "mean": 148.77670260833332,
+        "p50": 146.81484999999998,
+        "p95": 174.16890510000002,
+        "p99": 182.78274215000005,
+        "max": 187.199234,
+        "min": 94.551918
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 44.0,
+      "estimated_triangles_p50": 23760.0,
+      "estimated_draw_calls_p50": 44.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 10,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 7.034474147222221,
+        "p50": 6.9935995,
+        "p95": 8.05192095,
+        "p99": 8.55932918,
+        "max": 10.428198,
+        "min": 5.7658
+      },
+      "fps": {
+        "n": 360,
+        "mean": 143.04480714444446,
+        "p50": 142.987915,
+        "p95": 160.497969,
+        "p99": 163.56216346000002,
+        "max": 173.436493,
+        "min": 95.893845
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 44.0,
+      "estimated_triangles_p50": 23760.0,
+      "estimated_draw_calls_p50": 44.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 50,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 360,
+        "mean": 6.359240858333333,
+        "p50": 6.2849505,
+        "p95": 7.3249318,
+        "p99": 8.127709950000003,
+        "max": 8.910398,
+        "min": 5.255099
+      },
+      "fps": {
+        "n": 360,
+        "mean": 158.16500600833334,
+        "p50": 159.110245,
+        "p95": 173.70987815,
+        "p99": 179.89205213000005,
+        "max": 190.291351,
+        "min": 112.228424
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 216.0,
+      "estimated_triangles_p50": 104432.0,
+      "estimated_draw_calls_p50": 216.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 50,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 6.737483844444445,
+        "p50": 6.3797495,
+        "p95": 11.547029950000002,
+        "p99": 12.785827770000001,
+        "max": 15.219401,
+        "min": 4.126299
+      },
+      "fps": {
+        "n": 360,
+        "mean": 154.2218098472222,
+        "p50": 156.746025,
+        "p95": 189.5468333,
+        "p99": 226.1382204400001,
+        "max": 242.347916,
+        "min": 65.705605
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 216.0,
+      "estimated_triangles_p50": 104432.0,
+      "estimated_draw_calls_p50": 216.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 50,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 7.141140844444444,
+        "p50": 6.7761505,
+        "p95": 12.124805000000004,
+        "p99": 13.332642,
+        "max": 14.014502,
+        "min": 4.572101
+      },
+      "fps": {
+        "n": 360,
+        "mean": 145.14371202499999,
+        "p50": 147.5764465,
+        "p95": 184.2331791,
+        "p99": 206.1907796700001,
+        "max": 218.717834,
+        "min": 71.35466
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 216.0,
+      "estimated_triangles_p50": 104432.0,
+      "estimated_draw_calls_p50": 216.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 100,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 360,
+        "mean": 7.220567791666667,
+        "p50": 7.2780495,
+        "p95": 8.44109405,
+        "p99": 9.119933230000001,
+        "max": 9.636398,
+        "min": 5.544301
+      },
+      "fps": {
+        "n": 360,
+        "mean": 139.85648065555554,
+        "p50": 137.3994525,
+        "p95": 164.16063119999998,
+        "p99": 169.06018734999998,
+        "max": 180.365387,
+        "min": 103.773209
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 432.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 432.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 100,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 7.904883002777778,
+        "p50": 6.8846515,
+        "p95": 20.941454950000004,
+        "p99": 23.775935180000012,
+        "max": 24.604399,
+        "min": 4.774399
+      },
+      "fps": {
+        "n": 360,
+        "mean": 140.31755105555555,
+        "p50": 145.2506335,
+        "p95": 176.1396379,
+        "p99": 195.59041586,
+        "max": 209.450439,
+        "min": 40.643139
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 432.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 432.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 100,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 8.042169183333334,
+        "p50": 6.858449500000001,
+        "p95": 21.0466259,
+        "p99": 23.519228180000013,
+        "max": 24.639502,
+        "min": 4.7337
+      },
+      "fps": {
+        "n": 360,
+        "mean": 137.72254029166666,
+        "p50": 145.805557,
+        "p95": 170.05096985,
+        "p99": 193.17786214000012,
+        "max": 211.251221,
+        "min": 40.585236
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 432.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 432.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 10,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 360,
+        "mean": 6.341791952777777,
+        "p50": 6.2432995,
+        "p95": 7.5075239499999995,
+        "p99": 8.008269820000002,
+        "max": 8.196301,
+        "min": 5.021502
+      },
+      "fps": {
+        "n": 360,
+        "mean": 159.00768800277777,
+        "p50": 160.17191300000002,
+        "p95": 180.7383719,
+        "p99": 186.89760776000003,
+        "max": 199.143631,
+        "min": 122.006248
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 10.0,
+      "estimated_triangles_p50": 480.0,
+      "estimated_draw_calls_p50": 10.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 10,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 6.803675277777778,
+        "p50": 6.81065,
+        "p95": 8.042005,
+        "p99": 8.814972410000003,
+        "max": 9.559702,
+        "min": 5.195402
+      },
+      "fps": {
+        "n": 360,
+        "mean": 148.76887254444443,
+        "p50": 146.829094,
+        "p95": 176.7297992,
+        "p99": 184.26032276,
+        "max": 192.477905,
+        "min": 104.605766
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 10.0,
+      "estimated_triangles_p50": 480.0,
+      "estimated_draw_calls_p50": 10.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 10,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 6.295082777777778,
+        "p50": 6.2194505,
+        "p95": 7.3604409,
+        "p99": 7.8276084100000025,
+        "max": 9.1144,
+        "min": 5.212199
+      },
+      "fps": {
+        "n": 360,
+        "mean": 159.96044634722222,
+        "p50": 160.785912,
+        "p95": 178.66490295,
+        "p99": 183.51063125000002,
+        "max": 191.857605,
+        "min": 109.716499
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 10.0,
+      "estimated_triangles_p50": 480.0,
+      "estimated_draw_calls_p50": 10.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 50,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 360,
+        "mean": 6.4315236166666665,
+        "p50": 6.377248,
+        "p95": 7.443728050000001,
+        "p99": 7.848683000000001,
+        "max": 8.600999,
+        "min": 5.311102
+      },
+      "fps": {
+        "n": 360,
+        "mean": 156.62129331111112,
+        "p50": 156.80744900000002,
+        "p95": 177.03380165000002,
+        "p99": 181.77670167000002,
+        "max": 188.284851,
+        "min": 116.265572
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 50.0,
+      "estimated_triangles_p50": 2400.0,
+      "estimated_draw_calls_p50": 50.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 50,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 6.719664438888889,
+        "p50": 6.666999000000001,
+        "p95": 7.9077449500000006,
+        "p99": 8.786142180000008,
+        "max": 9.283998,
+        "min": 5.353101
+      },
+      "fps": {
+        "n": 360,
+        "mean": 150.36702971944445,
+        "p50": 149.99253099999999,
+        "p95": 174.47722885,
+        "p99": 179.18318649000003,
+        "max": 186.807617,
+        "min": 107.712227
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 50.0,
+      "estimated_triangles_p50": 2400.0,
+      "estimated_draw_calls_p50": 50.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 50,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 6.910960819444444,
+        "p50": 6.8504974999999995,
+        "p95": 8.257465900000001,
+        "p99": 8.80106323,
+        "max": 9.6112,
+        "min": 5.160697
+      },
+      "fps": {
+        "n": 360,
+        "mean": 146.70330375,
+        "p50": 145.974838,
+        "p95": 176.18706765000005,
+        "p99": 184.07817698000002,
+        "max": 193.772278,
+        "min": 104.045273
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 50.0,
+      "estimated_triangles_p50": 2400.0,
+      "estimated_draw_calls_p50": 50.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 100,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 360,
+        "mean": 6.6694689,
+        "p50": 6.676199,
+        "p95": 7.767679,
+        "p99": 8.441123590000007,
+        "max": 10.5532,
+        "min": 5.211599
+      },
+      "fps": {
+        "n": 360,
+        "mean": 151.3937461111111,
+        "p50": 149.78583550000002,
+        "p95": 175.4060388,
+        "p99": 185.13941748000002,
+        "max": 191.879684,
+        "min": 94.757988
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 100.0,
+      "estimated_triangles_p50": 4800.0,
+      "estimated_draw_calls_p50": 100.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 100,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 6.366510011111111,
+        "p50": 6.2310490000000005,
+        "p95": 7.890093950000001,
+        "p99": 8.773758820000005,
+        "max": 10.165099,
+        "min": 3.851201
+      },
+      "fps": {
+        "n": 360,
+        "mean": 159.74842560555555,
+        "p50": 160.48663299999998,
+        "p95": 190.4850299500001,
+        "p99": 227.85517921000036,
+        "max": 259.659241,
+        "min": 98.375824
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 100.0,
+      "estimated_triangles_p50": 4800.0,
+      "estimated_draw_calls_p50": 100.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 100,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 6.462756436111111,
+        "p50": 6.362299999999999,
+        "p95": 7.653689999999999,
+        "p99": 8.618937820000003,
+        "max": 9.4072,
+        "min": 4.1366
+      },
+      "fps": {
+        "n": 360,
+        "mean": 156.6550539361111,
+        "p50": 157.17587300000002,
+        "p95": 180.88194855,
+        "p99": 206.38218400000025,
+        "max": 241.744446,
+        "min": 106.301559
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 100.0,
+      "estimated_triangles_p50": 4800.0,
+      "estimated_draw_calls_p50": 100.0
+    }
+  ],
+  "frame_summary_by_repetition": [
+    {
+      "backend": "no_render",
+      "count": 10,
+      "repetition": 0,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 8.743182525,
+        "p50": 8.4167515,
+        "p95": 10.9768859,
+        "p99": 14.626221000000005,
+        "max": 25.690596,
+        "min": 4.320402
+      },
+      "fps": {
+        "n": 120,
+        "mean": 117.71211303333332,
+        "p50": 118.810688,
+        "p95": 129.45311525,
+        "p99": 192.74387707000017,
+        "max": 231.459961,
+        "min": 38.924747
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 10,
+      "repetition": 0,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 8.799833325,
+        "p50": 8.706450499999999,
+        "p95": 9.56499595,
+        "p99": 10.932882620000004,
+        "max": 12.0917,
+        "min": 7.868398
+      },
+      "fps": {
+        "n": 120,
+        "mean": 114.05476526666666,
+        "p50": 114.857372,
+        "p95": 123.1679746,
+        "p99": 125.31205369999999,
+        "max": 127.090675,
+        "min": 82.701355
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 10,
+      "repetition": 0,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 9.257003325,
+        "p50": 9.137850499999999,
+        "p95": 10.549507000000002,
+        "p99": 12.163080190000004,
+        "max": 14.514599,
+        "min": 7.878501
+      },
+      "fps": {
+        "n": 120,
+        "mean": 108.692594375,
+        "p50": 109.43494799999999,
+        "p95": 119.84547229999998,
+        "p99": 121.30413058,
+        "max": 126.927696,
+        "min": 68.896149
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 10,
+      "repetition": 1,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 9.2125325,
+        "p50": 9.1390015,
+        "p95": 10.02123705,
+        "p99": 10.23780562,
+        "max": 10.286599,
+        "min": 8.204497
+      },
+      "fps": {
+        "n": 120,
+        "mean": 108.80807156666667,
+        "p50": 109.4224055,
+        "p95": 116.7874088,
+        "p99": 120.76866502,
+        "max": 121.884369,
+        "min": 97.21386
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 10,
+      "repetition": 1,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.699801658333333,
+        "p50": 6.461648,
+        "p95": 8.43743895,
+        "p99": 9.082815570000001,
+        "max": 9.3619,
+        "min": 5.612701
+      },
+      "fps": {
+        "n": 120,
+        "mean": 151.22743385,
+        "p50": 154.7595215,
+        "p95": 171.70733235000003,
+        "p99": 177.06812231000004,
+        "max": 178.167328,
+        "min": 106.815918
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 10,
+      "repetition": 1,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.780791649999999,
+        "p50": 6.6889505,
+        "p95": 7.674359999999999,
+        "p99": 8.245766569999999,
+        "max": 8.7099,
+        "min": 5.836002
+      },
+      "fps": {
+        "n": 120,
+        "mean": 148.3918417666667,
+        "p50": 149.5002825,
+        "p95": 165.0707085,
+        "p99": 169.91474811,
+        "max": 171.350159,
+        "min": 114.811882
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 10,
+      "repetition": 2,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.385108358333333,
+        "p50": 6.299753,
+        "p95": 7.251077949999999,
+        "p99": 7.88314957,
+        "max": 7.919397,
+        "min": 5.432602
+      },
+      "fps": {
+        "n": 120,
+        "mean": 157.76157238333332,
+        "p50": 158.73638949999997,
+        "p95": 180.13202969999998,
+        "p99": 182.21792562000002,
+        "max": 184.073853,
+        "min": 126.27224
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 10,
+      "repetition": 2,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.174713283333333,
+        "p50": 6.096,
+        "p95": 7.06481115,
+        "p99": 7.797761190000001,
+        "max": 8.341297,
+        "min": 5.3824
+      },
+      "fps": {
+        "n": 120,
+        "mean": 162.90768954166666,
+        "p50": 164.042,
+        "p95": 180.77561985,
+        "p99": 183.59951389,
+        "max": 185.790726,
+        "min": 119.885422
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 10,
+      "repetition": 2,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.000744208333333,
+        "p50": 5.840450499999999,
+        "p95": 6.9104149,
+        "p99": 8.022674000000002,
+        "max": 8.203301,
+        "min": 5.285699
+      },
+      "fps": {
+        "n": 120,
+        "mean": 167.80323120833333,
+        "p50": 171.220619,
+        "p95": 184.01316875,
+        "p99": 188.27430134999997,
+        "max": 189.189743,
+        "min": 121.902138
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 50,
+      "repetition": 0,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.4048508166666664,
+        "p50": 6.4163485,
+        "p95": 7.261992,
+        "p99": 7.673818,
+        "max": 8.851301,
+        "min": 5.3051
+      },
+      "fps": {
+        "n": 120,
+        "mean": 157.23649616666668,
+        "p50": 155.8525085,
+        "p95": 178.95907785,
+        "p99": 186.26630379,
+        "max": 188.497849,
+        "min": 112.977745
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 50,
+      "repetition": 0,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.366325833333334,
+        "p50": 6.308751,
+        "p95": 7.1922339,
+        "p99": 7.5890536200000005,
+        "max": 7.797196,
+        "min": 5.557101
+      },
+      "fps": {
+        "n": 120,
+        "mean": 157.77514066666666,
+        "p50": 158.5101015,
+        "p95": 175.3599114,
+        "p99": 179.80762633,
+        "max": 179.949936,
+        "min": 128.251221
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 50,
+      "repetition": 0,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.288340833333334,
+        "p50": 6.1884505,
+        "p95": 7.473784899999999,
+        "p99": 8.034740430000001,
+        "max": 8.6359,
+        "min": 5.3396
+      },
+      "fps": {
+        "n": 120,
+        "mean": 160.33526058333334,
+        "p50": 161.5925595,
+        "p95": 179.58640354999997,
+        "p99": 185.98333710000003,
+        "max": 187.279938,
+        "min": 115.795677
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 50,
+      "repetition": 1,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.129784233333334,
+        "p50": 6.0328005000000005,
+        "p95": 7.2294132,
+        "p99": 7.57330462,
+        "max": 7.935502,
+        "min": 5.4176
+      },
+      "fps": {
+        "n": 120,
+        "mean": 164.03455696666666,
+        "p50": 165.7610325,
+        "p95": 181.0172208,
+        "p99": 183.05263533,
+        "max": 184.583572,
+        "min": 126.015976
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 50,
+      "repetition": 1,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.18045415,
+        "p50": 6.0947,
+        "p95": 7.07746,
+        "p99": 7.55230519,
+        "max": 7.763799,
+        "min": 5.396999
+      },
+      "fps": {
+        "n": 120,
+        "mean": 162.52430412500001,
+        "p50": 164.07709499999999,
+        "p95": 176.243967,
+        "p99": 179.80557593,
+        "max": 185.288147,
+        "min": 128.802917
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 50,
+      "repetition": 1,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.606917516666667,
+        "p50": 6.5240995,
+        "p95": 7.346064999999999,
+        "p99": 8.088633810000001,
+        "max": 9.330101,
+        "min": 5.826399
+      },
+      "fps": {
+        "n": 120,
+        "mean": 152.14416253333331,
+        "p50": 153.277878,
+        "p95": 167.10490969999998,
+        "p99": 171.14650761000001,
+        "max": 171.632599,
+        "min": 107.17997
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 50,
+      "repetition": 2,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.870225866666667,
+        "p50": 6.696149500000001,
+        "p95": 8.0326401,
+        "p99": 8.887442190000002,
+        "max": 10.911502,
+        "min": 5.803499
+      },
+      "fps": {
+        "n": 120,
+        "mean": 146.77399875833333,
+        "p50": 149.33956899999998,
+        "p95": 161.78330684999997,
+        "p99": 167.30666932000003,
+        "max": 172.30983,
+        "min": 91.646408
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 50,
+      "repetition": 2,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.5144892,
+        "p50": 6.4806495,
+        "p95": 7.283954100000001,
+        "p99": 7.67991381,
+        "max": 8.2541,
+        "min": 5.593799
+      },
+      "fps": {
+        "n": 120,
+        "mean": 154.145586025,
+        "p50": 154.30553450000002,
+        "p95": 168.9235382,
+        "p99": 171.94166368,
+        "max": 178.769379,
+        "min": 121.151917
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 50,
+      "repetition": 2,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.359822449999999,
+        "p50": 6.273551,
+        "p95": 7.42410005,
+        "p99": 8.15696424,
+        "max": 8.195698,
+        "min": 5.248301
+      },
+      "fps": {
+        "n": 120,
+        "mean": 158.62246341666665,
+        "p50": 159.39988699999998,
+        "p95": 179.18814805000002,
+        "p99": 186.19365946000002,
+        "max": 190.537857,
+        "min": 122.015228
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 100,
+      "repetition": 0,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.193795066666667,
+        "p50": 6.143098999999999,
+        "p95": 7.10718285,
+        "p99": 7.522897,
+        "max": 7.6712,
+        "min": 5.3069
+      },
+      "fps": {
+        "n": 120,
+        "mean": 162.15706875833334,
+        "p50": 162.78434,
+        "p95": 178.94584160000002,
+        "p99": 183.28226083,
+        "max": 188.433945,
+        "min": 130.357712
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 100,
+      "repetition": 0,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.731031675,
+        "p50": 6.6964015,
+        "p95": 7.7299207999999995,
+        "p99": 7.87617443,
+        "max": 9.2576,
+        "min": 5.490798
+      },
+      "fps": {
+        "n": 120,
+        "mean": 149.5032073416667,
+        "p50": 149.33396900000002,
+        "p95": 169.37443649999997,
+        "p99": 176.74495803000002,
+        "max": 182.122879,
+        "min": 108.019363
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 100,
+      "repetition": 0,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.3828582916666665,
+        "p50": 6.3311495,
+        "p95": 7.40002395,
+        "p99": 8.10426043,
+        "max": 8.2951,
+        "min": 5.456
+      },
+      "fps": {
+        "n": 120,
+        "mean": 157.83786185833333,
+        "p50": 157.9492035,
+        "p95": 180.19791675,
+        "p99": 182.68873849,
+        "max": 183.284439,
+        "min": 120.553093
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 100,
+      "repetition": 1,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.4078474666666665,
+        "p50": 6.2893015000000005,
+        "p95": 7.66041495,
+        "p99": 8.498034810000002,
+        "max": 8.778199,
+        "min": 5.188901
+      },
+      "fps": {
+        "n": 120,
+        "mean": 158.04517669999998,
+        "p50": 159.0002825,
+        "p95": 183.2077205,
+        "p99": 189.11997176,
+        "max": 192.71904,
+        "min": 113.918579
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 100,
+      "repetition": 1,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.071559158333333,
+        "p50": 6.006149499999999,
+        "p95": 6.7976021499999995,
+        "p99": 7.257015000000001,
+        "max": 7.605601,
+        "min": 5.316403
+      },
+      "fps": {
+        "n": 120,
+        "mean": 165.45455756666667,
+        "p50": 166.4966125,
+        "p95": 179.6004652,
+        "p99": 187.11952256,
+        "max": 188.097107,
+        "min": 131.48204
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 100,
+      "repetition": 1,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.2604142,
+        "p50": 6.1353,
+        "p95": 7.208574099999999,
+        "p99": 7.483625379999999,
+        "max": 8.352798,
+        "min": 5.2533
+      },
+      "fps": {
+        "n": 120,
+        "mean": 160.749736625,
+        "p50": 162.9912185,
+        "p95": 178.27639385,
+        "p99": 182.90261114000003,
+        "max": 190.356537,
+        "min": 119.720367
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 100,
+      "repetition": 2,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.4258391249999995,
+        "p50": 6.3545515,
+        "p95": 7.4071628,
+        "p99": 7.756741379999999,
+        "max": 8.2695,
+        "min": 5.539902
+      },
+      "fps": {
+        "n": 120,
+        "mean": 156.4266723,
+        "p50": 157.36774450000001,
+        "p95": 172.91530115,
+        "p99": 177.65551293000001,
+        "max": 180.508621,
+        "min": 120.926292
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 100,
+      "repetition": 2,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.312855033333333,
+        "p50": 6.2598495,
+        "p95": 7.1441927000000005,
+        "p99": 7.81707362,
+        "max": 8.3813,
+        "min": 4.242301
+      },
+      "fps": {
+        "n": 120,
+        "mean": 159.438958325,
+        "p50": 159.7484515,
+        "p95": 176.6568686,
+        "p99": 181.79088475999998,
+        "max": 235.72113,
+        "min": 119.31324
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 100,
+      "repetition": 2,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.265923308333333,
+        "p50": 6.1559004999999996,
+        "p95": 7.3200031,
+        "p99": 7.86340238,
+        "max": 8.163597,
+        "min": 3.893301
+      },
+      "fps": {
+        "n": 120,
+        "mean": 161.23834001666668,
+        "p50": 162.44577049999998,
+        "p95": 182.73351845,
+        "p99": 193.01244227,
+        "max": 256.85144,
+        "min": 122.495018
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 0.0,
+      "static_mesh_components_p50": 0.0,
+      "estimated_triangles_p50": 0.0,
+      "estimated_draw_calls_p50": 0.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 10,
+      "repetition": 0,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.115071725000001,
+        "p50": 6.080199,
+        "p95": 6.89637405,
+        "p99": 7.7415205700000005,
+        "max": 8.096498,
+        "min": 5.164198
+      },
+      "fps": {
+        "n": 120,
+        "mean": 164.29817250833332,
+        "p50": 164.468353,
+        "p95": 179.7927603,
+        "p99": 183.56997152000002,
+        "max": 193.640884,
+        "min": 123.510201
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 44.0,
+      "estimated_triangles_p50": 23760.0,
+      "estimated_draw_calls_p50": 44.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 10,
+      "repetition": 0,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.169781666666666,
+        "p50": 6.058501,
+        "p95": 7.076284949999999,
+        "p99": 7.968541190000002,
+        "max": 8.159399,
+        "min": 5.341902
+      },
+      "fps": {
+        "n": 120,
+        "mean": 163.04055204166667,
+        "p50": 165.0573655,
+        "p95": 178.07654529999996,
+        "p99": 186.52808783,
+        "max": 187.199234,
+        "min": 122.558044
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 44.0,
+      "estimated_triangles_p50": 23760.0,
+      "estimated_draw_calls_p50": 44.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 10,
+      "repetition": 0,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.052803333333333,
+        "p50": 6.984949,
+        "p95": 8.0687051,
+        "p99": 8.591648379999999,
+        "max": 10.428198,
+        "min": 6.124198
+      },
+      "fps": {
+        "n": 120,
+        "mean": 142.75974724166664,
+        "p50": 143.16497049999998,
+        "p95": 159.02290075000002,
+        "p99": 162.81242413,
+        "max": 163.286682,
+        "min": 95.893845
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 44.0,
+      "estimated_triangles_p50": 23760.0,
+      "estimated_draw_calls_p50": 44.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 10,
+      "repetition": 1,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.613598358333333,
+        "p50": 7.5886515,
+        "p95": 8.5985049,
+        "p99": 9.180204430000002,
+        "max": 9.378098,
+        "min": 6.620597
+      },
+      "fps": {
+        "n": 120,
+        "mean": 131.97208215,
+        "p50": 131.7758485,
+        "p95": 146.5309986,
+        "p99": 150.59933779,
+        "max": 151.043777,
+        "min": 106.631432
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 44.0,
+      "estimated_triangles_p50": 23760.0,
+      "estimated_draw_calls_p50": 44.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 10,
+      "repetition": 1,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.0818867333333335,
+        "p50": 7.0395995,
+        "p95": 8.07938095,
+        "p99": 8.37210681,
+        "max": 8.6395,
+        "min": 6.186299
+      },
+      "fps": {
+        "n": 120,
+        "mean": 141.7832598583333,
+        "p50": 142.0536805,
+        "p95": 155.3766634,
+        "p99": 158.94299866,
+        "max": 161.647537,
+        "min": 115.747444
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 44.0,
+      "estimated_triangles_p50": 23760.0,
+      "estimated_draw_calls_p50": 44.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 10,
+      "repetition": 1,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.9496049499999994,
+        "p50": 6.8935995,
+        "p95": 7.787441899999999,
+        "p99": 8.16170581,
+        "max": 8.279901,
+        "min": 5.870301
+      },
+      "fps": {
+        "n": 120,
+        "mean": 144.60673555,
+        "p50": 145.0621185,
+        "p95": 160.09980280000002,
+        "p99": 163.76448054,
+        "max": 170.349014,
+        "min": 120.774391
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 44.0,
+      "estimated_triangles_p50": 23760.0,
+      "estimated_draw_calls_p50": 44.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 10,
+      "repetition": 2,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.928869183333333,
+        "p50": 6.8365,
+        "p95": 7.93732595,
+        "p99": 8.262702380000002,
+        "max": 8.497801,
+        "min": 6.021801
+      },
+      "fps": {
+        "n": 120,
+        "mean": 145.070339175,
+        "p50": 146.273758,
+        "p95": 160.0166384,
+        "p99": 161.23844047,
+        "max": 166.063263,
+        "min": 117.677505
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 44.0,
+      "estimated_triangles_p50": 23760.0,
+      "estimated_draw_calls_p50": 44.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 10,
+      "repetition": 2,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.1044808249999996,
+        "p50": 6.998502,
+        "p95": 7.9902168,
+        "p99": 8.402698,
+        "max": 10.5762,
+        "min": 6.027199
+      },
+      "fps": {
+        "n": 120,
+        "mean": 141.506295925,
+        "p50": 142.88774899999999,
+        "p95": 153.8344654,
+        "p99": 157.9834677,
+        "max": 165.914536,
+        "min": 94.551918
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 44.0,
+      "estimated_triangles_p50": 23760.0,
+      "estimated_draw_calls_p50": 44.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 10,
+      "repetition": 2,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.101014158333333,
+        "p50": 7.0840510000000005,
+        "p95": 8.17536395,
+        "p99": 8.735586190000001,
+        "max": 8.884299,
+        "min": 5.7658
+      },
+      "fps": {
+        "n": 120,
+        "mean": 141.76793864166666,
+        "p50": 141.1621705,
+        "p95": 161.89207685,
+        "p99": 163.77730861999999,
+        "max": 173.436493,
+        "min": 112.558113
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 44.0,
+      "estimated_triangles_p50": 23760.0,
+      "estimated_draw_calls_p50": 44.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 50,
+      "repetition": 0,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.389391708333333,
+        "p50": 6.275199,
+        "p95": 7.45649195,
+        "p99": 8.154547950000001,
+        "max": 8.910398,
+        "min": 5.468603
+      },
+      "fps": {
+        "n": 120,
+        "mean": 157.49960780833334,
+        "p50": 159.357483,
+        "p95": 172.6320368,
+        "p99": 180.66133686999999,
+        "max": 182.862045,
+        "min": 112.228424
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 216.0,
+      "estimated_triangles_p50": 104432.0,
+      "estimated_draw_calls_p50": 216.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 50,
+      "repetition": 0,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.875389966666666,
+        "p50": 6.5858495,
+        "p95": 11.55136005,
+        "p99": 12.764566380000002,
+        "max": 12.9367,
+        "min": 4.4838
+      },
+      "fps": {
+        "n": 120,
+        "mean": 150.51774301666669,
+        "p50": 151.840729,
+        "p95": 177.97586939999997,
+        "p99": 215.24901491999998,
+        "max": 223.025101,
+        "min": 77.299461
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 216.0,
+      "estimated_triangles_p50": 104432.0,
+      "estimated_draw_calls_p50": 216.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 50,
+      "repetition": 0,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.369180825,
+        "p50": 7.0225,
+        "p95": 11.687291949999999,
+        "p99": 13.309803190000002,
+        "max": 13.382099,
+        "min": 4.9368
+      },
+      "fps": {
+        "n": 120,
+        "mean": 140.234632225,
+        "p50": 142.399681,
+        "p95": 172.48874839999996,
+        "p99": 197.73246392000001,
+        "max": 202.560394,
+        "min": 74.726692
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 216.0,
+      "estimated_triangles_p50": 104432.0,
+      "estimated_draw_calls_p50": 216.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 50,
+      "repetition": 1,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.402699166666666,
+        "p50": 6.30125,
+        "p95": 7.32754675,
+        "p99": 8.300969810000002,
+        "max": 8.781101,
+        "min": 5.255099
+      },
+      "fps": {
+        "n": 120,
+        "mean": 157.14591658333333,
+        "p50": 158.6987,
+        "p95": 173.3434056,
+        "p99": 177.151103,
+        "max": 190.291351,
+        "min": 113.880928
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 216.0,
+      "estimated_triangles_p50": 104432.0,
+      "estimated_draw_calls_p50": 216.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 50,
+      "repetition": 1,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.682663308333333,
+        "p50": 6.2938015,
+        "p95": 11.355509,
+        "p99": 14.168433810000005,
+        "max": 15.219401,
+        "min": 4.126299
+      },
+      "fps": {
+        "n": 120,
+        "mean": 155.98700254166667,
+        "p50": 158.88649,
+        "p95": 189.9226436,
+        "p99": 227.90129404000004,
+        "max": 242.347916,
+        "min": 65.705605
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 216.0,
+      "estimated_triangles_p50": 104432.0,
+      "estimated_draw_calls_p50": 216.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 50,
+      "repetition": 1,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.978937525,
+        "p50": 6.6738,
+        "p95": 11.791574049999998,
+        "p99": 12.66392943,
+        "max": 12.890898,
+        "min": 4.668202
+      },
+      "fps": {
+        "n": 120,
+        "mean": 148.15175697499998,
+        "p50": 149.8397295,
+        "p95": 181.88412179999997,
+        "p99": 203.68868626,
+        "max": 214.215225,
+        "min": 77.57412
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 216.0,
+      "estimated_triangles_p50": 104432.0,
+      "estimated_draw_calls_p50": 216.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 50,
+      "repetition": 2,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.2856317,
+        "p50": 6.2470514999999995,
+        "p95": 7.04831715,
+        "p99": 7.623741239999999,
+        "max": 7.770799,
+        "min": 5.414199
+      },
+      "fps": {
+        "n": 120,
+        "mean": 159.8494936333333,
+        "p50": 160.0760345,
+        "p95": 175.64885965,
+        "p99": 178.70522652,
+        "max": 184.699524,
+        "min": 128.68689
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 216.0,
+      "estimated_triangles_p50": 104432.0,
+      "estimated_draw_calls_p50": 216.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 50,
+      "repetition": 2,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.654398258333333,
+        "p50": 6.273249,
+        "p95": 11.461941049999998,
+        "p99": 12.409827000000002,
+        "max": 12.752701,
+        "min": 4.174098
+      },
+      "fps": {
+        "n": 120,
+        "mean": 156.16068398333334,
+        "p50": 159.4070435,
+        "p95": 189.55313135000003,
+        "p99": 229.98715147000001,
+        "max": 239.572693,
+        "min": 78.414764
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 216.0,
+      "estimated_triangles_p50": 104432.0,
+      "estimated_draw_calls_p50": 216.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 50,
+      "repetition": 2,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.075304183333333,
+        "p50": 6.7009015,
+        "p95": 12.340440000000001,
+        "p99": 13.588985189999999,
+        "max": 14.014502,
+        "min": 4.572101
+      },
+      "fps": {
+        "n": 120,
+        "mean": 147.044746875,
+        "p50": 149.233673,
+        "p95": 192.73825814999998,
+        "p99": 209.54887221,
+        "max": 218.717834,
+        "min": 71.35466
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 216.0,
+      "estimated_triangles_p50": 104432.0,
+      "estimated_draw_calls_p50": 216.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 100,
+      "repetition": 0,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.464120824999999,
+        "p50": 7.3844995,
+        "p95": 8.54019505,
+        "p99": 8.70511962,
+        "max": 9.170503,
+        "min": 6.506201
+      },
+      "fps": {
+        "n": 120,
+        "mean": 134.51059719166668,
+        "p50": 135.4187855,
+        "p95": 146.7407447,
+        "p99": 150.6275051,
+        "max": 153.699524,
+        "min": 109.04528
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 432.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 432.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 100,
+      "repetition": 0,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 8.702269141666667,
+        "p50": 7.7078995,
+        "p95": 22.69149895,
+        "p99": 24.31071662,
+        "max": 24.604399,
+        "min": 5.382001
+      },
+      "fps": {
+        "n": 120,
+        "mean": 125.75094871666667,
+        "p50": 129.73703749999999,
+        "p95": 156.31357085,
+        "p99": 173.84248826,
+        "max": 185.804489,
+        "min": 40.643139
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 432.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 432.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 100,
+      "repetition": 0,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 9.025958308333333,
+        "p50": 8.070251,
+        "p95": 21.4596931,
+        "p99": 24.43009319,
+        "max": 24.639502,
+        "min": 5.104601
+      },
+      "fps": {
+        "n": 120,
+        "mean": 120.381863675,
+        "p50": 123.9124295,
+        "p95": 149.52633809999998,
+        "p99": 164.49694434000003,
+        "max": 195.901688,
+        "min": 40.585236
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 432.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 432.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 100,
+      "repetition": 1,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.675531658333333,
+        "p50": 7.598100499999999,
+        "p95": 8.554452000000001,
+        "p99": 9.14845443,
+        "max": 9.636398,
+        "min": 6.655302
+      },
+      "fps": {
+        "n": 120,
+        "mean": 130.88137983333334,
+        "p50": 131.611908,
+        "p95": 144.02629745000002,
+        "p99": 147.11896707,
+        "max": 150.256149,
+        "min": 103.773209
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 432.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 432.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 100,
+      "repetition": 1,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.616515791666667,
+        "p50": 6.6431495,
+        "p95": 20.962514949999996,
+        "p99": 22.243694190000003,
+        "max": 22.441399,
+        "min": 4.972
+      },
+      "fps": {
+        "n": 120,
+        "mean": 145.50123490833332,
+        "p50": 150.5316315,
+        "p95": 179.61279889999997,
+        "p99": 192.99176640000002,
+        "max": 201.126328,
+        "min": 44.560505
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 432.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 432.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 100,
+      "repetition": 1,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.546066725,
+        "p50": 6.5782485,
+        "p95": 20.092514049999995,
+        "p99": 21.732339,
+        "max": 21.936604,
+        "min": 4.929602
+      },
+      "fps": {
+        "n": 120,
+        "mean": 146.16146189166665,
+        "p50": 152.016167,
+        "p95": 175.05415695,
+        "p99": 190.41372252,
+        "max": 202.856125,
+        "min": 45.585911
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 432.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 432.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 100,
+      "repetition": 2,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.522050891666667,
+        "p50": 6.435901,
+        "p95": 7.3885901,
+        "p99": 8.47575062,
+        "max": 9.381201,
+        "min": 5.544301
+      },
+      "fps": {
+        "n": 120,
+        "mean": 154.17746494166667,
+        "p50": 155.378975,
+        "p95": 166.60322299999999,
+        "p99": 175.02560060000002,
+        "max": 180.365387,
+        "min": 106.596161
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 432.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 432.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 100,
+      "repetition": 2,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.395864075,
+        "p50": 6.4236505,
+        "p95": 19.153531899999997,
+        "p99": 21.52928957,
+        "max": 24.5548,
+        "min": 4.774399
+      },
+      "fps": {
+        "n": 120,
+        "mean": 149.70046954166668,
+        "p50": 155.67472800000002,
+        "p95": 178.29298445,
+        "p99": 204.11944936,
+        "max": 209.450439,
+        "min": 40.725235
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 432.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 432.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 100,
+      "repetition": 2,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.554482516666667,
+        "p50": 6.5172985,
+        "p95": 20.966875,
+        "p99": 22.444198570000005,
+        "max": 23.304102,
+        "min": 4.7337
+      },
+      "fps": {
+        "n": 120,
+        "mean": 146.62429530833333,
+        "p50": 153.437813,
+        "p95": 171.9302419,
+        "p99": 196.42950276000002,
+        "max": 211.251221,
+        "min": 42.910904
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 432.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 432.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 10,
+      "repetition": 0,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.828698366666667,
+        "p50": 6.749149,
+        "p95": 7.7557300499999995,
+        "p99": 8.08735719,
+        "max": 8.1327,
+        "min": 5.837098
+      },
+      "fps": {
+        "n": 120,
+        "mean": 147.20990365,
+        "p50": 148.16695399999998,
+        "p95": 163.80679224999997,
+        "p99": 167.93504527000002,
+        "max": 171.318008,
+        "min": 122.960396
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 10.0,
+      "estimated_triangles_p50": 480.0,
+      "estimated_draw_calls_p50": 10.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 10,
+      "repetition": 0,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.421207491666666,
+        "p50": 7.3009505,
+        "p95": 8.230512899999999,
+        "p99": 8.98450919,
+        "max": 9.559702,
+        "min": 6.563801
+      },
+      "fps": {
+        "n": 120,
+        "mean": 135.38858374166665,
+        "p50": 136.968544,
+        "p95": 148.69394864999998,
+        "p99": 152.06510563999998,
+        "max": 152.350739,
+        "min": 104.605766
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 10.0,
+      "estimated_triangles_p50": 480.0,
+      "estimated_draw_calls_p50": 10.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 10,
+      "repetition": 0,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.496671691666666,
+        "p50": 6.384349,
+        "p95": 7.562515899999999,
+        "p99": 8.318620430000001,
+        "max": 9.1144,
+        "min": 5.374502
+      },
+      "fps": {
+        "n": 120,
+        "mean": 155.23860066666666,
+        "p50": 156.633072,
+        "p95": 177.5831898,
+        "p99": 182.95084645000003,
+        "max": 186.063736,
+        "min": 109.716499
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 10.0,
+      "estimated_triangles_p50": 480.0,
+      "estimated_draw_calls_p50": 10.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 10,
+      "repetition": 1,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.015909175,
+        "p50": 5.96695,
+        "p95": 6.75021,
+        "p99": 6.96335743,
+        "max": 7.1823,
+        "min": 5.021502
+      },
+      "fps": {
+        "n": 120,
+        "mean": 166.87070820833333,
+        "p50": 167.5898055,
+        "p95": 182.63080995,
+        "p99": 186.04996870000002,
+        "max": 199.143631,
+        "min": 139.231171
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 10.0,
+      "estimated_triangles_p50": 480.0,
+      "estimated_draw_calls_p50": 10.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 10,
+      "repetition": 1,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.171105866666666,
+        "p50": 6.085850000000001,
+        "p95": 7.1049691,
+        "p99": 7.42775781,
+        "max": 9.061501,
+        "min": 5.195402
+      },
+      "fps": {
+        "n": 120,
+        "mean": 163.191557875,
+        "p50": 164.3158875,
+        "p95": 181.6428923,
+        "p99": 188.56849293,
+        "max": 192.477905,
+        "min": 110.357002
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 10.0,
+      "estimated_triangles_p50": 480.0,
+      "estimated_draw_calls_p50": 10.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 10,
+      "repetition": 1,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.202685,
+        "p50": 6.1389485,
+        "p95": 7.0864367999999995,
+        "p99": 7.570593810000001,
+        "max": 8.402899,
+        "min": 5.212199
+      },
+      "fps": {
+        "n": 120,
+        "mean": 162.1141358666667,
+        "p50": 162.8944245,
+        "p95": 178.79822099999998,
+        "p99": 186.73266947,
+        "max": 191.857605,
+        "min": 119.006546
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 10.0,
+      "estimated_triangles_p50": 480.0,
+      "estimated_draw_calls_p50": 10.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 10,
+      "repetition": 2,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.180768316666667,
+        "p50": 6.110098499999999,
+        "p95": 7.14359505,
+        "p99": 7.757159240000001,
+        "max": 8.196301,
+        "min": 5.165499
+      },
+      "fps": {
+        "n": 120,
+        "mean": 162.94245215,
+        "p50": 163.66349,
+        "p95": 183.3691383,
+        "p99": 190.81812156,
+        "max": 193.592148,
+        "min": 122.006248
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 10.0,
+      "estimated_triangles_p50": 480.0,
+      "estimated_draw_calls_p50": 10.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 10,
+      "repetition": 2,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.818712475,
+        "p50": 6.766349,
+        "p95": 7.854880049999999,
+        "p99": 8.29198781,
+        "max": 8.729796,
+        "min": 5.653001
+      },
+      "fps": {
+        "n": 120,
+        "mean": 147.72647601666668,
+        "p50": 147.790245,
+        "p95": 169.61365415,
+        "p99": 176.84626464000002,
+        "max": 176.897186,
+        "min": 114.550201
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 10.0,
+      "estimated_triangles_p50": 480.0,
+      "estimated_draw_calls_p50": 10.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 10,
+      "repetition": 2,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.185891641666667,
+        "p50": 6.14845,
+        "p95": 7.08403815,
+        "p99": 7.51950143,
+        "max": 7.732202,
+        "min": 5.4412
+      },
+      "fps": {
+        "n": 120,
+        "mean": 162.52860250833334,
+        "p50": 162.642647,
+        "p95": 178.75754579999997,
+        "p99": 181.65240671,
+        "max": 183.78299,
+        "min": 129.329269
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 10.0,
+      "static_mesh_components_p50": 10.0,
+      "estimated_triangles_p50": 480.0,
+      "estimated_draw_calls_p50": 10.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 50,
+      "repetition": 0,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.333381683333333,
+        "p50": 6.2571015,
+        "p95": 7.17156595,
+        "p99": 7.515834809999999,
+        "max": 7.649802,
+        "min": 5.497597
+      },
+      "fps": {
+        "n": 120,
+        "mean": 158.751627,
+        "p50": 159.81840499999998,
+        "p95": 176.14354105,
+        "p99": 179.07606431999997,
+        "max": 181.897644,
+        "min": 130.722336
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 50.0,
+      "estimated_triangles_p50": 2400.0,
+      "estimated_draw_calls_p50": 50.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 50,
+      "repetition": 0,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.194209991666667,
+        "p50": 7.1575995,
+        "p95": 7.992933999999999,
+        "p99": 8.518593760000002,
+        "max": 9.275001,
+        "min": 6.338101
+      },
+      "fps": {
+        "n": 120,
+        "mean": 139.65325728333335,
+        "p50": 139.711647,
+        "p95": 154.58380935,
+        "p99": 157.22792029,
+        "max": 157.77597,
+        "min": 107.816704
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 50.0,
+      "estimated_triangles_p50": 2400.0,
+      "estimated_draw_calls_p50": 50.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 50,
+      "repetition": 0,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.388754116666666,
+        "p50": 7.246051,
+        "p95": 8.63596815,
+        "p99": 9.303490000000002,
+        "max": 9.6112,
+        "min": 5.729899
+      },
+      "fps": {
+        "n": 120,
+        "mean": 136.69951815833335,
+        "p50": 138.0066145,
+        "p95": 157.10723754999998,
+        "p99": 168.54719106,
+        "max": 174.523148,
+        "min": 104.045273
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 50.0,
+      "estimated_triangles_p50": 2400.0,
+      "estimated_draw_calls_p50": 50.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 50,
+      "repetition": 1,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.874355016666667,
+        "p50": 6.8402995,
+        "p95": 7.69673785,
+        "p99": 8.33393624,
+        "max": 8.600999,
+        "min": 5.787801
+      },
+      "fps": {
+        "n": 120,
+        "mean": 146.15721335,
+        "p50": 146.1927335,
+        "p95": 160.7910924,
+        "p99": 168.94047937000002,
+        "max": 172.777191,
+        "min": 116.265572
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 50.0,
+      "estimated_triangles_p50": 2400.0,
+      "estimated_draw_calls_p50": 50.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 50,
+      "repetition": 1,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.526036675,
+        "p50": 6.383501,
+        "p95": 7.787739199999999,
+        "p99": 8.90462138,
+        "max": 9.283998,
+        "min": 5.36
+      },
+      "fps": {
+        "n": 120,
+        "mean": 154.94896398333333,
+        "p50": 156.654457,
+        "p95": 176.53017294999998,
+        "p99": 179.46206209000002,
+        "max": 186.567169,
+        "min": 107.712227
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 50.0,
+      "estimated_triangles_p50": 2400.0,
+      "estimated_draw_calls_p50": 50.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 50,
+      "repetition": 1,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.168442508333333,
+        "p50": 6.0799009999999996,
+        "p95": 7.0304209,
+        "p99": 7.504882429999999,
+        "max": 8.057098,
+        "min": 5.160697
+      },
+      "fps": {
+        "n": 120,
+        "mean": 163.14789805833334,
+        "p50": 164.476364,
+        "p95": 183.651337,
+        "p99": 187.42184313,
+        "max": 193.772278,
+        "min": 124.114151
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 50.0,
+      "estimated_triangles_p50": 2400.0,
+      "estimated_draw_calls_p50": 50.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 50,
+      "repetition": 2,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.0868341500000005,
+        "p50": 6.0382505,
+        "p95": 6.756985,
+        "p99": 7.051435810000001,
+        "max": 7.386301,
+        "min": 5.311102
+      },
+      "fps": {
+        "n": 120,
+        "mean": 164.95503958333333,
+        "p50": 165.6109085,
+        "p95": 180.02895299999997,
+        "p99": 185.44320319,
+        "max": 188.284851,
+        "min": 135.385773
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 50.0,
+      "estimated_triangles_p50": 2400.0,
+      "estimated_draw_calls_p50": 50.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 50,
+      "repetition": 2,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.43874665,
+        "p50": 6.375151,
+        "p95": 7.5899119,
+        "p99": 8.51896462,
+        "max": 9.096499,
+        "min": 5.353101
+      },
+      "fps": {
+        "n": 120,
+        "mean": 156.49886789166666,
+        "p50": 156.859604,
+        "p95": 175.19204144999998,
+        "p99": 182.76436195000002,
+        "max": 186.807617,
+        "min": 109.932396
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 50.0,
+      "estimated_triangles_p50": 2400.0,
+      "estimated_draw_calls_p50": 50.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 50,
+      "repetition": 2,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.1756858333333335,
+        "p50": 7.11965,
+        "p95": 8.146980899999999,
+        "p99": 8.51310281,
+        "max": 8.564099,
+        "min": 5.772501
+      },
+      "fps": {
+        "n": 120,
+        "mean": 140.26249503333332,
+        "p50": 140.4563445,
+        "p95": 158.44157984999998,
+        "p99": 168.33726672999998,
+        "max": 173.235123,
+        "min": 116.76651
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 50.0,
+      "static_mesh_components_p50": 50.0,
+      "estimated_triangles_p50": 2400.0,
+      "estimated_draw_calls_p50": 50.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 100,
+      "repetition": 0,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.136146699999999,
+        "p50": 7.0666484999999994,
+        "p95": 8.00342405,
+        "p99": 8.86807219,
+        "max": 10.5532,
+        "min": 5.852397
+      },
+      "fps": {
+        "n": 120,
+        "mean": 140.96911701666667,
+        "p50": 141.5098265,
+        "p95": 155.7350768,
+        "p99": 160.74404941,
+        "max": 170.870148,
+        "min": 94.757988
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 100.0,
+      "estimated_triangles_p50": 4800.0,
+      "estimated_draw_calls_p50": 100.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 100,
+      "repetition": 0,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.54655085,
+        "p50": 6.377349000000001,
+        "p95": 8.1347969,
+        "p99": 8.57839819,
+        "max": 8.8717,
+        "min": 4.014
+      },
+      "fps": {
+        "n": 120,
+        "mean": 155.4660202,
+        "p50": 156.8057935,
+        "p95": 185.7985931,
+        "p99": 211.99352431,
+        "max": 249.128036,
+        "min": 112.717964
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 100.0,
+      "estimated_triangles_p50": 4800.0,
+      "estimated_draw_calls_p50": 100.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 100,
+      "repetition": 0,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.04816085,
+        "p50": 6.964302,
+        "p95": 8.16231305,
+        "p99": 8.89067695,
+        "max": 9.4072,
+        "min": 4.603002
+      },
+      "fps": {
+        "n": 120,
+        "mean": 143.08360702500002,
+        "p50": 143.5894695,
+        "p95": 159.88480879999997,
+        "p99": 186.63236740000002,
+        "max": 217.249512,
+        "min": 106.301559
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 100.0,
+      "estimated_triangles_p50": 4800.0,
+      "estimated_draw_calls_p50": 100.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 100,
+      "repetition": 1,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.754987474999999,
+        "p50": 6.709449,
+        "p95": 7.71087105,
+        "p99": 8.25386157,
+        "max": 8.336902,
+        "min": 5.640797
+      },
+      "fps": {
+        "n": 120,
+        "mean": 148.79979095833332,
+        "p50": 149.04354849999999,
+        "p95": 164.88493074999997,
+        "p99": 170.21041464,
+        "max": 177.279907,
+        "min": 119.948639
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 100.0,
+      "estimated_triangles_p50": 4800.0,
+      "estimated_draw_calls_p50": 100.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 100,
+      "repetition": 1,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.318190833333333,
+        "p50": 6.208902,
+        "p95": 7.955563149999999,
+        "p99": 8.65133995,
+        "max": 9.084999,
+        "min": 3.999799
+      },
+      "fps": {
+        "n": 120,
+        "mean": 160.87603720833334,
+        "p50": 161.06001300000003,
+        "p95": 189.61935014999995,
+        "p99": 220.55281478,
+        "max": 250.012527,
+        "min": 110.071548
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 100.0,
+      "estimated_triangles_p50": 4800.0,
+      "estimated_draw_calls_p50": 100.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 100,
+      "repetition": 1,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.250977541666667,
+        "p50": 6.2049515,
+        "p95": 7.14226505,
+        "p99": 7.46627876,
+        "max": 7.785,
+        "min": 4.1366
+      },
+      "fps": {
+        "n": 120,
+        "mean": 161.23822990833332,
+        "p50": 161.1616135,
+        "p95": 180.0095839,
+        "p99": 209.05885763000003,
+        "max": 241.744446,
+        "min": 128.452148
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 100.0,
+      "estimated_triangles_p50": 4800.0,
+      "estimated_draw_calls_p50": 100.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 100,
+      "repetition": 2,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.117272525000001,
+        "p50": 6.0200005,
+        "p95": 6.88753095,
+        "p99": 7.5956698099999995,
+        "max": 7.969402,
+        "min": 5.211599
+      },
+      "fps": {
+        "n": 120,
+        "mean": 164.41233035833332,
+        "p50": 166.1129535,
+        "p95": 182.9407498,
+        "p99": 185.73904856000001,
+        "max": 191.879684,
+        "min": 125.479935
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 100.0,
+      "estimated_triangles_p50": 4800.0,
+      "estimated_draw_calls_p50": 100.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 100,
+      "repetition": 2,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.2347883500000005,
+        "p50": 6.1208495,
+        "p95": 7.421359900000001,
+        "p99": 9.001307620000002,
+        "max": 10.165099,
+        "min": 3.851201
+      },
+      "fps": {
+        "n": 120,
+        "mean": 162.90321940833334,
+        "p50": 163.376015,
+        "p95": 198.57803729999998,
+        "p99": 233.34463698000005,
+        "max": 259.659241,
+        "min": 98.375824
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 100.0,
+      "estimated_triangles_p50": 4800.0,
+      "estimated_draw_calls_p50": 100.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 100,
+      "repetition": 2,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 6.089130916666666,
+        "p50": 6.0001999999999995,
+        "p95": 7.167534,
+        "p99": 7.48326643,
+        "max": 9.207599,
+        "min": 4.4505
+      },
+      "fps": {
+        "n": 120,
+        "mean": 165.643324875,
+        "p50": 166.6611635,
+        "p95": 186.15051205,
+        "p99": 201.19498536999998,
+        "max": 224.693848,
+        "min": 108.605949
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 100.0,
+      "static_mesh_components_p50": 100.0,
+      "estimated_triangles_p50": 4800.0,
+      "estimated_draw_calls_p50": 100.0
+    }
+  ],
+  "action_summary": [
+    {
+      "backend": "no_render",
+      "count": 10,
+      "action": "create",
+      "elapsed_ms": {
+        "n": 3,
+        "mean": 0.13153333333333334,
+        "p50": 0.1373,
+        "p95": 0.15674000000000002,
+        "p99": 0.158468,
+        "max": 0.1589,
+        "min": 0.0984
+      },
+      "ok_rows": 3,
+      "rows": 3,
+      "static_mesh_components_p50": 0
+    },
+    {
+      "backend": "no_render",
+      "count": 10,
+      "action": "pose_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 0.13870333333333335,
+        "p50": 0.1269,
+        "p95": 0.19098999999999994,
+        "p99": 0.3050990000000001,
+        "max": 0.3477,
+        "min": 0.0931
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 10,
+      "action": "shape_param_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 0.11595666666666667,
+        "p50": 0.1172,
+        "p95": 0.14772000000000002,
+        "p99": 0.15088200000000002,
+        "max": 0.1521,
+        "min": 0.079
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 50,
+      "action": "create",
+      "elapsed_ms": {
+        "n": 3,
+        "mean": 0.43513333333333337,
+        "p50": 0.4453,
+        "p95": 0.5053300000000001,
+        "p99": 0.510666,
+        "max": 0.512,
+        "min": 0.3481
+      },
+      "ok_rows": 3,
+      "rows": 3,
+      "static_mesh_components_p50": 0
+    },
+    {
+      "backend": "no_render",
+      "count": 50,
+      "action": "pose_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 0.44004,
+        "p50": 0.4464,
+        "p95": 0.540975,
+        "p99": 0.546504,
+        "max": 0.5472,
+        "min": 0.3088
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 50,
+      "action": "shape_param_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 0.3834766666666667,
+        "p50": 0.3508,
+        "p95": 0.5181199999999999,
+        "p99": 0.6695440000000001,
+        "max": 0.7236,
+        "min": 0.2854
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 100,
+      "action": "create",
+      "elapsed_ms": {
+        "n": 3,
+        "mean": 0.8704666666666666,
+        "p50": 0.875,
+        "p95": 0.8797699999999999,
+        "p99": 0.8801939999999999,
+        "max": 0.8803,
+        "min": 0.8561
+      },
+      "ok_rows": 3,
+      "rows": 3,
+      "static_mesh_components_p50": 0
+    },
+    {
+      "backend": "no_render",
+      "count": 100,
+      "action": "pose_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 0.9958066666666666,
+        "p50": 0.98685,
+        "p95": 1.21383,
+        "p99": 1.263422,
+        "max": 1.2832,
+        "min": 0.8049
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 0.0
+    },
+    {
+      "backend": "no_render",
+      "count": 100,
+      "action": "shape_param_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 0.9293899999999999,
+        "p50": 0.92725,
+        "p95": 1.0901049999999999,
+        "p99": 1.176167,
+        "max": 1.2045,
+        "min": 0.7612
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 0.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 10,
+      "action": "create",
+      "elapsed_ms": {
+        "n": 3,
+        "mean": 8.568233333333334,
+        "p50": 9.1077,
+        "p95": 9.40056,
+        "p99": 9.426592,
+        "max": 9.4331,
+        "min": 7.1639
+      },
+      "ok_rows": 3,
+      "rows": 3,
+      "static_mesh_components_p50": 44
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 10,
+      "action": "pose_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 1.0297399999999999,
+        "p50": 0.9994999999999999,
+        "p95": 1.25521,
+        "p99": 1.2709549999999998,
+        "max": 1.2711,
+        "min": 0.8321
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 44.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 10,
+      "action": "shape_param_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 1.1497166666666667,
+        "p50": 1.1328999999999998,
+        "p95": 1.4308049999999999,
+        "p99": 1.5048180000000002,
+        "max": 1.5297,
+        "min": 0.9046
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 44.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 50,
+      "action": "create",
+      "elapsed_ms": {
+        "n": 3,
+        "mean": 24.6664,
+        "p50": 23.1275,
+        "p95": 27.77969,
+        "p99": 28.193218,
+        "max": 28.2966,
+        "min": 22.5751
+      },
+      "ok_rows": 3,
+      "rows": 3,
+      "static_mesh_components_p50": 216
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 50,
+      "action": "pose_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 4.467186666666667,
+        "p50": 4.3979,
+        "p95": 5.634154999999998,
+        "p99": 5.994559000000001,
+        "max": 6.0186,
+        "min": 3.8215
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 216.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 50,
+      "action": "shape_param_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 4.88316,
+        "p50": 4.8370999999999995,
+        "p95": 5.742999999999999,
+        "p99": 5.924004999999999,
+        "max": 5.9575,
+        "min": 3.9471
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 216.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 100,
+      "action": "create",
+      "elapsed_ms": {
+        "n": 3,
+        "mean": 52.84526666666667,
+        "p50": 55.2781,
+        "p95": 57.16495,
+        "p99": 57.33267,
+        "max": 57.3746,
+        "min": 45.8831
+      },
+      "ok_rows": 3,
+      "rows": 3,
+      "static_mesh_components_p50": 432
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 100,
+      "action": "pose_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 9.082806666666666,
+        "p50": 9.204450000000001,
+        "p95": 10.272624999999998,
+        "p99": 10.827461,
+        "max": 10.9461,
+        "min": 6.9949
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 432.0
+    },
+    {
+      "backend": "semantic_proxy",
+      "count": 100,
+      "action": "shape_param_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 9.219433333333335,
+        "p50": 9.39545,
+        "p95": 10.477795,
+        "p99": 10.562262,
+        "max": 10.5716,
+        "min": 7.8663
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 432.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 10,
+      "action": "create",
+      "elapsed_ms": {
+        "n": 3,
+        "mean": 0.9755666666666668,
+        "p50": 0.93,
+        "p95": 1.1379899999999998,
+        "p99": 1.156478,
+        "max": 1.1611,
+        "min": 0.8356
+      },
+      "ok_rows": 3,
+      "rows": 3,
+      "static_mesh_components_p50": 10
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 10,
+      "action": "pose_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 0.37929666666666667,
+        "p50": 0.3684,
+        "p95": 0.42779,
+        "p99": 0.6806270000000003,
+        "max": 0.7832,
+        "min": 0.3157
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 10.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 10,
+      "action": "shape_param_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 0.3168666666666667,
+        "p50": 0.2969,
+        "p95": 0.41844499999999984,
+        "p99": 0.6908720000000003,
+        "max": 0.7904,
+        "min": 0.2525
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 10.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 50,
+      "action": "create",
+      "elapsed_ms": {
+        "n": 3,
+        "mean": 3.221133333333333,
+        "p50": 2.7411,
+        "p95": 4.11036,
+        "p99": 4.232072,
+        "max": 4.2625,
+        "min": 2.6598
+      },
+      "ok_rows": 3,
+      "rows": 3,
+      "static_mesh_components_p50": 50
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 50,
+      "action": "pose_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 1.3673233333333334,
+        "p50": 1.3552,
+        "p95": 1.6027999999999998,
+        "p99": 1.6162,
+        "max": 1.6191,
+        "min": 1.0988
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 50.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 50,
+      "action": "shape_param_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 1.0858433333333333,
+        "p50": 1.0367,
+        "p95": 1.47145,
+        "p99": 1.5793730000000001,
+        "max": 1.6218,
+        "min": 0.7867
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 50.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 100,
+      "action": "create",
+      "elapsed_ms": {
+        "n": 3,
+        "mean": 6.317233333333333,
+        "p50": 6.3945,
+        "p95": 6.41601,
+        "p99": 6.417922,
+        "max": 6.4184,
+        "min": 6.1388
+      },
+      "ok_rows": 3,
+      "rows": 3,
+      "static_mesh_components_p50": 100
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 100,
+      "action": "pose_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 2.614386666666667,
+        "p50": 2.55375,
+        "p95": 3.1423299999999994,
+        "p99": 3.259543,
+        "max": 3.2779,
+        "min": 2.1423
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 100.0
+    },
+    {
+      "backend": "unreal_assets",
+      "count": 100,
+      "action": "shape_param_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 2.130533333333333,
+        "p50": 2.0364,
+        "p95": 2.7149099999999997,
+        "p99": 2.845977,
+        "max": 2.8833,
+        "min": 1.6847
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 100.0
+    }
+  ],
+  "max_density": {
+    "no_render": {
+      "create_steady": {
+        "max_count_at_30fps_p95": 100,
+        "max_count_at_60fps_p95": 100
+      },
+      "pose_stream": {
+        "max_count_at_30fps_p95": 100,
+        "max_count_at_60fps_p95": 100
+      },
+      "shape_stream": {
+        "max_count_at_30fps_p95": 100,
+        "max_count_at_60fps_p95": 100
+      }
+    },
+    "semantic_proxy": {
+      "create_steady": {
+        "max_count_at_30fps_p95": 100,
+        "max_count_at_60fps_p95": 100
+      },
+      "pose_stream": {
+        "max_count_at_30fps_p95": 100,
+        "max_count_at_60fps_p95": 50
+      },
+      "shape_stream": {
+        "max_count_at_30fps_p95": 100,
+        "max_count_at_60fps_p95": 50
+      }
+    },
+    "unreal_assets": {
+      "create_steady": {
+        "max_count_at_30fps_p95": 100,
+        "max_count_at_60fps_p95": 100
+      },
+      "pose_stream": {
+        "max_count_at_30fps_p95": 100,
+        "max_count_at_60fps_p95": 100
+      },
+      "shape_stream": {
+        "max_count_at_30fps_p95": 100,
+        "max_count_at_60fps_p95": 100
+      }
+    }
+  }
+}

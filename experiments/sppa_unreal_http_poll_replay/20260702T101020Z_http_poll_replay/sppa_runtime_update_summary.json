@@ -1,0 +1,296 @@
+{
+  "no_render": {
+    "create": {
+      "components_created": 0,
+      "components_destroyed": 0,
+      "components_reused": 0,
+      "fallback_actor_tag_rows": 0,
+      "match_type_counts": {
+        "exact": 1830,
+        "fallback_unknown": 550,
+        "keyword": 570
+      },
+      "material_source_counts": {
+        "fallback_unknown": 550,
+        "semantic_prior": 2400
+      },
+      "rows": 2950,
+      "scale_source_counts": {
+        "metric_dims_input": 690,
+        "template_prior": 2260
+      },
+      "shape_low_confidence_actor_tag_rows": 0,
+      "shape_low_confidence_rows": 0,
+      "unknown_label_rows": 550,
+      "yaw_ambiguous_actor_tag_rows": 0,
+      "yaw_ambiguous_rows": 2950
+    },
+    "no_op": {
+      "components_created": 0,
+      "components_destroyed": 0,
+      "components_reused": 0,
+      "fallback_actor_tag_rows": 0,
+      "match_type_counts": {
+        "exact": 6150
+      },
+      "material_source_counts": {
+        "semantic_prior": 6150
+      },
+      "rows": 6150,
+      "scale_source_counts": {
+        "metric_dims_input": 6150
+      },
+      "shape_low_confidence_actor_tag_rows": 0,
+      "shape_low_confidence_rows": 0,
+      "unknown_label_rows": 0,
+      "yaw_ambiguous_actor_tag_rows": 0,
+      "yaw_ambiguous_rows": 6150
+    },
+    "pose_update": {
+      "components_created": 0,
+      "components_destroyed": 0,
+      "components_reused": 0,
+      "fallback_actor_tag_rows": 0,
+      "match_type_counts": {
+        "exact": 39900,
+        "fallback_unknown": 2750,
+        "keyword": 2850
+      },
+      "material_source_counts": {
+        "fallback_unknown": 2750,
+        "semantic_prior": 42750
+      },
+      "rows": 45500,
+      "scale_source_counts": {
+        "metric_dims_input": 34200,
+        "template_prior": 11300
+      },
+      "shape_low_confidence_actor_tag_rows": 0,
+      "shape_low_confidence_rows": 0,
+      "unknown_label_rows": 2750,
+      "yaw_ambiguous_actor_tag_rows": 0,
+      "yaw_ambiguous_rows": 45500
+    },
+    "shape_param_update": {
+      "components_created": 0,
+      "components_destroyed": 0,
+      "components_reused": 0,
+      "fallback_actor_tag_rows": 0,
+      "match_type_counts": {
+        "exact": 7980,
+        "fallback_unknown": 550,
+        "keyword": 570
+      },
+      "material_source_counts": {
+        "fallback_unknown": 550,
+        "semantic_prior": 8550
+      },
+      "rows": 9100,
+      "scale_source_counts": {
+        "metric_dims_input": 6840,
+        "template_prior": 2260
+      },
+      "shape_low_confidence_actor_tag_rows": 0,
+      "shape_low_confidence_rows": 0,
+      "unknown_label_rows": 550,
+      "yaw_ambiguous_actor_tag_rows": 0,
+      "yaw_ambiguous_rows": 9100
+    }
+  },
+  "semantic_proxy": {
+    "create": {
+      "components_created": 24740,
+      "components_destroyed": 0,
+      "components_reused": 0,
+      "fallback_actor_tag_rows": 550,
+      "match_type_counts": {
+        "exact": 1830,
+        "fallback_unknown": 550,
+        "keyword": 570
+      },
+      "material_source_counts": {
+        "fallback_unknown": 550,
+        "semantic_prior": 2400
+      },
+      "rows": 2950,
+      "scale_source_counts": {
+        "metric_dims_input": 690,
+        "template_prior": 2260
+      },
+      "shape_low_confidence_actor_tag_rows": 0,
+      "shape_low_confidence_rows": 0,
+      "unknown_label_rows": 550,
+      "yaw_ambiguous_actor_tag_rows": 2950,
+      "yaw_ambiguous_rows": 2950
+    },
+    "no_op": {
+      "components_created": 24600,
+      "components_destroyed": 0,
+      "components_reused": 0,
+      "fallback_actor_tag_rows": 0,
+      "match_type_counts": {
+        "exact": 6150
+      },
+      "material_source_counts": {
+        "semantic_prior": 6150
+      },
+      "rows": 6150,
+      "scale_source_counts": {
+        "metric_dims_input": 6150
+      },
+      "shape_low_confidence_actor_tag_rows": 0,
+      "shape_low_confidence_rows": 0,
+      "unknown_label_rows": 0,
+      "yaw_ambiguous_actor_tag_rows": 6150,
+      "yaw_ambiguous_rows": 6150
+    },
+    "pose_update": {
+      "components_created": 0,
+      "components_destroyed": 0,
+      "components_reused": 246700,
+      "fallback_actor_tag_rows": 2750,
+      "match_type_counts": {
+        "exact": 39900,
+        "fallback_unknown": 2750,
+        "keyword": 2850
+      },
+      "material_source_counts": {
+        "fallback_unknown": 2750,
+        "semantic_prior": 42750
+      },
+      "rows": 45500,
+      "scale_source_counts": {
+        "metric_dims_input": 34200,
+        "template_prior": 11300
+      },
+      "shape_low_confidence_actor_tag_rows": 0,
+      "shape_low_confidence_rows": 0,
+      "unknown_label_rows": 2750,
+      "yaw_ambiguous_actor_tag_rows": 45500,
+      "yaw_ambiguous_rows": 45500
+    },
+    "shape_param_update": {
+      "components_created": 0,
+      "components_destroyed": 0,
+      "components_reused": 49340,
+      "fallback_actor_tag_rows": 550,
+      "match_type_counts": {
+        "exact": 7980,
+        "fallback_unknown": 550,
+        "keyword": 570
+      },
+      "material_source_counts": {
+        "fallback_unknown": 550,
+        "semantic_prior": 8550
+      },
+      "rows": 9100,
+      "scale_source_counts": {
+        "metric_dims_input": 6840,
+        "template_prior": 2260
+      },
+      "shape_low_confidence_actor_tag_rows": 0,
+      "shape_low_confidence_rows": 0,
+      "unknown_label_rows": 550,
+      "yaw_ambiguous_actor_tag_rows": 9100,
+      "yaw_ambiguous_rows": 9100
+    }
+  },
+  "unreal_assets": {
+    "create": {
+      "components_created": 2950,
+      "components_destroyed": 0,
+      "components_reused": 0,
+      "fallback_actor_tag_rows": 0,
+      "match_type_counts": {
+        "exact": 1830,
+        "fallback_unknown": 550,
+        "keyword": 570
+      },
+      "material_source_counts": {
+        "fallback_unknown": 550,
+        "semantic_prior": 2400
+      },
+      "rows": 2950,
+      "scale_source_counts": {
+        "metric_dims_input": 690,
+        "template_prior": 2260
+      },
+      "shape_low_confidence_actor_tag_rows": 0,
+      "shape_low_confidence_rows": 0,
+      "unknown_label_rows": 550,
+      "yaw_ambiguous_actor_tag_rows": 0,
+      "yaw_ambiguous_rows": 2950
+    },
+    "no_op": {
+      "components_created": 6150,
+      "components_destroyed": 0,
+      "components_reused": 0,
+      "fallback_actor_tag_rows": 0,
+      "match_type_counts": {
+        "exact": 6150
+      },
+      "material_source_counts": {
+        "semantic_prior": 6150
+      },
+      "rows": 6150,
+      "scale_source_counts": {
+        "metric_dims_input": 6150
+      },
+      "shape_low_confidence_actor_tag_rows": 0,
+      "shape_low_confidence_rows": 0,
+      "unknown_label_rows": 0,
+      "yaw_ambiguous_actor_tag_rows": 0,
+      "yaw_ambiguous_rows": 6150
+    },
+    "pose_update": {
+      "components_created": 0,
+      "components_destroyed": 0,
+      "components_reused": 45500,
+      "fallback_actor_tag_rows": 0,
+      "match_type_counts": {
+        "exact": 39900,
+        "fallback_unknown": 2750,
+        "keyword": 2850
+      },
+      "material_source_counts": {
+        "fallback_unknown": 2750,
+        "semantic_prior": 42750
+      },
+      "rows": 45500,
+      "scale_source_counts": {
+        "metric_dims_input": 34200,
+        "template_prior": 11300
+      },
+      "shape_low_confidence_actor_tag_rows": 0,
+      "shape_low_confidence_rows": 0,
+      "unknown_label_rows": 2750,
+      "yaw_ambiguous_actor_tag_rows": 0,
+      "yaw_ambiguous_rows": 45500
+    },
+    "shape_param_update": {
+      "components_created": 0,
+      "components_destroyed": 0,
+      "components_reused": 9100,
+      "fallback_actor_tag_rows": 0,
+      "match_type_counts": {
+        "exact": 7980,
+        "fallback_unknown": 550,
+        "keyword": 570
+      },
+      "material_source_counts": {
+        "fallback_unknown": 550,
+        "semantic_prior": 8550
+      },
+      "rows": 9100,
+      "scale_source_counts": {
+        "metric_dims_input": 6840,
+        "template_prior": 2260
+      },
+      "shape_low_confidence_actor_tag_rows": 0,
+      "shape_low_confidence_rows": 0,
+      "unknown_label_rows": 550,
+      "yaw_ambiguous_actor_tag_rows": 0,
+      "yaw_ambiguous_rows": 9100
+    }
+  }
+}

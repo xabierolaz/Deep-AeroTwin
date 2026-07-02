@@ -221,6 +221,16 @@ def component_has_mesh(component):
         except Exception:
             return False
 
+def component_tags(component):
+    try:
+        return [str(tag) for tag in getattr(component, "component_tags", [])]
+    except Exception:
+        try:
+            return [str(tag) for tag in component.get_editor_property("component_tags")]
+        except Exception:
+            return []
+
+
 def collision_text(component):
     try:
         return str(component.get_collision_enabled())
@@ -244,12 +254,229 @@ def configure_proxy(actor, class_name, confidence, confirmed):
         raise RuntimeError("PorceSemanticProxyActor instance has no configure_proxy method")
     method(class_name, float(confidence), bool(confirmed))
 
+def configure_proxy_from_descriptor_json(actor, descriptor_json, confirmed):
+    method = getattr(actor, "configure_proxy_from_descriptor_json", None)
+    if method is None:
+        method = getattr(actor, "ConfigureProxyFromDescriptorJson", None)
+    if method is None:
+        raise RuntimeError("PorceSemanticProxyActor instance has no configure_proxy_from_descriptor_json method")
+    return bool(method(str(descriptor_json), bool(confirmed)))
+
+def apply_proxy_update_packet_json(actor, update_packet_json, confirmed):
+    method = getattr(actor, "apply_proxy_update_packet_json", None)
+    if method is None:
+        method = getattr(actor, "ApplyProxyUpdatePacketJson", None)
+    if method is None:
+        raise RuntimeError("PorceSemanticProxyActor instance has no apply_proxy_update_packet_json method")
+    return bool(method(str(update_packet_json), bool(confirmed)))
+
+def actor_relative_scale(actor):
+    try:
+        root = actor.get_root_component()
+        scale = root.get_relative_scale3d()
+        return [float(scale.x), float(scale.y), float(scale.z)]
+    except Exception:
+        pass
+    try:
+        scale = actor.get_actor_scale3d()
+        return [float(scale.x), float(scale.y), float(scale.z)]
+    except Exception:
+        return [1.0, 1.0, 1.0]
+
+def load_descriptor_fixture():
+    fixture = REPO / "experiments" / "sppa_descriptor_update" / "20260702_descriptor_v04_atomic" / "descriptor_smoke_samples.jsonl"
+    if fixture.exists():
+        for line in fixture.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            descriptor = json.loads(line)
+            if descriptor.get("descriptor_schema") == "SPPA-DESC-0.2" and descriptor.get("parts"):
+                return descriptor, str(fixture)
+    descriptor = {
+        "descriptor_schema": "SPPA-DESC-0.2",
+        "descriptor_id": "sppa-inline-verify",
+        "input": {"normalized_label": "verification_vehicle", "confidence": 0.9},
+        "semantic": {
+            "normalized_label": "verification_vehicle",
+            "class_confidence": 0.9,
+            "unknown_label": False,
+            "resolution_status": "inline_fixture",
+        },
+        "uncertainty": {"confidence": 0.9, "fallback_unknown": False},
+        "runtime_policy": {"action": "create"},
+        "parts": [
+            {
+                "role": "vehicle_body",
+                "primitive": "box",
+                "local_pose": {"center": [0.0, 0.0, 0.6], "axis": "z"},
+                "scale": [2.0, 1.0, 0.5],
+                "material_role": "vehicle_body",
+                "evidence_source": "semantic_prior",
+            },
+            {
+                "role": "vehicle_tire",
+                "primitive": "cylinder",
+                "local_pose": {"center": [0.7, 0.55, 0.25], "axis": "y"},
+                "scale": [0.2, 0.2, 0.12],
+                "material_role": "vehicle_tire",
+                "evidence_source": "semantic_prior",
+            },
+        ],
+    }
+    return descriptor, "inline"
+
+def verify_proxy_descriptor_ingestion(proxy_cls):
+    failures = []
+    actor = None
+    try:
+        cleanup_temp_actors()
+        descriptor, source = load_descriptor_fixture()
+        descriptor_json = json.dumps(descriptor, sort_keys=True)
+        actor = spawn_proxy_actor(proxy_cls, TEMP_PREFIX + "descriptor_ingestion")
+        ok = configure_proxy_from_descriptor_json(actor, descriptor_json, True)
+        components = static_mesh_components(actor)
+        mesh_count = sum(1 for component in components if component_has_mesh(component))
+        expected_count = len(descriptor.get("parts", []))
+        tags = [str(tag) for tag in getattr(actor, "tags", [])]
+        all_component_tags = sorted({tag for component in components for tag in component_tags(component)})
+        material_role_tags = [tag for tag in all_component_tags if tag.startswith("SPPA_MATERIAL_ROLE_")]
+        evidence_source_tags = [tag for tag in all_component_tags if tag.startswith("SPPA_EVIDENCE_SOURCE_")]
+        uncertainty_style_tags = [tag for tag in all_component_tags if tag.startswith("SPPA_UNCERTAINTY_STYLE_")]
+
+        if not ok:
+            failures.append("ConfigureProxyFromDescriptorJson returned false for a valid SPPA-DESC fixture")
+        if mesh_count != expected_count:
+            failures.append("Descriptor ingestion generated %d mesh parts, expected exactly %d" % (mesh_count, expected_count))
+        if "PORCE_SPPA_DESCRIPTOR" not in tags:
+            failures.append("Descriptor-ingested proxy missing PORCE_SPPA_DESCRIPTOR actor tag")
+        if "PORCE_SPPA_PROXY" not in tags:
+            failures.append("Descriptor-ingested proxy missing PORCE_SPPA_PROXY actor tag")
+        if not material_role_tags:
+            failures.append("Descriptor-ingested proxy generated no material-role component tags")
+        if not evidence_source_tags:
+            failures.append("Descriptor-ingested proxy generated no evidence-source component tags")
+        if not uncertainty_style_tags:
+            failures.append("Descriptor-ingested proxy generated no uncertainty-style component tags")
+
+        invalid_ok = configure_proxy_from_descriptor_json(actor, "{not-valid-json", True)
+        after_invalid_count = sum(1 for component in static_mesh_components(actor) if component_has_mesh(component))
+        if invalid_ok:
+            failures.append("ConfigureProxyFromDescriptorJson accepted invalid JSON")
+        if after_invalid_count != mesh_count:
+            failures.append("Invalid descriptor changed existing proxy part count from %d to %d" % (mesh_count, after_invalid_count))
+
+        smaller = json.loads(descriptor_json)
+        smaller["descriptor_id"] = "sppa-inline-reconfigure-smaller"
+        smaller["parts"] = smaller.get("parts", [])[:1]
+        smaller_ok = configure_proxy_from_descriptor_json(actor, json.dumps(smaller, sort_keys=True), True)
+        smaller_count = sum(1 for component in static_mesh_components(actor) if component_has_mesh(component))
+        if not smaller_ok:
+            failures.append("ConfigureProxyFromDescriptorJson returned false for smaller reconfigure descriptor")
+        if smaller_count != 1:
+            failures.append("Descriptor reconfigure generated %d mesh parts, expected 1" % smaller_count)
+
+        noop_packet = {
+            "packet_schema": "SPPA-UPD-0.2",
+            "descriptor_id": "sppa-inline-reconfigure-smaller",
+            "action": "pose_update",
+        }
+        noop_ok = apply_proxy_update_packet_json(actor, json.dumps(noop_packet, sort_keys=True), True)
+        noop_count = sum(1 for component in static_mesh_components(actor) if component_has_mesh(component))
+        if not noop_ok:
+            failures.append("pose_update packet was not accepted for an existing descriptor proxy")
+        if noop_count != smaller_count:
+            failures.append("pose_update packet changed part count from %d to %d" % (smaller_count, noop_count))
+
+        wrong_id_packet = {
+            "packet_schema": "SPPA-UPD-0.2",
+            "descriptor_id": "sppa-wrong-descriptor-id",
+            "action": "pose_update",
+        }
+        wrong_id_ok = apply_proxy_update_packet_json(actor, json.dumps(wrong_id_packet, sort_keys=True), True)
+        wrong_id_count = sum(1 for component in static_mesh_components(actor) if component_has_mesh(component))
+        if wrong_id_ok:
+            failures.append("pose_update packet with mismatched descriptor_id was accepted")
+        if wrong_id_count != noop_count:
+            failures.append("mismatched pose_update packet changed part count from %d to %d" % (noop_count, wrong_id_count))
+
+        inferred_shape_packet = {
+            "packet_schema": "SPPA-UPD-0.2",
+            "descriptor_id": "sppa-inline-reconfigure-smaller",
+            "action": "shape_param_update",
+            "scale": {"dims_m": {"length": 3.0, "width": 1.5, "height": 0.8}},
+        }
+        inferred_shape_update_ok = apply_proxy_update_packet_json(actor, json.dumps(inferred_shape_packet, sort_keys=True), True)
+        inferred_shape_update_count = sum(1 for component in static_mesh_components(actor) if component_has_mesh(component))
+        inferred_shape_update_scale = actor_relative_scale(actor)
+        if inferred_shape_update_ok:
+            failures.append("shape_param_update without replacement parts was accepted")
+        if inferred_shape_update_count != wrong_id_count:
+            failures.append("rejected shape_param_update changed part count from %d to %d" % (wrong_id_count, inferred_shape_update_count))
+        if not all(0.98 <= value <= 1.02 for value in inferred_shape_update_scale):
+            failures.append("rejected shape_param_update changed actor root scale: %s" % inferred_shape_update_scale)
+
+        shape_descriptor = json.loads(descriptor_json)
+        shape_descriptor["descriptor_id"] = "sppa-inline-shape-reference"
+        shape_descriptor["scale"] = {"dims_m": {"length": 2.0, "width": 1.0, "height": 1.0}}
+        shape_descriptor["parts"] = shape_descriptor.get("parts", [])[:2]
+        shape_reference_ok = configure_proxy_from_descriptor_json(actor, json.dumps(shape_descriptor, sort_keys=True), True)
+        shape_reference_count = sum(1 for component in static_mesh_components(actor) if component_has_mesh(component))
+        shape_packet = {
+            "packet_schema": "SPPA-UPD-0.2",
+            "descriptor_id": "sppa-inline-shape-reference",
+            "action": "shape_param_update",
+            "scale": {"dims_m": {"length": 3.0, "width": 1.5, "height": 1.0}},
+            "parts": shape_descriptor.get("parts", []),
+        }
+        shape_packet["parts"][0]["scale"] = [3.0, 1.0, 1.0]
+        shape_update_ok = apply_proxy_update_packet_json(actor, json.dumps(shape_packet, sort_keys=True), True)
+        shape_update_count = sum(1 for component in static_mesh_components(actor) if component_has_mesh(component))
+        shape_update_scale = actor_relative_scale(actor)
+        if not shape_reference_ok:
+            failures.append("shape reference descriptor was not accepted")
+        if not shape_update_ok:
+            failures.append("shape_param_update packet was not accepted for matching descriptor")
+        if shape_update_count != shape_reference_count:
+            failures.append("shape_param_update changed part count from %d to %d" % (shape_reference_count, shape_update_count))
+        if not all(0.98 <= value <= 1.02 for value in shape_update_scale):
+            failures.append("shape_param_update changed actor root scale instead of part parameters: %s" % shape_update_scale)
+
+        return {
+            "fixture_source": source,
+            "descriptor_id": descriptor.get("descriptor_id"),
+            "expected_part_count": expected_count,
+            "mesh_component_count": mesh_count,
+            "part_count_after_invalid": after_invalid_count,
+            "part_count_after_reconfigure": smaller_count,
+            "part_count_after_pose_update": noop_count,
+            "mismatched_pose_update_accepted": wrong_id_ok,
+            "part_count_after_mismatched_pose_update": wrong_id_count,
+            "inferred_reference_shape_param_update_accepted": inferred_shape_update_ok,
+            "part_count_after_inferred_reference_shape_param_update": inferred_shape_update_count,
+            "scale_after_inferred_reference_shape_param_update": inferred_shape_update_scale,
+            "shape_param_update_accepted": shape_update_ok,
+            "part_count_after_shape_param_update": shape_update_count,
+            "scale_after_shape_param_update": shape_update_scale,
+            "tags": tags,
+            "component_tags": all_component_tags,
+            "failures": failures,
+        }
+    finally:
+        destroy_actor(actor)
+        cleanup_temp_actors()
+
 def verify_proxy_generation(proxy_cls):
     expected_min_parts = {
-        "bike": 6,
-        "cow": 7,
-        "tower": 4,
-        "unknown": 3,
+        'bike': 6,
+        'cow': 7,
+        'tower': 4,
+        'car': 7,
+        'ambulance': 7,
+        'tree': 5,
+        'antenna': 4,
+        'mystery_object': 3,
+        'unknown': 3,
     }
     rows = []
     failures = []
@@ -265,6 +492,10 @@ def verify_proxy_generation(proxy_cls):
             mesh_count = sum(1 for component in components if component_has_mesh(component))
             collision_count = sum(1 for component in components if has_enabled_collision(component))
             tags = [str(tag) for tag in getattr(actor, "tags", [])]
+            all_component_tags = sorted({tag for component in components for tag in component_tags(component)})
+            material_role_tags = [tag for tag in all_component_tags if tag.startswith("SPPA_MATERIAL_ROLE_")]
+            evidence_source_tags = [tag for tag in all_component_tags if tag.startswith("SPPA_EVIDENCE_SOURCE_")]
+            uncertainty_style_tags = [tag for tag in all_component_tags if tag.startswith("SPPA_UNCERTAINTY_STYLE_")]
             rows.append(
                 {
                     "class_name": class_name,
@@ -273,6 +504,10 @@ def verify_proxy_generation(proxy_cls):
                     "mesh_component_count": mesh_count,
                     "collision_enabled_count": collision_count,
                     "tags": tags,
+                    "component_tags": all_component_tags,
+                    "material_role_tag_count": len(material_role_tags),
+                    "evidence_source_tag_count": len(evidence_source_tags),
+                    "uncertainty_style_tag_count": len(uncertainty_style_tags),
                 }
             )
 
@@ -283,6 +518,14 @@ def verify_proxy_generation(proxy_cls):
                 )
             if "PORCE_SPPA_PROXY" not in tags:
                 failures.append("SPPA proxy %s missing PORCE_SPPA_PROXY tag" % class_name)
+            if not any(tag.startswith("PORCE_MATERIAL_POLICY_") for tag in tags):
+                failures.append("SPPA proxy %s missing material policy actor tag" % class_name)
+            if mesh_count > 0 and not material_role_tags:
+                failures.append("SPPA proxy %s generated parts without material role tags" % class_name)
+            if mesh_count > 0 and not evidence_source_tags:
+                failures.append("SPPA proxy %s generated parts without evidence source tags" % class_name)
+            if mesh_count > 0 and not uncertainty_style_tags:
+                failures.append("SPPA proxy %s generated parts without uncertainty style tags" % class_name)
             if confirmed and collision_count < 1:
                 failures.append("Confirmed SPPA proxy %s did not enable collision on any part" % class_name)
             if not confirmed and collision_count != 0:
@@ -334,8 +577,10 @@ def verify_proxy_unknown_fallback(proxy_cls):
         actor = spawn_proxy_actor(proxy_cls, TEMP_PREFIX + "unknown_fallback")
         configure_proxy(actor, "", 0.10, False)
         tags = [str(tag) for tag in getattr(actor, "tags", [])]
-        mesh_count = sum(1 for component in static_mesh_components(actor) if component_has_mesh(component))
-        collision_count = sum(1 for component in static_mesh_components(actor) if has_enabled_collision(component))
+        components = static_mesh_components(actor)
+        mesh_count = sum(1 for component in components if component_has_mesh(component))
+        collision_count = sum(1 for component in components if has_enabled_collision(component))
+        all_component_tags = sorted({tag for component in components for tag in component_tags(component)})
 
         if "PORCE_CLASS_unknown" not in tags:
             failures.append("SPPA empty class fallback did not tag PORCE_CLASS_unknown")
@@ -345,11 +590,16 @@ def verify_proxy_unknown_fallback(proxy_cls):
             failures.append("SPPA empty class fallback generated %d mesh parts, expected at least 3" % mesh_count)
         if collision_count != 0:
             failures.append("SPPA empty tentative fallback enabled collision unexpectedly")
+        if "SPPA_EVIDENCE_SOURCE_fallback_unknown" not in all_component_tags:
+            failures.append("SPPA empty class fallback missing fallback_unknown evidence tag")
+        if "SPPA_UNCERTAINTY_STYLE_warning_marker" not in all_component_tags:
+            failures.append("SPPA empty class fallback missing warning_marker uncertainty tag")
 
         return {
             "mesh_component_count": mesh_count,
             "collision_enabled_count": collision_count,
             "tags": tags,
+            "component_tags": all_component_tags,
             "failures": failures,
         }
     finally:
@@ -501,6 +751,7 @@ def main():
                 "IsUsingSemanticProxyBackend",
                 "PollNow",
                 "SendNow",
+                "ApplyObstacleBatchJson",
             ],
         )
         failures.extend(
@@ -517,6 +768,9 @@ def main():
                 "ConfirmedColor",
                 "TentativeColor",
                 "UnknownColor",
+                "bUseEvidenceCalibratedMaterials",
+                "DescriptorMetersToCentimeters",
+                "MaxDescriptorParts",
             ],
         )
         failures.extend(
@@ -528,7 +782,7 @@ def main():
         proxy_method_check = check_methods(
             "PorceSemanticProxyActor",
             proxy_cls,
-            ["ConfigureProxy"],
+            ["ConfigureProxy", "ConfigureProxyFromDescriptorJson", "ApplyProxyUpdatePacketJson"],
         )
         failures.extend(
             "PorceSemanticProxyActor missing method: " + item
@@ -545,9 +799,15 @@ def main():
         failures.extend(component_switch["failures"])
 
     proxy_generation = {"rows": [], "failures": []}
+    proxy_descriptor_ingestion = {"failures": []}
     proxy_reconfigure = {"failures": []}
     proxy_unknown_fallback = {"failures": []}
     if proxy_cls is not None and not proxy_method_check.get("missing"):
+        try:
+            proxy_descriptor_ingestion = verify_proxy_descriptor_ingestion(proxy_cls)
+            failures.extend(proxy_descriptor_ingestion["failures"])
+        except Exception as exc:
+            failures.append("SPPA descriptor ingestion smoke failed: %s" % exc)
         try:
             proxy_generation = verify_proxy_generation(proxy_cls)
             failures.extend(proxy_generation["failures"])
@@ -576,6 +836,7 @@ def main():
         "component_switch": component_switch,
         "proxy_properties": proxy_property_check,
         "proxy_methods": proxy_method_check,
+        "proxy_descriptor_ingestion": proxy_descriptor_ingestion,
         "proxy_generation": proxy_generation,
         "proxy_reconfigure": proxy_reconfigure,
         "proxy_unknown_fallback": proxy_unknown_fallback,

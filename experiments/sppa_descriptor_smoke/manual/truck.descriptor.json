@@ -1,0 +1,632 @@
+{
+  "archetype_version": "SPPA-ARCHETYPE-0.2",
+  "cost": {
+    "create_cpu_us": 585.9,
+    "descriptor_build_cpu_us": 569.9,
+    "descriptor_bytes": 7984,
+    "export_cpu_us_if_any": 2320.8,
+    "triangles": 1668,
+    "update_cpu_us": null
+  },
+  "created_utc": "2026-07-02T07:32:44Z",
+  "descriptor_id": "sppa-95d5b1a9528d6ea7",
+  "descriptor_schema": "SPPA-DESC-0.2",
+  "evidence": {
+    "bbox_px": {
+      "aspect": 2.25,
+      "h": 80.0,
+      "w": 180.0,
+      "x": 0.0,
+      "x1": 0.0,
+      "x2": 180.0,
+      "y": 20.0,
+      "y1": 20.0,
+      "y2": 100.0
+    },
+    "calibration_ref": null,
+    "camera_pose": null,
+    "evidence_sources": [
+      "semantic_label",
+      "bbox",
+      "mask_polygon",
+      "world_pose",
+      "track_velocity",
+      "metric_dims_input"
+    ],
+    "mask_hash": "19b62c2b0208a13f",
+    "mask_ref_or_polygon": {
+      "area_px2": 14400.0,
+      "bbox_px": {
+        "h": 80.0,
+        "w": 180.0,
+        "x": 0.0,
+        "x1": 0.0,
+        "x2": 180.0,
+        "y": 0.0,
+        "y1": 0.0,
+        "y2": 80.0
+      },
+      "hash": "19b62c2b0208a13f",
+      "pca_yaw_deg_axial": 0.0,
+      "pca_yaw_rad_axial": 0.0,
+      "point_count": 4,
+      "polygon": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          180.0,
+          0.0
+        ],
+        [
+          180.0,
+          80.0
+        ],
+        [
+          0.0,
+          80.0
+        ]
+      ]
+    },
+    "world_pose": {
+      "coordinate_frame": "local_world_m",
+      "position": {
+        "x": 10.0,
+        "y": 4.0,
+        "z": 0.0
+      }
+    }
+  },
+  "generator_version": "XYT-SPPA-GEN-0.2",
+  "input": {
+    "confidence": 0.73,
+    "normalized_label": "truck",
+    "raw_label": "truck"
+  },
+  "input_hash": "95d5b1a9528d6ea7",
+  "mesh": {
+    "faces": 786,
+    "template_bounds": {
+      "extent": [
+        3.56,
+        1.3612435565298213,
+        1.2822276527763652
+      ],
+      "max": [
+        1.76,
+        0.6806217782649107,
+        1.4
+      ],
+      "min": [
+        -1.8,
+        -0.6806217782649107,
+        0.11777234722363461
+      ]
+    },
+    "triangles": 1668,
+    "vertices": 856
+  },
+  "ontology_version": "SPPA-ONTOLOGY-0.2",
+  "parts": [
+    {
+      "evidence_source": "semantic_prior",
+      "local_pose": {
+        "axis": "z",
+        "center": [
+          -0.55,
+          0.0,
+          0.95
+        ]
+      },
+      "material": "vehicle_neutral_body_prior",
+      "material_role": "vehicle_body",
+      "primitive": "box",
+      "role": "vehicle_body",
+      "scale": [
+        2.5,
+        1.1,
+        0.9
+      ],
+      "triangle_budget": 12
+    },
+    {
+      "evidence_source": "semantic_prior",
+      "local_pose": {
+        "axis": "z",
+        "center": [
+          1.15,
+          0.0,
+          0.85
+        ]
+      },
+      "material": "vehicle_cab_prior",
+      "material_role": "vehicle_cab",
+      "primitive": "box",
+      "role": "vehicle_cab",
+      "scale": [
+        1.0,
+        1.05,
+        0.75
+      ],
+      "triangle_budget": 12
+    },
+    {
+      "evidence_source": "semantic_prior",
+      "local_pose": {
+        "axis": "z",
+        "center": [
+          1.33,
+          -0.53,
+          1.1
+        ]
+      },
+      "material": "vehicle_window_prior",
+      "material_role": "vehicle_window",
+      "primitive": "box",
+      "role": "vehicle_window",
+      "scale": [
+        0.42,
+        0.04,
+        0.28
+      ],
+      "triangle_budget": 12
+    },
+    {
+      "evidence_source": "semantic_prior",
+      "local_pose": {
+        "axis": "y",
+        "center": [
+          -1.35,
+          -0.62,
+          0.42
+        ]
+      },
+      "material": "vehicle_tire_prior",
+      "material_role": "vehicle_tire",
+      "primitive": "torus",
+      "role": "vehicle_tire",
+      "scale": [
+        0.24,
+        0.07,
+        14.0,
+        6.0
+      ],
+      "segments": 14,
+      "triangle_budget": 168
+    },
+    {
+      "evidence_source": "semantic_prior",
+      "local_pose": {
+        "axis": "y",
+        "center": [
+          -1.35,
+          -0.62,
+          0.42
+        ]
+      },
+      "material": "vehicle_metal_prior",
+      "material_role": "vehicle_metal_or_hub",
+      "primitive": "cylinder",
+      "role": "vehicle_metal_or_hub",
+      "scale": [
+        0.13,
+        0.13,
+        0.08
+      ],
+      "segments": 10,
+      "triangle_budget": 36
+    },
+    {
+      "evidence_source": "semantic_prior",
+      "local_pose": {
+        "axis": "y",
+        "center": [
+          -1.35,
+          0.62,
+          0.42
+        ]
+      },
+      "material": "vehicle_tire_prior",
+      "material_role": "vehicle_tire",
+      "primitive": "torus",
+      "role": "vehicle_tire",
+      "scale": [
+        0.24,
+        0.07,
+        14.0,
+        6.0
+      ],
+      "segments": 14,
+      "triangle_budget": 168
+    },
+    {
+      "evidence_source": "semantic_prior",
+      "local_pose": {
+        "axis": "y",
+        "center": [
+          -1.35,
+          0.62,
+          0.42
+        ]
+      },
+      "material": "vehicle_metal_prior",
+      "material_role": "vehicle_metal_or_hub",
+      "primitive": "cylinder",
+      "role": "vehicle_metal_or_hub",
+      "scale": [
+        0.13,
+        0.13,
+        0.08
+      ],
+      "segments": 10,
+      "triangle_budget": 36
+    },
+    {
+      "evidence_source": "semantic_prior",
+      "local_pose": {
+        "axis": "y",
+        "center": [
+          -0.35,
+          -0.62,
+          0.42
+        ]
+      },
+      "material": "vehicle_tire_prior",
+      "material_role": "vehicle_tire",
+      "primitive": "torus",
+      "role": "vehicle_tire",
+      "scale": [
+        0.24,
+        0.07,
+        14.0,
+        6.0
+      ],
+      "segments": 14,
+      "triangle_budget": 168
+    },
+    {
+      "evidence_source": "semantic_prior",
+      "local_pose": {
+        "axis": "y",
+        "center": [
+          -0.35,
+          -0.62,
+          0.42
+        ]
+      },
+      "material": "vehicle_metal_prior",
+      "material_role": "vehicle_metal_or_hub",
+      "primitive": "cylinder",
+      "role": "vehicle_metal_or_hub",
+      "scale": [
+        0.13,
+        0.13,
+        0.08
+      ],
+      "segments": 10,
+      "triangle_budget": 36
+    },
+    {
+      "evidence_source": "semantic_prior",
+      "local_pose": {
+        "axis": "y",
+        "center": [
+          -0.35,
+          0.62,
+          0.42
+        ]
+      },
+      "material": "vehicle_tire_prior",
+      "material_role": "vehicle_tire",
+      "primitive": "torus",
+      "role": "vehicle_tire",
+      "scale": [
+        0.24,
+        0.07,
+        14.0,
+        6.0
+      ],
+      "segments": 14,
+      "triangle_budget": 168
+    },
+    {
+      "evidence_source": "semantic_prior",
+      "local_pose": {
+        "axis": "y",
+        "center": [
+          -0.35,
+          0.62,
+          0.42
+        ]
+      },
+      "material": "vehicle_metal_prior",
+      "material_role": "vehicle_metal_or_hub",
+      "primitive": "cylinder",
+      "role": "vehicle_metal_or_hub",
+      "scale": [
+        0.13,
+        0.13,
+        0.08
+      ],
+      "segments": 10,
+      "triangle_budget": 36
+    },
+    {
+      "evidence_source": "semantic_prior",
+      "local_pose": {
+        "axis": "y",
+        "center": [
+          0.85,
+          -0.62,
+          0.42
+        ]
+      },
+      "material": "vehicle_tire_prior",
+      "material_role": "vehicle_tire",
+      "primitive": "torus",
+      "role": "vehicle_tire",
+      "scale": [
+        0.24,
+        0.07,
+        14.0,
+        6.0
+      ],
+      "segments": 14,
+      "triangle_budget": 168
+    },
+    {
+      "evidence_source": "semantic_prior",
+      "local_pose": {
+        "axis": "y",
+        "center": [
+          0.85,
+          -0.62,
+          0.42
+        ]
+      },
+      "material": "vehicle_metal_prior",
+      "material_role": "vehicle_metal_or_hub",
+      "primitive": "cylinder",
+      "role": "vehicle_metal_or_hub",
+      "scale": [
+        0.13,
+        0.13,
+        0.08
+      ],
+      "segments": 10,
+      "triangle_budget": 36
+    },
+    {
+      "evidence_source": "semantic_prior",
+      "local_pose": {
+        "axis": "y",
+        "center": [
+          0.85,
+          0.62,
+          0.42
+        ]
+      },
+      "material": "vehicle_tire_prior",
+      "material_role": "vehicle_tire",
+      "primitive": "torus",
+      "role": "vehicle_tire",
+      "scale": [
+        0.24,
+        0.07,
+        14.0,
+        6.0
+      ],
+      "segments": 14,
+      "triangle_budget": 168
+    },
+    {
+      "evidence_source": "semantic_prior",
+      "local_pose": {
+        "axis": "y",
+        "center": [
+          0.85,
+          0.62,
+          0.42
+        ]
+      },
+      "material": "vehicle_metal_prior",
+      "material_role": "vehicle_metal_or_hub",
+      "primitive": "cylinder",
+      "role": "vehicle_metal_or_hub",
+      "scale": [
+        0.13,
+        0.13,
+        0.08
+      ],
+      "segments": 10,
+      "triangle_budget": 36
+    },
+    {
+      "evidence_source": "semantic_prior",
+      "local_pose": {
+        "axis": "y",
+        "center": [
+          1.45,
+          -0.62,
+          0.42
+        ]
+      },
+      "material": "vehicle_tire_prior",
+      "material_role": "vehicle_tire",
+      "primitive": "torus",
+      "role": "vehicle_tire",
+      "scale": [
+        0.24,
+        0.07,
+        14.0,
+        6.0
+      ],
+      "segments": 14,
+      "triangle_budget": 168
+    },
+    {
+      "evidence_source": "semantic_prior",
+      "local_pose": {
+        "axis": "y",
+        "center": [
+          1.45,
+          -0.62,
+          0.42
+        ]
+      },
+      "material": "vehicle_metal_prior",
+      "material_role": "vehicle_metal_or_hub",
+      "primitive": "cylinder",
+      "role": "vehicle_metal_or_hub",
+      "scale": [
+        0.13,
+        0.13,
+        0.08
+      ],
+      "segments": 10,
+      "triangle_budget": 36
+    },
+    {
+      "evidence_source": "semantic_prior",
+      "local_pose": {
+        "axis": "y",
+        "center": [
+          1.45,
+          0.62,
+          0.42
+        ]
+      },
+      "material": "vehicle_tire_prior",
+      "material_role": "vehicle_tire",
+      "primitive": "torus",
+      "role": "vehicle_tire",
+      "scale": [
+        0.24,
+        0.07,
+        14.0,
+        6.0
+      ],
+      "segments": 14,
+      "triangle_budget": 168
+    },
+    {
+      "evidence_source": "semantic_prior",
+      "local_pose": {
+        "axis": "y",
+        "center": [
+          1.45,
+          0.62,
+          0.42
+        ]
+      },
+      "material": "vehicle_metal_prior",
+      "material_role": "vehicle_metal_or_hub",
+      "primitive": "cylinder",
+      "role": "vehicle_metal_or_hub",
+      "scale": [
+        0.13,
+        0.13,
+        0.08
+      ],
+      "segments": 10,
+      "triangle_budget": 36
+    }
+  ],
+  "policy_version": "SPPA-POLICY-0.2",
+  "pose": {
+    "coordinate_frame": "local_world_m",
+    "pose_uncertainty": "unvalidated_input",
+    "position_world": {
+      "x": 10.0,
+      "y": 4.0,
+      "z": 0.0
+    },
+    "yaw_ambiguous": false,
+    "yaw_deg": 0.0,
+    "yaw_modulo": "2pi",
+    "yaw_rad": 0.0,
+    "yaw_source": "track_velocity"
+  },
+  "runtime_policy": {
+    "action": "unapplied",
+    "action_reason": "schedule_descriptor_update_not_called",
+    "cache_key": "t1",
+    "confidence_bucket": 15,
+    "create_once_per_track": true,
+    "param_update_if": [
+      "shape_ratio_ge_0.20"
+    ],
+    "per_frame_update_fields": [
+      "position_world",
+      "yaw",
+      "confidence",
+      "visibility"
+    ],
+    "regenerate_if": [
+      "archetype_change",
+      "resolution_status_change"
+    ],
+    "thresholds": {
+      "confidence_bucket_step": 0.05,
+      "shape_ratio": 0.2,
+      "velocity_min_delta_m": 0.05
+    }
+  },
+  "scale": {
+    "bbox_aspect": 2.25,
+    "bbox_px": {
+      "aspect": 2.25,
+      "h": 80.0,
+      "w": 180.0,
+      "x": 0.0,
+      "x1": 0.0,
+      "x2": 180.0,
+      "y": 20.0,
+      "y1": 20.0,
+      "y2": 100.0
+    },
+    "dims_m": {
+      "height": 2.7,
+      "length": 5.2,
+      "width": 2.3
+    },
+    "footprint_m": {
+      "length": 5.2,
+      "width": 2.3
+    },
+    "footprint_px": {
+      "length": 180.0,
+      "source": "mask_bbox",
+      "width": 80.0
+    },
+    "mask_area_px2": 14400.0,
+    "scale_source": "metric_dims_input",
+    "scale_uncertainty": "external_metric_input_not_verified_by_sppa"
+  },
+  "semantic": {
+    "archetype": "truck",
+    "class_confidence": 0.73,
+    "fallback_reason": null,
+    "normalized_label": "truck",
+    "raw_label": "truck",
+    "resolution_status": "exact_class",
+    "unknown_label": false
+  },
+  "source_event_index": null,
+  "source_log": null,
+  "track": {
+    "frame_id": null,
+    "previous_descriptor_id": null,
+    "timestamp": "2026-07-02T12:00:00Z",
+    "track_age_s": null,
+    "track_id": "t1",
+    "track_seen_count": null
+  },
+  "uncertainty": {
+    "confidence": 0.73,
+    "fallback_unknown": false,
+    "shape_low_confidence": false,
+    "yaw_ambiguous": false
+  }
+}
