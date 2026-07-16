@@ -1,9 +1,25 @@
 {
   "schema": "sppa-clean-clone-gate-v1",
-  "required_count": 38,
+  "required_count": 51,
   "missing": [],
-  "untracked": [],
-  "modified": [],
-  "pass": true,
+  "untracked": [
+    "paper_semantic_proxy_3d/SPPA_PROTOCOL_AMENDMENT_04_20260716.md",
+    "paper_semantic_proxy_3d/benchmarks/results/sppa_mvfit_family_strata.tex",
+    "paper_semantic_proxy_3d/figures/sppa_mvfit_h1_occupancy_examples.png"
+  ],
+  "modified": [
+    " M paper_semantic_proxy_3d/benchmarks/results/sppa_mvfit_secondary_deltas.tex",
+    " M paper_semantic_proxy_3d/reproducibility/sppa_mvfit/benchmark/analyze_test.py",
+    " M paper_semantic_proxy_3d/reproducibility/sppa_mvfit/benchmark/check_clean_clone_gate.py",
+    " M paper_semantic_proxy_3d/reproducibility/sppa_mvfit/benchmark/verify_package.py",
+    " M paper_semantic_proxy_3d/reproducibility/sppa_mvfit/integrity_manifest.json",
+    " M paper_semantic_proxy_3d/reproducibility/sppa_mvfit/results/test/confirmatory_summary.json",
+    " M paper_semantic_proxy_3d/reproducibility/sppa_mvfit/results/test/confirmatory_summary.md",
+    " M paper_semantic_proxy_3d/semantic_proxy_3d_paper.tex",
+    " M paper_semantic_proxy_3d/semantic_proxy_3d_references.bib",
+    " M paper_semantic_proxy_3d/semantic_proxy_3d_submission_supplement.tex",
+    " M paper_semantic_proxy_3d/tools/reproduce_sppa_mvfit_paper.py"
+  ],
+  "pass": false,
   "boundary": "Read-only; no clone, reset, staging, or worktree mutation."
 }

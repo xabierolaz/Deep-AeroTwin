@@ -1,11 +1,11 @@
 {
-  "schema": "sppa-mvfit-confirmatory-analysis-v1",
+  "schema": "sppa-mvfit-confirmatory-analysis-v2",
   "provenance": "synthetic_geometry",
   "primary_endpoint": "clean_64cubed_voxel_iou_sppa_mvfit_minus_generic_mvfit",
   "primary": {
     "mean_difference": 0.19004632845046177,
-    "ci95_low_percentile": 0.18076089015658492,
-    "ci95_high_percentile": 0.19899471612721545,
+    "ci95_low_percentile": 0.1808601091611339,
+    "ci95_high_percentile": 0.1991332686472451,
     "bootstrap_resamples": 10000,
     "bootstrap_seed": 77157,
     "actor_count": 240,
@@ -37,7 +37,7 @@
       "rider_cycle|csg_id": 0.4577480700553391,
       "rider_cycle|implicit_ood": 0.2994315000571651
     },
-    "draws_two_sided_p": 0.5053
+    "null_centered_two_sided_p": 0.0
   },
   "h1_superiority_margin": 0.03,
   "h1_pass": true,
@@ -49,8 +49,8 @@
   "secondary_bootstrap": {
     "sppa_text_only": {
       "mean_difference": 0.1299652677717454,
-      "ci95_low_percentile": 0.11654863483990782,
-      "ci95_high_percentile": 0.14324284574865953,
+      "ci95_low_percentile": 0.11649083260042198,
+      "ci95_high_percentile": 0.1435996247945579,
       "bootstrap_resamples": 10000,
       "bootstrap_seed": 77157,
       "actor_count": 240,
@@ -82,12 +82,12 @@
         "rider_cycle|csg_id": 0.11004127742528165,
         "rider_cycle|implicit_ood": 0.12249148342914111
       },
-      "draws_two_sided_p": 0.5049
+      "null_centered_two_sided_p": 0.0
     },
     "bbox": {
-      "mean_difference": 0.30957809085734467,
-      "ci95_low_percentile": 0.3011788454178087,
-      "ci95_high_percentile": 0.3177886618130384,
+      "mean_difference": 0.3095780908573446,
+      "ci95_low_percentile": 0.3013487914215076,
+      "ci95_high_percentile": 0.317606011966404,
       "bootstrap_resamples": 10000,
       "bootstrap_seed": 77157,
       "actor_count": 240,
@@ -119,12 +119,12 @@
         "rider_cycle|csg_id": 0.5331010987022037,
         "rider_cycle|implicit_ood": 0.32917206583225445
       },
-      "draws_two_sided_p": 0.5149
+      "null_centered_two_sided_p": 0.0
     },
     "ellipsoid": {
       "mean_difference": 0.21578232129720143,
-      "ci95_low_percentile": 0.20679323160922858,
-      "ci95_high_percentile": 0.22446321457961527,
+      "ci95_low_percentile": 0.20690356691026732,
+      "ci95_high_percentile": 0.22445253669180829,
       "bootstrap_resamples": 10000,
       "bootstrap_seed": 77157,
       "actor_count": 240,
@@ -156,12 +156,12 @@
         "rider_cycle|csg_id": 0.5033287326150166,
         "rider_cycle|implicit_ood": 0.28281989783243927
       },
-      "draws_two_sided_p": 0.5094
+      "null_centered_two_sided_p": 0.0
     },
     "capsule": {
       "mean_difference": 0.23271474138215087,
-      "ci95_low_percentile": 0.2235955837037154,
-      "ci95_high_percentile": 0.24140225219819644,
+      "ci95_low_percentile": 0.22384688584486384,
+      "ci95_high_percentile": 0.24134242640333292,
       "bootstrap_resamples": 10000,
       "bootstrap_seed": 77157,
       "actor_count": 240,
@@ -193,12 +193,12 @@
         "rider_cycle|csg_id": 0.5108198634441129,
         "rider_cycle|implicit_ood": 0.2947451643480869
       },
-      "draws_two_sided_p": 0.5099
+      "null_centered_two_sided_p": 0.0
     },
     "billboard": {
       "mean_difference": 0.3840980218843391,
-      "ci95_low_percentile": 0.37508510573254417,
-      "ci95_high_percentile": 0.39312870404702466,
+      "ci95_low_percentile": 0.3750728798412387,
+      "ci95_high_percentile": 0.3929138107583436,
       "bootstrap_resamples": 10000,
       "bootstrap_seed": 77157,
       "actor_count": 240,
@@ -230,12 +230,12 @@
         "rider_cycle|csg_id": 0.2831450584015437,
         "rider_cycle|implicit_ood": 0.10633466123746453
       },
-      "draws_two_sided_p": 0.5119
+      "null_centered_two_sided_p": 0.0
     },
     "nonsemantic_visual_hull": {
-      "mean_difference": 0.03573151380895052,
-      "ci95_low_percentile": 0.027179288996676827,
-      "ci95_high_percentile": 0.04425302521894405,
+      "mean_difference": 0.0357315138089505,
+      "ci95_low_percentile": 0.02732944146927056,
+      "ci95_high_percentile": 0.04412991568984099,
       "bootstrap_resamples": 10000,
       "bootstrap_seed": 77157,
       "actor_count": 240,
@@ -267,17 +267,18 @@
         "rider_cycle|csg_id": 0.40589900140248236,
         "rider_cycle|implicit_ood": -0.11151916375013989
       },
-      "draws_two_sided_p": 0.5095
+      "null_centered_two_sided_p": 0.0
     }
   },
   "holm_adjusted_two_sided_p": {
-    "sppa_text_only": 1.0,
-    "ellipsoid": 1.0,
-    "nonsemantic_visual_hull": 1.0,
-    "capsule": 1.0,
-    "billboard": 1.0,
-    "bbox": 1.0
+    "sppa_text_only": 0.0,
+    "bbox": 0.0,
+    "ellipsoid": 0.0,
+    "capsule": 0.0,
+    "billboard": 0.0,
+    "nonsemantic_visual_hull": 0.0
   },
+  "p_value_definition": "null_centered_stratified_bootstrap_two_sided",
   "resolution_sensitivity": {
     "schema": "sppa-mvfit-resolution-sensitivity-v1",
     "actor_count": 60,
@@ -297,5 +298,6 @@
     "pass": true,
     "provenance": "synthetic_geometry"
   },
-  "interpretation": "A passing H1 interval is still synthetic internal evidence and does not establish real-world, geospatial, flight, or universal reconstruction validity."
+  "interpretation": "A passing H1 interval is still synthetic internal evidence and does not establish real-world, geospatial, flight, or universal reconstruction validity.",
+  "analysis_note": "v2 replaces invalid draws_two_sided_p with null-centered p; predictions were not re-sealed."
 }

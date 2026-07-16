@@ -32,6 +32,15 @@ PACKAGE_FILES = [
     "tests/test_contract.py",
     "results/test/confirmatory_summary.json",
     "results/test/raw_metrics.csv",
+    "results/test/sealed_predictions.bin",
+    "results/test/resolution_sensitivity.json",
+    "results/test/sealed_output_manifest.json",
+    "results/test/evaluation_manifest.json",
+    "data/nist_pulse_raw.json",
+    "data/test/public_cases.json",
+    "data/test/private_source_actors.jsonl",
+    "data/test/observation_masks.npy",
+    "data/test/dataset_manifest.json",
     "pretest_freeze.json",
     "test_seed_manifest.json",
 ]
@@ -39,6 +48,7 @@ PAPER_FILES = [
     "SPPA_PROTOCOL_AMENDMENT_01_20260715.md",
     "SPPA_PROTOCOL_AMENDMENT_02_20260715.md",
     "SPPA_PROTOCOL_AMENDMENT_03_20260716.md",
+    "SPPA_PROTOCOL_AMENDMENT_04_20260716.md",
     "SPPA_CONTRIBUTION_SELECTION_20260715.md",
     "SPPA_CLAIM_EVIDENCE_MATRIX_20260715.md",
     "SPPA_PREREGISTRATION_20260715.md",
@@ -52,6 +62,9 @@ PAPER_FILES = [
     "benchmarks/results/sppa_mvfit_h1_summary.tex",
     "benchmarks/results/sppa_mvfit_method_means.tex",
     "benchmarks/results/sppa_mvfit_secondary_deltas.tex",
+    "benchmarks/results/sppa_mvfit_family_strata.tex",
+    "figures/sppa_language_to_parts_to_3d_v17.png",
+    "figures/sppa_mvfit_h1_occupancy_examples.png",
 ]
 
 

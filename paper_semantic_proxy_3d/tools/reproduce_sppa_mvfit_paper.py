@@ -78,37 +78,38 @@ def main() -> int:
     # Contract tests when strict and pytest is available.
     if args.strict:
         try:
-            repo_candidates = []
-            for start in (Path.cwd().resolve(), PAPER_ROOT.resolve(), *PAPER_ROOT.resolve().parents):
-                if (start / ".git").exists():
-                    repo_candidates.append(start)
-                junction = start / "paper_semantic_proxy_3d"
-                if junction.exists() and (start / ".git").exists():
-                    repo_candidates.append(start)
-            # Prefer the Deep-AeroTwin checkout when the paper is a junction.
-            deep = Path(r"D:\Deep-AeroTwin-UE57-Test")
-            if (deep / ".git").exists():
-                repo_candidates.insert(0, deep)
-            ok = False
-            errors: list[str] = []
-            for repo in repo_candidates:
-                rel = "paper_semantic_proxy_3d/reproducibility/sppa_mvfit/tests/test_contract.py"
-                target = repo / rel
-                if not target.exists():
-                    continue
-                proc = subprocess.run(
-                    [sys.executable, "-m", "pytest", rel, "-q"],
-                    cwd=str(repo),
-                    capture_output=True,
-                    text=True,
-                    check=False,
-                )
-                if proc.returncode == 0:
-                    ok = True
-                    break
-                errors.append(proc.stdout + proc.stderr)
-            if not ok:
-                blockers.append("contract tests failed: " + (errors[-1][:300] if errors else "no git root with tests found"))
+            test_file = PACKAGE / "tests" / "test_contract.py"
+            proc = subprocess.run(
+                [sys.executable, "-m", "pytest", str(test_file), "-q"],
+                cwd=str(PACKAGE),
+                capture_output=True,
+                text=True,
+                check=False,
+                env={**dict(**{k: v for k, v in __import__("os").environ.items()}), "PYTHONPATH": str(PACKAGE)},
+            )
+            if proc.returncode != 0:
+                # Fallback: git repo with junction layout.
+                ok = False
+                errors = [proc.stdout + proc.stderr]
+                for start in (Path.cwd().resolve(), *PAPER_ROOT.resolve().parents):
+                    if not (start / ".git").exists():
+                        continue
+                    rel = "paper_semantic_proxy_3d/reproducibility/sppa_mvfit/tests/test_contract.py"
+                    if not (start / rel).exists():
+                        continue
+                    proc2 = subprocess.run(
+                        [sys.executable, "-m", "pytest", rel, "-q"],
+                        cwd=str(start),
+                        capture_output=True,
+                        text=True,
+                        check=False,
+                    )
+                    if proc2.returncode == 0:
+                        ok = True
+                        break
+                    errors.append(proc2.stdout + proc2.stderr)
+                if not ok:
+                    blockers.append("contract tests failed: " + (errors[-1][:300] if errors else "unknown"))
         except Exception as exc:  # pragma: no cover
             blockers.append(f"contract test execution error: {exc}")
 

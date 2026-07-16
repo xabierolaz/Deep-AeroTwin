@@ -44,6 +44,13 @@ def bootstrap(rows: list[dict], method_a: str, method_b: str, seed: int, resampl
     draws = np.empty(resamples, dtype=np.float64)
     for index in range(resamples):
         draws[index] = float(np.mean([rng.choice(values, size=len(values), replace=True).mean() for values in strata.values()]))
+    # Null-centered two-sided p: resample within-cell centered differences.
+    null = np.empty(resamples, dtype=np.float64)
+    cell_arrays = [np.asarray(values, dtype=np.float64) for _, values in sorted(strata.items())]
+    for index in range(resamples):
+        null[index] = float(
+            np.mean([rng.choice(cell - cell.mean(), size=len(cell), replace=True).mean() for cell in cell_arrays])
+        )
     return {
         "mean_difference": observed,
         "ci95_low_percentile": float(np.quantile(draws, 0.025)),
@@ -53,7 +60,7 @@ def bootstrap(rows: list[dict], method_a: str, method_b: str, seed: int, resampl
         "actor_count": sum(len(values) for values in strata.values()),
         "stratum_counts": {"|".join(key): len(values) for key, values in sorted(strata.items())},
         "stratum_point_estimates": {"|".join(key): float(np.mean(values)) for key, values in sorted(strata.items())},
-        "draws_two_sided_p": float(np.mean(np.abs(draws) >= abs(observed))),
+        "null_centered_two_sided_p": float(np.mean(np.abs(null) >= abs(observed))),
     }
 
 
@@ -64,12 +71,12 @@ def main() -> int:
     secondaries = {}
     for method in ("sppa_text_only", "bbox", "ellipsoid", "capsule", "billboard", "nonsemantic_visual_hull"):
         secondaries[method] = bootstrap(rows, "sppa_mvfit", method, 77157)
-    ordered = sorted(secondaries.items(), key=lambda item: item[1]["draws_two_sided_p"])
+    ordered = sorted(secondaries.items(), key=lambda item: item[1]["null_centered_two_sided_p"])
     holm = {}
     m = len(ordered)
     running = 0.0
     for rank, (method, result) in enumerate(ordered):
-        adjusted = min(1.0, (m - rank) * result["draws_two_sided_p"])
+        adjusted = min(1.0, (m - rank) * result["null_centered_two_sided_p"])
         running = max(running, adjusted)
         holm[method] = running
     h1_pass = primary["ci95_low_percentile"] > 0.030

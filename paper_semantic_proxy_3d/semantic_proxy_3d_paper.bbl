@@ -117,6 +117,12 @@ Mohammad~Sadil Khan, Sankalp Sinha, Talha~Uddin Sheikh, Didier Stricker,
 \newblock In {\em Advances in Neural Information Processing Systems},
   volume~37, 2024.
 
+\bibitem{laurentini1994visualhull}
+Aldo Laurentini.
+\newblock The visual hull concept for silhouette-based image understanding.
+\newblock {\em IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  16(2):150--162, 1994.
+
 \bibitem{li2026pixal3d}
 Dong-Yang Li, Wang Zhao, Yuxin Chen, Wenbo Hu, Meng-Hao Guo, Fang-Lue Zhang,
   Ying Shan, and Shi-Min Hu.
@@ -164,6 +170,14 @@ Xiaoxu Meng, Zhongmin Chen, Bo~Yang, Weikai Chen, Weixiao Liu, and Lin Gao.
 \newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
   Pattern Recognition}, pages 29081--29091, 2026.
 
+\bibitem{mo2019partnet}
+Kaichun Mo, Shilin Zhu, Angel~X. Chang, Li~Yi, Subarna Tripathi, Leonidas~J.
+  Guibas, and Hao Su.
+\newblock {PartNet}: A large-scale benchmark for fine-grained and hierarchical
+  part-level {3D} object understanding.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, pages 909--918, 2019.
+
 \bibitem{mueller2006procedural}
 Pascal M{\"u}ller, Peter Wonka, Simon Haegler, Andreas Ulmer, and Luc Van~Gool.
 \newblock Procedural modeling of buildings.
@@ -196,12 +210,6 @@ Despoina Paschalidou, Ali~Osman Ulusoy, and Andreas Geiger.
 Ben Poole, Ajay Jain, Jonathan~T. Barron, and Ben Mildenhall.
 \newblock Dreamfusion: Text-to-3d using 2d diffusion.
 \newblock {\em arXiv preprint arXiv:2209.14988}, 2022.
-
-\bibitem{pytorch2026memoryfraction}
-{PyTorch Contributors}.
-\newblock {torch.cuda.memory.set\_per\_process\_memory\_fraction}.
-\newblock PyTorch documentation, 2026.
-\newblock PyTorch 2.13 documentation; accessed 2026-07-15.
 
 \bibitem{rosinol2020dynamic}
 Antoni Rosinol, Arjun Gupta, Marcus Abate, Jingnan Shi, and Luca Carlone.

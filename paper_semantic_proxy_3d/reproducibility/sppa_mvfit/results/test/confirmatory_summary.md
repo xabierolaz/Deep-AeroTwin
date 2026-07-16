@@ -2,7 +2,7 @@
 
 - H1 pass: **True**
 - Mean Δ IoU: 0.1900
-- 95% CI: [0.1808, 0.1990]
+- 95% CI: [0.1809, 0.1991]
 - CSG-ID / OOD: 0.2085 / 0.1716
 - Resolution sensitivity pass: True
 

@@ -96,16 +96,40 @@ def verify_development() -> None:
             fail("unknown raw status")
 
 
-def write_integrity_manifest(development: bool) -> Path:
+def verify_sealed() -> None:
+    required = [
+        PACKAGE_ROOT / "results" / "test" / "sealed_predictions.bin",
+        PACKAGE_ROOT / "results" / "test" / "raw_metrics.csv",
+        PACKAGE_ROOT / "results" / "test" / "confirmatory_summary.json",
+        PACKAGE_ROOT / "results" / "test" / "resolution_sensitivity.json",
+        PACKAGE_ROOT / "test_seed_manifest.json",
+        PACKAGE_ROOT / "pretest_freeze.json",
+    ]
+    for path in required:
+        if not path.exists():
+            fail(f"missing sealed artifact: {path}")
+    conf = json.loads((PACKAGE_ROOT / "results" / "test" / "confirmatory_summary.json").read_text(encoding="utf-8"))
+    if conf.get("provenance") != "synthetic_geometry":
+        fail("sealed confirmatory provenance is not synthetic_geometry")
+    if not conf.get("h1_pass"):
+        fail("sealed confirmatory h1_pass is false")
+    with (PACKAGE_ROOT / "results" / "test" / "raw_metrics.csv").open("r", encoding="utf-8", newline="") as handle:
+        raw_rows = list(csv.DictReader(handle))
+    if len(raw_rows) != 240 * len(CONDITIONS) * len(METHODS):
+        fail(f"sealed raw row count unexpected: {len(raw_rows)}")
+
+
+def write_integrity_manifest(development: bool, sealed: bool) -> Path:
     files: dict[str, str] = {}
     for path in sorted(PACKAGE_ROOT.rglob("*")):
         if not path.is_file() or "__pycache__" in path.parts or path.name == "integrity_manifest.json":
             continue
         files[path.relative_to(PACKAGE_ROOT).as_posix()] = sha256_file(path)
     payload = {
-        "schema_version": "SPPA-MVFIT-INTEGRITY-1.0",
+        "schema_version": "SPPA-MVFIT-INTEGRITY-1.1",
         "development_verified": bool(development),
-        "test_artifacts_present": False,
+        "sealed_verified": bool(sealed),
+        "test_artifacts_present": sealed or (PACKAGE_ROOT / "results" / "test").exists(),
         "file_count": len(files),
         "files": files,
     }
@@ -117,13 +141,17 @@ def write_integrity_manifest(development: bool) -> Path:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--development", action="store_true")
+    parser.add_argument("--sealed", action="store_true", help="Post-seal integrity checks (skip no-test-artifact gate).")
     args = parser.parse_args()
     verify_static_boundary()
     verify_no_machine_paths()
-    verify_no_test_artifacts()
-    if args.development:
-        verify_development()
-    output = write_integrity_manifest(args.development)
+    if args.sealed:
+        verify_sealed()
+    else:
+        verify_no_test_artifacts()
+        if args.development:
+            verify_development()
+    output = write_integrity_manifest(args.development, args.sealed)
     print(f"PASS: SPPA-MVFit package verified; manifest={output}")
 
 
