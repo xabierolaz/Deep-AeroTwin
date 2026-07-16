@@ -2,28 +2,42 @@
 
 **To the Editors of the Journal of Geovisualization and Spatial Analysis**
 
-We submit the manuscript *Family-Conditioned Multiview Fitting for Semantic
-Primitive Proxy Actors in UAV Digital Twins (SPPA-MVFit)* for consideration as
-a research article.
+Please consider our manuscript:
 
-**Problem.** Object-level UAV telemetry is not a mesh. Digital twins need a
-lightweight, controllable 3D proxy when curated assets are missing or mismatched.
+**Family-Conditioned Multiview Occupancy Fitting for Semantic Proxy Actors in a Synthetic UAV Digital-Twin Setting (SPPA-MVFit)**
 
-**Contribution.** We evaluate family-conditioned SPPA-MVFit: a frozen semantic
-part graph fitted to calibrated top/side silhouettes under an equal-budget
-comparison against a generic eight-part graph. The optimizer is deliberately
-simple; the knowledge representation is the object of inference.
+## Why this journal
 
-**Evidence.** A preregistered developer-held-out synthetic test (240 actors,
-two source strata) yields primary mean voxel-IoU gain 0.190 (95% CI
-[0.181, 0.199]), exceeding a +0.030 superiority margin. Both CSG-ID and
-implicit-OOD strata are positive. Results are synthetic only; we do not claim
-measured flight accuracy, operator benefit, or image-to-3D SOTA ranking.
+Object-level UAV telemetry must become spatial objects in a digital twin. The paper treats **semantic part structure as a spatial occupancy prior** for lightweight proxy actors—an identification question suitable for geovisualization / spatial analysis, not a photoreal reconstruction leaderboard.
 
-**Package.** Main paper + short supplement; sealed reproducibility package under
-`reproducibility/sppa_mvfit/`; long historical engineering diary not submitted.
+## Clear novelty (one sentence)
 
-**Suggested reviewers / conflicts.** [to be completed by authors]
+Under an **input-matched, equal-budget** multiview fit, a **frozen semantic-family part graph** improves 3D occupancy over a **nonsemantic eight-part graph**; the optimizer is deliberately simple so the **knowledge representation** is what is tested.
+
+## Why acceptance risk is controlled
+
+| Risk | How we address it |
+|---|---|
+| Dual claims (systems diary vs science) | Single primary endpoint H1; Unreal/runtime is secondary deployment context only |
+| Overclaim | Synthetic developer-held-out only; no flight GT / operator / image-to-3D SOTA claims |
+| Weak protocol | Preregistration + amendments; NIST seeds; predictions sealed before GT; bootstrap CI rule |
+| Missing heterogeneity | All 12 family×stratum Δ reported; OOD stratum positive |
+| Reproducibility | Sealed package + short supplement + hash gates |
+
+## Primary result
+
+Mean paired voxel-IoU gain **0.190** (95% CI **[0.181, 0.199]**), n=240, margin **+0.030** → **H1 PASS**.
+
+## Submission package
+
+- Main PDF (~16 pages) + **short** formal supplement (not the 38-page engineering diary)
+- `reproducibility/sppa_mvfit/` sealed confirmatory package
+- Highlights in `HIGHLIGHTS.md`
+
+## Conflicts / authors
+
+[Corresponding author, UPNA email and affiliation — to complete]  
+[Conflicts — to complete]
 
 Sincerely,  
-[Corresponding author, UPNA affiliation and institutional email]
+[Name]
