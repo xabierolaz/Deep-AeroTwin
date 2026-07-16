@@ -4,7 +4,7 @@
   "missing": [],
   "untracked": [],
   "modified": [
-    "M  paper_semantic_proxy_3d/reproducibility/sppa_mvfit/clean_clone_gate.json"
+    "M  paper_semantic_proxy_3d/reproducibility/sppa_mvfit/benchmark/check_clean_clone_gate.py"
   ],
   "pass": false,
   "boundary": "Read-only; no clone, reset, staging, or worktree mutation."

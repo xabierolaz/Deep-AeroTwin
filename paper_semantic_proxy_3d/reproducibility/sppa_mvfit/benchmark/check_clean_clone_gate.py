@@ -78,8 +78,21 @@ def main() -> int:
             missing.append(logical)
         elif not tracked(logical):
             untracked.append(logical)
-    status = git("status", "--porcelain=v1", "--", "paper_semantic_proxy_3d/reproducibility/sppa_mvfit", *[f"paper_semantic_proxy_3d/{p}" for p in PAPER_FILES])
-    modified = [line for line in status.splitlines() if line and not line.startswith("??")]
+    status = git(
+        "status",
+        "--porcelain=v1",
+        "--",
+        "paper_semantic_proxy_3d/reproducibility/sppa_mvfit",
+        *[f"paper_semantic_proxy_3d/{p}" for p in PAPER_FILES],
+    )
+    # The gate report is rewritten by this script; do not treat it as a dirty source file.
+    modified = [
+        line
+        for line in status.splitlines()
+        if line
+        and not line.startswith("??")
+        and "clean_clone_gate.json" not in line
+    ]
     report = {
         "schema": "sppa-clean-clone-gate-v1",
         "required_count": len(PACKAGE_FILES) + len(PAPER_FILES),
