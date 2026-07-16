@@ -1,0 +1,18 @@
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.08}
+\caption{SPPA visual part evidence audit. Generic pixel cues from the detector crop annotate existing descriptor roles, store a compact image-space geometry profile, and may add budgeted conditioning primitives to existing roles. They do not change the semantic class or claim ground-truth part segmentation.}
+\label{tab:sppa-visual-part-evidence}
+\begin{tabularx}{\linewidth}{@{}L{0.15\linewidth}L{0.23\linewidth}L{0.25\linewidth}r r r Y@{}}
+\toprule
+Case & Generic cue scope & Supported descriptor roles & Visual tris & ms & Tris & Boundary \\
+\midrule
+biker & round-pair candidate & frame, hub, tire & 20 & 3.573 & 1056 & existing roles only \\
+tower & multi-line candidate & tower metal & 40 & 1.270 & 436 & existing roles only \\
+tractor & round-pair candidate & attachment, hub, tire & 40 & 2.190 & 1096 & existing roles only \\
+tractor+trailer & multi-line candidate & container detail, attachment & 24 & 3.296 & 2012 & existing roles only \\
+\bottomrule
+\end{tabularx}
+\end{table}

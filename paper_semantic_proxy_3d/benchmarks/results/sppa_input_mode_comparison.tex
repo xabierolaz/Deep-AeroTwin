@@ -1,0 +1,26 @@
+\begin{table}[H]
+\centering
+\tiny
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{1.06}
+\caption{SPPA input-mode comparison. All rows call the same deterministic generator. Text-only uses no image; detector rows use real YOLOE text with declared metric replay; the visual row adds agnostic image-space primitive cues that may condition existing roles.}
+\label{tab:sppa-input-mode-comparison}
+\begin{tabular}{@{}llllrcr@{}}
+\toprule
+Case & Mode & Semantic & Dims L/W/H (m) & Visual tris & $\Delta$ vs metric & Tris \\
+\midrule
+biker & text & biker & 1.70/0.60/1.85 & - & yes & 1036 \\
+biker & det+metric & biker & 1.85/0.73/1.85 & - & no & 1036 \\
+biker & det+metric+visual & biker & 1.85/0.73/1.85 & 20 & yes & 1056 \\
+tower & text & tower & 1.20/1.20/6.00 & - & yes & 396 \\
+tower & det+metric & vertical & 5.60/2.89/28.00 & - & no & 396 \\
+tower & det+metric+visual & vertical & 5.60/2.89/28.00 & 40 & yes & 436 \\
+tractor & text & tractor & 3.80/2.00/2.40 & - & yes & 1056 \\
+tractor & det+metric & farm & 4.52/2.38/2.60 & - & no & 1056 \\
+tractor & det+metric+visual & farm & 4.52/2.38/2.60 & 40 & yes & 1096 \\
+tractor+trailer & text & tractor+trailer & 7.60/2.15/2.70 & - & yes & 1988 \\
+tractor+trailer & det+metric & articulated & 13.98/3.54/3.40 & - & no & 1848 \\
+tractor+trailer & det+metric+visual & articulated & 13.98/3.54/3.40 & 24 & yes & 1872 \\
+\bottomrule
+\end{tabular}
+\end{table}

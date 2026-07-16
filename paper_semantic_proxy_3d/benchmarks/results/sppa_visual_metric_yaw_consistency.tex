@@ -1,0 +1,18 @@
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.08}
+\caption{SPPA visual--metric yaw gate on real image probes. Pixel-space visual axes are projected through the declared UAV replay camera model before comparison with the projected ground footprint. When the gate is non-divergent, SPPA selects the axial projected-footprint yaw; both projected quantities remain scenario-relative, not measured telemetry or ground truth.}
+\label{tab:sppa-visual-metric-yaw}
+\begin{tabularx}{\linewidth}{@{}L{0.15\linewidth}r r r L{0.19\linewidth}Y@{}}
+\toprule
+Case & Visual axis & Footprint yaw & $\Delta$ & Agreement & Use in SPPA \\
+\midrule
+biker & 4.8$^\circ$ & 1.6$^\circ$ & 3.2$^\circ$ & aligned & selected axial footprint yaw \\
+tower & 13.3$^\circ$ & 8.6$^\circ$ & 4.6$^\circ$ & aligned & selected axial footprint yaw \\
+tractor & 108.3$^\circ$ & 80.1$^\circ$ & 28.3$^\circ$ & weakly aligned & selected axial footprint yaw \\
+tractor+trailer & 49.3$^\circ$ & 77.4$^\circ$ & 28.1$^\circ$ & weakly aligned & selected axial footprint yaw \\
+\bottomrule
+\end{tabularx}
+\end{table}
