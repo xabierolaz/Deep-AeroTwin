@@ -41,10 +41,22 @@ Provisional: **Journal of Geovisualization and Spatial Analysis** (spatial proxy
 + synthetic occupancy evidence). AEI only if authors strengthen KR framing and
 accept synthetic-only engineering knowledge claim.
 
-## Honesty residual
+## Release commits (local, not pushed)
 
-- Synthetic developer-held-out evidence only.
+| Commit | Message |
+|---|---|
+| `a0f5887` | Seal SPPA-MVFit confirmatory package and submission-ready paper |
+| `37f0c19` | Add remaining secondary paper table inputs for clean PDF build |
+
+Gates after release commits:
+
+- `check_clean_clone_gate.py` → **pass: true**
+- `reproduce_sppa_mvfit_paper.py --strict` → **0 blockers**
+
+## Honesty residual / human-only remainder
+
+- Synthetic developer-held-out evidence only (by design).
 - Real images remain qualitative without 3D GT.
 - External peer literature review still not obtained (Round 04 infrastructure).
-- Clean *git* release commit of the full package is still recommended before
-  public archive (worktree was dirty at freeze time).
+- **Not automated:** authors/CRediT, UPNA APC confirmation, journal portal upload, remote `git push` / public DOI.
+- Optional historical docs (`SPPA_WORK_MEMORY.md`, long technical supplement, full `supporting_artifacts/`) remain untracked on purpose.
