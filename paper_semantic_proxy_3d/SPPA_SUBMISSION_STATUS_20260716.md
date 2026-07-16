@@ -26,7 +26,7 @@ large binaries.
 
 | Artifact | Status |
 |---|---|
-| `semantic_proxy_3d_paper.tex` / `.pdf` | Rewritten around H1; ~34 pages |
+| `semantic_proxy_3d_paper.tex` / `.pdf` | Tribunal-focused rewrite around H1; **15 pages** |
 | `semantic_proxy_3d_submission_supplement.tex` / `.pdf` | 2 pages; formal companion |
 | Long technical supplement (38p) | **Do not submit** |
 | `reproducibility/sppa_mvfit/` | Method, source, sealed test, hashes |
@@ -53,10 +53,19 @@ Gates after release commits:
 - `check_clean_clone_gate.py` → **pass: true**
 - `reproduce_sppa_mvfit_paper.py --strict` → **0 blockers**
 
+## Simulated journal tribunal (2026-07-16)
+
+| Round | Overall |
+|---|---|
+| ROUND_01 | MAJOR (Editor) + MINOR (Stats/Repro/Lit) |
+| ROUND_02 (after fixes) | **CLEAR ACCEPT** (all four roles ACCEPT) |
+
+Artifacts: `editorial_audits/20260716/TRIBUNAL_ROUND_01.md`, `TRIBUNAL_ROUND_02.md`.
+
 ## Honesty residual / human-only remainder
 
 - Synthetic developer-held-out evidence only (by design).
 - Real images remain qualitative without 3D GT.
-- External peer literature review still not obtained (Round 04 infrastructure).
+- Simulated tribunal ≠ publisher decision.
 - **Not automated:** authors/CRediT, UPNA APC confirmation, journal portal upload, remote `git push` / public DOI.
 - Optional historical docs (`SPPA_WORK_MEMORY.md`, long technical supplement, full `supporting_artifacts/`) remain untracked on purpose.
