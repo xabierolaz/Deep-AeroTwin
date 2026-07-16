@@ -1,0 +1,42 @@
+{
+  "conditions": [
+    "clean",
+    "mild_morphology",
+    "moderate_morphology",
+    "partial_occlusion",
+    "mask_corruption"
+  ],
+  "environment": {
+    "executable_name": "python.exe",
+    "executable_sha256": "737A7E3B71E3578F8432ACC7DD88C452E593622C544BC13DA4789D69C63DA5AE",
+    "git_head": "9461d2b16f82a738b7050efa8d0a83acf6fa0f41",
+    "logical_cpu_count": 32,
+    "packages": {
+      "PIL": "11.3.0",
+      "cv2": "4.13.0",
+      "matplotlib": "3.10.8",
+      "numpy": "2.5.0",
+      "scipy": "1.16.3"
+    },
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+    "python": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]"
+  },
+  "generated_at_local": "2026-07-15T20:12:42+0200",
+  "input_manifest_sha256": "151EC063C41B449C7D7137AD1B9A295AD9A6D5ADE695B8D31B2C75383A57357F",
+  "methods": [
+    "sppa_mvfit",
+    "generic_mvfit",
+    "sppa_text_only",
+    "bbox",
+    "ellipsoid",
+    "capsule",
+    "billboard",
+    "nonsemantic_visual_hull"
+  ],
+  "provenance": "synthetic_geometry",
+  "raw_metrics_sha256": "32B605D140B4BC9F876AB6D96A2EBC7104DD778BFC0B970D8C270DC60504B323",
+  "row_count": 5760,
+  "schema_version": "SPPA-MVFIT-RUN-MANIFEST-1.0",
+  "split": "development"
+}

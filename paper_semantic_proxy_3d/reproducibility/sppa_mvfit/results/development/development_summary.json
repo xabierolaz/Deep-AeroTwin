@@ -1,0 +1,155 @@
+{
+  "interpretation_boundary": "Development results may debug fixed implementation only. They do not pass or fail the held-out H1 gate.",
+  "method_summary_clean": {
+    "bbox": {
+      "exceptions": 0,
+      "mean_bev_iou": 0.5333331326991373,
+      "mean_chamfer": 0.029494634602190248,
+      "mean_heldout_silhouette_iou": 0.44759121565446464,
+      "mean_voxel_iou": 0.21975366494023543,
+      "median_single_call_ms": 0.3025,
+      "median_voxel_iou": 0.19499045607547832,
+      "n": 144
+    },
+    "billboard": {
+      "exceptions": 0,
+      "mean_bev_iou": 0.7505457317691074,
+      "mean_chamfer": 0.017421977116825884,
+      "mean_heldout_silhouette_iou": 0.5572507307026628,
+      "mean_voxel_iou": 0.1649187951299847,
+      "median_single_call_ms": 0.3196,
+      "median_voxel_iou": 0.14319327731092435,
+      "n": 144
+    },
+    "capsule": {
+      "exceptions": 0,
+      "mean_bev_iou": 0.5753450105165765,
+      "mean_chamfer": 0.023351533874366153,
+      "mean_heldout_silhouette_iou": 0.5196911884859173,
+      "mean_voxel_iou": 0.28278779229174594,
+      "median_single_call_ms": 1.0855000000000001,
+      "median_voxel_iou": 0.2679965264455788,
+      "n": 144
+    },
+    "ellipsoid": {
+      "exceptions": 0,
+      "mean_bev_iou": 0.6164130964650341,
+      "mean_chamfer": 0.021614896103342125,
+      "mean_heldout_silhouette_iou": 0.5217807435033462,
+      "mean_voxel_iou": 0.3015006359325483,
+      "median_single_call_ms": 0.6146499999999999,
+      "median_voxel_iou": 0.3077882067824516,
+      "n": 144
+    },
+    "generic_mvfit": {
+      "exceptions": 0,
+      "mean_bev_iou": 0.6460925663868871,
+      "mean_chamfer": 0.017856710291998153,
+      "mean_heldout_silhouette_iou": 0.5495393360425681,
+      "mean_voxel_iou": 0.34279595761186576,
+      "median_single_call_ms": 12.1113,
+      "median_voxel_iou": 0.3838714140956585,
+      "n": 144
+    },
+    "nonsemantic_visual_hull": {
+      "exceptions": 0,
+      "mean_bev_iou": 0.753534552494154,
+      "mean_chamfer": 0.010485866862189335,
+      "mean_heldout_silhouette_iou": 0.6189586574813536,
+      "mean_voxel_iou": 0.48438683322682,
+      "median_single_call_ms": 0.3337,
+      "median_voxel_iou": 0.5149855513400332,
+      "n": 144
+    },
+    "sppa_mvfit": {
+      "exceptions": 0,
+      "mean_bev_iou": 0.7442485530302927,
+      "mean_chamfer": 0.008773501358949838,
+      "mean_heldout_silhouette_iou": 0.6994788044238275,
+      "mean_voxel_iou": 0.5498286340815601,
+      "median_single_call_ms": 10.4356,
+      "median_voxel_iou": 0.570007821889033,
+      "n": 144
+    },
+    "sppa_text_only": {
+      "exceptions": 0,
+      "mean_bev_iou": 0.6993126012660622,
+      "mean_chamfer": 0.013318732752420582,
+      "mean_heldout_silhouette_iou": 0.5671876977108182,
+      "mean_voxel_iou": 0.41210764715085507,
+      "median_single_call_ms": 0.967,
+      "median_voxel_iou": 0.44955588345919045,
+      "n": 144
+    }
+  },
+  "paired_sppa_minus_generic_clean": {
+    "case_count": 144,
+    "ci95_high_percentile": 0.22257517875165017,
+    "ci95_low_percentile": 0.19202085174025896,
+    "mean_difference": 0.2070326764696944,
+    "resamples": 10000,
+    "seed": 77157
+  },
+  "primary_test_executed": false,
+  "provenance": "synthetic_geometry",
+  "robustness_mean_voxel_iou": {
+    "bbox": {
+      "clean": 0.21975366494023543,
+      "mask_corruption": 0.21975366494023543,
+      "mild_morphology": 0.22997402091252145,
+      "moderate_morphology": 0.23498751183782948,
+      "partial_occlusion": 0.2304542461839321
+    },
+    "billboard": {
+      "clean": 0.1649187951299847,
+      "mask_corruption": 0.16237976934563803,
+      "mild_morphology": 0.15268038995245492,
+      "moderate_morphology": 0.12450484248967768,
+      "partial_occlusion": 0.14075882608885984
+    },
+    "capsule": {
+      "clean": 0.28278779229174594,
+      "mask_corruption": 0.28278779229174594,
+      "mild_morphology": 0.29700029346971796,
+      "moderate_morphology": 0.2902783574630714,
+      "partial_occlusion": 0.2988590297002636
+    },
+    "ellipsoid": {
+      "clean": 0.3015006359325483,
+      "mask_corruption": 0.3015006359325483,
+      "mild_morphology": 0.3141825006600133,
+      "moderate_morphology": 0.3002653792053964,
+      "partial_occlusion": 0.3182464975984347
+    },
+    "generic_mvfit": {
+      "clean": 0.34279595761186576,
+      "mask_corruption": 0.34121261067205116,
+      "mild_morphology": 0.33325621219987706,
+      "moderate_morphology": 0.27417547106079554,
+      "partial_occlusion": 0.32327430420674463
+    },
+    "nonsemantic_visual_hull": {
+      "clean": 0.48438683322682,
+      "mask_corruption": 0.47382210363413285,
+      "mild_morphology": 0.44131166413092987,
+      "moderate_morphology": 0.32964527647505176,
+      "partial_occlusion": 0.37018564793839515
+    },
+    "sppa_mvfit": {
+      "clean": 0.5498286340815601,
+      "mask_corruption": 0.547027181000103,
+      "mild_morphology": 0.5168948724734432,
+      "moderate_morphology": 0.3954947613314205,
+      "partial_occlusion": 0.5367015556140484
+    },
+    "sppa_text_only": {
+      "clean": 0.41210764715085507,
+      "mask_corruption": 0.41210764715085507,
+      "mild_morphology": 0.41210764715085507,
+      "moderate_morphology": 0.41210764715085507,
+      "partial_occlusion": 0.41210764715085507
+    }
+  },
+  "schema_version": "SPPA-MVFIT-DEVELOPMENT-SUMMARY-1.0",
+  "split": "development_only_not_confirmatory"
+}

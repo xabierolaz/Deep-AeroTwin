@@ -1,0 +1,25 @@
+{
+  "schema": "sppa-clean-clone-gate-v1",
+  "required_count": 15,
+  "missing": [],
+  "untracked": [
+    "paper_semantic_proxy_3d/reproducibility/sppa_mvfit/README.md",
+    "paper_semantic_proxy_3d/reproducibility/sppa_mvfit/requirements-lock.txt",
+    "paper_semantic_proxy_3d/reproducibility/sppa_mvfit/protocol_config.json",
+    "paper_semantic_proxy_3d/reproducibility/sppa_mvfit/method/graphs.json",
+    "paper_semantic_proxy_3d/reproducibility/sppa_mvfit/method/sppa_mvfit.py",
+    "paper_semantic_proxy_3d/reproducibility/sppa_mvfit/source/source_generators.py",
+    "paper_semantic_proxy_3d/reproducibility/sppa_mvfit/benchmark/metrics.py",
+    "paper_semantic_proxy_3d/reproducibility/sppa_mvfit/benchmark/run_benchmark.py",
+    "paper_semantic_proxy_3d/reproducibility/sppa_mvfit/benchmark/verify_package.py",
+    "paper_semantic_proxy_3d/reproducibility/sppa_mvfit/benchmark/test_authorization.py",
+    "paper_semantic_proxy_3d/reproducibility/sppa_mvfit/benchmark/check_clean_clone_gate.py",
+    "paper_semantic_proxy_3d/reproducibility/sppa_mvfit/tests/test_contract.py",
+    "paper_semantic_proxy_3d/SPPA_PROTOCOL_AMENDMENT_01_20260715.md",
+    "paper_semantic_proxy_3d/SPPA_CONTRIBUTION_SELECTION_20260715.md",
+    "paper_semantic_proxy_3d/SPPA_CLAIM_EVIDENCE_MATRIX_20260715.md"
+  ],
+  "modified": [],
+  "pass": false,
+  "boundary": "Read-only; no clone, reset, staging, or worktree mutation."
+}

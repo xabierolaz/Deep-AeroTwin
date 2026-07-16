@@ -1,0 +1,10 @@
+{
+  "schema": "sppa-mvfit-test-metrics-v1",
+  "provenance": "synthetic_geometry",
+  "split": "held_out_confirmatory",
+  "record_count": 9600,
+  "sealed_output_manifest_sha256": "4FF2854B7331AE4E1B53C1F669EFF2922076CF3E280BC3C5FA8C460DFC02F150",
+  "external_protocol_pass_sha256": "2348946BDDB04B8E5CA7D2C845C5F5C45F1AE06F8907E99218ED5E9A379FA74F",
+  "pretest_freeze_sha256": "8E2ADBF32F299B24CD2A5AB87C74D142E707696F79D18DF0C3332209C3B46CA3",
+  "raw_metrics_sha256": "57A82D234F55013D76BEF2E36CF2B3F7C5617DD4FA6EF811C2A8447A04C0AD63"
+}

@@ -165,3 +165,6 @@ figuras_paper_unreal_generadas/yolo_crossing_precheck/yolo_crossing_precheck.mp4
 *.pt
 !yolo/weights/
 !yolo/weights/yolo_unreal_unrealScene_v1_best_e23_2026-02-18.pt
+
+# Allow SPPA sealed prediction binaries (tracked via LFS)
+!paper_semantic_proxy_3d/reproducibility/sppa_mvfit/**/*.bin

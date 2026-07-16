@@ -1,0 +1,19 @@
+{
+  "array_content_sha256": "0C5385DB2E74653ED83A851300E9EEA11E177DBD7AF22A6F108EA57C59E7663F",
+  "case_count": 144,
+  "conditions": [
+    "clean",
+    "mild_morphology",
+    "moderate_morphology",
+    "partial_occlusion",
+    "mask_corruption"
+  ],
+  "files": {
+    "case_ids.json": "9AF0CF04FE196EA7204AAD5252BDEBEA008147AB86CE2109D4B88BDA46F2233B",
+    "observation_masks.npy": "923AD542AC1C2947860CF6AE0883B7B0937E69BB8B8B40BEA209A0AA307848BF",
+    "source_actors.jsonl": "1BFF329C1644D834E1BE72D294F58F24D031C5CCE003A61DEF44B10CA65607FC"
+  },
+  "provenance": "synthetic_geometry",
+  "schema_version": "SPPA-MVFIT-DATASET-MANIFEST-1.0",
+  "split": "development"
+}

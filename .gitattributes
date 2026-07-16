@@ -1,23 +1,18 @@
 # Keep WSL/Linux scripts in LF to avoid $'\r' errors under bash.
 *.sh   text eol=lf
 *.bash text eol=lf
-
 # Keep Python files consistent across platforms.
 *.py   text eol=lf
-
 # Keep documentation diffs stable across Windows/WSL.
 *.md   text eol=lf
-
 # Windows-native scripts.
 *.bat  text eol=crlf
 *.ps1  text eol=crlf
 # Generated paper/media artifacts.
 *.pdf binary
 *.png binary
-
 # Heavy generated/media assets should stay out of Git's object store.
 *.mp4 filter=lfs diff=lfs merge=lfs -text
-
 # Unreal and source-asset binaries.
 *.uasset filter=lfs diff=lfs merge=lfs -text
 *.umap filter=lfs diff=lfs merge=lfs -text
@@ -26,7 +21,6 @@
 *.glb filter=lfs diff=lfs merge=lfs -text
 *.gltf filter=lfs diff=lfs merge=lfs -text
 *.fbx filter=lfs diff=lfs merge=lfs -text
-
 # Native libraries and ML model artifacts.
 *.lib filter=lfs diff=lfs merge=lfs -text
 *.a filter=lfs diff=lfs merge=lfs -text
@@ -35,8 +29,11 @@
 *.dylib filter=lfs diff=lfs merge=lfs -text
 *.pt filter=lfs diff=lfs merge=lfs -text
 *.onnx filter=lfs diff=lfs merge=lfs -text
-
 # Archives are allowed only when intentional; if tracked, keep them in LFS.
 *.zip filter=lfs diff=lfs merge=lfs -text
 *.7z filter=lfs diff=lfs merge=lfs -text
 *.rar filter=lfs diff=lfs merge=lfs -text
+# SPPA-MVFit sealed large artifacts
+paper_semantic_proxy_3d/reproducibility/sppa_mvfit/**/*.bin filter=lfs diff=lfs merge=lfs -text
+paper_semantic_proxy_3d/reproducibility/sppa_mvfit/**/*.npy filter=lfs diff=lfs merge=lfs -text
+paper_semantic_proxy_3d/reproducibility/sppa_mvfit/**/sealed_method_outputs.jsonl filter=lfs diff=lfs merge=lfs -text
