@@ -1,0 +1,73 @@
+{
+  "claim_boundary": "This figure visualizes existing audited artifacts. It shows generic image-space cues and descriptor role support; it does not claim ground-truth part segmentation, semantic class changes, or added mesh topology.",
+  "figure": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\figures\\sppa_visual_part_evidence_grid.png",
+  "rows": [
+    {
+      "case": "biker",
+      "geometry_profile_features": [
+        "line_structure",
+        "round_pair"
+      ],
+      "roles": [
+        "bike_frame",
+        "vehicle_metal_or_hub",
+        "vehicle_tire"
+      ],
+      "scope": "round_part_pair_candidate",
+      "triangles": 1056,
+      "wall_ms": 3.573,
+      "yaw_coordinate_frame": "declared_assumed_flight_replay_local_ned",
+      "yaw_deg": 1.612,
+      "yaw_source": "projected_footprint_yaw_gate"
+    },
+    {
+      "case": "tower",
+      "geometry_profile_features": [
+        "line_structure"
+      ],
+      "roles": [
+        "vertical_structure_metal"
+      ],
+      "scope": "multi_line_structure_candidate",
+      "triangles": 436,
+      "wall_ms": 1.27,
+      "yaw_coordinate_frame": "declared_assumed_flight_replay_local_ned",
+      "yaw_deg": 8.622,
+      "yaw_source": "projected_footprint_yaw_gate"
+    },
+    {
+      "case": "tractor",
+      "geometry_profile_features": [
+        "line_structure",
+        "round_pair"
+      ],
+      "roles": [
+        "vehicle_attachment",
+        "vehicle_metal_or_hub",
+        "vehicle_tire"
+      ],
+      "scope": "round_part_pair_candidate",
+      "triangles": 1096,
+      "wall_ms": 2.19,
+      "yaw_coordinate_frame": "declared_assumed_flight_replay_local_ned",
+      "yaw_deg": 80.077,
+      "yaw_source": "projected_footprint_yaw_gate"
+    },
+    {
+      "case": "tractor_trailer",
+      "geometry_profile_features": [
+        "line_structure"
+      ],
+      "roles": [
+        "container_detail",
+        "vehicle_attachment"
+      ],
+      "scope": "multi_line_structure_candidate",
+      "triangles": 2012,
+      "wall_ms": 3.296,
+      "yaw_coordinate_frame": "declared_assumed_flight_replay_local_ned",
+      "yaw_deg": 77.377,
+      "yaw_source": "projected_footprint_yaw_gate"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+# Heavy regenerable artifacts — kept locally, not versioned.
+# supporting_artifacts/: SOTA generator outputs, Unreal/pipeline captures (~22 GB).
+# benchmarks/neural_external_wave/runs/: TripoSR/Hunyuan3D raw mesh runs (~3.4 GB);
+# regenerable from committed inputs/ + tools/neural_external_wave/ + calibration.
+supporting_artifacts/
+benchmarks/neural_external_wave/runs/

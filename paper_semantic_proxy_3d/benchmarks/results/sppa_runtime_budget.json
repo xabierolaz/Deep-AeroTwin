@@ -1,0 +1,89 @@
+{
+  "budgets": {
+    "max_build_ms_per_proxy": 5.0,
+    "max_descriptor_bytes_per_proxy": 32768,
+    "max_export_ms_per_proxy": 8.0,
+    "max_mesh_bytes_per_proxy": 65536,
+    "max_total_wall_ms": 50.0,
+    "max_triangles_per_proxy": 2500,
+    "max_vertices_per_proxy": 1500,
+    "max_wall_ms_per_proxy": 10.0
+  },
+  "claim_boundary": "SPPA runtime budget regression for the real-input single-proxy run. It guards lightweight proxy generation cost; it does not measure detector latency or Unreal frame time.",
+  "failures": [],
+  "objects_csv": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified\\objects.csv",
+  "rows": [
+    {
+      "build_ms": 1.344,
+      "descriptor_bytes": 31622,
+      "descriptor_path": "D:/Deep-AeroTwin-UE57-Test/experiments/sppa_sota_benchmark/runs/20260704_real_all_sppa_unified/outputs/sppa/biker/biker.descriptor.json",
+      "export_ms": 2.5,
+      "label": "biker",
+      "mesh_bytes": 25559,
+      "mesh_path": "experiments/sppa_sota_benchmark/runs/20260704_real_all_sppa_unified/outputs/sppa/biker/biker.obj",
+      "model": "sppa",
+      "status": "ok",
+      "triangles": 1056,
+      "vertices": 588,
+      "wall_ms": 3.844
+    },
+    {
+      "build_ms": 0.326,
+      "descriptor_bytes": 30863,
+      "descriptor_path": "D:/Deep-AeroTwin-UE57-Test/experiments/sppa_sota_benchmark/runs/20260704_real_all_sppa_unified/outputs/sppa/tower/tower.descriptor.json",
+      "export_ms": 2.323,
+      "label": "tower",
+      "mesh_bytes": 10682,
+      "mesh_path": "experiments/sppa_sota_benchmark/runs/20260704_real_all_sppa_unified/outputs/sppa/tower/tower.obj",
+      "model": "sppa",
+      "status": "ok",
+      "triangles": 436,
+      "vertices": 256,
+      "wall_ms": 2.649
+    },
+    {
+      "build_ms": 0.924,
+      "descriptor_bytes": 32202,
+      "descriptor_path": "D:/Deep-AeroTwin-UE57-Test/experiments/sppa_sota_benchmark/runs/20260704_real_all_sppa_unified/outputs/sppa/tractor/tractor.descriptor.json",
+      "export_ms": 2.601,
+      "label": "tractor",
+      "mesh_bytes": 26439,
+      "mesh_path": "experiments/sppa_sota_benchmark/runs/20260704_real_all_sppa_unified/outputs/sppa/tractor/tractor.obj",
+      "model": "sppa",
+      "status": "ok",
+      "triangles": 1096,
+      "vertices": 584,
+      "wall_ms": 3.524
+    },
+    {
+      "build_ms": 0.941,
+      "descriptor_bytes": 32253,
+      "descriptor_path": "D:/Deep-AeroTwin-UE57-Test/experiments/sppa_sota_benchmark/runs/20260704_real_all_sppa_unified/outputs/sppa/tractor_trailer/tractor_trailer.descriptor.json",
+      "export_ms": 2.28,
+      "label": "tractor_trailer",
+      "mesh_bytes": 48555,
+      "mesh_path": "experiments/sppa_sota_benchmark/runs/20260704_real_all_sppa_unified/outputs/sppa/tractor_trailer/tractor_trailer.obj",
+      "model": "sppa",
+      "status": "ok",
+      "triangles": 2012,
+      "vertices": 1060,
+      "wall_ms": 3.221
+    }
+  ],
+  "run_dir": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified",
+  "status": "passed",
+  "summary": {
+    "max_build_ms": 1.344,
+    "max_descriptor_bytes": 32253,
+    "max_export_ms": 2.601,
+    "max_mesh_bytes": 48555,
+    "max_triangles": 2012,
+    "max_vertices": 1060,
+    "max_wall_ms": 3.844,
+    "row_count": 4,
+    "total_descriptor_bytes_all_outputs": 126940,
+    "total_mesh_bytes_all_outputs": 111235,
+    "total_triangles_all_outputs": 4600,
+    "total_wall_ms": 13.238
+  }
+}

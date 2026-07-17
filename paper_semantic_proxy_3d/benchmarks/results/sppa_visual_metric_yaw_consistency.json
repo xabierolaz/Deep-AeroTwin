@@ -1,0 +1,193 @@
+{
+  "aligned_count": 1,
+  "annotations_path": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_detection_reference\\20260703_real_input_annotations\\real_input_2d_annotations.json",
+  "audit_warnings": [
+    "biker:visual_metric_yaw_divergent:58.23_deg",
+    "tower:visual_metric_yaw_divergent:88.08_deg",
+    "tractor:visual_metric_yaw_divergent:50.26_deg"
+  ],
+  "claim_boundary": "This audit compares two independent orientation cues on real image probes: image-space visual orientation inferred from generic SPPA part/line evidence, and axial ground-footprint orientation from UAV camera projection using declared replay telemetry. It does not claim measured flight ground truth or absolute world yaw. Divergence is allowed only when explicitly declared and routed through the conservative policy.",
+  "descriptor_recorded_count": 4,
+  "divergent_declared_count": 3,
+  "failures": [],
+  "image_cues_path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_agnostic_image_space_parts_probe.json",
+  "max_descriptor_bytes": 32595,
+  "projected_aligned_count": 2,
+  "projected_divergent_declared_count": 0,
+  "projected_weakly_aligned_count": 2,
+  "real_replay_path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\real_image_assumed_flight_replay.json",
+  "rows": [
+    {
+      "agreement": "divergent_declared",
+      "axial_delta_deg": 58.228,
+      "case": "biker",
+      "descriptor_bytes": 31964,
+      "descriptor_path": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified\\outputs\\sppa\\biker\\biker.descriptor.json",
+      "descriptor_pose_yaw_deg": 1.612,
+      "descriptor_pose_yaw_frame": "declared_assumed_flight_replay_local_ned",
+      "descriptor_pose_yaw_source": "projected_footprint_yaw_gate",
+      "descriptor_visual_metric_agreement": "aligned",
+      "descriptor_visual_metric_recorded": true,
+      "footprint_length_m": 3.5855289222297833,
+      "footprint_width_m": 1.7746039610295448,
+      "metric_ground_truth": false,
+      "policy": "world footprint yaw is accepted only from the UAV projection branch; visual yaw remains an image-space ambiguous cue and is used as support/gating evidence, not as metric ground truth",
+      "projected_metric_source": "real_mask_ground_projected_oriented_footprint",
+      "projected_metric_yaw_deg": 1.612,
+      "projected_visual_axis": {
+        "available": true,
+        "claim_boundary": "Visual axis endpoints are projected through the declared UAV replay camera model. This is scenario-relative geometry, not measured telemetry or ground truth.",
+        "global_image_points_xy": [
+          [
+            435.7,
+            392.3
+          ],
+          [
+            409.9,
+            347.9
+          ]
+        ],
+        "length_m": 1.847,
+        "source": "round_pair_centers_projected_to_ground",
+        "yaw_deg": 4.84
+      },
+      "projected_visual_axis_yaw_deg": 4.84,
+      "projected_visual_metric_agreement": "aligned",
+      "projected_visual_metric_delta_deg": 3.228,
+      "telemetry_measured": false,
+      "visual_yaw_deg": 59.84,
+      "visual_yaw_frame": "image_space_profile",
+      "visual_yaw_source": "raw_round_pair_axis_image_space"
+    },
+    {
+      "agreement": "divergent_declared",
+      "axial_delta_deg": 88.084,
+      "case": "tower",
+      "descriptor_bytes": 31203,
+      "descriptor_path": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified\\outputs\\sppa\\tower\\tower.descriptor.json",
+      "descriptor_pose_yaw_deg": 8.622,
+      "descriptor_pose_yaw_frame": "declared_assumed_flight_replay_local_ned",
+      "descriptor_pose_yaw_source": "projected_footprint_yaw_gate",
+      "descriptor_visual_metric_agreement": "aligned",
+      "descriptor_visual_metric_recorded": true,
+      "footprint_length_m": 12.770027617473518,
+      "footprint_width_m": 2.888305332620233,
+      "metric_ground_truth": false,
+      "policy": "world footprint yaw is accepted only from the UAV projection branch; visual yaw remains an image-space ambiguous cue and is used as support/gating evidence, not as metric ground truth",
+      "projected_metric_source": "real_mask_ground_projected_oriented_footprint",
+      "projected_metric_yaw_deg": 8.622,
+      "projected_visual_axis": {
+        "available": true,
+        "claim_boundary": "Visual axis endpoints are projected through the declared UAV replay camera model. This is scenario-relative geometry, not measured telemetry or ground truth.",
+        "global_image_points_xy": [
+          [
+            517.0,
+            295.0
+          ],
+          [
+            514.0,
+            432.0
+          ]
+        ],
+        "length_m": 12.534,
+        "source": "longest_line_projected_to_ground",
+        "yaw_deg": 13.254
+      },
+      "projected_visual_axis_yaw_deg": 13.254,
+      "projected_visual_metric_agreement": "aligned",
+      "projected_visual_metric_delta_deg": 4.632,
+      "telemetry_measured": false,
+      "visual_yaw_deg": 96.706,
+      "visual_yaw_frame": "image_space_profile",
+      "visual_yaw_source": "raw_line_axis_image_space"
+    },
+    {
+      "agreement": "divergent_declared",
+      "axial_delta_deg": 50.256,
+      "case": "tractor",
+      "descriptor_bytes": 31799,
+      "descriptor_path": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified\\outputs\\sppa\\tractor\\tractor.descriptor.json",
+      "descriptor_pose_yaw_deg": 80.077,
+      "descriptor_pose_yaw_frame": "declared_assumed_flight_replay_local_ned",
+      "descriptor_pose_yaw_source": "projected_footprint_yaw_gate",
+      "descriptor_visual_metric_agreement": "weakly_aligned",
+      "descriptor_visual_metric_recorded": true,
+      "footprint_length_m": 4.946368595428787,
+      "footprint_width_m": 4.323472800216441,
+      "metric_ground_truth": false,
+      "policy": "world footprint yaw is accepted only from the UAV projection branch; visual yaw remains an image-space ambiguous cue and is used as support/gating evidence, not as metric ground truth",
+      "projected_metric_source": "real_mask_ground_projected_oriented_footprint",
+      "projected_metric_yaw_deg": 80.077,
+      "projected_visual_axis": {
+        "available": true,
+        "claim_boundary": "Visual axis endpoints are projected through the declared UAV replay camera model. This is scenario-relative geometry, not measured telemetry or ground truth.",
+        "global_image_points_xy": [
+          [
+            428.7,
+            350.7
+          ],
+          [
+            401.7,
+            382.5
+          ]
+        ],
+        "length_m": 4.296,
+        "source": "round_pair_centers_projected_to_ground",
+        "yaw_deg": 108.333
+      },
+      "projected_visual_axis_yaw_deg": 108.333,
+      "projected_visual_metric_agreement": "weakly_aligned",
+      "projected_visual_metric_delta_deg": 28.256,
+      "telemetry_measured": false,
+      "visual_yaw_deg": 130.333,
+      "visual_yaw_frame": "image_space_profile",
+      "visual_yaw_source": "raw_round_pair_axis_image_space"
+    },
+    {
+      "agreement": "aligned",
+      "axial_delta_deg": 20.826,
+      "case": "tractor_trailer",
+      "descriptor_bytes": 32595,
+      "descriptor_path": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified\\outputs\\sppa\\tractor_trailer\\tractor_trailer.descriptor.json",
+      "descriptor_pose_yaw_deg": 77.377,
+      "descriptor_pose_yaw_frame": "declared_assumed_flight_replay_local_ned",
+      "descriptor_pose_yaw_source": "projected_footprint_yaw_gate",
+      "descriptor_visual_metric_agreement": "weakly_aligned",
+      "descriptor_visual_metric_recorded": true,
+      "footprint_length_m": 16.854949218313088,
+      "footprint_width_m": 6.210188307188842,
+      "metric_ground_truth": false,
+      "policy": "world footprint yaw is accepted only from the UAV projection branch; visual yaw remains an image-space ambiguous cue and is used as support/gating evidence, not as metric ground truth",
+      "projected_metric_source": "real_mask_ground_projected_oriented_footprint",
+      "projected_metric_yaw_deg": 77.377,
+      "projected_visual_axis": {
+        "available": true,
+        "claim_boundary": "Visual axis endpoints are projected through the declared UAV replay camera model. This is scenario-relative geometry, not measured telemetry or ground truth.",
+        "global_image_points_xy": [
+          [
+            366.0,
+            293.0
+          ],
+          [
+            438.0,
+            465.0
+          ]
+        ],
+        "length_m": 18.071,
+        "source": "longest_line_projected_to_ground",
+        "yaw_deg": 49.286
+      },
+      "projected_visual_axis_yaw_deg": 49.286,
+      "projected_visual_metric_agreement": "weakly_aligned",
+      "projected_visual_metric_delta_deg": 28.091,
+      "telemetry_measured": false,
+      "visual_yaw_deg": 98.203,
+      "visual_yaw_frame": "image_space_profile",
+      "visual_yaw_source": "raw_line_axis_image_space"
+    }
+  ],
+  "run_dir": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified",
+  "status": "passed",
+  "visual_audit_path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_visual_part_evidence_audit.json",
+  "weakly_aligned_count": 0
+}

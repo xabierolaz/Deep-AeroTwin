@@ -53,6 +53,13 @@ Mica~R. Endsley.
 \newblock Nanite virtualized geometry overview, 2026.
 \newblock Rolling Unreal Engine documentation; accessed 2026-07-15.
 
+\bibitem{fedele2025spacecontrol}
+Elisabetta Fedele, Francis Engelmann, Ian Huang, Or~Litany, Marc Pollefeys, and
+  Leonidas~J. Guibas.
+\newblock {SpaceControl}: Introducing test-time spatial control to {3D}
+  generative modeling.
+\newblock {\em arXiv preprint arXiv:2512.05343}, 2025.
+
 \bibitem{fedele2025superdec}
 Elisabetta Fedele, Boyang Sun, Leonidas Guibas, Marc Pollefeys, and Francis
   Engelmann.
@@ -72,6 +79,13 @@ Sandra~G. Hart and Lowell~E. Staveland.
   theoretical research.
 \newblock In Peter~A. Hancock and Najmedin Meshkati, editors, {\em Human Mental
   Workload}, pages 139--183. North-Holland, Amsterdam, 1988.
+
+\bibitem{hayes2025superquadricocc}
+Seamie Hayes, Alexandre Boulch, Andrei Bursuc, Reenu Mohandas, Ganesh Sistu,
+  Tim Brophy, and Ciar{\'a}n Eising.
+\newblock {SuperQuadricOcc}: Real-time self-supervised semantic occupancy
+  estimation with superquadric volume rendering.
+\newblock {\em arXiv preprint arXiv:2511.17361}, 2025.
 
 \bibitem{hornung2013octomap}
 Armin Hornung, Kai~M. Wurm, Maren Bennewitz, Cyrill Stachniss, and Wolfram
@@ -117,7 +131,7 @@ Mohammad~Sadil Khan, Sankalp Sinha, Talha~Uddin Sheikh, Didier Stricker,
 \newblock In {\em Advances in Neural Information Processing Systems},
   volume~37, 2024.
 
-\bibitem{laurentini1994visualhull}
+\bibitem{laurentini1994visual}
 Aldo Laurentini.
 \newblock The visual hull concept for silhouette-based image understanding.
 \newblock {\em IEEE Transactions on Pattern Analysis and Machine Intelligence},
@@ -155,6 +169,13 @@ Yuchen Lin, Chenguo Lin, Panwang Pan, Honglei Yan, Yiqiang Feng, Yadong Mu, and
 \newblock Partcrafter: Structured 3d mesh generation via compositional latent
   diffusion transformers.
 \newblock {\em arXiv preprint arXiv:2506.05573}, 2025.
+
+\bibitem{liu2025citygo}
+Weihang Liu, Yuhui Zhong, Yuke Li, Xi~Chen, Jiadi Cui, Honglong Zhang, Lan Xu,
+  Xin Lou, Yujiao Shi, Jingyi Yu, and Yingliang Zhang.
+\newblock {CityGo}: Lightweight urban modeling and rendering with proxy
+  buildings and residual gaussians.
+\newblock {\em arXiv preprint arXiv:2505.21041}, 2025.
 
 \bibitem{marr1978representation}
 David Marr and H.~Keith Nishihara.
@@ -211,6 +232,12 @@ Ben Poole, Ajay Jain, Jonathan~T. Barron, and Ben Mildenhall.
 \newblock Dreamfusion: Text-to-3d using 2d diffusion.
 \newblock {\em arXiv preprint arXiv:2209.14988}, 2022.
 
+\bibitem{pytorch2026memoryfraction}
+{PyTorch Contributors}.
+\newblock {torch.cuda.memory.set\_per\_process\_memory\_fraction}.
+\newblock PyTorch documentation, 2026.
+\newblock PyTorch 2.13 documentation; accessed 2026-07-15.
+
 \bibitem{rosinol2020dynamic}
 Antoni Rosinol, Arjun Gupta, Marcus Abate, Jingnan Shi, and Luca Carlone.
 \newblock 3d dynamic scene graphs: Actionable spatial perception with places,
@@ -223,6 +250,13 @@ Danila Rukhovich, Elona Dupont, Dimitrios Mallis, Kseniya Cherenkova, Anis
 \newblock Cad-recode: Reverse engineering cad code from point clouds.
 \newblock In {\em Proceedings of the IEEE/CVF International Conference on
   Computer Vision}, 2025.
+
+\bibitem{chen2026sam3d}
+{SAM 3D Team}, Xingyu Chen, Fu-Jen Chu, Pierre Gleize, Kevin~J. Liang,
+  Alexander Sax, Hao Tang, Weiyao Wang, Michelle Guo, and Thibaut Hardin.
+\newblock {SAM 3D}: {3Dfy} anything in images.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, 2026.
 
 \bibitem{sharma2018csgnet}
 Gopal Sharma, Rishabh Goyal, Difan Liu, Evangelos Kalogerakis, and Subhransu

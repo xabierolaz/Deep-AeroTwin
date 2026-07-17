@@ -1,0 +1,550 @@
+{
+  "supplement": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\semantic_proxy_3d_technical_supplement.tex",
+  "exists": true,
+  "tex_bytes": 126970,
+  "line_count": 2402,
+  "word_count_est": 14970,
+  "pdf_pages": 38,
+  "top_level_section_count": 26,
+  "all_section_count": 50,
+  "decision_counts": {
+    "merge_or_delete_duplicate": 11,
+    "keep_as_main_or_appendix_summary": 14,
+    "keep_as_supporting_artifact": 2,
+    "artifact_log": 16,
+    "main_roadmap_summary": 5,
+    "short_artifact_index": 1,
+    "delete_or_merge": 1
+  },
+  "decision_word_counts": {
+    "merge_or_delete_duplicate": 2484,
+    "keep_as_main_or_appendix_summary": 3212,
+    "keep_as_supporting_artifact": 1584,
+    "artifact_log": 5919,
+    "main_roadmap_summary": 1165,
+    "short_artifact_index": 223,
+    "delete_or_merge": 151
+  },
+  "recommendation": {
+    "formal_supplement": "do_not_submit_current_38_page_file",
+    "preferred_shape": "main_paper_plus_short_artifact_index",
+    "max_formal_supplement_pages": 6,
+    "reason": "The file duplicates main-paper framing, carries long Unreal/prototype logs, and includes roadmap material. Its valuable parts should be compressed into the main paper or archived as supporting artifacts."
+  },
+  "keep_in_main": [
+    "runtime contract and descriptor/update schema summary",
+    "input-alignment audit with SOTA-readiness boundary",
+    "real biker/tower input probes as detector/tag stress evidence",
+    "truck role-preservation result as a compact diagnostic",
+    "four priority gates for full experimental-paper readiness"
+  ],
+  "artifact_only": [
+    "long Unreal Editor-Cmd/component/HTTP replay details",
+    "packaged-render command/run logs",
+    "link-budget model details",
+    "legacy OBJ/MTL prototype timing tables",
+    "planned evaluation backlog beyond the four priority gates"
+  ],
+  "sections": [
+    {
+      "title": "Motivation",
+      "level": "section",
+      "start_line": 58,
+      "end_line": 83,
+      "line_count": 26,
+      "word_count_est": 218,
+      "decision": "merge_or_delete_duplicate",
+      "rationale": "This belongs in the main manuscript if still needed; a supplement should not repeat the paper opening."
+    },
+    {
+      "title": "Core Idea",
+      "level": "section",
+      "start_line": 84,
+      "end_line": 160,
+      "line_count": 77,
+      "word_count_est": 460,
+      "decision": "merge_or_delete_duplicate",
+      "rationale": "This belongs in the main manuscript if still needed; a supplement should not repeat the paper opening."
+    },
+    {
+      "title": "Operational Scope and Non-Claims",
+      "level": "section",
+      "start_line": 161,
+      "end_line": 185,
+      "line_count": 25,
+      "word_count_est": 162,
+      "decision": "merge_or_delete_duplicate",
+      "rationale": "This belongs in the main manuscript if still needed; a supplement should not repeat the paper opening."
+    },
+    {
+      "title": "Contributions",
+      "level": "section",
+      "start_line": 186,
+      "end_line": 230,
+      "line_count": 45,
+      "word_count_est": 285,
+      "decision": "merge_or_delete_duplicate",
+      "rationale": "This belongs in the main manuscript if still needed; a supplement should not repeat the paper opening."
+    },
+    {
+      "title": "Research Question and Hypotheses",
+      "level": "section",
+      "start_line": 231,
+      "end_line": 271,
+      "line_count": 41,
+      "word_count_est": 272,
+      "decision": "merge_or_delete_duplicate",
+      "rationale": "This belongs in the main manuscript if still needed; a supplement should not repeat the paper opening."
+    },
+    {
+      "title": "A Different Runtime Contract from 3D Generation",
+      "level": "section",
+      "start_line": 272,
+      "end_line": 341,
+      "line_count": 70,
+      "word_count_est": 427,
+      "decision": "keep_as_main_or_appendix_summary",
+      "rationale": "This is part of the real contribution, but it should be a compact specification in the main paper or a short appendix."
+    },
+    {
+      "title": "Relation to 3D Detection, Primitive Representations, and Human Factors",
+      "level": "section",
+      "start_line": 342,
+      "end_line": 349,
+      "line_count": 8,
+      "word_count_est": 57,
+      "decision": "merge_or_delete_duplicate",
+      "rationale": "Related-work context should stay compact in the main paper; long literature expansion is not submission evidence."
+    },
+    {
+      "title": "Monocular 3D Object Detection",
+      "level": "subsection",
+      "start_line": 350,
+      "end_line": 367,
+      "line_count": 18,
+      "word_count_est": 139,
+      "decision": "merge_or_delete_duplicate",
+      "rationale": "Related-work context should stay compact in the main paper; long literature expansion is not submission evidence."
+    },
+    {
+      "title": "Animal Pose and Animal 3D Reconstruction",
+      "level": "subsection",
+      "start_line": 368,
+      "end_line": 386,
+      "line_count": 19,
+      "word_count_est": 152,
+      "decision": "merge_or_delete_duplicate",
+      "rationale": "Related-work context should stay compact in the main paper; long literature expansion is not submission evidence."
+    },
+    {
+      "title": "Primitive and Superquadric Decomposition",
+      "level": "subsection",
+      "start_line": 387,
+      "end_line": 410,
+      "line_count": 24,
+      "word_count_est": 169,
+      "decision": "merge_or_delete_duplicate",
+      "rationale": "Related-work context should stay compact in the main paper; long literature expansion is not submission evidence."
+    },
+    {
+      "title": "Procedural Actors, LOD, and Scene Graphs",
+      "level": "subsection",
+      "start_line": 411,
+      "end_line": 439,
+      "line_count": 29,
+      "word_count_est": 213,
+      "decision": "merge_or_delete_duplicate",
+      "rationale": "Related-work context should stay compact in the main paper; long literature expansion is not submission evidence."
+    },
+    {
+      "title": "Human Factors, Display Uncertainty, and Mapping Baselines",
+      "level": "subsection",
+      "start_line": 440,
+      "end_line": 500,
+      "line_count": 61,
+      "word_count_est": 357,
+      "decision": "merge_or_delete_duplicate",
+      "rationale": "Related-work context should stay compact in the main paper; long literature expansion is not submission evidence."
+    },
+    {
+      "title": "Operation Inside a Semantic-Telemetry UAV Digital Twin",
+      "level": "section",
+      "start_line": 501,
+      "end_line": 530,
+      "line_count": 30,
+      "word_count_est": 197,
+      "decision": "keep_as_main_or_appendix_summary",
+      "rationale": "This is part of the real contribution, but it should be a compact specification in the main paper or a short appendix."
+    },
+    {
+      "title": "Proposed Runtime Contract",
+      "level": "section",
+      "start_line": 531,
+      "end_line": 602,
+      "line_count": 72,
+      "word_count_est": 324,
+      "decision": "keep_as_main_or_appendix_summary",
+      "rationale": "This is part of the real contribution, but it should be a compact specification in the main paper or a short appendix."
+    },
+    {
+      "title": "SPPA Specification",
+      "level": "section",
+      "start_line": 603,
+      "end_line": 635,
+      "line_count": 33,
+      "word_count_est": 165,
+      "decision": "keep_as_main_or_appendix_summary",
+      "rationale": "This is part of the real contribution, but it should be a compact specification in the main paper or a short appendix."
+    },
+    {
+      "title": "Semantic Normalization",
+      "level": "subsection",
+      "start_line": 636,
+      "end_line": 663,
+      "line_count": 28,
+      "word_count_est": 115,
+      "decision": "keep_as_main_or_appendix_summary",
+      "rationale": "This is part of the real contribution, but it should be a compact specification in the main paper or a short appendix."
+    },
+    {
+      "title": "Bounded Semantic-to-Part Compiler",
+      "level": "subsection",
+      "start_line": 664,
+      "end_line": 754,
+      "line_count": 91,
+      "word_count_est": 452,
+      "decision": "keep_as_main_or_appendix_summary",
+      "rationale": "This is part of the real contribution, but it should be a compact specification in the main paper or a short appendix."
+    },
+    {
+      "title": "Part Graphs",
+      "level": "subsection",
+      "start_line": 755,
+      "end_line": 774,
+      "line_count": 20,
+      "word_count_est": 110,
+      "decision": "keep_as_main_or_appendix_summary",
+      "rationale": "This is part of the real contribution, but it should be a compact specification in the main paper or a short appendix."
+    },
+    {
+      "title": "Measurement Extraction",
+      "level": "subsection",
+      "start_line": 775,
+      "end_line": 798,
+      "line_count": 24,
+      "word_count_est": 126,
+      "decision": "keep_as_main_or_appendix_summary",
+      "rationale": "This is part of the real contribution, but it should be a compact specification in the main paper or a short appendix."
+    },
+    {
+      "title": "Uncertainty-Marked Fallback",
+      "level": "subsection",
+      "start_line": 799,
+      "end_line": 818,
+      "line_count": 20,
+      "word_count_est": 124,
+      "decision": "keep_as_main_or_appendix_summary",
+      "rationale": "This is part of the real contribution, but it should be a compact specification in the main paper or a short appendix."
+    },
+    {
+      "title": "Pose and Proportion Fitting",
+      "level": "subsection",
+      "start_line": 819,
+      "end_line": 875,
+      "line_count": 57,
+      "word_count_est": 218,
+      "decision": "keep_as_main_or_appendix_summary",
+      "rationale": "This is part of the real contribution, but it should be a compact specification in the main paper or a short appendix."
+    },
+    {
+      "title": "SPPA Objective",
+      "level": "subsection",
+      "start_line": 876,
+      "end_line": 918,
+      "line_count": 43,
+      "word_count_est": 250,
+      "decision": "keep_as_main_or_appendix_summary",
+      "rationale": "This is part of the real contribution, but it should be a compact specification in the main paper or a short appendix."
+    },
+    {
+      "title": "Role of a Language Model",
+      "level": "subsection",
+      "start_line": 919,
+      "end_line": 955,
+      "line_count": 37,
+      "word_count_est": 313,
+      "decision": "keep_as_main_or_appendix_summary",
+      "rationale": "This is part of the real contribution, but it should be a compact specification in the main paper or a short appendix."
+    },
+    {
+      "title": "Runtime Output",
+      "level": "subsection",
+      "start_line": 956,
+      "end_line": 1002,
+      "line_count": 47,
+      "word_count_est": 307,
+      "decision": "keep_as_main_or_appendix_summary",
+      "rationale": "This is part of the real contribution, but it should be a compact specification in the main paper or a short appendix."
+    },
+    {
+      "title": "Pseudocode",
+      "level": "subsection",
+      "start_line": 1003,
+      "end_line": 1049,
+      "line_count": 47,
+      "word_count_est": 84,
+      "decision": "keep_as_main_or_appendix_summary",
+      "rationale": "This is part of the real contribution, but it should be a compact specification in the main paper or a short appendix."
+    },
+    {
+      "title": "Part-Fitting Examples",
+      "level": "section",
+      "start_line": 1050,
+      "end_line": 1150,
+      "line_count": 101,
+      "word_count_est": 580,
+      "decision": "keep_as_supporting_artifact",
+      "rationale": "Useful diagnostic evidence, especially for the truck decision, but the main paper needs only the distilled result."
+    },
+    {
+      "title": "Implementation Status",
+      "level": "section",
+      "start_line": 1151,
+      "end_line": 1173,
+      "line_count": 23,
+      "word_count_est": 137,
+      "decision": "artifact_log",
+      "rationale": "Detailed Unreal smoke/microbenchmark material is valuable for reproducibility, but too granular for a formal supplement."
+    },
+    {
+      "title": "Prototype",
+      "level": "section",
+      "start_line": 1174,
+      "end_line": 1205,
+      "line_count": 32,
+      "word_count_est": 166,
+      "decision": "artifact_log",
+      "rationale": "Detailed Unreal smoke/microbenchmark material is valuable for reproducibility, but too granular for a formal supplement."
+    },
+    {
+      "title": "Prototype Timing and Geometry Complexity",
+      "level": "section",
+      "start_line": 1206,
+      "end_line": 1239,
+      "line_count": 34,
+      "word_count_est": 135,
+      "decision": "artifact_log",
+      "rationale": "Detailed Unreal smoke/microbenchmark material is valuable for reproducibility, but too granular for a formal supplement."
+    },
+    {
+      "title": "Preliminary Fast 3D Generator Stress Test",
+      "level": "section",
+      "start_line": 1240,
+      "end_line": 1361,
+      "line_count": 122,
+      "word_count_est": 1004,
+      "decision": "keep_as_supporting_artifact",
+      "rationale": "Keep as input-alignment/protocol audit evidence; do not present as SOTA ranking until GT and metrics exist."
+    },
+    {
+      "title": "Bounded Label Resolver And Negative-Control Timings",
+      "level": "section",
+      "start_line": 1362,
+      "end_line": 1478,
+      "line_count": 117,
+      "word_count_est": 734,
+      "decision": "artifact_log",
+      "rationale": "Implementation evidence should be archived with concise tables in the main paper, not carried as long prose."
+    },
+    {
+      "title": "Unreal Backend Switch Smoke Test",
+      "level": "section",
+      "start_line": 1479,
+      "end_line": 1499,
+      "line_count": 21,
+      "word_count_est": 138,
+      "decision": "artifact_log",
+      "rationale": "Detailed Unreal smoke/microbenchmark material is valuable for reproducibility, but too granular for a formal supplement."
+    },
+    {
+      "title": "Recorded Payload Adapter and Unreal Replay",
+      "level": "section",
+      "start_line": 1500,
+      "end_line": 1578,
+      "line_count": 79,
+      "word_count_est": 557,
+      "decision": "artifact_log",
+      "rationale": "Detailed Unreal smoke/microbenchmark material is valuable for reproducibility, but too granular for a formal supplement."
+    },
+    {
+      "title": "Evidence-Calibrated Material Cues",
+      "level": "section",
+      "start_line": 1579,
+      "end_line": 1608,
+      "line_count": 30,
+      "word_count_est": 232,
+      "decision": "artifact_log",
+      "rationale": "Implementation evidence should be archived with concise tables in the main paper, not carried as long prose."
+    },
+    {
+      "title": "Operational Claim To Be Tested",
+      "level": "section",
+      "start_line": 1609,
+      "end_line": 1625,
+      "line_count": 17,
+      "word_count_est": 94,
+      "decision": "main_roadmap_summary",
+      "rationale": "Keep only the four priority gates and hard limitations; avoid backlog-style planned-work pages."
+    },
+    {
+      "title": "Temporal Update Policy",
+      "level": "subsection",
+      "start_line": 1626,
+      "end_line": 1675,
+      "line_count": 50,
+      "word_count_est": 350,
+      "decision": "artifact_log",
+      "rationale": "Implementation evidence should be archived with concise tables in the main paper, not carried as long prose."
+    },
+    {
+      "title": "Implemented Descriptor and Update-Packet Benchmark",
+      "level": "subsection",
+      "start_line": 1676,
+      "end_line": 1739,
+      "line_count": 64,
+      "word_count_est": 485,
+      "decision": "artifact_log",
+      "rationale": "Implementation evidence should be archived with concise tables in the main paper, not carried as long prose."
+    },
+    {
+      "title": "Preliminary Link-Budget Model",
+      "level": "subsection",
+      "start_line": 1740,
+      "end_line": 1778,
+      "line_count": 39,
+      "word_count_est": 220,
+      "decision": "artifact_log",
+      "rationale": "Implementation evidence should be archived with concise tables in the main paper, not carried as long prose."
+    },
+    {
+      "title": "Unreal Descriptor-Ingestion Smoke Test",
+      "level": "subsection",
+      "start_line": 1779,
+      "end_line": 1802,
+      "line_count": 24,
+      "word_count_est": 161,
+      "decision": "artifact_log",
+      "rationale": "Detailed Unreal smoke/microbenchmark material is valuable for reproducibility, but too granular for a formal supplement."
+    },
+    {
+      "title": "Unreal Actor-Level Microbenchmark",
+      "level": "subsection",
+      "start_line": 1803,
+      "end_line": 1852,
+      "line_count": 50,
+      "word_count_est": 338,
+      "decision": "artifact_log",
+      "rationale": "Detailed Unreal smoke/microbenchmark material is valuable for reproducibility, but too granular for a formal supplement."
+    },
+    {
+      "title": "Component Payload Replay",
+      "level": "subsection",
+      "start_line": 1853,
+      "end_line": 1906,
+      "line_count": 54,
+      "word_count_est": 371,
+      "decision": "artifact_log",
+      "rationale": "Detailed Unreal smoke/microbenchmark material is valuable for reproducibility, but too granular for a formal supplement."
+    },
+    {
+      "title": "HTTP Poll Replay Through the Unreal Component",
+      "level": "subsection",
+      "start_line": 1907,
+      "end_line": 2065,
+      "line_count": 159,
+      "word_count_est": 840,
+      "decision": "artifact_log",
+      "rationale": "Detailed Unreal smoke/microbenchmark material is valuable for reproducibility, but too granular for a formal supplement."
+    },
+    {
+      "title": "Packaged Internal Render Benchmark",
+      "level": "subsection",
+      "start_line": 2066,
+      "end_line": 2164,
+      "line_count": 99,
+      "word_count_est": 787,
+      "decision": "artifact_log",
+      "rationale": "Detailed Unreal smoke/microbenchmark material is valuable for reproducibility, but too granular for a formal supplement."
+    },
+    {
+      "title": "Preliminary Track-Lifecycle Measurement",
+      "level": "subsection",
+      "start_line": 2165,
+      "end_line": 2209,
+      "line_count": 45,
+      "word_count_est": 268,
+      "decision": "artifact_log",
+      "rationale": "Implementation evidence should be archived with concise tables in the main paper, not carried as long prose."
+    },
+    {
+      "title": "Planned Evaluation Protocol",
+      "level": "section",
+      "start_line": 2210,
+      "end_line": 2259,
+      "line_count": 50,
+      "word_count_est": 338,
+      "decision": "main_roadmap_summary",
+      "rationale": "Keep only the four priority gates and hard limitations; avoid backlog-style planned-work pages."
+    },
+    {
+      "title": "Threats to Validity",
+      "level": "section",
+      "start_line": 2260,
+      "end_line": 2288,
+      "line_count": 29,
+      "word_count_est": 236,
+      "decision": "main_roadmap_summary",
+      "rationale": "Keep only the four priority gates and hard limitations; avoid backlog-style planned-work pages."
+    },
+    {
+      "title": "Evidence Needed For Full System Validation",
+      "level": "section",
+      "start_line": 2289,
+      "end_line": 2330,
+      "line_count": 42,
+      "word_count_est": 268,
+      "decision": "main_roadmap_summary",
+      "rationale": "Keep only the four priority gates and hard limitations; avoid backlog-style planned-work pages."
+    },
+    {
+      "title": "Reproducibility Notes",
+      "level": "section",
+      "start_line": 2331,
+      "end_line": 2354,
+      "line_count": 24,
+      "word_count_est": 223,
+      "decision": "short_artifact_index",
+      "rationale": "A formal supplement may include a short artifact index, but not raw command/log narration."
+    },
+    {
+      "title": "Limitations",
+      "level": "section",
+      "start_line": 2355,
+      "end_line": 2379,
+      "line_count": 25,
+      "word_count_est": 229,
+      "decision": "main_roadmap_summary",
+      "rationale": "Keep only the four priority gates and hard limitations; avoid backlog-style planned-work pages."
+    },
+    {
+      "title": "Conclusion",
+      "level": "section",
+      "start_line": 2380,
+      "end_line": 2402,
+      "line_count": 23,
+      "word_count_est": 151,
+      "decision": "delete_or_merge",
+      "rationale": "A supplement conclusion duplicates the paper conclusion and should be removed from formal submission material."
+    }
+  ]
+}

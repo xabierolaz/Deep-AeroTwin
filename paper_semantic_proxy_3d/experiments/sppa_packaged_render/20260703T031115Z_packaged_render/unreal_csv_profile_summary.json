@@ -1,0 +1,403 @@
+{
+  "claim_scope": "Unreal CSV profiler summary. These counters are global to the profiled packaged process and are not phase/backend-aligned unless separate CSV events or timestamps are added.",
+  "run_dir": "experiments\\sppa_packaged_render\\20260703T031115Z_packaged_render",
+  "profile_files_found": [
+    "experiments\\sppa_packaged_render\\20260703T031115Z_packaged_render\\package\\Windows\\AirTraffic\\Saved\\Profiling\\CSV\\Profile(20260703_051155).csv",
+    "experiments\\sppa_packaged_render\\20260703T031115Z_packaged_render\\package\\Windows\\AirTraffic\\Saved\\Profiling\\CSV\\Profile(20260703_051248).csv"
+  ],
+  "nonempty_profile_files": 2,
+  "profiles": [
+    {
+      "file": "experiments\\sppa_packaged_render\\20260703T031115Z_packaged_render\\package\\Windows\\AirTraffic\\Saved\\Profiling\\CSV\\Profile(20260703_051155).csv",
+      "bytes": 131072,
+      "rows": 76,
+      "columns": 279,
+      "selected_columns_present": [
+        "FrameTime",
+        "GameThreadTime",
+        "RenderThreadTime",
+        "RenderThreadTime_CriticalPath",
+        "RHIThreadTime",
+        "GPUTime",
+        "RHI/DrawCalls",
+        "RHI/PrimitivesDrawn",
+        "GPUSceneInstanceCount",
+        "GPUMem/LocalUsedMB",
+        "GPUMem/LocalBudgetMB",
+        "NumInstanceTransformUpdates",
+        "Ticks/PorceSppaPackagedBenchmarkRunner",
+        "Exclusive/RenderThread/AddPrimitiveSceneInfos",
+        "Exclusive/RenderThread/RemovePrimitiveSceneInfos",
+        "Exclusive/RenderThread/UpdatePrimitiveInstances",
+        "Exclusive/RenderThread/UpdatePrimitiveTransform",
+        "Exclusive/RenderThread/UpdateGPUScene"
+      ],
+      "selected_columns_missing": [],
+      "event_rows": 2,
+      "event_prefix_counts": {
+        "PSO/Encountered new graphics PSO;PSO/Encountered new compute PSO;PSO/Encountered new graphics PSO;PSO/Encountered new graphics PSO;PSO/Encountered new graphics ": 1,
+        "PSO/Encountered new graphics PSO;PSO/Encountered new graphics PSO;PSO/Encountered new compute PSO;PSO/Encountered new compute PSO;PSO/Encountered new graphics P": 1
+      },
+      "metrics": {
+        "FrameTime": {
+          "n": 75,
+          "mean": 9.067949333333333,
+          "p50": 5.3711,
+          "p95": 15.95811,
+          "p99": 89.91921600000052,
+          "max": 165.2783,
+          "min": 4.4091
+        },
+        "GameThreadTime": {
+          "n": 75,
+          "mean": 3.126668,
+          "p50": 1.3988,
+          "p95": 13.765769999999996,
+          "p99": 29.527282000000227,
+          "max": 62.7945,
+          "min": 1.169
+        },
+        "RenderThreadTime": {
+          "n": 75,
+          "mean": 7.8931,
+          "p50": 5.3767,
+          "p95": 6.967549999999998,
+          "p99": 56.85449600000065,
+          "max": 150.6381,
+          "min": 4.6632
+        },
+        "RenderThreadTime_CriticalPath": {
+          "n": 75,
+          "mean": 7.893930666666667,
+          "p50": 5.3778,
+          "p95": 6.967549999999998,
+          "p99": 56.88232000000065,
+          "max": 150.6381,
+          "min": 4.6632
+        },
+        "RHIThreadTime": {
+          "n": 75,
+          "mean": 3.001209333333333,
+          "p50": 2.6919,
+          "p95": 4.562309999999999,
+          "p99": 9.6154,
+          "max": 9.6154,
+          "min": 1.85
+        },
+        "GPUTime": {
+          "n": 75,
+          "mean": 1.5450053333333333,
+          "p50": 1.5126,
+          "p95": 1.7609999999999997,
+          "p99": 1.8693120000000008,
+          "max": 1.9516,
+          "min": 1.1537
+        },
+        "RHI/DrawCalls": {
+          "n": 76,
+          "mean": 855.0131578947369,
+          "p50": 878.0,
+          "p95": 881.0,
+          "p99": 881.0,
+          "max": 881.0,
+          "min": 0.0
+        },
+        "RHI/PrimitivesDrawn": {
+          "n": 76,
+          "mean": 184825.36842105264,
+          "p50": 190035.0,
+          "p95": 191569.5,
+          "p99": 191571.0,
+          "max": 191571.0,
+          "min": 0.0
+        },
+        "GPUSceneInstanceCount": {
+          "n": 76,
+          "mean": 437.0,
+          "p50": 437.0,
+          "p95": 437.0,
+          "p99": 437.0,
+          "max": 437.0,
+          "min": 437.0
+        },
+        "GPUMem/LocalUsedMB": {
+          "n": 76,
+          "mean": 3150.0741789473686,
+          "p50": 3193.4922,
+          "p95": 3206.0547,
+          "p99": 3206.8047,
+          "max": 3206.9922,
+          "min": 0.0
+        },
+        "GPUMem/LocalBudgetMB": {
+          "n": 76,
+          "mean": 31005.592105263157,
+          "p50": 31419.0,
+          "p95": 31419.0,
+          "p99": 31419.0,
+          "max": 31419.0,
+          "min": 0.0
+        },
+        "NumInstanceTransformUpdates": {
+          "n": 75,
+          "mean": 0.0,
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 0.0,
+          "max": 0.0,
+          "min": 0.0
+        },
+        "Ticks/PorceSppaPackagedBenchmarkRunner": {
+          "n": 75,
+          "mean": 1.0,
+          "p50": 1.0,
+          "p95": 1.0,
+          "p99": 1.0,
+          "max": 1.0,
+          "min": 1.0
+        },
+        "Exclusive/RenderThread/AddPrimitiveSceneInfos": {
+          "n": 76,
+          "mean": 0.008319736842105263,
+          "p50": 0.0004,
+          "p95": 0.000825,
+          "p99": 0.15085,
+          "max": 0.5998,
+          "min": 0.0002
+        },
+        "Exclusive/RenderThread/RemovePrimitiveSceneInfos": {
+          "n": 76,
+          "mean": 0.00035394736842105264,
+          "p50": 0.0003,
+          "p95": 0.0006,
+          "p99": 0.00075,
+          "max": 0.0009,
+          "min": 0.0002
+        },
+        "Exclusive/RenderThread/UpdatePrimitiveInstances": {
+          "n": 76,
+          "mean": 0.001313157894736842,
+          "p50": 0.0012,
+          "p95": 0.001825,
+          "p99": 0.0028250000000000003,
+          "max": 0.0044,
+          "min": 0.0007
+        },
+        "Exclusive/RenderThread/UpdatePrimitiveTransform": {
+          "n": 76,
+          "mean": 0.012101315789473684,
+          "p50": 0.001,
+          "p95": 0.048725,
+          "p99": 0.22112500000000002,
+          "max": 0.2581,
+          "min": 0.0007
+        },
+        "Exclusive/RenderThread/UpdateGPUScene": {
+          "n": 76,
+          "mean": 0.02894078947368421,
+          "p50": 0.018250000000000002,
+          "p95": 0.07975,
+          "p99": 0.18125,
+          "max": 0.2771,
+          "min": 0.0127
+        }
+      }
+    },
+    {
+      "file": "experiments\\sppa_packaged_render\\20260703T031115Z_packaged_render\\package\\Windows\\AirTraffic\\Saved\\Profiling\\CSV\\Profile(20260703_051248).csv",
+      "bytes": 1966080,
+      "rows": 1222,
+      "columns": 271,
+      "selected_columns_present": [
+        "FrameTime",
+        "GameThreadTime",
+        "RenderThreadTime",
+        "RenderThreadTime_CriticalPath",
+        "RHIThreadTime",
+        "GPUTime",
+        "RHI/DrawCalls",
+        "RHI/PrimitivesDrawn",
+        "GPUSceneInstanceCount",
+        "GPUMem/LocalUsedMB",
+        "GPUMem/LocalBudgetMB",
+        "NumInstanceTransformUpdates",
+        "Ticks/PorceSppaPackagedBenchmarkRunner",
+        "Exclusive/RenderThread/AddPrimitiveSceneInfos",
+        "Exclusive/RenderThread/RemovePrimitiveSceneInfos",
+        "Exclusive/RenderThread/UpdatePrimitiveInstances",
+        "Exclusive/RenderThread/UpdatePrimitiveTransform",
+        "Exclusive/RenderThread/UpdateGPUScene"
+      ],
+      "selected_columns_missing": [],
+      "event_rows": 2,
+      "event_prefix_counts": {
+        "PSO/Encountered new compute PSO;PSO/Encountered new compute PSO": 1,
+        "PSO/Encountered new graphics PSO;PSO/Encountered new graphics PSO;PSO/Encountered new graphics PSO;PSO/Encountered new graphics PSO;PSO/Encountered new compute ": 1
+      },
+      "metrics": {
+        "FrameTime": {
+          "n": 1221,
+          "mean": 5.526299426699427,
+          "p50": 4.6622,
+          "p95": 6.3177,
+          "p99": 31.82174,
+          "max": 42.3362,
+          "min": 3.099
+        },
+        "GameThreadTime": {
+          "n": 1221,
+          "mean": 2.143522031122031,
+          "p50": 1.1761,
+          "p95": 1.8339,
+          "p99": 31.419199999999993,
+          "max": 41.9748,
+          "min": 0.8017
+        },
+        "RenderThreadTime": {
+          "n": 1221,
+          "mean": 4.749638902538903,
+          "p50": 4.6455,
+          "p95": 5.5955,
+          "p99": 6.1794,
+          "max": 28.2335,
+          "min": 3.5284
+        },
+        "RenderThreadTime_CriticalPath": {
+          "n": 1221,
+          "mean": 4.750346764946765,
+          "p50": 4.6455,
+          "p95": 5.5955,
+          "p99": 6.1794,
+          "max": 28.2335,
+          "min": 3.5284
+        },
+        "RHIThreadTime": {
+          "n": 1221,
+          "mean": 2.456178132678133,
+          "p50": 2.3633,
+          "p95": 3.1199,
+          "p99": 3.642079999999999,
+          "max": 23.5695,
+          "min": 1.5622
+        },
+        "GPUTime": {
+          "n": 1221,
+          "mean": 1.4909050778050779,
+          "p50": 1.4547,
+          "p95": 1.6718,
+          "p99": 1.8700399999999986,
+          "max": 2.8328,
+          "min": 1.2028
+        },
+        "RHI/DrawCalls": {
+          "n": 1222,
+          "mean": 105.59901800327333,
+          "p50": 106.0,
+          "p95": 106.0,
+          "p99": 106.0,
+          "max": 106.0,
+          "min": 0.0
+        },
+        "RHI/PrimitivesDrawn": {
+          "n": 1222,
+          "mean": 1270.7414075286415,
+          "p50": 1273.0,
+          "p95": 1277.0,
+          "p99": 1277.0,
+          "max": 1277.0,
+          "min": 0.0
+        },
+        "GPUSceneInstanceCount": {
+          "n": 1222,
+          "mean": 436.29296235679215,
+          "p50": 437.0,
+          "p95": 437.0,
+          "p99": 437.0,
+          "max": 437.0,
+          "min": 5.0
+        },
+        "GPUMem/LocalUsedMB": {
+          "n": 1222,
+          "mean": 3178.753648363339,
+          "p50": 3181.4023,
+          "p95": 3185.1523,
+          "p99": 3185.4023,
+          "max": 3193.9023,
+          "min": 0.0
+        },
+        "GPUMem/LocalBudgetMB": {
+          "n": 1222,
+          "mean": 31393.288870703764,
+          "p50": 31419.0,
+          "p95": 31419.0,
+          "p99": 31419.0,
+          "max": 31419.0,
+          "min": 0.0
+        },
+        "NumInstanceTransformUpdates": {
+          "n": 1221,
+          "mean": 3.7985257985257985,
+          "p50": 0.0,
+          "p95": 0.0,
+          "p99": 99.19999999999936,
+          "max": 186.0,
+          "min": 0.0
+        },
+        "Ticks/PorceSppaPackagedBenchmarkRunner": {
+          "n": 1222,
+          "mean": 1.0,
+          "p50": 1.0,
+          "p95": 1.0,
+          "p99": 1.0,
+          "max": 1.0,
+          "min": 1.0
+        },
+        "Exclusive/RenderThread/AddPrimitiveSceneInfos": {
+          "n": 1222,
+          "mean": 0.0013306873977086745,
+          "p50": 0.0003,
+          "p95": 0.0081,
+          "p99": 0.01183699999999999,
+          "max": 0.0731,
+          "min": 0.0001
+        },
+        "Exclusive/RenderThread/RemovePrimitiveSceneInfos": {
+          "n": 1222,
+          "mean": 0.0029034369885433714,
+          "p50": 0.0003,
+          "p95": 0.0226,
+          "p99": 0.03163699999999999,
+          "max": 0.0404,
+          "min": 0.0001
+        },
+        "Exclusive/RenderThread/UpdatePrimitiveInstances": {
+          "n": 1222,
+          "mean": 0.0012389525368248773,
+          "p50": 0.0012,
+          "p95": 0.0018,
+          "p99": 0.0023,
+          "max": 0.0041,
+          "min": 0.0005
+        },
+        "Exclusive/RenderThread/UpdatePrimitiveTransform": {
+          "n": 1222,
+          "mean": 0.0009298690671031097,
+          "p50": 0.0009,
+          "p95": 0.0014,
+          "p99": 0.002,
+          "max": 0.0029,
+          "min": 0.0003
+        },
+        "Exclusive/RenderThread/UpdateGPUScene": {
+          "n": 1222,
+          "mean": 0.020793126022913257,
+          "p50": 0.0149,
+          "p95": 0.0542,
+          "p99": 0.07257899999999999,
+          "max": 0.0887,
+          "min": 0.0101
+        }
+      }
+    }
+  ]
+}

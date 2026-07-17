@@ -1,0 +1,2 @@
+source,rows,unique_tracks,unique_frames,duration_s,row_rate_hz,create_count,shape_param_update_count,pose_update_count,no_op_count,descriptor_build_us_p50,descriptor_build_us_p95,scheduler_decision_us_p50,scheduler_decision_us_p95,packet_build_us_p50,packet_build_us_p95,claim_scope
+experiments/sppa_descriptor_update/20260702_observed_material_v04_large/replay_update_rows.csv,81568,353,1352,10478152.021,0.008,1412,5443,6779,67934,391.8,515.0,9.2,14.2,16.8,75.3,recorded_descriptor_scheduler_replay_not_live_flight_radio_link

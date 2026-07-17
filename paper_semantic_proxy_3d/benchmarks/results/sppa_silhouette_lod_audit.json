@@ -1,0 +1,138 @@
+{
+  "schema": "sppa-silhouette-lod-audit-v1",
+  "interpretation": {
+    "lod_vs_high_iou": "Self-consistency of proxy silhouette under cheap LOD vs high tessellation; not real-image GT.",
+    "mask_dims": "Calibrated mask still drives length/width (silhouette footprint adaptation).",
+    "what_improved": "Speed and triangle load; not photoreal image silhouette reconstruction."
+  },
+  "rows": [
+    {
+      "label": "biker",
+      "lod": "balanced",
+      "triangles": 692,
+      "triangles_high": 940,
+      "top_iou_vs_high": 0.7054,
+      "side_iou_vs_high": 0.3378,
+      "mean_iou_vs_high": 0.5216
+    },
+    {
+      "label": "biker",
+      "lod": "ultra_light",
+      "triangles": 624,
+      "triangles_high": 940,
+      "top_iou_vs_high": 0.5577,
+      "side_iou_vs_high": 0.3142,
+      "mean_iou_vs_high": 0.4359
+    },
+    {
+      "label": "tractor",
+      "lod": "balanced",
+      "triangles": 576,
+      "triangles_high": 836,
+      "top_iou_vs_high": 0.5866,
+      "side_iou_vs_high": 0.4091,
+      "mean_iou_vs_high": 0.4978
+    },
+    {
+      "label": "tractor",
+      "lod": "ultra_light",
+      "triangles": 464,
+      "triangles_high": 836,
+      "top_iou_vs_high": 0.579,
+      "side_iou_vs_high": 0.4374,
+      "mean_iou_vs_high": 0.5082
+    },
+    {
+      "label": "tractor_trailer",
+      "lod": "balanced",
+      "triangles": 1076,
+      "triangles_high": 1576,
+      "top_iou_vs_high": 0.7397,
+      "side_iou_vs_high": 0.5124,
+      "mean_iou_vs_high": 0.6261
+    },
+    {
+      "label": "tractor_trailer",
+      "lod": "ultra_light",
+      "triangles": 852,
+      "triangles_high": 1576,
+      "top_iou_vs_high": 0.7412,
+      "side_iou_vs_high": 0.6247,
+      "mean_iou_vs_high": 0.683
+    },
+    {
+      "label": "tower",
+      "lod": "balanced",
+      "triangles": 396,
+      "triangles_high": 396,
+      "top_iou_vs_high": 1.0,
+      "side_iou_vs_high": 1.0,
+      "mean_iou_vs_high": 1.0
+    },
+    {
+      "label": "tower",
+      "lod": "ultra_light",
+      "triangles": 396,
+      "triangles_high": 396,
+      "top_iou_vs_high": 1.0,
+      "side_iou_vs_high": 1.0,
+      "mean_iou_vs_high": 1.0
+    },
+    {
+      "label": "car",
+      "lod": "balanced",
+      "triangles": 368,
+      "triangles_high": 672,
+      "top_iou_vs_high": 0.744,
+      "side_iou_vs_high": 0.5195,
+      "mean_iou_vs_high": 0.6317
+    },
+    {
+      "label": "car",
+      "lod": "ultra_light",
+      "triangles": 240,
+      "triangles_high": 672,
+      "top_iou_vs_high": 0.7599,
+      "side_iou_vs_high": 0.5104,
+      "mean_iou_vs_high": 0.6351
+    }
+  ],
+  "mask_dim_adaptation": [
+    {
+      "label": "tractor",
+      "metric_dims_source": "calibrated_mask_oriented_footprint",
+      "effective_dims_m": {
+        "length": 4.0,
+        "width": 0.75,
+        "height": 2.0
+      },
+      "triangles": 576
+    },
+    {
+      "label": "biker",
+      "metric_dims_source": "calibrated_mask_oriented_footprint",
+      "effective_dims_m": {
+        "length": 4.0,
+        "width": 0.75,
+        "height": 2.0
+      },
+      "triangles": 692
+    },
+    {
+      "label": "car",
+      "metric_dims_source": "calibrated_mask_oriented_footprint",
+      "effective_dims_m": {
+        "length": 4.0,
+        "width": 0.75,
+        "height": 2.0
+      },
+      "triangles": 368
+    }
+  ],
+  "summary": {
+    "mean_iou_balanced_vs_high": 0.6554,
+    "mean_iou_ultra_vs_high": 0.6524,
+    "mean_tris_balanced": 621.6,
+    "mean_tris_high": 884.0
+  }
+}

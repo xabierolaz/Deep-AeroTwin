@@ -1,0 +1,17 @@
+{
+  "schema": "SPPA-SCHEDULER-ACTIVE-TRACK-REPLAY-0.1",
+  "created_utc": "2026-07-04T10:18:52Z",
+  "source": "experiments/sppa_descriptor_update/20260702_observed_material_v04_large/replay_update_rows.csv",
+  "csv": "paper_semantic_proxy_3d/benchmarks/results/sppa_scheduler_active_track_replay.csv",
+  "rows": 81568,
+  "unique_tracks": 353,
+  "unique_frames": 1352,
+  "duration_s": 10478152.021,
+  "action_counts": {
+    "create": 1412,
+    "no_op": 67934,
+    "shape_param_update": 5443,
+    "pose_update": 6779
+  },
+  "claim_boundary": "This is an active-track descriptor scheduler replay from recorded logs. It is not a live flight test, but it establishes create/update/no-op scheduling rates and packet-building costs."
+}

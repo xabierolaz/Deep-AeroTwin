@@ -1,0 +1,1543 @@
+{
+  "main_tex": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\semantic_proxy_3d_paper.tex",
+  "submission_supplement_tex": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\semantic_proxy_3d_submission_supplement.tex",
+  "supplement_tex": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\semantic_proxy_3d_technical_supplement.tex",
+  "main_pdf_pages": 32,
+  "submission_supplement_pdf_pages": 3,
+  "submission_supplement_ready": true,
+  "supplement_pdf_pages": 38,
+  "input_provenance": {
+    "exists": true,
+    "items": 6,
+    "candidate_real_inputs": 4,
+    "candidate_real_input_labels": [
+      "biker",
+      "tower",
+      "tractor",
+      "tractor_trailer"
+    ],
+    "ground_truth_items": 0,
+    "detector_crop_items": 0,
+    "synthetic_proxy_items": 6,
+    "bbox_items": 0,
+    "mask_items": 0,
+    "reference_mesh_items": 0,
+    "candidate_real_bbox_items": 4,
+    "candidate_real_mask_items": 0,
+    "candidate_real_reference_mesh_items": 0,
+    "can_label_first_row_as_ground_truth": false
+  },
+  "detection_reference": {
+    "exists": true,
+    "items": 3,
+    "ground_truth_items": 3,
+    "readable_image_items": 0,
+    "detector_crop_items": 0,
+    "labels": [
+      "biker",
+      "cow",
+      "tower"
+    ],
+    "claim": "Synthetic YOLO reference labels with ground-truth 2D class/bbox annotations. Not real detector output, not flight imagery, and not 3D ground truth. Some legacy files use image extensions for non-image numeric dumps, so entries may be bbox-only."
+  },
+  "real_input_2d_annotations": {
+    "exists": true,
+    "items": 4,
+    "bbox_gt_2d_items": 4,
+    "gt_3d_items": 0,
+    "mask_items": 0,
+    "reference_mesh_items": 0,
+    "labels": [
+      "biker",
+      "tower",
+      "tractor",
+      "tractor_trailer"
+    ],
+    "claim_boundary": "These annotations can support detector/input provenance and crop reproducibility. They cannot support an image-to-3D SOTA ranking or a ground-truth first row for 3D quality metrics.",
+    "can_support_3d_sota_gt": false
+  },
+  "real_image_assumed_flight_replay": {
+    "path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\real_image_assumed_flight_replay.json",
+    "exists": true,
+    "case_count": 4,
+    "passed_count": 4,
+    "failed_count": 0,
+    "image_is_real": true,
+    "detector_is_real": true,
+    "telemetry_is_measured": false,
+    "metric_ground_truth": false,
+    "claim_posture": "real_image_detector_evidence_with_declared_assumed_flight_replay",
+    "claim_boundary": "Real user images and real YOLOE detector outputs are used. Flight pose, AGL, and camera mount geometry plus family height priors are declared replay assumptions, not measured telemetry. Metric SPPA pose/scale is therefore scenario-relative and must not be described as real measured flight localization."
+  },
+  "real_yoloe_dual_input_benchmark": {
+    "path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\real_yoloe_dual_input_benchmark.json",
+    "exists": true,
+    "case_count": 4,
+    "detector_ready_count": 4,
+    "image_baseline_ready_count": 4,
+    "tag_text_ready_count": 4,
+    "metric_replay_ready_count": 4,
+    "bounded_dual_input_claim_ready": true,
+    "full_visual_image_to_3d_leaderboard_ready": false,
+    "claim_posture": "bounded_dual_input_systems_benchmark_ready",
+    "claim_boundary": "This artifact supports a bounded systems/task-fit comparison, not a full visual image-to-3D SOTA leaderboard. The real images, YOLOE labels, bboxes, crops, and local method timings are evidence; 3D ground-truth geometry, measured flight telemetry, and venue-complete contemporary visual baselines are explicitly not claimed."
+  },
+  "real_input_probes": {
+    "exists": true,
+    "count": 4,
+    "labels": [
+      "biker",
+      "tower",
+      "tractor",
+      "tractor_trailer"
+    ],
+    "probes": [
+      {
+        "label": "biker",
+        "exists": true,
+        "readable_input_image": true,
+        "image_to_3d_crop_512_exists": true,
+        "is_ground_truth": false,
+        "has_mask": false,
+        "has_reference_mesh": false,
+        "repo_yolo_detections": 0,
+        "repo_yolo_valid_target_hits": 0,
+        "repo_yolo_tag": {
+          "label": "biker",
+          "confidence": null,
+          "source": "user_expected_semantic_tag_not_detector_output",
+          "manual_roi_iou": null
+        },
+        "repo_yolo_lowconf_detections": 3,
+        "repo_yolo_lowconf_valid_target_hits": 0,
+        "repo_yolo_lowconf_tag": {
+          "label": "biker",
+          "confidence": null,
+          "source": "user_expected_semantic_tag_not_detector_output",
+          "manual_roi_iou": null
+        },
+        "coco_yolo_detections": 1,
+        "coco_yolo_valid_target_hits": 0,
+        "coco_yolo_tag": {
+          "label": "person",
+          "confidence": 0.5589687824249268,
+          "source": "yolo_detection",
+          "manual_roi_iou": 0.14756756756756756
+        },
+        "run_exists": true,
+        "objects_csv_exists": true,
+        "summary_exists": true,
+        "methods": [
+          {
+            "model": "triposr_warm",
+            "status": "ok",
+            "wall_ms": 898.0,
+            "triangles": 22436,
+            "vram_mb": 2028.0
+          },
+          {
+            "model": "hunyuan3d_2mini_turbo_shape",
+            "status": "ok",
+            "wall_ms": 2772.4,
+            "triangles": 592008,
+            "vram_mb": 5304.0
+          }
+        ]
+      },
+      {
+        "label": "tower",
+        "exists": true,
+        "readable_input_image": true,
+        "image_to_3d_crop_512_exists": true,
+        "is_ground_truth": false,
+        "has_mask": false,
+        "has_reference_mesh": false,
+        "repo_yolo_detections": 1,
+        "repo_yolo_valid_target_hits": 0,
+        "repo_yolo_tag": {
+          "label": "tower",
+          "confidence": null,
+          "source": "user_expected_semantic_tag_not_detector_output",
+          "manual_roi_iou": null
+        },
+        "repo_yolo_lowconf_detections": 0,
+        "repo_yolo_lowconf_valid_target_hits": 0,
+        "repo_yolo_lowconf_tag": {
+          "label": null,
+          "confidence": null,
+          "source": null,
+          "manual_roi_iou": null
+        },
+        "coco_yolo_detections": 5,
+        "coco_yolo_valid_target_hits": 0,
+        "coco_yolo_tag": {
+          "label": "tower",
+          "confidence": null,
+          "source": "user_expected_semantic_tag_not_detector_output",
+          "manual_roi_iou": null
+        },
+        "run_exists": true,
+        "objects_csv_exists": true,
+        "summary_exists": true,
+        "methods": [
+          {
+            "model": "triposr_warm",
+            "status": "ok",
+            "wall_ms": 1027.0,
+            "triangles": 24228,
+            "vram_mb": 2028.0
+          },
+          {
+            "model": "hunyuan3d_2mini_turbo_shape",
+            "status": "ok",
+            "wall_ms": 2402.8,
+            "triangles": 592504,
+            "vram_mb": 5304.0
+          }
+        ]
+      },
+      {
+        "label": "tractor",
+        "exists": true,
+        "readable_input_image": true,
+        "image_to_3d_crop_512_exists": true,
+        "is_ground_truth": false,
+        "has_mask": false,
+        "has_reference_mesh": false,
+        "repo_yolo_detections": 0,
+        "repo_yolo_valid_target_hits": 0,
+        "repo_yolo_tag": {
+          "label": "tractor",
+          "confidence": null,
+          "source": "user_expected_semantic_tag_not_detector_output",
+          "manual_roi_iou": null
+        },
+        "repo_yolo_lowconf_detections": 0,
+        "repo_yolo_lowconf_valid_target_hits": 0,
+        "repo_yolo_lowconf_tag": {
+          "label": null,
+          "confidence": null,
+          "source": null,
+          "manual_roi_iou": null
+        },
+        "coco_yolo_detections": 2,
+        "coco_yolo_valid_target_hits": 0,
+        "coco_yolo_tag": {
+          "label": "tractor",
+          "confidence": null,
+          "source": "user_expected_semantic_tag_not_detector_output",
+          "manual_roi_iou": null
+        },
+        "run_exists": true,
+        "objects_csv_exists": true,
+        "summary_exists": false,
+        "methods": [
+          {
+            "model": "triposr_warm",
+            "status": "ok",
+            "wall_ms": 1349.7,
+            "triangles": 36448,
+            "vram_mb": 2028.0
+          },
+          {
+            "model": "hunyuan3d_2mini_turbo_shape",
+            "status": "ok",
+            "wall_ms": 3113.4,
+            "triangles": 970568,
+            "vram_mb": 5298.0
+          }
+        ]
+      },
+      {
+        "label": "tractor_trailer",
+        "exists": true,
+        "readable_input_image": true,
+        "image_to_3d_crop_512_exists": true,
+        "is_ground_truth": false,
+        "has_mask": false,
+        "has_reference_mesh": false,
+        "repo_yolo_detections": 0,
+        "repo_yolo_valid_target_hits": 0,
+        "repo_yolo_tag": {
+          "label": "tractor",
+          "confidence": null,
+          "source": "user_expected_semantic_tag_not_detector_output",
+          "manual_roi_iou": null
+        },
+        "repo_yolo_lowconf_detections": 0,
+        "repo_yolo_lowconf_valid_target_hits": 0,
+        "repo_yolo_lowconf_tag": {
+          "label": null,
+          "confidence": null,
+          "source": null,
+          "manual_roi_iou": null
+        },
+        "coco_yolo_detections": 6,
+        "coco_yolo_valid_target_hits": 0,
+        "coco_yolo_tag": {
+          "label": "tractor",
+          "confidence": null,
+          "source": "user_expected_semantic_tag_not_detector_output",
+          "manual_roi_iou": null
+        },
+        "run_exists": true,
+        "objects_csv_exists": true,
+        "summary_exists": false,
+        "methods": [
+          {
+            "model": "triposr_warm",
+            "status": "ok",
+            "wall_ms": 1201.2,
+            "triangles": 27644,
+            "vram_mb": 2028.0
+          },
+          {
+            "model": "hunyuan3d_2mini_turbo_shape",
+            "status": "ok",
+            "wall_ms": 2500.8,
+            "triangles": 725376,
+            "vram_mb": 5304.0
+          }
+        ]
+      }
+    ],
+    "readable_input_images": 4,
+    "image_to_3d_crop_512_count": 4,
+    "runs_ready": 4,
+    "is_ground_truth": false,
+    "has_mask": false,
+    "has_reference_mesh": false,
+    "real_input_probe_figure": true
+  },
+  "claim_phrases": {
+    "states_not_sota_ranking": true,
+    "states_circular_ranking_excluded": true,
+    "states_not_real_detection_gt": true,
+    "mentions_input_provenance_manifest": true,
+    "states_operator_unproven": true
+  },
+  "files": {
+    "task_fit_ranking_csv": true,
+    "task_fit_ranking_tex": true,
+    "visual_grid": true,
+    "sota_protocol_manifest": true,
+    "sota_protocol_readiness": true,
+    "dual_input_sota_readiness": true,
+    "real_yoloe_dual_input_benchmark": true,
+    "sota_method_exclusions": true,
+    "sota_preference_protocol": true,
+    "sota_image_alignment_metrics": true,
+    "phase_aligned_unreal_profile_csv": true,
+    "phase_aligned_unreal_profile_md": true,
+    "scheduler_active_track_replay_csv": true,
+    "scheduler_active_track_replay_md": true,
+    "submission_evidence_pack": true,
+    "supplement_triage": true,
+    "sppa_visual_material_audit": true,
+    "sppa_runtime_budget": true,
+    "sppa_visual_part_evidence_audit": true,
+    "sppa_visual_part_evidence_grid": true,
+    "sppa_visual_part_evidence_grid_figure": true,
+    "agnostic_image_space_parts_probe": true,
+    "agnostic_image_space_parts_verify": true,
+    "agnostic_label_invariance": true,
+    "agnostic_identity_invariance": true,
+    "agnostic_path_invariance": true,
+    "agnostic_detection_representation_invariance": true,
+    "agnostic_side_channel_invariance": true,
+    "agnostic_mirror_equivariance": true,
+    "agnostic_photometric_stability": true,
+    "agnostic_synthetic_part_controls": true,
+    "agnostic_synthetic_controls_figure": true,
+    "agnostic_synthetic_sweep": true,
+    "agnostic_synthetic_sweep_figure": true,
+    "agnostic_synthetic_fuzz": true,
+    "agnostic_synthetic_fuzz_figure": true,
+    "agnostic_image_space_parts_figure": true,
+    "truck_figure_decision": true,
+    "first_row_gt_decision": true,
+    "real_input_output_quality_audit": true,
+    "real_input_2d_annotations": true,
+    "input_provenance": true,
+    "synthetic_detection_reference_manifest": true,
+    "restructure_plan": true,
+    "main_pdf": true,
+    "submission_supplement_pdf": true,
+    "supplement_pdf": true,
+    "lightweight_baselines": true,
+    "scheduler_policy_contract": true,
+    "calibrated_mask_shape": true,
+    "bandwidth_model": true,
+    "mvfit_protocol_amendment": true,
+    "mvfit_pretest_freeze": true,
+    "mvfit_clean_clone_gate": true,
+    "mvfit_development_metrics": true,
+    "mvfit_confirmatory_metrics": false,
+    "mvfit_protocol_audit_pass": false,
+    "mvfit_resolution_sensitivity": false
+  },
+  "main_log": {
+    "latex_errors": 0,
+    "undefined_citations": 0,
+    "undefined_references": 0,
+    "overfull": 0,
+    "underfull": 0,
+    "float_changed": 3
+  },
+  "submission_supplement_log": {
+    "latex_errors": 0,
+    "undefined_citations": 0,
+    "undefined_references": 0,
+    "overfull": 0,
+    "underfull": 0,
+    "float_changed": 0
+  },
+  "supplement_log": {
+    "latex_errors": 0,
+    "undefined_citations": 0,
+    "undefined_references": 0,
+    "overfull": 0,
+    "underfull": 53,
+    "float_changed": 2
+  },
+  "four_priority_gates": [
+    {
+      "gate": "common_representation_benchmark",
+      "status": "partial",
+      "evidence": "The amended protocol, executable freeze, and development-only metrics exist, but the mandatory external protocol audit and held-out confirmatory run are absent. The historical task-fit ranking is excluded."
+    },
+    {
+      "gate": "detection_derived_evidence",
+      "status": "complete",
+      "evidence": "Real YOLOE dual-input detector-ready cases=4/4, alignment_metrics=True. Visual-grid provenance has 0 detector crops and 0 ground-truth items. Separate detection-reference manifest has 3 synthetic GT bbox items, 0 readable image crops, labels=['biker', 'cow', 'tower']. Real-input 2D annotation manifest has bbox_gt_2d_items=4, gt_3d_items=0, labels=['biker', 'tower', 'tractor', 'tractor_trailer']. Real input probes (4) have readable_images=4, crop512=4, runs_ready=4, figure=True; biker:input=True,crop512=True,repo_hits=0,coco_hits=0,run=True, tower:input=True,crop512=True,repo_hits=0,coco_hits=0,run=True, tractor:input=True,crop512=True,repo_hits=0,coco_hits=0,run=True, tractor_trailer:input=True,crop512=True,repo_hits=0,coco_hits=0,run=True."
+    },
+    {
+      "gate": "phase_aligned_unreal_profiling",
+      "status": "complete",
+      "evidence": "Phase-separated packaged Unreal counters are registered for frame, GameThread, RenderThread, RHI, GPU, memory, and render micro-events."
+    },
+    {
+      "gate": "flight_or_sim_scheduler_rates",
+      "status": "complete",
+      "evidence": "Scheduler policy contract and active-track replay artifacts are registered with create/update/no-op rates."
+    }
+  ],
+  "sota_ranking_readiness": {
+    "claim_posture": "ambitious_bounded_systems_claim",
+    "full_visual_image_to_3d_leaderboard_ready": false,
+    "supported_publication_claim": "No comparative publication claim is currently supported. The multiview fitting result is development-only, and the current visual comparison remains an input-alignment audit.",
+    "recommended_comparative_figure_role": "qualitative input-alignment audit",
+    "should_use_first_row_as_ground_truth": false,
+    "requirements": [
+      {
+        "key": "common_inputs",
+        "status": "complete",
+        "evidence": "6 synthetic proxy crops, 4 real-input probes, and 4 frozen real YOLOE dual-input cases exist. The six-case visual grid remains a qualitative input-alignment audit.",
+        "missing": "Use one frozen public or recorded detection dataset for every compared method, with per-item provenance."
+      },
+      {
+        "key": "ground_truth_references",
+        "status": "missing",
+        "evidence": "visual_grid_gt=0, visual_grid_masks=0, visual_grid_reference_meshes=0, real_input_gt=False, real_input_reference_mesh=False; synthetic_bbox_only_items=3, real_input_bbox_gt_2d_items=4, real_input_gt_3d_items=0.",
+        "missing": "Add annotated masks/footprints, 3D reference meshes, or a documented human-preference protocol."
+      },
+      {
+        "key": "detector_evidence_separated_from_gt",
+        "status": "complete",
+        "evidence": "real_input_images=4, manual_bbox_gt_2d_items=4, legacy_detector_valid_target_hits=0, real_yoloe_detector_ready=4/4; reviewed tags are recorded separately from detector outputs.",
+        "missing": "Record detector crops with bbox/mask/class confidence and keep them distinct from reviewed semantic tags and GT."
+      },
+      {
+        "key": "quality_metrics",
+        "status": "partial",
+        "evidence": "Detector image-alignment metrics and a human/task preference protocol are registered. Chamfer/F-score/normal-consistency and completed human scores remain unavailable because no 3D references exist.",
+        "missing": "Implement at least one reference-based metric for GT cases and one declared perceptual/preference metric for non-GT visual quality."
+      },
+      {
+        "key": "contemporary_method_set",
+        "status": "partial",
+        "evidence": "Local reproduced methods: SPPA, TripoSR, Hunyuan3D, Shap-E, Point-E. Expected modern comparison set includes TRELLIS.2, Pixal3D, Hunyuan3D 2.1, Stable Fast 3D, SPAR3D, TripoSG/Tripo P1, Direct3D-S2, PartCrafter, Rodin Gen-2.5, TripoSR; not all are reproduced here. Exclusions documented=True.",
+        "missing": "Run or explicitly exclude the venue-expected 2025/2026 image-to-3D methods under the same protocol."
+      },
+      {
+        "key": "visual_leaderboard_claim",
+        "status": "missing",
+        "evidence": "The historical task-fit ranking is circular and excluded; the comparative figure is only an input-alignment audit.",
+        "missing": "Only publish a full visual image-to-3D leaderboard after all ranked rows are backed by common inputs, metrics, and reproducible method outputs."
+      }
+    ],
+    "status_counts": {
+      "complete": 2,
+      "partial": 2,
+      "missing": 2
+    }
+  },
+  "sota_protocol_readiness_report": {
+    "path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sota_protocol_readiness.json",
+    "exists": true,
+    "claim_posture": "protocol_audit_only",
+    "full_visual_image_to_3d_leaderboard_ready": false,
+    "runtime_semantic_proxy_task_fit_ready": false,
+    "status_counts": {
+      "complete": 0,
+      "partial": 3,
+      "missing": 3
+    }
+  },
+  "dual_input_sota_readiness_report": {
+    "path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sota_dual_input_readiness.json",
+    "exists": true,
+    "claim_posture": "bounded_dual_input_systems_benchmark_ready_not_visual_leaderboard",
+    "bounded_dual_input_claim_ready": true,
+    "full_dual_input_leaderboard_ready": false,
+    "status_counts": {
+      "complete": 3,
+      "partial": 2,
+      "missing": 0
+    }
+  },
+  "supplement_triage": {
+    "path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\SUPPLEMENT_TRIAGE.json",
+    "exists": true,
+    "formal_supplement": "do_not_submit_current_38_page_file",
+    "preferred_shape": "main_paper_plus_short_artifact_index",
+    "pdf_pages": 38,
+    "line_count": 2402,
+    "decision_counts": {
+      "merge_or_delete_duplicate": 11,
+      "keep_as_main_or_appendix_summary": 14,
+      "keep_as_supporting_artifact": 2,
+      "artifact_log": 16,
+      "main_roadmap_summary": 5,
+      "short_artifact_index": 1,
+      "delete_or_merge": 1
+    }
+  },
+  "sppa_visual_material_audit": {
+    "path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_visual_material_audit.json",
+    "exists": true,
+    "pass": true,
+    "failures": [],
+    "claim_boundary": "SPPA materials are procedural semantic-role priors or explicit fallbacks. They are not photorealistic textures and should not be claimed as observed surface reconstruction unless explicit sensor/operator color evidence is supplied."
+  },
+  "sppa_runtime_budget": {
+    "path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_runtime_budget.json",
+    "exists": true,
+    "status": "passed",
+    "summary": {
+      "max_build_ms": 1.344,
+      "max_descriptor_bytes": 32253,
+      "max_export_ms": 2.601,
+      "max_mesh_bytes": 48555,
+      "max_triangles": 2012,
+      "max_vertices": 1060,
+      "max_wall_ms": 3.844,
+      "row_count": 4,
+      "total_descriptor_bytes_all_outputs": 126940,
+      "total_mesh_bytes_all_outputs": 111235,
+      "total_triangles_all_outputs": 4600,
+      "total_wall_ms": 13.238
+    },
+    "budgets": {
+      "max_build_ms_per_proxy": 5.0,
+      "max_descriptor_bytes_per_proxy": 32768,
+      "max_export_ms_per_proxy": 8.0,
+      "max_mesh_bytes_per_proxy": 65536,
+      "max_total_wall_ms": 50.0,
+      "max_triangles_per_proxy": 2500,
+      "max_vertices_per_proxy": 1500,
+      "max_wall_ms_per_proxy": 10.0
+    },
+    "failures": [],
+    "claim_boundary": "SPPA runtime budget regression for the real-input single-proxy run. It guards lightweight proxy generation cost; it does not measure detector latency or Unreal frame time."
+  },
+  "sppa_evidence_channel_coverage": {
+    "path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_evidence_channel_coverage.json",
+    "exists": true,
+    "tex_path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_evidence_channel_coverage.tex",
+    "tex_exists": true,
+    "figure": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\figures\\sppa_evidence_channel_coverage.png",
+    "figure_exists": true,
+    "row_count": 12,
+    "case_count": 4,
+    "summary": {
+      "detector_metric": {
+        "budget_pass_rows": 4,
+        "material_channel_rows": 0,
+        "mean_active_evidence_channels": 2.0,
+        "rows": 4,
+        "visual_channel_rows": 0,
+        "yaw_channel_rows": 0
+      },
+      "detector_metric_visual": {
+        "budget_pass_rows": 4,
+        "material_channel_rows": 1,
+        "mean_active_evidence_channels": 4.25,
+        "rows": 4,
+        "visual_channel_rows": 4,
+        "yaw_channel_rows": 4
+      },
+      "tag_only": {
+        "budget_pass_rows": 4,
+        "material_channel_rows": 0,
+        "mean_active_evidence_channels": 1.0,
+        "rows": 4,
+        "visual_channel_rows": 0,
+        "yaw_channel_rows": 0
+      }
+    },
+    "budget_failures": 0,
+    "visual_improvement_cases": 4,
+    "claim_boundary": "Evidence-channel coverage measures which SPPA inputs were actually consumed under each contract. It is not a 3D quality score, not a human-preference score, and not a visual image-to-3D SOTA ranking."
+  },
+  "sppa_visual_part_evidence": {
+    "path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_visual_part_evidence_audit.json",
+    "exists": true,
+    "status": "passed",
+    "failures": [],
+    "rows_checked": 4,
+    "grid_path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_visual_part_evidence_grid.json",
+    "grid_exists": true,
+    "figure": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\figures\\sppa_visual_part_evidence_grid.png",
+    "figure_exists": true,
+    "grid_rows": 4,
+    "claim_boundary": "Visual part evidence is role-conditioned support from generic image-space cues. It can annotate existing SPPA roles in the descriptor and add low-cost conditioning primitives to those existing roles, but it cannot introduce new classes, replace the semantic normalizer, or claim ground-truth part segmentation. The associated geometry profile is image-space only and is recorded once per descriptor to avoid descriptor bloat."
+  },
+  "sppa_visual_metric_yaw_consistency": {
+    "path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_visual_metric_yaw_consistency.json",
+    "exists": true,
+    "status": "passed",
+    "rows_checked": 4,
+    "aligned_count": 1,
+    "weakly_aligned_count": 0,
+    "divergent_declared_count": 3,
+    "projected_aligned_count": 2,
+    "projected_weakly_aligned_count": 2,
+    "projected_divergent_declared_count": 0,
+    "descriptor_recorded_count": 4,
+    "max_descriptor_bytes": 32595,
+    "failures": [],
+    "audit_warnings": [
+      "biker:visual_metric_yaw_divergent:58.23_deg",
+      "tower:visual_metric_yaw_divergent:88.08_deg",
+      "tractor:visual_metric_yaw_divergent:50.26_deg"
+    ],
+    "claim_boundary": "This audit compares two independent orientation cues on real image probes: image-space visual orientation inferred from generic SPPA part/line evidence, and axial ground-footprint orientation from UAV camera projection using declared replay telemetry. It does not claim measured flight ground truth or absolute world yaw. Divergence is allowed only when explicitly declared and routed through the conservative policy."
+  },
+  "sppa_descriptor_contract_audit": {
+    "path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_descriptor_contract_audit.json",
+    "exists": true,
+    "status": "passed",
+    "rows_checked": 4,
+    "failed_rows": 0,
+    "visual_metric_contract_rows": 4,
+    "max_descriptor_bytes": 32253,
+    "failures": [],
+    "claim_boundary": "This validates SPPA-DESC-0.2 required fields plus conditional descriptor-contract fields. When visual_metric_yaw_consistency is declared as an evidence source, the descriptor must record the projected visual-axis gate and select projected_footprint_yaw_gate as an ambiguous axial yaw in the declared replay frame."
+  },
+  "sppa_connector_constraints": {
+    "path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_connector_constraints.json",
+    "exists": true,
+    "tex_path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_connector_constraints.tex",
+    "tex_exists": true,
+    "status": "passed",
+    "rows_checked": 4,
+    "failed": 0,
+    "rows": [
+      {
+        "case_id": "biker",
+        "connector_count": 16,
+        "connector_length_max": 1.331724,
+        "connector_length_min": 0.15519,
+        "connector_roles": [
+          "bike_frame",
+          "rider_clothing",
+          "rider_skin"
+        ],
+        "descriptor": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified\\outputs\\sppa\\biker\\biker.descriptor.json",
+        "failures": [],
+        "model": "sppa",
+        "status": "passed"
+      },
+      {
+        "case_id": "tower",
+        "connector_count": 19,
+        "connector_length_max": 24.680068,
+        "connector_length_min": 2.772774,
+        "connector_roles": [
+          "vertical_structure_metal"
+        ],
+        "descriptor": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified\\outputs\\sppa\\tower\\tower.descriptor.json",
+        "failures": [],
+        "model": "sppa",
+        "status": "passed"
+      },
+      {
+        "case_id": "tractor",
+        "connector_count": 6,
+        "connector_length_max": 3.43597,
+        "connector_length_min": 2.15068,
+        "connector_roles": [
+          "vehicle_metal_or_hub"
+        ],
+        "descriptor": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified\\outputs\\sppa\\tractor\\tractor.descriptor.json",
+        "failures": [],
+        "model": "sppa",
+        "status": "passed"
+      },
+      {
+        "case_id": "tractor_trailer",
+        "connector_count": 6,
+        "connector_length_max": 3.501938,
+        "connector_length_min": 0.819177,
+        "connector_roles": [
+          "vehicle_metal_or_hub"
+        ],
+        "descriptor": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified\\outputs\\sppa\\tractor_trailer\\tractor_trailer.descriptor.json",
+        "failures": [],
+        "model": "sppa",
+        "status": "passed"
+      }
+    ],
+    "claim_boundary": "Connector-constraint regression. This proves that SPPA descriptors contain explicit lightweight connectors for semantic parts that should touch, but it does not claim photorealistic reconstruction."
+  },
+  "agnostic_image_space_parts": {
+    "path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_agnostic_image_space_parts_probe.json",
+    "exists": true,
+    "figure": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\figures\\sppa_agnostic_mask_vs_image_cues_grid.png",
+    "figure_exists": true,
+    "verify_path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_agnostic_image_space_parts_verify.json",
+    "verify_exists": true,
+    "verify_status": "pass",
+    "label_invariance_path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_agnostic_label_invariance.json",
+    "label_invariance_exists": true,
+    "label_invariance_status": "pass",
+    "label_invariance_rows_checked": 4,
+    "identity_invariance_path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_agnostic_identity_invariance.json",
+    "identity_invariance_exists": true,
+    "identity_invariance_status": "pass",
+    "identity_invariance_rows_checked": 4,
+    "path_invariance_path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_agnostic_path_invariance.json",
+    "path_invariance_exists": true,
+    "path_invariance_status": "pass",
+    "path_invariance_rows_checked": 4,
+    "detection_representation_invariance_path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_agnostic_detection_representation_invariance.json",
+    "detection_representation_invariance_exists": true,
+    "detection_representation_invariance_status": "pass",
+    "detection_representation_invariance_rows_checked": 4,
+    "detection_representation_invariance_variants_checked": 12,
+    "side_channel_invariance_path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_agnostic_side_channel_invariance.json",
+    "side_channel_invariance_exists": true,
+    "side_channel_invariance_status": "pass",
+    "side_channel_invariance_rows_checked": 4,
+    "mirror_equivariance_path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_agnostic_mirror_equivariance.json",
+    "mirror_equivariance_exists": true,
+    "mirror_equivariance_status": "pass",
+    "mirror_equivariance_rows_checked": 4,
+    "mirror_equivariance_audit_warning_count": 25,
+    "mirror_equivariance_diagnostic_note_count": 0,
+    "photometric_stability_path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_agnostic_photometric_stability.json",
+    "photometric_stability_exists": true,
+    "photometric_stability_status": "pass",
+    "photometric_stability_rows_checked": 4,
+    "photometric_stability_variants_checked": 16,
+    "photometric_stability_audit_warning_count": 15,
+    "photometric_stability_diagnostic_note_count": 0,
+    "synthetic_controls_path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_agnostic_synthetic_part_controls.json",
+    "synthetic_controls_exists": true,
+    "synthetic_controls_status": "pass",
+    "synthetic_controls_count": 5,
+    "synthetic_controls_failures": [],
+    "synthetic_controls_figure": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\figures\\sppa_agnostic_synthetic_controls_grid.png",
+    "synthetic_controls_figure_exists": true,
+    "synthetic_sweep_path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_agnostic_synthetic_sweep.json",
+    "synthetic_sweep_exists": true,
+    "synthetic_sweep_status": "pass",
+    "synthetic_sweep_figure": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\figures\\sppa_agnostic_synthetic_sweep_examples.png",
+    "synthetic_sweep_figure_exists": true,
+    "synthetic_sweep_summary": {
+      "by_family": {
+        "blank_negative": {
+          "cases": 12,
+          "failures": 0,
+          "passes": 12
+        },
+        "elongated_round_pair": {
+          "cases": 12,
+          "failures": 0,
+          "passes": 12
+        },
+        "line_structure": {
+          "cases": 12,
+          "failures": 0,
+          "passes": 12
+        },
+        "round_pair": {
+          "cases": 12,
+          "failures": 0,
+          "passes": 12
+        },
+        "single_circle_negative": {
+          "cases": 12,
+          "failures": 0,
+          "passes": 12
+        },
+        "texture_negative": {
+          "cases": 12,
+          "failures": 0,
+          "passes": 12
+        }
+      },
+      "case_count": 72,
+      "failure_count": 0,
+      "line_structure": {
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "tp": 12
+      },
+      "pass_count": 72,
+      "primary_scope_accuracy": 1.0,
+      "round_pair": {
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "tp": 24
+      }
+    },
+    "synthetic_fuzz_path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_agnostic_synthetic_fuzz.json",
+    "synthetic_fuzz_exists": true,
+    "synthetic_fuzz_status": "pass",
+    "synthetic_fuzz_figure": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\figures\\sppa_agnostic_synthetic_fuzz_examples.png",
+    "synthetic_fuzz_figure_exists": true,
+    "synthetic_fuzz_seeds": [
+      20260705,
+      20260706,
+      20260707,
+      20260708
+    ],
+    "synthetic_fuzz_summary": {
+      "by_family": {
+        "blank_negative": {
+          "cases": 40,
+          "failures": 0,
+          "passes": 40
+        },
+        "elongated_round_pair": {
+          "cases": 40,
+          "failures": 0,
+          "passes": 40
+        },
+        "line_structure": {
+          "cases": 40,
+          "failures": 0,
+          "passes": 40
+        },
+        "round_pair": {
+          "cases": 40,
+          "failures": 0,
+          "passes": 40
+        },
+        "single_circle_negative": {
+          "cases": 40,
+          "failures": 0,
+          "passes": 40
+        },
+        "texture_negative": {
+          "cases": 40,
+          "failures": 0,
+          "passes": 40
+        }
+      },
+      "by_seed": {
+        "20260705": {
+          "cases": 60,
+          "failures": 0,
+          "passes": 60
+        },
+        "20260706": {
+          "cases": 60,
+          "failures": 0,
+          "passes": 60
+        },
+        "20260707": {
+          "cases": 60,
+          "failures": 0,
+          "passes": 60
+        },
+        "20260708": {
+          "cases": 60,
+          "failures": 0,
+          "passes": 60
+        }
+      },
+      "case_count": 240,
+      "failure_count": 0,
+      "line_structure": {
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "tp": 40
+      },
+      "pass_count": 240,
+      "primary_scope_accuracy": 1.0,
+      "round_pair": {
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "tp": 80
+      }
+    },
+    "visual_bridge_robustness_table_path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_visual_bridge_robustness_table.json",
+    "visual_bridge_robustness_table_exists": true,
+    "visual_bridge_robustness_table_tex": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\sppa_visual_bridge_robustness_table.tex",
+    "visual_bridge_robustness_table_tex_exists": true,
+    "visual_bridge_robustness_table_status": "passed",
+    "visual_bridge_robustness_table_rows": 11,
+    "visual_bridge_robustness_table_failures": [],
+    "expected_rows_checked": 4,
+    "rows_checked": 4,
+    "row_scopes": [
+      {
+        "case_id": "biker",
+        "scope": "round_part_pair_candidate",
+        "grade": "experimental_image_part_candidate",
+        "round_pairs": 3,
+        "coherent_lines": false
+      },
+      {
+        "case_id": "tower",
+        "scope": "multi_line_structure_candidate",
+        "grade": "experimental_image_part_candidate",
+        "round_pairs": 0,
+        "coherent_lines": true
+      },
+      {
+        "case_id": "tractor",
+        "scope": "round_part_pair_candidate",
+        "grade": "experimental_image_part_candidate",
+        "round_pairs": 3,
+        "coherent_lines": false
+      },
+      {
+        "case_id": "tractor_trailer",
+        "scope": "multi_line_structure_candidate",
+        "grade": "experimental_image_part_candidate",
+        "round_pairs": 0,
+        "coherent_lines": false
+      }
+    ],
+    "label_invariance_rows": [
+      {
+        "case_id": "biker",
+        "geometry_changed_after_label_mutation": false,
+        "baseline_hash": "4f999acf1df2",
+        "mutated_hash": "4f999acf1df2",
+        "status": "pass"
+      },
+      {
+        "case_id": "tower",
+        "geometry_changed_after_label_mutation": false,
+        "baseline_hash": "a63ae890c6bd",
+        "mutated_hash": "a63ae890c6bd",
+        "status": "pass"
+      },
+      {
+        "case_id": "tractor",
+        "geometry_changed_after_label_mutation": false,
+        "baseline_hash": "f70fb82a39ce",
+        "mutated_hash": "f70fb82a39ce",
+        "status": "pass"
+      },
+      {
+        "case_id": "tractor_trailer",
+        "geometry_changed_after_label_mutation": false,
+        "baseline_hash": "66aa7766cc59",
+        "mutated_hash": "66aa7766cc59",
+        "status": "pass"
+      }
+    ],
+    "identity_invariance_rows": [
+      {
+        "original_case_id": "biker",
+        "mutated_case_id": "unseen_object_crop_000",
+        "geometry_changed_after_identity_mutation": false,
+        "baseline_hash": "490dcf3be26d",
+        "mutated_hash": "490dcf3be26d",
+        "status": "pass"
+      },
+      {
+        "original_case_id": "tower",
+        "mutated_case_id": "unseen_object_crop_001",
+        "geometry_changed_after_identity_mutation": false,
+        "baseline_hash": "fe418fda12df",
+        "mutated_hash": "fe418fda12df",
+        "status": "pass"
+      },
+      {
+        "original_case_id": "tractor",
+        "mutated_case_id": "unseen_object_crop_002",
+        "geometry_changed_after_identity_mutation": false,
+        "baseline_hash": "40067244b1e2",
+        "mutated_hash": "40067244b1e2",
+        "status": "pass"
+      },
+      {
+        "original_case_id": "tractor_trailer",
+        "mutated_case_id": "unseen_object_crop_003",
+        "geometry_changed_after_identity_mutation": false,
+        "baseline_hash": "c96269de9b5f",
+        "mutated_hash": "c96269de9b5f",
+        "status": "pass"
+      }
+    ],
+    "path_invariance_rows": [
+      {
+        "case_id": "biker",
+        "mutated_image": "experiments/sppa_agnostic_shape_fitting/20260704_path_invariance/neutral_inputs/object_crop_000.png",
+        "geometry_changed_after_path_mutation": false,
+        "baseline_hash": "4f999acf1df2",
+        "mutated_hash": "4f999acf1df2",
+        "status": "pass"
+      },
+      {
+        "case_id": "tower",
+        "mutated_image": "experiments/sppa_agnostic_shape_fitting/20260704_path_invariance/neutral_inputs/object_crop_001.png",
+        "geometry_changed_after_path_mutation": false,
+        "baseline_hash": "a63ae890c6bd",
+        "mutated_hash": "a63ae890c6bd",
+        "status": "pass"
+      },
+      {
+        "case_id": "tractor",
+        "mutated_image": "experiments/sppa_agnostic_shape_fitting/20260704_path_invariance/neutral_inputs/object_crop_002.png",
+        "geometry_changed_after_path_mutation": false,
+        "baseline_hash": "f70fb82a39ce",
+        "mutated_hash": "f70fb82a39ce",
+        "status": "pass"
+      },
+      {
+        "case_id": "tractor_trailer",
+        "mutated_image": "experiments/sppa_agnostic_shape_fitting/20260704_path_invariance/neutral_inputs/object_crop_003.png",
+        "geometry_changed_after_path_mutation": false,
+        "baseline_hash": "66aa7766cc59",
+        "mutated_hash": "66aa7766cc59",
+        "status": "pass"
+      }
+    ],
+    "detection_representation_invariance_rows": [
+      {
+        "case_id": "biker",
+        "variants": [
+          {
+            "mutation": "reversed_used_detections",
+            "geometry_changed": false,
+            "baseline_hash": "4f999acf1df2",
+            "mutated_hash": "4f999acf1df2",
+            "status": "pass"
+          },
+          {
+            "mutation": "duplicated_used_detections",
+            "geometry_changed": false,
+            "baseline_hash": "4f999acf1df2",
+            "mutated_hash": "4f999acf1df2",
+            "status": "pass"
+          },
+          {
+            "mutation": "removed_redundant_native_mask",
+            "geometry_changed": false,
+            "baseline_hash": "4f999acf1df2",
+            "mutated_hash": "4f999acf1df2",
+            "status": "pass"
+          }
+        ],
+        "status": "pass"
+      },
+      {
+        "case_id": "tower",
+        "variants": [
+          {
+            "mutation": "reversed_used_detections",
+            "geometry_changed": false,
+            "baseline_hash": "a63ae890c6bd",
+            "mutated_hash": "a63ae890c6bd",
+            "status": "pass"
+          },
+          {
+            "mutation": "duplicated_used_detections",
+            "geometry_changed": false,
+            "baseline_hash": "a63ae890c6bd",
+            "mutated_hash": "a63ae890c6bd",
+            "status": "pass"
+          },
+          {
+            "mutation": "removed_redundant_native_mask",
+            "geometry_changed": false,
+            "baseline_hash": "a63ae890c6bd",
+            "mutated_hash": "a63ae890c6bd",
+            "status": "pass"
+          }
+        ],
+        "status": "pass"
+      },
+      {
+        "case_id": "tractor",
+        "variants": [
+          {
+            "mutation": "reversed_used_detections",
+            "geometry_changed": false,
+            "baseline_hash": "f70fb82a39ce",
+            "mutated_hash": "f70fb82a39ce",
+            "status": "pass"
+          },
+          {
+            "mutation": "duplicated_used_detections",
+            "geometry_changed": false,
+            "baseline_hash": "f70fb82a39ce",
+            "mutated_hash": "f70fb82a39ce",
+            "status": "pass"
+          },
+          {
+            "mutation": "removed_redundant_native_mask",
+            "geometry_changed": false,
+            "baseline_hash": "f70fb82a39ce",
+            "mutated_hash": "f70fb82a39ce",
+            "status": "pass"
+          }
+        ],
+        "status": "pass"
+      },
+      {
+        "case_id": "tractor_trailer",
+        "variants": [
+          {
+            "mutation": "reversed_used_detections",
+            "geometry_changed": false,
+            "baseline_hash": "66aa7766cc59",
+            "mutated_hash": "66aa7766cc59",
+            "status": "pass"
+          },
+          {
+            "mutation": "duplicated_used_detections",
+            "geometry_changed": false,
+            "baseline_hash": "66aa7766cc59",
+            "mutated_hash": "66aa7766cc59",
+            "status": "pass"
+          },
+          {
+            "mutation": "removed_redundant_native_mask",
+            "geometry_changed": false,
+            "baseline_hash": "66aa7766cc59",
+            "mutated_hash": "66aa7766cc59",
+            "status": "pass"
+          }
+        ],
+        "status": "pass"
+      }
+    ],
+    "side_channel_invariance_rows": [
+      {
+        "original_case_id": "biker",
+        "mutated_case_id": "anonymous_detected_object_000",
+        "mutated_image": "experiments/sppa_agnostic_shape_fitting/20260704_side_channel_invariance/neutral_inputs/object_crop_000.png",
+        "geometry_changed_after_side_channel_mutation": false,
+        "baseline_hash": "490dcf3be26d",
+        "mutated_hash": "490dcf3be26d",
+        "status": "pass"
+      },
+      {
+        "original_case_id": "tower",
+        "mutated_case_id": "anonymous_detected_object_001",
+        "mutated_image": "experiments/sppa_agnostic_shape_fitting/20260704_side_channel_invariance/neutral_inputs/object_crop_001.png",
+        "geometry_changed_after_side_channel_mutation": false,
+        "baseline_hash": "fe418fda12df",
+        "mutated_hash": "fe418fda12df",
+        "status": "pass"
+      },
+      {
+        "original_case_id": "tractor",
+        "mutated_case_id": "anonymous_detected_object_002",
+        "mutated_image": "experiments/sppa_agnostic_shape_fitting/20260704_side_channel_invariance/neutral_inputs/object_crop_002.png",
+        "geometry_changed_after_side_channel_mutation": false,
+        "baseline_hash": "40067244b1e2",
+        "mutated_hash": "40067244b1e2",
+        "status": "pass"
+      },
+      {
+        "original_case_id": "tractor_trailer",
+        "mutated_case_id": "anonymous_detected_object_003",
+        "mutated_image": "experiments/sppa_agnostic_shape_fitting/20260704_side_channel_invariance/neutral_inputs/object_crop_003.png",
+        "geometry_changed_after_side_channel_mutation": false,
+        "baseline_hash": "c96269de9b5f",
+        "mutated_hash": "c96269de9b5f",
+        "status": "pass"
+      }
+    ],
+    "mirror_equivariance_rows": [
+      {
+        "case_id": "biker",
+        "status": "pass",
+        "baseline_scope": "round_part_pair_candidate",
+        "mirrored_scope": "round_part_pair_candidate",
+        "baseline_strong_round_pairs": 3,
+        "mirrored_strong_round_pairs": 3,
+        "baseline_round_pairs": 3,
+        "mirrored_round_pairs": 3,
+        "baseline_lines": 16,
+        "mirrored_lines": 16,
+        "pca_angle_delta_deg": 0.033,
+        "audit_warning_count": 12
+      },
+      {
+        "case_id": "tower",
+        "status": "pass",
+        "baseline_scope": "multi_line_structure_candidate",
+        "mirrored_scope": "multi_line_structure_candidate",
+        "baseline_strong_round_pairs": 0,
+        "mirrored_strong_round_pairs": 0,
+        "baseline_round_pairs": 0,
+        "mirrored_round_pairs": 1,
+        "baseline_lines": 16,
+        "mirrored_lines": 16,
+        "pca_angle_delta_deg": 0.008,
+        "audit_warning_count": 2
+      },
+      {
+        "case_id": "tractor",
+        "status": "pass",
+        "baseline_scope": "round_part_pair_candidate",
+        "mirrored_scope": "round_part_pair_candidate",
+        "baseline_strong_round_pairs": 3,
+        "mirrored_strong_round_pairs": 3,
+        "baseline_round_pairs": 3,
+        "mirrored_round_pairs": 3,
+        "baseline_lines": 16,
+        "mirrored_lines": 16,
+        "pca_angle_delta_deg": 0.001,
+        "audit_warning_count": 8
+      },
+      {
+        "case_id": "tractor_trailer",
+        "status": "pass",
+        "baseline_scope": "multi_line_structure_candidate",
+        "mirrored_scope": "multi_line_structure_candidate",
+        "baseline_strong_round_pairs": 0,
+        "mirrored_strong_round_pairs": 0,
+        "baseline_round_pairs": 0,
+        "mirrored_round_pairs": 1,
+        "baseline_lines": 16,
+        "mirrored_lines": 16,
+        "pca_angle_delta_deg": 0.041,
+        "audit_warning_count": 3
+      }
+    ],
+    "photometric_stability_rows": [
+      {
+        "case_id": "biker",
+        "variants": [
+          {
+            "variant": "dark_low_contrast",
+            "status": "pass",
+            "baseline_family": "round_pair",
+            "variant_family": "round_pair",
+            "baseline_scope": "round_part_pair_candidate",
+            "variant_scope": "round_part_pair_candidate",
+            "baseline_strong_round_pairs": 3,
+            "variant_strong_round_pairs": 3,
+            "baseline_lines": 16,
+            "variant_lines": 16,
+            "audit_warning_count": 0
+          },
+          {
+            "variant": "bright_high_contrast",
+            "status": "pass",
+            "baseline_family": "round_pair",
+            "variant_family": "round_pair",
+            "baseline_scope": "round_part_pair_candidate",
+            "variant_scope": "weak_round_pair_candidate",
+            "baseline_strong_round_pairs": 3,
+            "variant_strong_round_pairs": 0,
+            "baseline_lines": 16,
+            "variant_lines": 16,
+            "audit_warning_count": 3
+          },
+          {
+            "variant": "soft_blur",
+            "status": "pass",
+            "baseline_family": "round_pair",
+            "variant_family": "round_pair",
+            "baseline_scope": "round_part_pair_candidate",
+            "variant_scope": "round_part_pair_candidate",
+            "baseline_strong_round_pairs": 3,
+            "variant_strong_round_pairs": 3,
+            "baseline_lines": 16,
+            "variant_lines": 16,
+            "audit_warning_count": 0
+          },
+          {
+            "variant": "mild_sensor_noise",
+            "status": "pass",
+            "baseline_family": "round_pair",
+            "variant_family": "round_pair",
+            "baseline_scope": "round_part_pair_candidate",
+            "variant_scope": "round_part_pair_candidate",
+            "baseline_strong_round_pairs": 3,
+            "variant_strong_round_pairs": 3,
+            "baseline_lines": 16,
+            "variant_lines": 16,
+            "audit_warning_count": 1
+          }
+        ]
+      },
+      {
+        "case_id": "tower",
+        "variants": [
+          {
+            "variant": "dark_low_contrast",
+            "status": "pass",
+            "baseline_family": "linear_structure",
+            "variant_family": "linear_structure",
+            "baseline_scope": "multi_line_structure_candidate",
+            "variant_scope": "multi_line_structure_candidate",
+            "baseline_strong_round_pairs": 0,
+            "variant_strong_round_pairs": 0,
+            "baseline_lines": 16,
+            "variant_lines": 16,
+            "audit_warning_count": 1
+          },
+          {
+            "variant": "bright_high_contrast",
+            "status": "pass",
+            "baseline_family": "linear_structure",
+            "variant_family": "linear_structure",
+            "baseline_scope": "multi_line_structure_candidate",
+            "variant_scope": "multi_line_structure_candidate",
+            "baseline_strong_round_pairs": 0,
+            "variant_strong_round_pairs": 0,
+            "baseline_lines": 16,
+            "variant_lines": 16,
+            "audit_warning_count": 0
+          },
+          {
+            "variant": "soft_blur",
+            "status": "pass",
+            "baseline_family": "linear_structure",
+            "variant_family": "linear_structure",
+            "baseline_scope": "multi_line_structure_candidate",
+            "variant_scope": "multi_line_structure_candidate",
+            "baseline_strong_round_pairs": 0,
+            "variant_strong_round_pairs": 0,
+            "baseline_lines": 16,
+            "variant_lines": 16,
+            "audit_warning_count": 1
+          },
+          {
+            "variant": "mild_sensor_noise",
+            "status": "pass",
+            "baseline_family": "linear_structure",
+            "variant_family": "linear_structure",
+            "baseline_scope": "multi_line_structure_candidate",
+            "variant_scope": "multi_line_structure_candidate",
+            "baseline_strong_round_pairs": 0,
+            "variant_strong_round_pairs": 0,
+            "baseline_lines": 16,
+            "variant_lines": 16,
+            "audit_warning_count": 0
+          }
+        ]
+      },
+      {
+        "case_id": "tractor",
+        "variants": [
+          {
+            "variant": "dark_low_contrast",
+            "status": "pass",
+            "baseline_family": "round_pair",
+            "variant_family": "round_pair",
+            "baseline_scope": "round_part_pair_candidate",
+            "variant_scope": "round_part_pair_candidate",
+            "baseline_strong_round_pairs": 3,
+            "variant_strong_round_pairs": 2,
+            "baseline_lines": 16,
+            "variant_lines": 16,
+            "audit_warning_count": 2
+          },
+          {
+            "variant": "bright_high_contrast",
+            "status": "pass",
+            "baseline_family": "round_pair",
+            "variant_family": "round_pair",
+            "baseline_scope": "round_part_pair_candidate",
+            "variant_scope": "round_part_pair_candidate",
+            "baseline_strong_round_pairs": 3,
+            "variant_strong_round_pairs": 2,
+            "baseline_lines": 16,
+            "variant_lines": 16,
+            "audit_warning_count": 2
+          },
+          {
+            "variant": "soft_blur",
+            "status": "pass",
+            "baseline_family": "round_pair",
+            "variant_family": "round_pair",
+            "baseline_scope": "round_part_pair_candidate",
+            "variant_scope": "round_part_pair_candidate",
+            "baseline_strong_round_pairs": 3,
+            "variant_strong_round_pairs": 3,
+            "baseline_lines": 16,
+            "variant_lines": 16,
+            "audit_warning_count": 0
+          },
+          {
+            "variant": "mild_sensor_noise",
+            "status": "pass",
+            "baseline_family": "round_pair",
+            "variant_family": "round_pair",
+            "baseline_scope": "round_part_pair_candidate",
+            "variant_scope": "round_part_pair_candidate",
+            "baseline_strong_round_pairs": 3,
+            "variant_strong_round_pairs": 3,
+            "baseline_lines": 16,
+            "variant_lines": 16,
+            "audit_warning_count": 0
+          }
+        ]
+      },
+      {
+        "case_id": "tractor_trailer",
+        "variants": [
+          {
+            "variant": "dark_low_contrast",
+            "status": "pass",
+            "baseline_family": "linear_structure",
+            "variant_family": "linear_structure",
+            "baseline_scope": "multi_line_structure_candidate",
+            "variant_scope": "multi_line_structure_candidate",
+            "baseline_strong_round_pairs": 0,
+            "variant_strong_round_pairs": 0,
+            "baseline_lines": 16,
+            "variant_lines": 16,
+            "audit_warning_count": 1
+          },
+          {
+            "variant": "bright_high_contrast",
+            "status": "pass",
+            "baseline_family": "linear_structure",
+            "variant_family": "linear_structure",
+            "baseline_scope": "multi_line_structure_candidate",
+            "variant_scope": "multi_line_structure_candidate",
+            "baseline_strong_round_pairs": 0,
+            "variant_strong_round_pairs": 0,
+            "baseline_lines": 16,
+            "variant_lines": 16,
+            "audit_warning_count": 1
+          },
+          {
+            "variant": "soft_blur",
+            "status": "pass",
+            "baseline_family": "linear_structure",
+            "variant_family": "linear_structure",
+            "baseline_scope": "multi_line_structure_candidate",
+            "variant_scope": "multi_line_structure_candidate",
+            "baseline_strong_round_pairs": 0,
+            "variant_strong_round_pairs": 0,
+            "baseline_lines": 16,
+            "variant_lines": 16,
+            "audit_warning_count": 2
+          },
+          {
+            "variant": "mild_sensor_noise",
+            "status": "pass",
+            "baseline_family": "linear_structure",
+            "variant_family": "linear_structure",
+            "baseline_scope": "multi_line_structure_candidate",
+            "variant_scope": "multi_line_structure_candidate",
+            "baseline_strong_round_pairs": 0,
+            "variant_strong_round_pairs": 0,
+            "baseline_lines": 16,
+            "variant_lines": 16,
+            "audit_warning_count": 1
+          }
+        ]
+      }
+    ],
+    "synthetic_control_rows": [
+      {
+        "case_id": "synthetic_round_pair",
+        "expected": "round_part_pair_candidate",
+        "scope": "round_part_pair_candidate",
+        "strong_round_pairs": 1,
+        "line_structure": true,
+        "status": "pass"
+      },
+      {
+        "case_id": "synthetic_elongated_round_pair",
+        "expected": "round_part_pair_candidate",
+        "scope": "round_part_pair_candidate",
+        "strong_round_pairs": 3,
+        "line_structure": true,
+        "status": "pass"
+      },
+      {
+        "case_id": "synthetic_line_structure",
+        "expected": "multi_line_structure_candidate",
+        "scope": "multi_line_structure_candidate",
+        "strong_round_pairs": 0,
+        "line_structure": true,
+        "status": "pass"
+      },
+      {
+        "case_id": "synthetic_blank_mask_negative",
+        "expected": "not round_part_pair_candidate,multi_line_structure_candidate",
+        "scope": "mask_envelope_only",
+        "strong_round_pairs": 0,
+        "line_structure": false,
+        "status": "pass"
+      },
+      {
+        "case_id": "synthetic_texture_negative",
+        "expected": "not round_part_pair_candidate",
+        "scope": "mask_envelope_only",
+        "strong_round_pairs": 0,
+        "line_structure": false,
+        "status": "pass"
+      }
+    ],
+    "claim_boundary": "Experimental agnostic image-space shape-fitting probe. It uses real pixels, detector bbox, and unlabeled mask geometry only; detector labels and SPPA tags are retained only for audit. The same fitter is applied to every detector crop and reports visible generic primitive cues rather than class-specific part templates. It tests whether generic visual primitive cues improve over mask-only fitting before any SPPA production integration."
+  },
+  "truck_figure_decision": {
+    "path": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\TRUCK_FIGURE_DECISION.json",
+    "exists": true,
+    "pass": true,
+    "selected_main_figure": "paper_semantic_proxy_3d/figures/sppa_language_to_parts_to_3d_v17.png",
+    "supporting_artifact_figure": "paper_semantic_proxy_3d/figures/sppa_truck_role_adaptation.png",
+    "should_fuse_figures": false,
+    "recommendation": "Use the language-to-parts-to-3D figure in the main paper; keep the standalone truck role-preservation graphic as a supporting artifact.",
+    "claim_boundary": "This supports role-specific parametric adaptation under synthetic dimensions. It is not proof that SPPA recovers truck morphology from UAV imagery and not an image-to-3D SOTA comparison."
+  },
+  "submission_shape": "main paper plus short submission supplement; long technical supplement retained as artifact log",
+  "main_runtime_contract_submission_ready": false,
+  "full_experimental_paper_ready": false,
+  "blockers": [
+    "amended SPPA-MVFit protocol lacks the mandatory valid three-reviewer external audit pass; held-out seed derivation and test execution remain prohibited",
+    "held-out confirmatory SPPA-MVFit raw metrics are absent; development-only metrics cannot support a submission claim",
+    "full experimental-paper claim is not supported because one or more four-priority gates are partial or missing"
+  ],
+  "warnings": [
+    "full visual image-to-3D leaderboard is not claimed; the historical task-fit ranking is circular and excluded",
+    "bounded dual-input claim is ready, but a full visual dual-input leaderboard remains unclaimed",
+    "synthetic detection-reference manifest is bbox-only; no readable crops are available for the visual comparison row",
+    "real input probes are image-to-3D crop material and detector stress tests, but not ground truth or reference meshes",
+    "real-image metric replay uses real images and real YOLOE evidence, but telemetry is declared replay input rather than measured flight data",
+    "agnostic mirror-equivariance has secondary audit warnings: 25",
+    "agnostic photometric-stability has secondary audit warnings: 15"
+  ]
+}

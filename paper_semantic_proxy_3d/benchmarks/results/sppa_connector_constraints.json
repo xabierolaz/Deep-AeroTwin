@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "Connector-constraint regression. This proves that SPPA descriptors contain explicit lightweight connectors for semantic parts that should touch, but it does not claim photorealistic reconstruction.",
+  "failed": 0,
+  "rows": [
+    {
+      "case_id": "biker",
+      "connector_count": 16,
+      "connector_length_max": 1.331724,
+      "connector_length_min": 0.15519,
+      "connector_roles": [
+        "bike_frame",
+        "rider_clothing",
+        "rider_skin"
+      ],
+      "descriptor": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified\\outputs\\sppa\\biker\\biker.descriptor.json",
+      "failures": [],
+      "model": "sppa",
+      "status": "passed"
+    },
+    {
+      "case_id": "tower",
+      "connector_count": 19,
+      "connector_length_max": 24.680068,
+      "connector_length_min": 2.772774,
+      "connector_roles": [
+        "vertical_structure_metal"
+      ],
+      "descriptor": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified\\outputs\\sppa\\tower\\tower.descriptor.json",
+      "failures": [],
+      "model": "sppa",
+      "status": "passed"
+    },
+    {
+      "case_id": "tractor",
+      "connector_count": 6,
+      "connector_length_max": 3.43597,
+      "connector_length_min": 2.15068,
+      "connector_roles": [
+        "vehicle_metal_or_hub"
+      ],
+      "descriptor": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified\\outputs\\sppa\\tractor\\tractor.descriptor.json",
+      "failures": [],
+      "model": "sppa",
+      "status": "passed"
+    },
+    {
+      "case_id": "tractor_trailer",
+      "connector_count": 6,
+      "connector_length_max": 3.501938,
+      "connector_length_min": 0.819177,
+      "connector_roles": [
+        "vehicle_metal_or_hub"
+      ],
+      "descriptor": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified\\outputs\\sppa\\tractor_trailer\\tractor_trailer.descriptor.json",
+      "failures": [],
+      "model": "sppa",
+      "status": "passed"
+    }
+  ],
+  "run_dir": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified",
+  "status": "passed"
+}

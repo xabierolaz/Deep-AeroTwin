@@ -3,7 +3,12 @@
   "required_count": 51,
   "missing": [],
   "untracked": [],
-  "modified": [],
-  "pass": true,
+  "modified": [
+    " M paper_semantic_proxy_3d/SPPA_CLAIM_EVIDENCE_MATRIX_20260715.md",
+    "MM paper_semantic_proxy_3d/semantic_proxy_3d_paper.tex",
+    "MM paper_semantic_proxy_3d/semantic_proxy_3d_references.bib",
+    "M  paper_semantic_proxy_3d/semantic_proxy_3d_submission_supplement.tex"
+  ],
+  "pass": false,
   "boundary": "Read-only; no clone, reset, staging, or worktree mutation."
 }

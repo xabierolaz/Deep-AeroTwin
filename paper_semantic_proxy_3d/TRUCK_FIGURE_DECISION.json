@@ -1,0 +1,50 @@
+{
+  "decision": {
+    "selected_main_figure": "paper_semantic_proxy_3d/figures/sppa_language_to_parts_to_3d_v17.png",
+    "supporting_artifact_figure": "paper_semantic_proxy_3d/figures/sppa_truck_role_adaptation.png",
+    "should_fuse_figures": false,
+    "recommendation": "Use the language-to-parts-to-3D figure in the main paper; keep the standalone truck role-preservation graphic as a supporting artifact.",
+    "rationale": [
+      "The selected main figure explains the offline-to-runtime mechanism and already includes short/long truck contrast.",
+      "The standalone truck figure is clearer as a diagnostic, but it repeats the same visual claim and should not consume main-paper space.",
+      "The quantitative evidence is the part-invariance check, not the standalone graphic itself."
+    ],
+    "claim_boundary": "This supports role-specific parametric adaptation under synthetic dimensions. It is not proof that SPPA recovers truck morphology from UAV imagery and not an image-to-3D SOTA comparison."
+  },
+  "checks": {
+    "main_tex_exists": true,
+    "main_figure_exists": true,
+    "supporting_figure_exists": true,
+    "main_figure_included_once": true,
+    "supporting_figure_not_included_in_main": true,
+    "main_text_mentions_artifact_log_for_component_views": true,
+    "invariance_metrics_pass": true,
+    "rerun_invariance_metrics_pass": true,
+    "invariance_csv_exists": true
+  },
+  "metrics": {
+    "path": "experiments/sppa_scale_variants/20260702_parametric_parts/parametric_part_invariance_check.json",
+    "exists": true,
+    "status": "ok",
+    "failures": [],
+    "cab_scale_max_abs_delta": 0.0,
+    "tire_scale_max_abs_delta": 0.0,
+    "cargo_length_delta_m": 2.925,
+    "tire_count_delta": 2,
+    "short_tire_count": 6,
+    "long_tire_count": 8
+  },
+  "rerun_metrics": {
+    "path": "experiments/sppa_scale_variants/20260703_parametric_part_invariance_after_scheduler_policy.json",
+    "exists": true,
+    "status": "ok",
+    "failures": [],
+    "cab_scale_max_abs_delta": 0.0,
+    "tire_scale_max_abs_delta": 0.0,
+    "cargo_length_delta_m": 2.925,
+    "tire_count_delta": 2,
+    "short_tire_count": 6,
+    "long_tire_count": 8
+  },
+  "pass": true
+}

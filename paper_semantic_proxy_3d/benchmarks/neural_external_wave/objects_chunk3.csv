@@ -1,0 +1,31 @@
+label,image,prompt
+test-implicit_ood-quadruped-000__oblique,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-quadruped-000__oblique.png,quadruped
+test-implicit_ood-quadruped-000__mask,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-quadruped-000__mask.png,quadruped
+test-implicit_ood-quadruped-001__oblique,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-quadruped-001__oblique.png,quadruped
+test-implicit_ood-quadruped-001__mask,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-quadruped-001__mask.png,quadruped
+test-implicit_ood-quadruped-002__oblique,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-quadruped-002__oblique.png,quadruped
+test-implicit_ood-quadruped-002__mask,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-quadruped-002__mask.png,quadruped
+test-implicit_ood-quadruped-003__oblique,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-quadruped-003__oblique.png,quadruped
+test-implicit_ood-quadruped-003__mask,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-quadruped-003__mask.png,quadruped
+test-implicit_ood-quadruped-004__oblique,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-quadruped-004__oblique.png,quadruped
+test-implicit_ood-quadruped-004__mask,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-quadruped-004__mask.png,quadruped
+test-csg_id-rider_cycle-000__oblique,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-csg_id-rider_cycle-000__oblique.png,rider cycle
+test-csg_id-rider_cycle-000__mask,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-csg_id-rider_cycle-000__mask.png,rider cycle
+test-csg_id-rider_cycle-001__oblique,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-csg_id-rider_cycle-001__oblique.png,rider cycle
+test-csg_id-rider_cycle-001__mask,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-csg_id-rider_cycle-001__mask.png,rider cycle
+test-csg_id-rider_cycle-002__oblique,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-csg_id-rider_cycle-002__oblique.png,rider cycle
+test-csg_id-rider_cycle-002__mask,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-csg_id-rider_cycle-002__mask.png,rider cycle
+test-csg_id-rider_cycle-003__oblique,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-csg_id-rider_cycle-003__oblique.png,rider cycle
+test-csg_id-rider_cycle-003__mask,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-csg_id-rider_cycle-003__mask.png,rider cycle
+test-csg_id-rider_cycle-004__oblique,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-csg_id-rider_cycle-004__oblique.png,rider cycle
+test-csg_id-rider_cycle-004__mask,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-csg_id-rider_cycle-004__mask.png,rider cycle
+test-implicit_ood-rider_cycle-000__oblique,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-rider_cycle-000__oblique.png,rider cycle
+test-implicit_ood-rider_cycle-000__mask,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-rider_cycle-000__mask.png,rider cycle
+test-implicit_ood-rider_cycle-001__oblique,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-rider_cycle-001__oblique.png,rider cycle
+test-implicit_ood-rider_cycle-001__mask,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-rider_cycle-001__mask.png,rider cycle
+test-implicit_ood-rider_cycle-002__oblique,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-rider_cycle-002__oblique.png,rider cycle
+test-implicit_ood-rider_cycle-002__mask,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-rider_cycle-002__mask.png,rider cycle
+test-implicit_ood-rider_cycle-003__oblique,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-rider_cycle-003__oblique.png,rider cycle
+test-implicit_ood-rider_cycle-003__mask,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-rider_cycle-003__mask.png,rider cycle
+test-implicit_ood-rider_cycle-004__oblique,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-rider_cycle-004__oblique.png,rider cycle
+test-implicit_ood-rider_cycle-004__mask,D:\AYTE DOCTOR\SPPA_semantic_proxy_3d\benchmarks\neural_external_wave\inputs\test-implicit_ood-rider_cycle-004__mask.png,rider cycle

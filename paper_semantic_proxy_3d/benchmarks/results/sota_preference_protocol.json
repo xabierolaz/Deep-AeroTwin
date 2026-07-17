@@ -1,0 +1,35 @@
+{
+  "schema": "SPPA-PREFERENCE-PROTOCOL-0.1",
+  "created_utc": "2026-07-04T10:18:51Z",
+  "status": "protocol_only_no_human_scores_yet",
+  "minimum_reviewers": 5,
+  "score_range": "1-5 Likert per criterion plus forced-choice task-fit preference",
+  "blind_fields": [
+    "method_name",
+    "runtime_cost",
+    "input_mode"
+  ],
+  "criteria": [
+    {
+      "key": "semantic_readability",
+      "question": "Can a reviewer identify the intended family without seeing the tag?"
+    },
+    {
+      "key": "task_fit",
+      "question": "Would the output be useful as a UAV obstacle/display proxy for a live track?"
+    },
+    {
+      "key": "scale_orientation_plausibility",
+      "question": "Are dimensions and dominant orientation plausible for the available evidence?"
+    },
+    {
+      "key": "control_cost",
+      "question": "Is the output lightweight enough for repeated updates in the target runtime?"
+    },
+    {
+      "key": "failure_transparency",
+      "question": "Does the method expose uncertainty/fallback instead of pretending to know unsupported detail?"
+    }
+  ],
+  "claim_boundary": "This protocol enables a future human/task preference study. It is not itself a completed human evaluation."
+}

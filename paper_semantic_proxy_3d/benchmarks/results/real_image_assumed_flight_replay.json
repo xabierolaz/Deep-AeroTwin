@@ -1,0 +1,3236 @@
+{
+  "annotations_json": "experiments/sppa_detection_reference/20260703_real_input_annotations/real_input_2d_annotations.json",
+  "case_count": 4,
+  "claim_boundary": "Real user images and real YOLOE detector outputs are used. Flight pose, AGL, and camera mount geometry plus family height priors are declared replay assumptions, not measured telemetry. Metric SPPA pose/scale is therefore scenario-relative and must not be described as real measured flight localization.",
+  "claim_posture": "real_image_detector_evidence_with_declared_assumed_flight_replay",
+  "created_utc": "2026-07-03T00:00:00Z",
+  "detector_is_real": true,
+  "detector_json": "experiments/sppa_detection_reference/20260703_yoloe26s_universal_open_vocab_cpu/sppa_open_vocab_detector_probe.json",
+  "failed_count": 0,
+  "image_is_real": true,
+  "metric_ground_truth": false,
+  "passed_count": 4,
+  "rows": [
+    {
+      "bbox_only_footprint_m": {
+        "bbox_px": {
+          "x1": 387.03802490234375,
+          "x2": 452.4251708984375,
+          "y1": 332.0623779296875,
+          "y2": 415.337158203125
+        },
+        "center_east_m": -1.654024781487962,
+        "center_north_m": -3.286138782531174,
+        "length_m": 2.9957240530754294,
+        "orientation_deg_axial": 35.0,
+        "orientation_modulo": "pi",
+        "orientation_rad_axial": 0.6108652381980153,
+        "point_count": 8,
+        "points_ned_m": [
+          {
+            "distance_m": 2.2380055240328045,
+            "east_m": -1.7583054393911248,
+            "north_m": -1.3845687803099318
+          },
+          {
+            "distance_m": 2.7389452883395498,
+            "east_m": 0.16853260306931694,
+            "north_m": -2.733755302549974
+          },
+          {
+            "distance_m": 5.414243186631259,
+            "east_m": -1.5497441235847997,
+            "north_m": -5.187708784752416
+          },
+          {
+            "distance_m": 5.1788875945580175,
+            "east_m": -3.4765821660452407,
+            "north_m": -3.8385222625123734
+          },
+          {
+            "distance_m": 2.207259099118778,
+            "east_m": -0.7948864181609038,
+            "north_m": -2.0591620414299525
+          },
+          {
+            "distance_m": 5.165675243577381,
+            "east_m": -2.5131631448150205,
+            "north_m": -4.513115523632395
+          },
+          {
+            "distance_m": 3.6974561621188253,
+            "east_m": -2.617443802718183,
+            "north_m": -2.6115455214111525
+          },
+          {
+            "distance_m": 4.020489353014947,
+            "east_m": -0.6906057602577412,
+            "north_m": -3.960732043651195
+          }
+        ],
+        "source": "bbox_ground_projected_quad",
+        "width_m": 2.352234918894575,
+        "yaw_ambiguous": true
+      },
+      "bbox_only_metric_dims_m": {
+        "height": 1.85,
+        "length": 2.9957240530754294,
+        "width": 2.352234918894575
+      },
+      "bbox_source": "detector_composite_union",
+      "bbox_xyxy": [
+        387.03802490234375,
+        332.0623779296875,
+        452.4251708984375,
+        415.337158203125
+      ],
+      "case_id": "biker",
+      "claim_boundary": "The image and YOLOE detector evidence are real local inputs. The flight pose, AGL, and camera geometry are declared replay parameters, not measured flight telemetry; therefore metric position/scale are scenario-relative and not ground truth.",
+      "claim_status": "specific_family_composed",
+      "conservative": false,
+      "declared_height_prior_m": 1.85,
+      "detector_confidence": 0.40011122822761536,
+      "detector_is_real": true,
+      "detector_label": "person + motorcycle",
+      "detector_mask_area_px": 2577.0,
+      "detector_model": "yoloe-26s-seg.pt",
+      "detector_runtime_archetype_id": "biker",
+      "detector_source": "yoloe26s_universal_prompt_probe",
+      "failures": [],
+      "flight_replay": {
+        "alt_agl_m": 14.0,
+        "camera_vfov_deg": 70.0,
+        "drone_pitch_deg": 0.0,
+        "drone_roll_deg": 0.0,
+        "drone_yaw_deg": 35.0,
+        "max_range_m": 250.0,
+        "mount_pitch_deg": -90.0,
+        "mount_roll_deg": 0.0,
+        "mount_yaw_deg": 0.0,
+        "telemetry_is_measured": false,
+        "telemetry_source": "declared_assumed_replay_not_measured"
+      },
+      "height_prior_source": "declared_family_replay_prior_not_measured",
+      "image": "experiments/sppa_detection_reference/20260703_user_cyclist/cyclist_road_input.png",
+      "image_is_real": true,
+      "image_source": "real_user_supplied_image",
+      "mask_path_used": "native_yoloe_detector_mask",
+      "metric_ground_truth": false,
+      "native_detector_mask": {
+        "area_px2": 3901.2000295780454,
+        "claim_boundary": "Native YOLOE/Ultralytics mask polygon from real image inference. It is detector evidence, not ground-truth segmentation.",
+        "component_count": 2,
+        "method": "ultralytics_result_masks_xy_composite_convex_hull",
+        "polygon": [
+          [
+            387.28125,
+            356.273438
+          ],
+          [
+            392.34375,
+            330.960938
+          ],
+          [
+            411.328125,
+            330.960938
+          ],
+          [
+            427.78125,
+            356.273438
+          ],
+          [
+            441.703125,
+            386.648438
+          ],
+          [
+            450.5625,
+            406.898438
+          ],
+          [
+            450.5625,
+            411.960938
+          ],
+          [
+            448.03125,
+            413.226562
+          ],
+          [
+            436.640625,
+            413.226562
+          ],
+          [
+            431.578125,
+            411.960938
+          ],
+          [
+            420.1875,
+            405.632812
+          ],
+          [
+            387.28125,
+            384.117188
+          ]
+        ],
+        "quality_score": 0.40011122822761536,
+        "source": "real_detector_mask_yoloe_native_polygon_not_ground_truth",
+        "status": "native_detector_mask_available"
+      },
+      "native_detector_mask_available": true,
+      "native_detector_mask_point_count": 12,
+      "normalization_rule": "composed_person_plus_two_wheel",
+      "publication_label": "real image + real YOLOE detector evidence + declared assumed-flight telemetry replay",
+      "reviewed_semantic_tag": "biker",
+      "runtime_archetype_id": "biker",
+      "semantic_text_source": "reviewed_semantic_tag_plus_detector_evidence",
+      "silhouette_proxy": {
+        "area_px2": 2624.0,
+        "area_ratio_to_expected": 1.018238,
+        "bbox_area_px2": 5445.100216,
+        "bbox_xyxy": {
+          "h": 83.2747802734375,
+          "w": 65.38714599609375,
+          "x1": 387.03802490234375,
+          "x2": 452.4251708984375,
+          "y1": 332.0623779296875,
+          "y2": 415.337158203125
+        },
+        "claim_boundary": "This is an image-derived silhouette proxy inside a detector/review bbox, not a ground-truth mask and not necessarily the native detector segmentation.",
+        "expected_mask_area_px": 2577.0,
+        "hull_area_px2": 3303.5,
+        "method": "contrast_expected_area",
+        "point_count": 7,
+        "polygon": [
+          [
+            399.0,
+            337.0
+          ],
+          [
+            407.0,
+            335.0
+          ],
+          [
+            452.0,
+            383.0
+          ],
+          [
+            452.0,
+            415.0
+          ],
+          [
+            430.0,
+            415.0
+          ],
+          [
+            387.0,
+            388.0
+          ],
+          [
+            387.0,
+            371.0
+          ]
+        ],
+        "quality_score": 0.908371,
+        "schema": "SPPA-SILHOUETTE-0.1",
+        "source": "image_derived_silhouette_proxy",
+        "status": "ok"
+      },
+      "sppa_descriptor_error": null,
+      "sppa_descriptor_has_mask_polygon": true,
+      "sppa_descriptor_id": "sppa-dc7399efddac1779",
+      "sppa_descriptor_mask_hash": "01dee6eac50b8f2f",
+      "sppa_descriptor_mask_point_count": 12,
+      "sppa_footprint_m": {
+        "center_east_m": -1.7476941842773235,
+        "center_north_m": -3.6734114563560216,
+        "length_m": 3.5855289222297833,
+        "orientation_deg_axial": 1.612407516790256,
+        "orientation_modulo": "pi",
+        "orientation_rad_axial": 0.02814182005189572,
+        "point_count": 12,
+        "points_ned_m": [
+          {
+            "distance_m": 3.0803342975655577,
+            "east_m": -2.250704672825902,
+            "north_m": -2.103042524648122
+          },
+          {
+            "distance_m": 2.1517910653108063,
+            "east_m": -1.579228639344031,
+            "north_m": -1.4615887566025592
+          },
+          {
+            "distance_m": 2.1153567774605913,
+            "east_m": -1.0197942825589799,
+            "north_m": -1.8533089103569522
+          },
+          {
+            "distance_m": 3.1231067372851267,
+            "east_m": -1.0572447116844597,
+            "north_m": -2.9387121859908283
+          },
+          {
+            "distance_m": 4.313424741408288,
+            "east_m": -1.2737450960491177,
+            "north_m": -4.121068602933465
+          },
+          {
+            "distance_m": 5.105120349152964,
+            "east_m": -1.4305105602207802,
+            "north_m": -4.900601321922903
+          },
+          {
+            "distance_m": 5.27792073192275,
+            "east_m": -1.534969267888618,
+            "north_m": -5.049783817065584
+          },
+          {
+            "distance_m": 5.293878386349639,
+            "east_m": -1.6356751717430986,
+            "north_m": -5.034850057549186
+          },
+          {
+            "distance_m": 5.188874375085114,
+            "east_m": -1.9713357858141294,
+            "north_m": -4.799817965296551
+          },
+          {
+            "distance_m": 5.107257936946819,
+            "east_m": -2.0944036246736695,
+            "north_m": -4.658063663311191
+          },
+          {
+            "distance_m": 4.820377889392083,
+            "east_m": -2.2994908335260833,
+            "north_m": -4.236553422662057
+          },
+          {
+            "distance_m": 4.065591403207235,
+            "east_m": -2.8252275649990124,
+            "north_m": -2.923546247932864
+          }
+        ],
+        "source": "real_mask_ground_projected_oriented_footprint",
+        "width_m": 1.7746039610295448,
+        "yaw_ambiguous": true
+      },
+      "sppa_metric_dims_m": {
+        "height": 1.85,
+        "length": 3.5855289222297833,
+        "width": 1.7746039610295448
+      },
+      "sppa_observation_id": "sppa-obs-a6814181500848a7",
+      "sppa_observation_metric_evidence_source": "real_mask_ground_projected_oriented_footprint",
+      "sppa_observation_status": "metric_observation_ready",
+      "sppa_scale_source": "real_mask_ground_projected_oriented_footprint",
+      "sppa_shape_policy": "semantic_part_layout_from_metric_dims",
+      "sppa_tag": "two_wheeled_rider",
+      "sppa_uncertainty": {
+        "confidence": 0.40011122822761536,
+        "covariance_local_enu_m2": [
+          [
+            0.1634250996520054,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.1634250996520054,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.2917228412885682
+          ]
+        ],
+        "fallback_inflation_m": 1.348631,
+        "fallback_unknown": false,
+        "material_from_observation": false,
+        "material_from_prior": true,
+        "material_source": "semantic_prior",
+        "material_uses_role_priors": true,
+        "observation_schema": "SPPA-UNCERTAINTY-0.1",
+        "position_sigma_m": 0.404259,
+        "quality_flags": {
+          "height_from_prior": true,
+          "mask_quality_score": 0.40011122822761536,
+          "mask_source": "real_detector_mask_yoloe_native_polygon_not_ground_truth",
+          "telemetry_measured": false,
+          "used_bbox": true,
+          "used_mask": true,
+          "used_metric_footprint": true,
+          "used_world_projection": true
+        },
+        "scale_from_bbox": false,
+        "scale_from_calibrated_footprint": false,
+        "scale_from_dims": true,
+        "scale_from_mask": false,
+        "scale_from_semantic_prior": false,
+        "scale_sigma_m": 0.540114,
+        "shape_low_confidence": true,
+        "shape_source": "real_mask_ground_projected_oriented_footprint",
+        "telemetry_measured": false,
+        "texture_from_observation": false,
+        "visual_policy": "covariance_envelope_from_metric_observation",
+        "yaw_ambiguous": false,
+        "yaw_sigma_deg": 14.099333
+      },
+      "status": "passed",
+      "telemetry_is_measured": false,
+      "telemetry_source": "declared_assumed_replay_not_measured",
+      "used_detections": [
+        {
+          "class_id": 0,
+          "class_name": "person",
+          "confidence": 0.12009182572364807,
+          "mask_area_px": 1145,
+          "mask_polygon_area_px2": 1728.3493525781232,
+          "mask_polygon_point_count": 36,
+          "mask_polygon_px": [
+            [
+              392.34375,
+              330.960938
+            ],
+            [
+              392.34375,
+              385.382812
+            ],
+            [
+              396.140625,
+              385.382812
+            ],
+            [
+              397.40625,
+              386.648438
+            ],
+            [
+              399.9375,
+              386.648438
+            ],
+            [
+              401.203125,
+              387.914062
+            ],
+            [
+              402.46875,
+              387.914062
+            ],
+            [
+              406.265625,
+              391.710938
+            ],
+            [
+              406.265625,
+              395.507812
+            ],
+            [
+              410.0625,
+              395.507812
+            ],
+            [
+              410.0625,
+              390.445312
+            ],
+            [
+              412.59375,
+              387.914062
+            ],
+            [
+              413.859375,
+              387.914062
+            ],
+            [
+              415.125,
+              386.648438
+            ],
+            [
+              416.390625,
+              386.648438
+            ],
+            [
+              420.1875,
+              382.851562
+            ],
+            [
+              421.453125,
+              382.851562
+            ],
+            [
+              427.78125,
+              376.523438
+            ],
+            [
+              429.046875,
+              376.523438
+            ],
+            [
+              429.046875,
+              375.257812
+            ],
+            [
+              430.3125,
+              373.992188
+            ],
+            [
+              430.3125,
+              363.867188
+            ],
+            [
+              429.046875,
+              362.601562
+            ],
+            [
+              429.046875,
+              360.070312
+            ],
+            [
+              427.78125,
+              358.804688
+            ],
+            [
+              427.78125,
+              357.539062
+            ],
+            [
+              422.71875,
+              352.476562
+            ],
+            [
+              422.71875,
+              351.210938
+            ],
+            [
+              416.390625,
+              344.882812
+            ],
+            [
+              416.390625,
+              343.617188
+            ],
+            [
+              413.859375,
+              341.085938
+            ],
+            [
+              413.859375,
+              339.820312
+            ],
+            [
+              412.59375,
+              338.554688
+            ],
+            [
+              412.59375,
+              337.289062
+            ],
+            [
+              411.328125,
+              336.023438
+            ],
+            [
+              411.328125,
+              330.960938
+            ]
+          ],
+          "mask_source": "ultralytics_result_masks_xy",
+          "xyxy": [
+            389.9745178222656,
+            332.0623779296875,
+            431.7325744628906,
+            390.9118957519531
+          ]
+        },
+        {
+          "class_id": 4,
+          "class_name": "motorcycle",
+          "confidence": 0.40011122822761536,
+          "mask_area_px": 1432,
+          "mask_polygon_area_px2": 2172.850676999922,
+          "mask_polygon_point_count": 54,
+          "mask_polygon_px": [
+            [
+              387.28125,
+              356.273438
+            ],
+            [
+              387.28125,
+              384.117188
+            ],
+            [
+              391.078125,
+              384.117188
+            ],
+            [
+              392.34375,
+              385.382812
+            ],
+            [
+              393.609375,
+              385.382812
+            ],
+            [
+              394.875,
+              386.648438
+            ],
+            [
+              396.140625,
+              386.648438
+            ],
+            [
+              397.40625,
+              387.914062
+            ],
+            [
+              398.671875,
+              387.914062
+            ],
+            [
+              401.203125,
+              390.445312
+            ],
+            [
+              402.46875,
+              390.445312
+            ],
+            [
+              403.734375,
+              391.710938
+            ],
+            [
+              405.0,
+              391.710938
+            ],
+            [
+              406.265625,
+              392.976562
+            ],
+            [
+              407.53125,
+              392.976562
+            ],
+            [
+              420.1875,
+              405.632812
+            ],
+            [
+              421.453125,
+              405.632812
+            ],
+            [
+              422.71875,
+              406.898438
+            ],
+            [
+              423.984375,
+              406.898438
+            ],
+            [
+              425.25,
+              408.164062
+            ],
+            [
+              426.515625,
+              408.164062
+            ],
+            [
+              427.78125,
+              409.429688
+            ],
+            [
+              429.046875,
+              409.429688
+            ],
+            [
+              431.578125,
+              411.960938
+            ],
+            [
+              435.375,
+              411.960938
+            ],
+            [
+              436.640625,
+              413.226562
+            ],
+            [
+              448.03125,
+              413.226562
+            ],
+            [
+              449.296875,
+              411.960938
+            ],
+            [
+              450.5625,
+              411.960938
+            ],
+            [
+              450.5625,
+              406.898438
+            ],
+            [
+              449.296875,
+              405.632812
+            ],
+            [
+              449.296875,
+              404.367188
+            ],
+            [
+              445.5,
+              400.570312
+            ],
+            [
+              445.5,
+              399.304688
+            ],
+            [
+              444.234375,
+              398.039062
+            ],
+            [
+              444.234375,
+              395.507812
+            ],
+            [
+              442.96875,
+              394.242188
+            ],
+            [
+              442.96875,
+              390.445312
+            ],
+            [
+              441.703125,
+              389.179688
+            ],
+            [
+              441.703125,
+              386.648438
+            ],
+            [
+              439.171875,
+              384.117188
+            ],
+            [
+              439.171875,
+              382.851562
+            ],
+            [
+              437.90625,
+              381.585938
+            ],
+            [
+              437.90625,
+              380.320312
+            ],
+            [
+              436.640625,
+              379.054688
+            ],
+            [
+              435.375,
+              379.054688
+            ],
+            [
+              432.84375,
+              376.523438
+            ],
+            [
+              432.84375,
+              375.257812
+            ],
+            [
+              431.578125,
+              373.992188
+            ],
+            [
+              431.578125,
+              372.726562
+            ],
+            [
+              429.046875,
+              370.195312
+            ],
+            [
+              429.046875,
+              367.664062
+            ],
+            [
+              427.78125,
+              366.398438
+            ],
+            [
+              427.78125,
+              356.273438
+            ]
+          ],
+          "mask_source": "ultralytics_result_masks_xy",
+          "xyxy": [
+            387.03802490234375,
+            358.00408935546875,
+            452.4251708984375,
+            415.337158203125
+          ]
+        }
+      ],
+      "world_m": {
+        "distance": 4.067970831931377,
+        "east": -1.747694184277324,
+        "north": -3.673411456356023,
+        "up": 0.0
+      },
+      "yaw_ambiguous": true,
+      "yaw_deg": 1.612407516790256
+    },
+    {
+      "bbox_only_footprint_m": {
+        "bbox_px": {
+          "x1": 501.37445068359375,
+          "x2": 532.712158203125,
+          "y1": 284.54119873046875,
+          "y2": 417.3099670410156
+        },
+        "center_east_m": 0.32900893519056196,
+        "center_north_m": -0.6707721337808891,
+        "length_m": 12.1435592407659,
+        "orientation_deg_axial": 12.0,
+        "orientation_modulo": "pi",
+        "orientation_rad_axial": 0.20943951023931956,
+        "point_count": 8,
+        "points_ned_m": [
+          {
+            "distance_m": 5.5695178269426355,
+            "east_m": 0.18958471364727764,
+            "north_m": 5.566290188355535
+          },
+          {
+            "distance_m": 5.802054799279532,
+            "east_m": 2.993221091027109,
+            "north_m": 4.970358879806682
+          },
+          {
+            "distance_m": 6.923698902514904,
+            "east_m": 0.46843315673384645,
+            "north_m": -6.907834455917313
+          },
+          {
+            "distance_m": 6.730029377608634,
+            "east_m": -2.335203220645986,
+            "north_m": -6.311903147368461
+          },
+          {
+            "distance_m": 5.503435889875359,
+            "east_m": 1.5914029023371936,
+            "north_m": 5.26832453408111
+          },
+          {
+            "distance_m": 6.675445542644447,
+            "east_m": -0.9333850319560698,
+            "north_m": -6.609868801642887
+          },
+          {
+            "distance_m": 1.135739567663222,
+            "east_m": -1.0728092534993536,
+            "north_m": -0.3728064795064622
+          },
+          {
+            "distance_m": 1.983485677983754,
+            "east_m": 1.7308271238804778,
+            "north_m": -0.9687377880553157
+          }
+        ],
+        "source": "bbox_ground_projected_quad",
+        "width_m": 2.866271281835733,
+        "yaw_ambiguous": true
+      },
+      "bbox_only_metric_dims_m": {
+        "height": 28.0,
+        "length": 12.1435592407659,
+        "width": 2.866271281835733
+      },
+      "bbox_source": "detector_single_box",
+      "bbox_xyxy": [
+        501.37445068359375,
+        284.54119873046875,
+        532.712158203125,
+        417.3099670410156
+      ],
+      "case_id": "tower",
+      "claim_boundary": "The image and YOLOE detector evidence are real local inputs. The flight pose, AGL, and camera geometry are declared replay parameters, not measured flight telemetry; therefore metric position/scale are scenario-relative and not ground truth.",
+      "claim_status": "specific_family",
+      "conservative": false,
+      "declared_height_prior_m": 28.0,
+      "detector_confidence": 0.459278404712677,
+      "detector_is_real": true,
+      "detector_label": "electric pylon",
+      "detector_mask_area_px": 1204.0,
+      "detector_model": "yoloe-26s-seg.pt",
+      "detector_runtime_archetype_id": "vertical_structure",
+      "detector_source": "yoloe26s_universal_prompt_probe",
+      "failures": [],
+      "flight_replay": {
+        "alt_agl_m": 45.0,
+        "camera_vfov_deg": 70.0,
+        "drone_pitch_deg": 0.0,
+        "drone_roll_deg": 0.0,
+        "drone_yaw_deg": 12.0,
+        "max_range_m": 250.0,
+        "mount_pitch_deg": -90.0,
+        "mount_roll_deg": 0.0,
+        "mount_yaw_deg": 0.0,
+        "telemetry_is_measured": false,
+        "telemetry_source": "declared_assumed_replay_not_measured"
+      },
+      "height_prior_source": "declared_family_replay_prior_not_measured",
+      "image": "experiments/sppa_detection_reference/20260703_user_tower/tower_mountain_raw_input.png",
+      "image_is_real": true,
+      "image_source": "real_user_supplied_image",
+      "mask_path_used": "native_yoloe_detector_mask",
+      "metric_ground_truth": false,
+      "native_detector_mask": {
+        "area_px2": 2830.081329598979,
+        "claim_boundary": "Native YOLOE/Ultralytics mask polygon from real image inference. It is detector evidence, not ground-truth segmentation.",
+        "component_count": 1,
+        "method": "ultralytics_result_masks_xy_single_contour",
+        "polygon": [
+          [
+            510.399994,
+            284.0
+          ],
+          [
+            510.399994,
+            317.600006
+          ],
+          [
+            508.799988,
+            319.200012
+          ],
+          [
+            508.799988,
+            340.0
+          ],
+          [
+            507.200012,
+            341.600006
+          ],
+          [
+            502.399994,
+            341.600006
+          ],
+          [
+            502.399994,
+            423.200012
+          ],
+          [
+            521.599976,
+            423.200012
+          ],
+          [
+            521.599976,
+            418.399994
+          ],
+          [
+            523.200012,
+            416.799988
+          ],
+          [
+            523.200012,
+            413.600006
+          ],
+          [
+            524.799988,
+            412.0
+          ],
+          [
+            524.799988,
+            408.799988
+          ],
+          [
+            526.400024,
+            407.200012
+          ],
+          [
+            526.400024,
+            404.0
+          ],
+          [
+            528.0,
+            402.399994
+          ],
+          [
+            528.0,
+            399.200012
+          ],
+          [
+            529.599976,
+            397.600006
+          ],
+          [
+            529.599976,
+            396.0
+          ],
+          [
+            531.200012,
+            394.399994
+          ],
+          [
+            531.200012,
+            375.200012
+          ],
+          [
+            529.599976,
+            373.600006
+          ],
+          [
+            529.599976,
+            367.200012
+          ],
+          [
+            528.0,
+            365.600006
+          ],
+          [
+            528.0,
+            360.799988
+          ],
+          [
+            526.400024,
+            359.200012
+          ],
+          [
+            526.400024,
+            340.0
+          ],
+          [
+            524.799988,
+            338.399994
+          ],
+          [
+            524.799988,
+            320.799988
+          ],
+          [
+            523.200012,
+            319.200012
+          ],
+          [
+            523.200012,
+            303.200012
+          ],
+          [
+            521.599976,
+            301.600006
+          ],
+          [
+            521.599976,
+            295.200012
+          ],
+          [
+            520.0,
+            293.600006
+          ],
+          [
+            520.0,
+            284.0
+          ]
+        ],
+        "quality_score": 0.459278404712677,
+        "source": "real_detector_mask_yoloe_native_polygon_not_ground_truth",
+        "status": "native_detector_mask_available"
+      },
+      "native_detector_mask_available": true,
+      "native_detector_mask_point_count": 35,
+      "normalization_rule": "specific_power_infrastructure_label",
+      "publication_label": "real image + real YOLOE detector evidence + declared assumed-flight telemetry replay",
+      "reviewed_semantic_tag": "tower",
+      "runtime_archetype_id": "tower",
+      "semantic_text_source": "reviewed_semantic_tag_plus_detector_evidence",
+      "silhouette_proxy": {
+        "area_px2": 1118.0,
+        "area_ratio_to_expected": 0.928571,
+        "bbox_area_px2": 4160.668829,
+        "bbox_xyxy": {
+          "h": 132.76876831054688,
+          "w": 31.33770751953125,
+          "x1": 501.37445068359375,
+          "x2": 532.712158203125,
+          "y1": 284.54119873046875,
+          "y2": 417.3099670410156
+        },
+        "claim_boundary": "This is an image-derived silhouette proxy inside a detector/review bbox, not a ground-truth mask and not necessarily the native detector segmentation.",
+        "expected_mask_area_px": 1204.0,
+        "hull_area_px2": 1063.0,
+        "method": "grabcut_rect",
+        "point_count": 6,
+        "polygon": [
+          [
+            521.0,
+            343.0
+          ],
+          [
+            529.0,
+            393.0
+          ],
+          [
+            519.0,
+            402.0
+          ],
+          [
+            503.0,
+            403.0
+          ],
+          [
+            506.0,
+            364.0
+          ],
+          [
+            516.0,
+            344.0
+          ]
+        ],
+        "quality_score": 0.901786,
+        "schema": "SPPA-SILHOUETTE-0.1",
+        "source": "image_derived_silhouette_proxy",
+        "status": "ok"
+      },
+      "sppa_descriptor_error": null,
+      "sppa_descriptor_has_mask_polygon": true,
+      "sppa_descriptor_id": "sppa-a63260534e4d5273",
+      "sppa_descriptor_mask_hash": "238126ab5533ba27",
+      "sppa_descriptor_mask_point_count": 35,
+      "sppa_footprint_m": {
+        "center_east_m": 0.5610101831173657,
+        "center_north_m": -1.724634044940194,
+        "length_m": 12.770027617473518,
+        "orientation_deg_axial": 8.621596554145015,
+        "orientation_modulo": "pi",
+        "orientation_rad_axial": 0.15047524664842807,
+        "point_count": 35,
+        "points_ned_m": [
+          {
+            "distance_m": 5.535505239832269,
+            "east_m": 1.0073490258310969,
+            "north_m": 5.44307506841194
+          },
+          {
+            "distance_m": 2.4647287457484732,
+            "east_m": 0.36839687751744626,
+            "north_m": 2.437041552939596
+          },
+          {
+            "distance_m": 2.3324738673820304,
+            "east_m": 0.19482551172746387,
+            "north_m": 2.324322990033919
+          },
+          {
+            "distance_m": 0.5050441309638515,
+            "east_m": -0.20071599554185443,
+            "north_m": 0.46344650538619264
+          },
+          {
+            "distance_m": 0.5129314858518333,
+            "east_m": -0.37428467737381677,
+            "north_m": 0.3507273719876272
+          },
+          {
+            "distance_m": 0.9172431310054483,
+            "east_m": -0.803719570417306,
+            "north_m": 0.4420065763140849
+          },
+          {
+            "distance_m": 7.25157169767657,
+            "east_m": -2.3554603390382036,
+            "north_m": -6.858359765845029
+          },
+          {
+            "distance_m": 7.2515713654303235,
+            "east_m": -0.637728818738307,
+            "north_m": -7.223474871672196
+          },
+          {
+            "distance_m": 6.815980223878001,
+            "east_m": -0.5464496144118494,
+            "north_m": -6.794039978628706
+          },
+          {
+            "distance_m": 6.691718738128166,
+            "east_m": -0.3728755646638473,
+            "north_m": -6.681321986215919
+          },
+          {
+            "distance_m": 6.402642259614115,
+            "east_m": -0.3120233322724303,
+            "north_m": -6.395034741478279
+          },
+          {
+            "distance_m": 6.2838411095245394,
+            "east_m": -0.1384546504404681,
+            "north_m": -6.282315608079715
+          },
+          {
+            "distance_m": 5.996527828216687,
+            "east_m": -0.07760184755616273,
+            "north_m": -5.996025679384053
+          },
+          {
+            "distance_m": 5.884093088554519,
+            "east_m": 0.09597163169895082,
+            "north_m": -5.883310370929287
+          },
+          {
+            "distance_m": 5.599217064381721,
+            "east_m": 0.15682443458325607,
+            "north_m": -5.597020442233626
+          },
+          {
+            "distance_m": 5.494244302673891,
+            "east_m": 0.3303931164152183,
+            "north_m": -5.48430130883506
+          },
+          {
+            "distance_m": 5.212717442324821,
+            "east_m": 0.39124534880663503,
+            "north_m": -5.198014064097422
+          },
+          {
+            "distance_m": 5.116565197610376,
+            "east_m": 0.5648140306385973,
+            "north_m": -5.085294930698856
+          },
+          {
+            "distance_m": 4.97786675814923,
+            "east_m": 0.59524043208075,
+            "north_m": -4.942149966351026
+          },
+          {
+            "distance_m": 4.890244257536283,
+            "east_m": 0.7688144818287527,
+            "north_m": -4.829431973938237
+          },
+          {
+            "distance_m": 3.311868962222777,
+            "east_m": 1.1339295876559186,
+            "north_m": -3.11170045363834
+          },
+          {
+            "distance_m": 3.110541055797376,
+            "east_m": 1.021208340792221,
+            "north_m": -2.9381285173554703
+          },
+          {
+            "distance_m": 2.627181787757941,
+            "east_m": 1.142913376067943,
+            "north_m": -2.3655513439221707
+          },
+          {
+            "distance_m": 2.422000332085773,
+            "east_m": 1.0301974971202859,
+            "north_m": -2.1919805486250765
+          },
+          {
+            "distance_m": 2.089085249552396,
+            "east_m": 1.1214767014467433,
+            "north_m": -1.7625456555815877
+          },
+          {
+            "distance_m": 1.8821389114872946,
+            "east_m": 1.0087602520061982,
+            "north_m": -1.5889775442425138
+          },
+          {
+            "distance_m": 1.3798961351973715,
+            "east_m": 1.373875928326252,
+            "north_m": 0.12875666001540267
+          },
+          {
+            "distance_m": 1.2968861595046048,
+            "east_m": 1.2611546814625552,
+            "north_m": 0.3023285962982733
+          },
+          {
+            "distance_m": 2.463643337998712,
+            "east_m": 1.595843956340457,
+            "north_m": 1.8769178362083603
+          },
+          {
+            "distance_m": 2.5306441517551703,
+            "east_m": 1.4831275068999117,
+            "north_m": 2.050485947547434
+          },
+          {
+            "distance_m": 3.91389862545278,
+            "east_m": 1.7873903803356601,
+            "north_m": 3.4819302231096914
+          },
+          {
+            "distance_m": 4.020847266923654,
+            "east_m": 1.6746691334719632,
+            "north_m": 3.655502159392561
+          },
+          {
+            "distance_m": 4.593867107221661,
+            "east_m": 1.796374168747685,
+            "north_m": 4.228079332825861
+          },
+          {
+            "distance_m": 4.712666876325673,
+            "east_m": 1.6836582898000279,
+            "north_m": 4.401650128122954
+          },
+          {
+            "distance_m": 5.5817384537467785,
+            "east_m": 1.8662161279600553,
+            "north_m": 5.260517230251913
+          }
+        ],
+        "source": "real_mask_ground_projected_oriented_footprint",
+        "width_m": 2.888305332620233,
+        "yaw_ambiguous": true
+      },
+      "sppa_metric_dims_m": {
+        "height": 28.0,
+        "length": 12.770027617473518,
+        "width": 2.888305332620233
+      },
+      "sppa_observation_id": "sppa-obs-db7deac8e9352c4e",
+      "sppa_observation_metric_evidence_source": "real_mask_ground_projected_oriented_footprint",
+      "sppa_observation_status": "metric_observation_ready",
+      "sppa_scale_source": "real_mask_ground_projected_oriented_footprint",
+      "sppa_shape_policy": "semantic_part_layout_from_metric_dims",
+      "sppa_tag": "power_tower",
+      "sppa_uncertainty": {
+        "confidence": 0.459278404712677,
+        "covariance_local_enu_m2": [
+          [
+            0.08647678624771792,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.08647678624771792,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            3.1375133999097056
+          ]
+        ],
+        "fallback_inflation_m": 2.359441,
+        "fallback_unknown": false,
+        "material_from_observation": false,
+        "material_from_prior": true,
+        "material_source": "semantic_prior",
+        "material_uses_role_priors": true,
+        "observation_schema": "SPPA-UNCERTAINTY-0.1",
+        "position_sigma_m": 0.294069,
+        "quality_flags": {
+          "height_from_prior": true,
+          "mask_quality_score": 0.459278404712677,
+          "mask_source": "real_detector_mask_yoloe_native_polygon_not_ground_truth",
+          "telemetry_measured": false,
+          "used_bbox": true,
+          "used_mask": true,
+          "used_metric_footprint": true,
+          "used_world_projection": true
+        },
+        "scale_from_bbox": false,
+        "scale_from_calibrated_footprint": false,
+        "scale_from_dims": true,
+        "scale_from_mask": false,
+        "scale_from_semantic_prior": false,
+        "scale_sigma_m": 1.771303,
+        "shape_low_confidence": true,
+        "shape_source": "real_mask_ground_projected_oriented_footprint",
+        "telemetry_measured": false,
+        "texture_from_observation": false,
+        "visual_policy": "covariance_envelope_from_metric_observation",
+        "yaw_ambiguous": false,
+        "yaw_sigma_deg": 13.74433
+      },
+      "status": "passed",
+      "telemetry_is_measured": false,
+      "telemetry_source": "declared_assumed_replay_not_measured",
+      "used_detections": [
+        {
+          "class_id": 20,
+          "class_name": "electric pylon",
+          "confidence": 0.459278404712677,
+          "mask_area_px": 1204,
+          "mask_polygon_area_px2": 2830.081329598979,
+          "mask_polygon_point_count": 35,
+          "mask_polygon_px": [
+            [
+              510.399994,
+              284.0
+            ],
+            [
+              510.399994,
+              317.600006
+            ],
+            [
+              508.799988,
+              319.200012
+            ],
+            [
+              508.799988,
+              340.0
+            ],
+            [
+              507.200012,
+              341.600006
+            ],
+            [
+              502.399994,
+              341.600006
+            ],
+            [
+              502.399994,
+              423.200012
+            ],
+            [
+              521.599976,
+              423.200012
+            ],
+            [
+              521.599976,
+              418.399994
+            ],
+            [
+              523.200012,
+              416.799988
+            ],
+            [
+              523.200012,
+              413.600006
+            ],
+            [
+              524.799988,
+              412.0
+            ],
+            [
+              524.799988,
+              408.799988
+            ],
+            [
+              526.400024,
+              407.200012
+            ],
+            [
+              526.400024,
+              404.0
+            ],
+            [
+              528.0,
+              402.399994
+            ],
+            [
+              528.0,
+              399.200012
+            ],
+            [
+              529.599976,
+              397.600006
+            ],
+            [
+              529.599976,
+              396.0
+            ],
+            [
+              531.200012,
+              394.399994
+            ],
+            [
+              531.200012,
+              375.200012
+            ],
+            [
+              529.599976,
+              373.600006
+            ],
+            [
+              529.599976,
+              367.200012
+            ],
+            [
+              528.0,
+              365.600006
+            ],
+            [
+              528.0,
+              360.799988
+            ],
+            [
+              526.400024,
+              359.200012
+            ],
+            [
+              526.400024,
+              340.0
+            ],
+            [
+              524.799988,
+              338.399994
+            ],
+            [
+              524.799988,
+              320.799988
+            ],
+            [
+              523.200012,
+              319.200012
+            ],
+            [
+              523.200012,
+              303.200012
+            ],
+            [
+              521.599976,
+              301.600006
+            ],
+            [
+              521.599976,
+              295.200012
+            ],
+            [
+              520.0,
+              293.600006
+            ],
+            [
+              520.0,
+              284.0
+            ]
+          ],
+          "mask_source": "ultralytics_result_masks_xy",
+          "xyxy": [
+            501.37445068359375,
+            284.54119873046875,
+            532.712158203125,
+            417.3099670410156
+          ]
+        }
+      ],
+      "world_m": {
+        "distance": 1.8135862302433168,
+        "east": 0.5610101831173712,
+        "north": -1.724634044940195,
+        "up": 0.0
+      },
+      "yaw_ambiguous": true,
+      "yaw_deg": 8.621596554145015
+    },
+    {
+      "bbox_only_footprint_m": {
+        "bbox_px": {
+          "x1": 396.0957336425781,
+          "x2": 435.96832275390625,
+          "y1": 345.3219909667969,
+          "y2": 386.1803894042969
+        },
+        "center_east_m": -11.019139448547882,
+        "center_north_m": -7.842864180131222,
+        "length_m": 4.207258615457874,
+        "orientation_deg_axial": 67.99999999999956,
+        "orientation_modulo": "pi",
+        "orientation_rad_axial": 1.1868238913561364,
+        "point_count": 8,
+        "points_ned_m": [
+          {
+            "distance_m": 11.104856266775302,
+            "east_m": -9.83770848357914,
+            "north_m": -5.151439070575687
+          },
+          {
+            "distance_m": 12.212053116274232,
+            "east_m": -8.299668153277095,
+            "north_m": -8.958222472130348
+          },
+          {
+            "distance_m": 16.11909331364473,
+            "east_m": -12.20057041351662,
+            "north_m": -10.534289289686756
+          },
+          {
+            "distance_m": 15.297344888738756,
+            "east_m": -13.738610743818668,
+            "north_m": -6.727505888132097
+          },
+          {
+            "distance_m": 11.48963641849576,
+            "east_m": -9.06868831842812,
+            "north_m": -7.05483077135302
+          },
+          {
+            "distance_m": 15.578917580130755,
+            "east_m": -12.969590578667644,
+            "north_m": -8.630897588909427
+          },
+          {
+            "distance_m": 13.199925772936917,
+            "east_m": -11.788159613698907,
+            "north_m": -5.939472479353892
+          },
+          {
+            "distance_m": 14.144060556290356,
+            "east_m": -10.250119283396858,
+            "north_m": -9.746255880908551
+          }
+        ],
+        "source": "bbox_ground_projected_quad",
+        "width_m": 4.105748156425083,
+        "yaw_ambiguous": true
+      },
+      "bbox_only_metric_dims_m": {
+        "height": 2.6,
+        "length": 4.207258615457874,
+        "width": 4.105748156425083
+      },
+      "bbox_source": "detector_single_box",
+      "bbox_xyxy": [
+        396.0957336425781,
+        345.3219909667969,
+        435.96832275390625,
+        386.1803894042969
+      ],
+      "case_id": "tractor",
+      "claim_boundary": "The image and YOLOE detector evidence are real local inputs. The flight pose, AGL, and camera geometry are declared replay parameters, not measured flight telemetry; therefore metric position/scale are scenario-relative and not ground truth.",
+      "claim_status": "specific_family",
+      "conservative": false,
+      "declared_height_prior_m": 2.6,
+      "detector_confidence": 0.5224363207817078,
+      "detector_is_real": true,
+      "detector_label": "agricultural vehicle",
+      "detector_mask_area_px": 887.0,
+      "detector_model": "yoloe-26s-seg.pt",
+      "detector_runtime_archetype_id": "farm_vehicle",
+      "detector_source": "yoloe26s_universal_prompt_probe",
+      "failures": [],
+      "flight_replay": {
+        "alt_agl_m": 35.0,
+        "camera_vfov_deg": 70.0,
+        "drone_pitch_deg": 0.0,
+        "drone_roll_deg": 0.0,
+        "drone_yaw_deg": 68.0,
+        "max_range_m": 250.0,
+        "mount_pitch_deg": -90.0,
+        "mount_roll_deg": 0.0,
+        "mount_yaw_deg": 0.0,
+        "telemetry_is_measured": false,
+        "telemetry_source": "declared_assumed_replay_not_measured"
+      },
+      "height_prior_source": "declared_family_replay_prior_not_measured",
+      "image": "experiments/sppa_detection_reference/20260703_user_tractor/tractor_mountain_raw_input.png",
+      "image_is_real": true,
+      "image_source": "real_user_supplied_image",
+      "mask_path_used": "native_yoloe_detector_mask",
+      "metric_ground_truth": false,
+      "native_detector_mask": {
+        "area_px2": 1198.750089234003,
+        "claim_boundary": "Native YOLOE/Ultralytics mask polygon from real image inference. It is detector evidence, not ground-truth segmentation.",
+        "component_count": 1,
+        "method": "ultralytics_result_masks_xy_single_contour",
+        "polygon": [
+          [
+            407.184357,
+            346.347656
+          ],
+          [
+            407.184357,
+            352.371094
+          ],
+          [
+            405.979675,
+            353.575775
+          ],
+          [
+            405.979675,
+            355.985138
+          ],
+          [
+            404.774994,
+            357.189819
+          ],
+          [
+            404.774994,
+            359.599213
+          ],
+          [
+            401.160919,
+            363.213257
+          ],
+          [
+            397.546875,
+            363.213257
+          ],
+          [
+            397.546875,
+            388.511719
+          ],
+          [
+            416.821869,
+            388.511719
+          ],
+          [
+            416.821869,
+            383.692963
+          ],
+          [
+            419.231232,
+            381.283569
+          ],
+          [
+            419.231232,
+            380.078888
+          ],
+          [
+            420.435913,
+            378.874207
+          ],
+          [
+            421.640625,
+            378.874207
+          ],
+          [
+            424.049988,
+            376.464844
+          ],
+          [
+            425.254669,
+            376.464844
+          ],
+          [
+            426.459351,
+            375.260132
+          ],
+          [
+            427.664062,
+            375.260132
+          ],
+          [
+            428.868744,
+            374.05545
+          ],
+          [
+            430.073425,
+            374.05545
+          ],
+          [
+            432.482788,
+            371.646088
+          ],
+          [
+            432.482788,
+            370.441406
+          ],
+          [
+            433.687469,
+            369.236694
+          ],
+          [
+            433.687469,
+            368.032013
+          ],
+          [
+            434.892181,
+            366.827332
+          ],
+          [
+            439.710907,
+            366.827332
+          ],
+          [
+            439.710907,
+            359.599213
+          ],
+          [
+            434.892181,
+            359.599213
+          ],
+          [
+            432.482788,
+            357.189819
+          ],
+          [
+            432.482788,
+            354.780457
+          ],
+          [
+            430.073425,
+            352.371094
+          ],
+          [
+            430.073425,
+            346.347656
+          ]
+        ],
+        "quality_score": 0.5224363207817078,
+        "source": "real_detector_mask_yoloe_native_polygon_not_ground_truth",
+        "status": "native_detector_mask_available"
+      },
+      "native_detector_mask_available": true,
+      "native_detector_mask_point_count": 33,
+      "normalization_rule": "farm_vehicle_label",
+      "publication_label": "real image + real YOLOE detector evidence + declared assumed-flight telemetry replay",
+      "reviewed_semantic_tag": "tractor",
+      "runtime_archetype_id": "tractor",
+      "semantic_text_source": "reviewed_semantic_tag_plus_detector_evidence",
+      "silhouette_proxy": {
+        "area_px2": 810.0,
+        "area_ratio_to_expected": 0.913191,
+        "bbox_area_px2": 1629.130133,
+        "bbox_xyxy": {
+          "h": 40.8583984375,
+          "w": 39.872589111328125,
+          "x1": 396.0957336425781,
+          "x2": 435.96832275390625,
+          "y1": 345.3219909667969,
+          "y2": 386.1803894042969
+        },
+        "claim_boundary": "This is an image-derived silhouette proxy inside a detector/review bbox, not a ground-truth mask and not necessarily the native detector segmentation.",
+        "expected_mask_area_px": 887.0,
+        "hull_area_px2": 873.5,
+        "method": "grabcut_rect",
+        "point_count": 8,
+        "polygon": [
+          [
+            427.0,
+            351.0
+          ],
+          [
+            435.0,
+            359.0
+          ],
+          [
+            435.0,
+            366.0
+          ],
+          [
+            428.0,
+            376.0
+          ],
+          [
+            414.0,
+            382.0
+          ],
+          [
+            406.0,
+            381.0
+          ],
+          [
+            396.0,
+            375.0
+          ],
+          [
+            409.0,
+            350.0
+          ]
+        ],
+        "quality_score": 0.938421,
+        "schema": "SPPA-SILHOUETTE-0.1",
+        "source": "image_derived_silhouette_proxy",
+        "status": "ok"
+      },
+      "sppa_descriptor_error": null,
+      "sppa_descriptor_has_mask_polygon": true,
+      "sppa_descriptor_id": "sppa-949fd24d1faba591",
+      "sppa_descriptor_mask_hash": "125cb5bcbc20ee40",
+      "sppa_descriptor_mask_point_count": 33,
+      "sppa_footprint_m": {
+        "center_east_m": -10.963380445951623,
+        "center_north_m": -8.447271320406081,
+        "length_m": 4.946368595428787,
+        "orientation_deg_axial": 80.07684053929474,
+        "orientation_modulo": "pi",
+        "orientation_rad_axial": 1.397604522005165,
+        "point_count": 33,
+        "points_ned_m": [
+          {
+            "distance_m": 11.377988511790939,
+            "east_m": -9.507901325318745,
+            "north_m": -6.2496747885348904
+          },
+          {
+            "distance_m": 11.98678943921161,
+            "east_m": -10.08298120625327,
+            "north_m": -6.482022142382599
+          },
+          {
+            "distance_m": 12.086428463799667,
+            "east_m": -10.24446580706962,
+            "north_m": -6.4134759170303415
+          },
+          {
+            "distance_m": 12.330795071672945,
+            "east_m": -10.474496594664352,
+            "north_m": -6.506414387968131
+          },
+          {
+            "distance_m": 12.432628156532077,
+            "east_m": -10.635981156906823,
+            "north_m": -6.4378682580895665
+          },
+          {
+            "distance_m": 12.67760750492197,
+            "east_m": -10.866014904186097,
+            "north_m": -6.530807924817529
+          },
+          {
+            "distance_m": 12.993879286412728,
+            "east_m": -11.35046992075126,
+            "north_m": -6.3251665185974835
+          },
+          {
+            "distance_m": 12.952958243669944,
+            "east_m": -11.489877607871003,
+            "north_m": -5.980120384942235
+          },
+          {
+            "distance_m": 15.548011792174828,
+            "east_m": -13.90521524640675,
+            "north_m": -6.955980135157432
+          },
+          {
+            "distance_m": 15.830483348655484,
+            "east_m": -13.161704007255556,
+            "north_m": -8.796235028547814
+          },
+          {
+            "distance_m": 15.34502832074076,
+            "east_m": -12.701639567855247,
+            "north_m": -8.61035692945594
+          },
+          {
+            "distance_m": 15.157481741572152,
+            "east_m": -12.37866734963819,
+            "north_m": -8.747448050322708
+          },
+          {
+            "distance_m": 15.03676139123781,
+            "east_m": -12.263652003577672,
+            "north_m": -8.700978834140754
+          },
+          {
+            "distance_m": 14.945468372475712,
+            "east_m": -12.102167441335197,
+            "north_m": -8.769524964019322
+          },
+          {
+            "distance_m": 14.97581183028516,
+            "east_m": -12.055697029363069,
+            "north_m": -8.884543269764373
+          },
+          {
+            "distance_m": 14.80023005221885,
+            "east_m": -11.732727770830552,
+            "north_m": -9.021635586421318
+          },
+          {
+            "distance_m": 14.833982245780081,
+            "east_m": -11.686258554648596,
+            "north_m": -9.136650932481835
+          },
+          {
+            "distance_m": 14.749778953163263,
+            "east_m": -11.524770994147703,
+            "north_m": -9.205195962043923
+          },
+          {
+            "distance_m": 14.785728840950785,
+            "east_m": -11.478300620749451,
+            "north_m": -9.320214172315282
+          },
+          {
+            "distance_m": 14.704391988402193,
+            "east_m": -11.316815924459409,
+            "north_m": -9.388760359093663
+          },
+          {
+            "distance_m": 14.74253938704792,
+            "east_m": -11.270346708277453,
+            "north_m": -9.50377570515418
+          },
+          {
+            "distance_m": 14.587371664398924,
+            "east_m": -10.947377545218623,
+            "north_m": -9.640868060385005
+          },
+          {
+            "distance_m": 14.470402799742537,
+            "east_m": -10.832362103684412,
+            "north_m": -9.594398805629172
+          },
+          {
+            "distance_m": 14.39583432999085,
+            "east_m": -10.670874581757403,
+            "north_m": -9.662943739717564
+          },
+          {
+            "distance_m": 14.279451896541985,
+            "east_m": -10.55585923569688,
+            "north_m": -9.616474523535606
+          },
+          {
+            "distance_m": 14.207134911003315,
+            "east_m": -10.394373477664235,
+            "north_m": -9.685023613098705
+          },
+          {
+            "distance_m": 14.392225505418995,
+            "east_m": -10.208496535788658,
+            "north_m": -10.14508518828817
+          },
+          {
+            "distance_m": 13.709238488073538,
+            "east_m": -9.518401308793623,
+            "north_m": -9.86626861825851
+          },
+          {
+            "distance_m": 13.51479734600164,
+            "east_m": -9.704278250669201,
+            "north_m": -9.406207043069044
+          },
+          {
+            "distance_m": 13.192276039463653,
+            "east_m": -9.567184131544012,
+            "north_m": -9.08323372453551
+          },
+          {
+            "distance_m": 12.961783974120655,
+            "east_m": -9.337153439422973,
+            "north_m": -8.990295292171597
+          },
+          {
+            "distance_m": 12.63976523658682,
+            "east_m": -9.200061122766034,
+            "north_m": -8.667326033639075
+          },
+          {
+            "distance_m": 12.063961486612943,
+            "east_m": -8.624981241831511,
+            "north_m": -8.434978679791367
+          }
+        ],
+        "source": "real_mask_ground_projected_oriented_footprint",
+        "width_m": 4.323472800216441,
+        "yaw_ambiguous": true
+      },
+      "sppa_metric_dims_m": {
+        "height": 2.6,
+        "length": 4.946368595428787,
+        "width": 4.323472800216441
+      },
+      "sppa_observation_id": "sppa-obs-12d036cca155f749",
+      "sppa_observation_metric_evidence_source": "real_mask_ground_projected_oriented_footprint",
+      "sppa_observation_status": "metric_observation_ready",
+      "sppa_scale_source": "real_mask_ground_projected_oriented_footprint",
+      "sppa_shape_policy": "semantic_part_layout_from_metric_dims",
+      "sppa_tag": "farm_vehicle",
+      "sppa_uncertainty": {
+        "confidence": 0.5224363207817078,
+        "covariance_local_enu_m2": [
+          [
+            0.42067723556572184,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.42067723556572184,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.3915992491662017
+          ]
+        ],
+        "fallback_inflation_m": 1.922972,
+        "fallback_unknown": false,
+        "material_from_observation": false,
+        "material_from_prior": true,
+        "material_source": "semantic_prior",
+        "material_uses_role_priors": true,
+        "observation_schema": "SPPA-UNCERTAINTY-0.1",
+        "position_sigma_m": 0.648596,
+        "quality_flags": {
+          "height_from_prior": true,
+          "mask_quality_score": 0.5224363207817078,
+          "mask_source": "real_detector_mask_yoloe_native_polygon_not_ground_truth",
+          "telemetry_measured": false,
+          "used_bbox": true,
+          "used_mask": true,
+          "used_metric_footprint": true,
+          "used_world_projection": true
+        },
+        "scale_from_bbox": false,
+        "scale_from_calibrated_footprint": false,
+        "scale_from_dims": true,
+        "scale_from_mask": false,
+        "scale_from_semantic_prior": false,
+        "scale_sigma_m": 0.625779,
+        "shape_low_confidence": false,
+        "shape_source": "real_mask_ground_projected_oriented_footprint",
+        "telemetry_measured": false,
+        "texture_from_observation": false,
+        "visual_policy": "covariance_envelope_from_metric_observation",
+        "yaw_ambiguous": false,
+        "yaw_sigma_deg": 8.910255
+      },
+      "status": "passed",
+      "telemetry_is_measured": false,
+      "telemetry_source": "declared_assumed_replay_not_measured",
+      "used_detections": [
+        {
+          "class_id": 12,
+          "class_name": "agricultural vehicle",
+          "confidence": 0.5224363207817078,
+          "mask_area_px": 887,
+          "mask_polygon_area_px2": 1198.750089234003,
+          "mask_polygon_point_count": 33,
+          "mask_polygon_px": [
+            [
+              407.184357,
+              346.347656
+            ],
+            [
+              407.184357,
+              352.371094
+            ],
+            [
+              405.979675,
+              353.575775
+            ],
+            [
+              405.979675,
+              355.985138
+            ],
+            [
+              404.774994,
+              357.189819
+            ],
+            [
+              404.774994,
+              359.599213
+            ],
+            [
+              401.160919,
+              363.213257
+            ],
+            [
+              397.546875,
+              363.213257
+            ],
+            [
+              397.546875,
+              388.511719
+            ],
+            [
+              416.821869,
+              388.511719
+            ],
+            [
+              416.821869,
+              383.692963
+            ],
+            [
+              419.231232,
+              381.283569
+            ],
+            [
+              419.231232,
+              380.078888
+            ],
+            [
+              420.435913,
+              378.874207
+            ],
+            [
+              421.640625,
+              378.874207
+            ],
+            [
+              424.049988,
+              376.464844
+            ],
+            [
+              425.254669,
+              376.464844
+            ],
+            [
+              426.459351,
+              375.260132
+            ],
+            [
+              427.664062,
+              375.260132
+            ],
+            [
+              428.868744,
+              374.05545
+            ],
+            [
+              430.073425,
+              374.05545
+            ],
+            [
+              432.482788,
+              371.646088
+            ],
+            [
+              432.482788,
+              370.441406
+            ],
+            [
+              433.687469,
+              369.236694
+            ],
+            [
+              433.687469,
+              368.032013
+            ],
+            [
+              434.892181,
+              366.827332
+            ],
+            [
+              439.710907,
+              366.827332
+            ],
+            [
+              439.710907,
+              359.599213
+            ],
+            [
+              434.892181,
+              359.599213
+            ],
+            [
+              432.482788,
+              357.189819
+            ],
+            [
+              432.482788,
+              354.780457
+            ],
+            [
+              430.073425,
+              352.371094
+            ],
+            [
+              430.073425,
+              346.347656
+            ]
+          ],
+          "mask_source": "ultralytics_result_masks_xy",
+          "xyxy": [
+            396.0957336425781,
+            345.3219909667969,
+            435.96832275390625,
+            386.1803894042969
+          ]
+        }
+      ],
+      "world_m": {
+        "distance": 13.840234953324659,
+        "east": -10.963380445951625,
+        "north": -8.447271320406085,
+        "up": 0.0
+      },
+      "yaw_ambiguous": true,
+      "yaw_deg": 80.07684053929474
+    },
+    {
+      "bbox_only_footprint_m": {
+        "bbox_px": {
+          "x1": 365.9833984375,
+          "x2": 438.4674377441406,
+          "y1": 293.1839294433594,
+          "y2": 464.5874328613281
+        },
+        "center_east_m": -8.397913450246875,
+        "center_north_m": -2.3440101326714564,
+        "length_m": 16.611491372846437,
+        "orientation_deg_axial": 72.0,
+        "orientation_modulo": "pi",
+        "orientation_rad_axial": 1.2566370614359172,
+        "point_count": 8,
+        "points_ned_m": [
+          {
+            "distance_m": 3.8993304783274354,
+            "east_m": -1.5840645695446314,
+            "north_m": 3.563076987482399
+          },
+          {
+            "distance_m": 3.1725855629863755,
+            "east_m": 0.5867047845772067,
+            "north_m": -3.117864116702938
+          },
+          {
+            "distance_m": 17.30544189233155,
+            "east_m": -15.211762330949114,
+            "north_m": -8.251097252825312
+          },
+          {
+            "distance_m": 17.453303358207226,
+            "east_m": -17.382531685070955,
+            "north_m": -1.5701561486399742
+          },
+          {
+            "distance_m": 0.5461092017577522,
+            "east_m": -0.4986798924837123,
+            "north_m": 0.22260643538973107
+          },
+          {
+            "distance_m": 17.020906415189497,
+            "east_m": -16.29714700801004,
+            "north_m": -4.910626700732643
+          },
+          {
+            "distance_m": 9.53550610816608,
+            "east_m": -9.483298127307794,
+            "north_m": 0.9964604194212119
+          },
+          {
+            "distance_m": 9.262094672056042,
+            "east_m": -7.312528773185956,
+            "north_m": -5.684480684764125
+          }
+        ],
+        "source": "bbox_ground_projected_quad",
+        "width_m": 7.024757193411583,
+        "yaw_ambiguous": true
+      },
+      "bbox_only_metric_dims_m": {
+        "height": 3.4,
+        "length": 16.611491372846437,
+        "width": 7.024757193411583
+      },
+      "bbox_source": "detector_single_box",
+      "bbox_xyxy": [
+        365.9833984375,
+        293.1839294433594,
+        438.4674377441406,
+        464.5874328613281
+      ],
+      "case_id": "tractor_trailer",
+      "claim_boundary": "The image and YOLOE detector evidence are real local inputs. The flight pose, AGL, and camera geometry are declared replay parameters, not measured flight telemetry; therefore metric position/scale are scenario-relative and not ground truth.",
+      "claim_status": "generic_family",
+      "conservative": true,
+      "declared_height_prior_m": 3.4,
+      "detector_confidence": 0.4710618853569031,
+      "detector_is_real": true,
+      "detector_label": "vehicle",
+      "detector_mask_area_px": 5457.0,
+      "detector_model": "yoloe-26s-seg.pt",
+      "detector_runtime_archetype_id": "heavy_vehicle",
+      "detector_source": "yoloe26s_universal_prompt_probe",
+      "failures": [],
+      "flight_replay": {
+        "alt_agl_m": 40.0,
+        "camera_vfov_deg": 70.0,
+        "drone_pitch_deg": 0.0,
+        "drone_roll_deg": 0.0,
+        "drone_yaw_deg": 72.0,
+        "max_range_m": 250.0,
+        "mount_pitch_deg": -90.0,
+        "mount_roll_deg": 0.0,
+        "mount_yaw_deg": 0.0,
+        "telemetry_is_measured": false,
+        "telemetry_source": "declared_assumed_replay_not_measured"
+      },
+      "height_prior_source": "declared_family_replay_prior_not_measured",
+      "image": "experiments/sppa_detection_reference/20260703_user_tractor_trailer/tractor_trailer_mountain_raw_input.png",
+      "image_is_real": true,
+      "image_source": "real_user_supplied_image",
+      "mask_path_used": "native_yoloe_detector_mask",
+      "metric_ground_truth": false,
+      "native_detector_mask": {
+        "area_px2": 8350.458120659183,
+        "claim_boundary": "Native YOLOE/Ultralytics mask polygon from real image inference. It is detector evidence, not ground-truth segmentation.",
+        "component_count": 1,
+        "method": "ultralytics_result_masks_xy_single_contour",
+        "polygon": [
+          [
+            400.925018,
+            291.8125
+          ],
+          [
+            398.387512,
+            299.425018
+          ],
+          [
+            397.118774,
+            301.962524
+          ],
+          [
+            395.850006,
+            305.768768
+          ],
+          [
+            394.581268,
+            318.456268
+          ],
+          [
+            393.3125,
+            323.53125
+          ],
+          [
+            392.043762,
+            327.337524
+          ],
+          [
+            390.775024,
+            329.875
+          ],
+          [
+            389.506256,
+            333.681274
+          ],
+          [
+            388.237518,
+            337.487518
+          ],
+          [
+            386.96875,
+            340.025024
+          ],
+          [
+            385.700012,
+            342.5625
+          ],
+          [
+            384.431274,
+            345.100006
+          ],
+          [
+            383.162506,
+            348.90625
+          ],
+          [
+            381.893768,
+            351.443756
+          ],
+          [
+            380.625,
+            356.518768
+          ],
+          [
+            379.356262,
+            361.59375
+          ],
+          [
+            378.087524,
+            367.9375
+          ],
+          [
+            376.818756,
+            373.012512
+          ],
+          [
+            375.550018,
+            376.818756
+          ],
+          [
+            374.28125,
+            381.893768
+          ],
+          [
+            373.012512,
+            389.506256
+          ],
+          [
+            371.743774,
+            392.043762
+          ],
+          [
+            367.9375,
+            450.406281
+          ],
+          [
+            374.28125,
+            451.675018
+          ],
+          [
+            378.087524,
+            454.212524
+          ],
+          [
+            380.625,
+            455.481262
+          ],
+          [
+            394.581268,
+            456.750031
+          ],
+          [
+            398.387512,
+            458.018768
+          ],
+          [
+            400.925018,
+            459.287506
+          ],
+          [
+            407.268768,
+            464.362518
+          ],
+          [
+            418.6875,
+            468.168762
+          ],
+          [
+            419.956268,
+            460.556274
+          ],
+          [
+            421.225006,
+            452.943756
+          ],
+          [
+            422.493774,
+            435.181274
+          ],
+          [
+            423.762512,
+            430.106262
+          ],
+          [
+            425.031281,
+            418.6875
+          ],
+          [
+            426.300018,
+            397.118774
+          ],
+          [
+            427.568756,
+            378.087524
+          ],
+          [
+            428.837524,
+            370.475006
+          ],
+          [
+            430.106262,
+            367.9375
+          ],
+          [
+            431.375031,
+            365.400024
+          ],
+          [
+            432.643768,
+            362.862518
+          ],
+          [
+            433.912506,
+            359.056274
+          ],
+          [
+            435.181274,
+            355.25
+          ],
+          [
+            436.450012,
+            352.712524
+          ],
+          [
+            438.987518,
+            348.90625
+          ],
+          [
+            442.793762,
+            320.993774
+          ],
+          [
+            437.718781,
+            319.725006
+          ],
+          [
+            436.450012,
+            317.1875
+          ],
+          [
+            435.181274,
+            313.381256
+          ],
+          [
+            433.912506,
+            308.306274
+          ],
+          [
+            432.643768,
+            301.962524
+          ],
+          [
+            431.375031,
+            298.15625
+          ]
+        ],
+        "quality_score": 0.4710618853569031,
+        "source": "real_detector_mask_yoloe_native_polygon_not_ground_truth",
+        "status": "native_detector_mask_available"
+      },
+      "native_detector_mask_available": true,
+      "native_detector_mask_point_count": 54,
+      "normalization_rule": "generic_vehicle_conservative_proxy",
+      "publication_label": "real image + real YOLOE detector evidence + declared assumed-flight telemetry replay",
+      "reviewed_semantic_tag": "tractor_trailer",
+      "runtime_archetype_id": "tractor_trailer",
+      "semantic_text_source": "reviewed_semantic_tag_plus_detector_evidence",
+      "silhouette_proxy": {
+        "area_px2": 4385.0,
+        "area_ratio_to_expected": 0.803555,
+        "bbox_area_px2": 12424.018279,
+        "bbox_xyxy": {
+          "h": 171.40350341796875,
+          "w": 72.48403930664062,
+          "x1": 365.9833984375,
+          "x2": 438.4674377441406,
+          "y1": 293.1839294433594,
+          "y2": 464.5874328613281
+        },
+        "claim_boundary": "This is an image-derived silhouette proxy inside a detector/review bbox, not a ground-truth mask and not necessarily the native detector segmentation.",
+        "expected_mask_area_px": 5457.0,
+        "hull_area_px2": 8590.5,
+        "method": "contrast_expected_area",
+        "point_count": 7,
+        "polygon": [
+          [
+            433.0,
+            444.0
+          ],
+          [
+            415.0,
+            440.0
+          ],
+          [
+            365.0,
+            402.0
+          ],
+          [
+            365.0,
+            334.0
+          ],
+          [
+            397.0,
+            293.0
+          ],
+          [
+            427.0,
+            293.0
+          ],
+          [
+            438.0,
+            364.0
+          ]
+        ],
+        "quality_score": 0.748139,
+        "schema": "SPPA-SILHOUETTE-0.1",
+        "source": "image_derived_silhouette_proxy",
+        "status": "ok"
+      },
+      "sppa_descriptor_error": null,
+      "sppa_descriptor_has_mask_polygon": true,
+      "sppa_descriptor_id": "sppa-940c98228e627a1d",
+      "sppa_descriptor_mask_hash": "34a80af64e1b06b0",
+      "sppa_descriptor_mask_point_count": 54,
+      "sppa_footprint_m": {
+        "center_east_m": -7.61148030183076,
+        "center_north_m": -2.3845350231217686,
+        "length_m": 16.854949218313088,
+        "orientation_deg_axial": 77.37724287119315,
+        "orientation_modulo": "pi",
+        "orientation_rad_axial": 1.350487654217631,
+        "point_count": 54,
+        "points_ned_m": [
+          {
+            "distance_m": 0.5623181489088492,
+            "east_m": -0.41121828390033244,
+            "north_m": 0.3835377733396546
+          },
+          {
+            "distance_m": 1.2510273280848556,
+            "east_m": -1.1888670630307627,
+            "north_m": 0.3894412433933282
+          },
+          {
+            "distance_m": 1.5228330478007042,
+            "east_m": -1.4607485130001359,
+            "north_m": 0.43038851430059494
+          },
+          {
+            "distance_m": 1.899658345228496,
+            "east_m": -1.8495719692208974,
+            "north_m": 0.4333420811190622
+          },
+          {
+            "distance_m": 3.0617313001320734,
+            "east_m": -3.0569905770321664,
+            "north_m": 0.17031490288573828
+          },
+          {
+            "distance_m": 3.565322244796767,
+            "east_m": -3.562755141057125,
+            "north_m": 0.135272000479332
+          },
+          {
+            "distance_m": 3.953997149451487,
+            "east_m": -3.951580463966793,
+            "north_m": 0.138221903714533
+          },
+          {
+            "distance_m": 4.2272578696676,
+            "east_m": -4.223459148800082,
+            "north_m": 0.17917007306897617
+          },
+          {
+            "distance_m": 4.61587965925384,
+            "east_m": -4.612285370156927,
+            "north_m": 0.18212274144026688
+          },
+          {
+            "distance_m": 5.004531219122663,
+            "east_m": -5.00110792793051,
+            "north_m": 0.1850735431226448
+          },
+          {
+            "distance_m": 5.277832236135368,
+            "east_m": -5.272990276347061,
+            "north_m": 0.22602357916600108
+          },
+          {
+            "distance_m": 5.551292255967912,
+            "east_m": -5.54486896118035,
+            "north_m": 0.2669717485204392
+          },
+          {
+            "distance_m": 5.8248948031819285,
+            "east_m": -5.8167504111497275,
+            "north_m": 0.3079190194277044
+          },
+          {
+            "distance_m": 6.2133556785581545,
+            "east_m": -6.205573867370485,
+            "north_m": 0.3108725862461733
+          },
+          {
+            "distance_m": 6.487002743950546,
+            "east_m": -6.477455317339862,
+            "north_m": 0.351819857153433
+          },
+          {
+            "distance_m": 6.990403822415992,
+            "east_m": -6.983222646500914,
+            "north_m": 0.3167760562998463
+          },
+          {
+            "distance_m": 7.494283687881811,
+            "east_m": -7.488986312078694,
+            "north_m": 0.2817303887573458
+          },
+          {
+            "distance_m": 8.114377828110923,
+            "east_m": -8.111693850596769,
+            "north_m": 0.20868735354278894
+          },
+          {
+            "distance_m": 8.619210478229638,
+            "east_m": -8.617461179757822,
+            "north_m": 0.17364355268919798
+          },
+          {
+            "distance_m": 9.008014893799771,
+            "east_m": -9.006283737531401,
+            "north_m": 0.17659435437157714
+          },
+          {
+            "distance_m": 9.513104228093281,
+            "east_m": -9.512051066692452,
+            "north_m": 0.14155055351799073
+          },
+          {
+            "distance_m": 10.251745116317618,
+            "east_m": -10.251699713014728,
+            "north_m": 0.030511049078549023
+          },
+          {
+            "distance_m": 10.523823772061611,
+            "east_m": -10.523581162984105,
+            "north_m": 0.0714583199858141
+          },
+          {
+            "distance_m": 16.07167464758473,
+            "east_m": -16.016915956303343,
+            "north_m": -1.3255675111185588
+          },
+          {
+            "distance_m": 16.062467317851215,
+            "east_m": -15.94387282891759,
+            "north_m": -1.9482750196883962
+          },
+          {
+            "distance_m": 16.238401604721872,
+            "east_m": -16.063766605093075,
+            "north_m": -2.3750977102701225
+          },
+          {
+            "distance_m": 16.320794159676876,
+            "east_m": -16.10471477444752,
+            "north_m": -2.6469763951034104
+          },
+          {
+            "distance_m": 16.29503774136619,
+            "east_m": -15.803693085849428,
+            "north_m": -3.9713398042503925
+          },
+          {
+            "distance_m": 16.396981540377006,
+            "east_m": -15.806643795360612,
+            "north_m": -4.360162332075733
+          },
+          {
+            "distance_m": 16.51066237927588,
+            "east_m": -15.847591066267869,
+            "north_m": -4.63204378204511
+          },
+          {
+            "distance_m": 16.99562225915864,
+            "east_m": -16.125376884738102,
+            "north_m": -5.368742525132185
+          },
+          {
+            "distance_m": 17.407539403462433,
+            "east_m": -16.134232054921334,
+            "north_m": -6.535211096900099
+          },
+          {
+            "distance_m": 16.681222582253305,
+            "east_m": -15.394582510151874,
+            "north_m": -6.42417435759675
+          },
+          {
+            "distance_m": 15.95690025780596,
+            "east_m": -14.654931098693504,
+            "north_m": -6.313133954710129
+          },
+          {
+            "distance_m": 14.256984840897243,
+            "east_m": -12.97974439608216,
+            "north_m": -5.898122766266192
+          },
+          {
+            "distance_m": 13.783170491971084,
+            "east_m": -12.473977965368286,
+            "north_m": -5.863076200276516
+          },
+          {
+            "distance_m": 12.70321419519383,
+            "east_m": -11.383499536965802,
+            "north_m": -5.638048348575365
+          },
+          {
+            "distance_m": 10.661374495489166,
+            "east_m": -9.357487674201172,
+            "north_m": -5.10904399670232
+          },
+          {
+            "distance_m": 8.883314803557026,
+            "east_m": -7.565357997096711,
+            "north_m": -4.656032675450232
+          },
+          {
+            "distance_m": 8.2004413308595,
+            "east_m": -6.825705687191165,
+            "north_m": -4.544995037699701
+          },
+          {
+            "distance_m": 7.998967370246434,
+            "east_m": -6.553824237221788,
+            "north_m": -4.585942308606968
+          },
+          {
+            "distance_m": 7.801985016319212,
+            "east_m": -6.281944623993084,
+            "north_m": -4.626893335268697
+          },
+          {
+            "distance_m": 7.609835397689084,
+            "east_m": -6.0100632039719475,
+            "north_m": -4.6678405140047605
+          },
+          {
+            "distance_m": 7.308531857847444,
+            "east_m": -5.621240646198365,
+            "north_m": -4.670791315687139
+          },
+          {
+            "distance_m": 7.015842325894446,
+            "east_m": -5.2324144248415205,
+            "north_m": -4.67374398405843
+          },
+          {
+            "distance_m": 6.843627468627432,
+            "east_m": -4.96053574000823,
+            "north_m": -4.714692153412873
+          },
+          {
+            "distance_m": 6.627803189980373,
+            "east_m": -4.533713049426503,
+            "north_m": -4.83458592958837
+          },
+          {
+            "distance_m": 4.7253987380403,
+            "east_m": -1.8469962505234998,
+            "north_m": -4.349482507612255
+          },
+          {
+            "distance_m": 4.279747609246225,
+            "east_m": -1.8820391229816735,
+            "north_m": -3.843718035758496
+          },
+          {
+            "distance_m": 4.021355906967685,
+            "east_m": -1.6861515398574745,
+            "north_m": -3.650780233750062
+          },
+          {
+            "distance_m": 3.685292260848533,
+            "east_m": -1.3733219205336593,
+            "north_m": -3.419848819824033
+          },
+          {
+            "distance_m": 3.2891603599949555,
+            "east_m": -0.9435520918528144,
+            "north_m": -3.15091817153704
+          },
+          {
+            "distance_m": 2.871545877738609,
+            "east_m": -0.39683749178450106,
+            "north_m": -2.8439929207140766
+          },
+          {
+            "distance_m": 2.614410655881294,
+            "east_m": -0.08400507737635726,
+            "north_m": -2.613060700512074
+          }
+        ],
+        "source": "real_mask_ground_projected_oriented_footprint",
+        "width_m": 6.210188307188842,
+        "yaw_ambiguous": true
+      },
+      "sppa_metric_dims_m": {
+        "height": 3.4,
+        "length": 16.854949218313088,
+        "width": 6.210188307188842
+      },
+      "sppa_observation_id": "sppa-obs-1ec9e6c2a49868bd",
+      "sppa_observation_metric_evidence_source": "real_mask_ground_projected_oriented_footprint",
+      "sppa_observation_status": "metric_observation_ready",
+      "sppa_scale_source": "real_mask_ground_projected_oriented_footprint",
+      "sppa_shape_policy": "semantic_part_layout_from_metric_dims",
+      "sppa_tag": "generic_vehicle",
+      "sppa_uncertainty": {
+        "confidence": 0.4710618853569031,
+        "covariance_local_enu_m2": [
+          [
+            0.2492888068995986,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.2492888068995986,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            5.284722600819203
+          ]
+        ],
+        "fallback_inflation_m": 3.297429,
+        "fallback_unknown": false,
+        "material_from_observation": false,
+        "material_from_prior": true,
+        "material_source": "semantic_prior",
+        "material_uses_role_priors": true,
+        "observation_schema": "SPPA-UNCERTAINTY-0.1",
+        "position_sigma_m": 0.499288,
+        "quality_flags": {
+          "height_from_prior": true,
+          "mask_quality_score": 0.4710618853569031,
+          "mask_source": "real_detector_mask_yoloe_native_polygon_not_ground_truth",
+          "telemetry_measured": false,
+          "used_bbox": true,
+          "used_mask": true,
+          "used_metric_footprint": true,
+          "used_world_projection": true
+        },
+        "scale_from_bbox": false,
+        "scale_from_calibrated_footprint": false,
+        "scale_from_dims": true,
+        "scale_from_mask": false,
+        "scale_from_semantic_prior": false,
+        "scale_sigma_m": 2.298852,
+        "shape_low_confidence": true,
+        "shape_source": "real_mask_ground_projected_oriented_footprint",
+        "telemetry_measured": false,
+        "texture_from_observation": false,
+        "visual_policy": "covariance_envelope_from_metric_observation",
+        "yaw_ambiguous": false,
+        "yaw_sigma_deg": 13.673629
+      },
+      "status": "passed",
+      "telemetry_is_measured": false,
+      "telemetry_source": "declared_assumed_replay_not_measured",
+      "used_detections": [
+        {
+          "class_id": 5,
+          "class_name": "vehicle",
+          "confidence": 0.4710618853569031,
+          "mask_area_px": 5457,
+          "mask_polygon_area_px2": 8350.458120659183,
+          "mask_polygon_point_count": 54,
+          "mask_polygon_px": [
+            [
+              400.925018,
+              291.8125
+            ],
+            [
+              398.387512,
+              299.425018
+            ],
+            [
+              397.118774,
+              301.962524
+            ],
+            [
+              395.850006,
+              305.768768
+            ],
+            [
+              394.581268,
+              318.456268
+            ],
+            [
+              393.3125,
+              323.53125
+            ],
+            [
+              392.043762,
+              327.337524
+            ],
+            [
+              390.775024,
+              329.875
+            ],
+            [
+              389.506256,
+              333.681274
+            ],
+            [
+              388.237518,
+              337.487518
+            ],
+            [
+              386.96875,
+              340.025024
+            ],
+            [
+              385.700012,
+              342.5625
+            ],
+            [
+              384.431274,
+              345.100006
+            ],
+            [
+              383.162506,
+              348.90625
+            ],
+            [
+              381.893768,
+              351.443756
+            ],
+            [
+              380.625,
+              356.518768
+            ],
+            [
+              379.356262,
+              361.59375
+            ],
+            [
+              378.087524,
+              367.9375
+            ],
+            [
+              376.818756,
+              373.012512
+            ],
+            [
+              375.550018,
+              376.818756
+            ],
+            [
+              374.28125,
+              381.893768
+            ],
+            [
+              373.012512,
+              389.506256
+            ],
+            [
+              371.743774,
+              392.043762
+            ],
+            [
+              367.9375,
+              450.406281
+            ],
+            [
+              374.28125,
+              451.675018
+            ],
+            [
+              378.087524,
+              454.212524
+            ],
+            [
+              380.625,
+              455.481262
+            ],
+            [
+              394.581268,
+              456.750031
+            ],
+            [
+              398.387512,
+              458.018768
+            ],
+            [
+              400.925018,
+              459.287506
+            ],
+            [
+              407.268768,
+              464.362518
+            ],
+            [
+              418.6875,
+              468.168762
+            ],
+            [
+              419.956268,
+              460.556274
+            ],
+            [
+              421.225006,
+              452.943756
+            ],
+            [
+              422.493774,
+              435.181274
+            ],
+            [
+              423.762512,
+              430.106262
+            ],
+            [
+              425.031281,
+              418.6875
+            ],
+            [
+              426.300018,
+              397.118774
+            ],
+            [
+              427.568756,
+              378.087524
+            ],
+            [
+              428.837524,
+              370.475006
+            ],
+            [
+              430.106262,
+              367.9375
+            ],
+            [
+              431.375031,
+              365.400024
+            ],
+            [
+              432.643768,
+              362.862518
+            ],
+            [
+              433.912506,
+              359.056274
+            ],
+            [
+              435.181274,
+              355.25
+            ],
+            [
+              436.450012,
+              352.712524
+            ],
+            [
+              438.987518,
+              348.90625
+            ],
+            [
+              442.793762,
+              320.993774
+            ],
+            [
+              437.718781,
+              319.725006
+            ],
+            [
+              436.450012,
+              317.1875
+            ],
+            [
+              435.181274,
+              313.381256
+            ],
+            [
+              433.912506,
+              308.306274
+            ],
+            [
+              432.643768,
+              301.962524
+            ],
+            [
+              431.375031,
+              298.15625
+            ]
+          ],
+          "mask_source": "ultralytics_result_masks_xy",
+          "xyxy": [
+            365.9833984375,
+            293.1839294433594,
+            438.4674377441406,
+            464.5874328613281
+          ]
+        }
+      ],
+      "world_m": {
+        "distance": 7.976254739014549,
+        "east": -7.611480301830762,
+        "north": -2.3845350231217686,
+        "up": 0.0
+      },
+      "yaw_ambiguous": true,
+      "yaw_deg": 77.37724287119315
+    }
+  ],
+  "schema": "SPPA-REAL-IMAGE-ASSUMED-FLIGHT-REPLAY-0.1",
+  "telemetry_is_measured": false
+}

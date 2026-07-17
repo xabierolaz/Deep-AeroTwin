@@ -20,8 +20,8 @@
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 
-\title{Family-Conditioned Multiview Occupancy Fitting for Semantic Proxy Actors\\
-in a Synthetic UAV Digital-Twin Setting (SPPA-MVFit)}
+\title{Family-Conditioned Multiview Fitting for Semantic Primitive Proxy Actors\\
+in UAV Digital Twins (SPPA-MVFit)}
 \author{Authors omitted for review}
 \date{}
 
@@ -30,35 +30,33 @@ in a Synthetic UAV Digital-Twin Setting (SPPA-MVFit)}
 \maketitle
 
 \begin{abstract}
-\textbf{Novelty.} We show that a \emph{frozen semantic-family part graph} is a
-measurable 3D occupancy prior for lightweight multiview proxy fitting: under an
-input-matched, equal-budget comparison, family-conditioned SPPA-MVFit improves
-voxel occupancy over a nonsemantic eight-part graph when both fit the same
-calibrated top/side silhouettes. The optimizer is deliberately simple; the
-knowledge representation (family topology) is the object of inference---not a
-new neural reconstructor, not open-set word-to-3D, and not an Unreal systems
-demo as the scientific claim.
+Object-level UAV telemetry is not a mesh: a detector may provide a class family,
+confidence, track identifier, bounding region, and approximate pose, but no
+occupancy geometry. This paper studies whether a frozen semantic-family part
+graph improves lightweight 3D occupancy relative to an input-matched,
+equal-budget nonsemantic graph when both consume the same calibrated top and
+side silhouettes. The method, family-conditioned SPPA-MVFit, adjusts five shared
+parameters of a fixed eight-part primitive actor with a 31-candidate silhouette
+objective; text-only and silhouette-fitted modes call the same actor builder.
 
-\textbf{Method.} SPPA-MVFit adjusts five shared parameters of a fixed eight-part
-primitive actor with a 31-candidate silhouette objective. Text-only and
-silhouette-fitted modes call the same actor builder; only \(\theta\) changes.
-
-\textbf{Evidence.} On a preregistered developer-held-out synthetic test
-(\(n{=}240\) actors; six families; CSG-ID and implicit-OOD strata), the primary
-paired mean voxel-IoU difference SPPA-MVFit $-$ Generic-MVFit is \(0.190\)
-(stratified bootstrap 95\% CI \([0.181,0.199]\)), exceeding the prespecified
-\(+0.030\) superiority margin. All twelve family$\times$stratum cells are
-positive; OOD stratum mean \(\Delta=0.172\). Median fitter wall time is
-\(9.4\)~ms (p95 \(10.6\)~ms) locally.
-
-\textbf{Boundary.} Results are synthetic internal evidence only. Deployment
-context (descriptor/update contract, low-polygon runtime proxies) is secondary
-and is not used to claim photoreal image-to-3D SOTA, measured flight validity,
-or operator benefit.
+On a preregistered developer-held-out synthetic test of 240 actors balanced
+across six morphology families and two source strata (CSG-ID and structurally
+different implicit-OOD), the primary paired mean voxel-IoU difference of
+SPPA-MVFit minus Generic-MVFit is \(0.190\) with stratified bootstrap 95\% CI
+\([0.181,0.199]\). The lower bound exceeds the prespecified \(+0.030\)
+superiority margin, so the primary hypothesis passes. Both strata remain
+positive (\(0.209\) CSG-ID; \(0.172\) implicit-OOD). Secondary comparisons
+favour SPPA-MVFit over text-only SPPA and lightweight geometric baselines;
+median clean-call wall time is \(9.4\)~ms (p95 \(10.6\)~ms) on the benchmark
+machine. The result is synthetic internal evidence only: it does not establish
+real UAV reconstruction, measured flight validity, operator benefit, or an
+image-to-3D SOTA ranking. A separate SPPA descriptor/update contract and
+optional Unreal Engine backend are reported as deployment context, not as the
+primary scientific endpoint.
 \end{abstract}
 
 \noindent\textbf{Keywords:} semantic 3D proxy; multiview silhouette fitting;
-family-conditioned part graph; occupancy IoU; synthetic spatial proxy; UAV digital-twin setting.
+UAV digital twin; family-conditioned part graph; primitive actor; occupancy IoU.
 
 \section{Introduction}
 
@@ -88,13 +86,11 @@ unsupported labels are not hallucinated into specific objects; they fall back to
 a generic uncertainty-aware display volume with explicit uncertainty metadata.
 
 The scientific question is therefore not whether SPPA looks better than neural
-3D generation. It should not. The measurable question---and the only
-confirmatory claim of this paper---is whether a frozen semantic-family part
-graph improves lightweight 3D occupancy relative to an input-matched,
-equal-budget nonsemantic graph when both consume the same calibrated
-silhouettes. Runtime persistence, low polygon count, and updateability are
-reported later as secondary engineering properties, not as the primary
-scientific result.
+3D generation. It should not. The measurable question is whether a frozen
+semantic-family part graph improves lightweight 3D occupancy relative to an
+input-matched, equal-budget nonsemantic graph when both consume the same
+calibrated silhouettes. Runtime persistence and updateability are reported as
+separate engineering properties rather than collapsed into a utility score.
 
 \section{Contribution and Scope}
 
@@ -122,62 +118,371 @@ Secondary contributions provide deployment context only:
     dense VR readiness, and SOTA image-to-3D ranking remain outside the claim.
 \end{itemize}
 
-\paragraph{Why this is falsifiable novelty.}
-Primitive assemblies, visual hulls, and multiview silhouette consistency are
-mature~\cite{laurentini1994visualhull,tulsiani2017learning,mo2019partnet,trager2016silhouettes}.
-What is new here is the \emph{identification design}: family graph versus
-equal-budget generic graph isolates the semantic part prior as a spatial
-knowledge representation for lightweight twin proxies. If the family graph did
-not help, H1 would fail under the preregistered margin rule. The paper therefore
-does not sell a denser mesh, a better neural fitter, or a flight-validated
-system; it sells a measured KR effect under a sealed protocol.
-
-
 \begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{figures/sppa_language_to_parts_to_3d_v17.png}
-\caption{Deployment illustration (not the primary scientific endpoint): semantic
-label to reviewed part recipe to lightweight primitive proxy for the truck
-archetype. Offline language/ontology drafting may propose roles, but runtime
-uses only a reviewed recipe. Short/long variants keep cab and wheel priors while
-cargo length changes. The confirmatory science is equal-budget family-conditioned
-MVFit occupancy (Figure~\ref{fig:mvfit-h1}, Tables~\ref{tab:mvfit-h1}--\ref{tab:mvfit-family}).}
+\caption{SPPA semantic-label-to-parts-to-3D mechanism for the truck archetype. A
+language model, ontology tool, or human author may draft candidate part roles
+offline, but runtime execution uses only a reviewed versioned recipe \(z_r\). The
+figure shows the proposed chain explicitly: an input label or word activates an
+offline draft, the draft is reduced to reviewed part roles and bounded update
+rules, and runtime compiles those roles into primitive geometry. The short and
+long proxy variants illustrate the implemented role-specific rule: cargo length
+changes while cab and wheel priors remain bounded, so the object is not
+represented by root-scaling a single box.}
 \label{fig:sppa-flow}
 \end{figure}
 
-\noindent\textcolor{red}{Claim boundary: Figure~\ref{fig:sppa-flow} is a
-deployment illustration of part-parametric proxies, not photoreal reconstruction
-and not the H1 occupancy result.}
+\noindent\textcolor{red}{Claim boundary: Figure~\ref{fig:sppa-flow} is not a
+claim of photorealistic reconstruction or universally correct geometry; SPPA is
+only claimed here as a bounded, reviewed semantic-proxy compiler.}
 
-Figure~\ref{fig:sppa-flow} shows how reviewed part recipes become twin actors.
-It is secondary context for the paper's scientific claim: that family part
-topology improves occupancy under equal-budget multiview fitting
-(Section~\ref{sec:primary-results}).
+Figure~\ref{fig:sppa-flow} states the central representation claim visually:
+SPPA is a reviewed semantic recipe compiler, not arbitrary word-to-3D
+generation and not a primitive-shape benchmark. The language component is
+limited to offline decomposition drafting and ontology expansion. The implemented
+runtime path starts after an admitted recipe exists: a detector label and telemetry
+state select a reviewed archetype, fill bounded part parameters, and expose
+explicit fallback behavior when the label is unsupported. For vehicles, the
+important distinction is part-parametric adaptation rather than global mesh or
+root-scale deformation.
 
+\section{Language Model Use and Geometry Path}
+\label{sec:language-geometry-path}
+
+The current SPPA implementation does not call a language model in the runtime
+path. The implemented resolver contract records
+\texttt{resolver\_source} as a static keyword ontology and marks
+\texttt{runtime\_llm\_used} as false; the versioned recipe manifest also
+disallows runtime LLM use. The executable system described in this paper should
+therefore not be read as a live LLM that answers questions such as ``is this a
+mammal?'' or ``how many legs should it have?'' before constructing a
+mesh. Those facts are already encoded in reviewed archetype recipes. If an LLM
+is used at all, it is only an offline authoring aid that can propose candidate
+part decompositions; those candidates must be reviewed, versioned, regression
+tested, and admitted before runtime use. The present artifacts record that offline
+assistance category, but they do not record a specific LLM provider, model name,
+prompt, or output hash, so the paper makes no claim about a particular language
+model.
+
+Two input modes are therefore distinct. A detector-driven input contains a
+class label plus confidence, track state, bounding region, optional mask, pose,
+and possibly calibrated scale. SPPA may use that evidence to choose a family,
+derive an axial footprint, update pose, or adapt dimensions. A tag-only input
+contains only a word or phrase; it can select a reviewed recipe and default
+dimension priors, but it cannot provide real silhouette, pose, color, or metric
+scale evidence. This distinction is important for the benchmark figures: a
+text-only prompt activates a recipe, whereas a detected object can carry
+measurement evidence.
+
+Runtime execution is a deterministic compilation pipeline:
+
+\begin{enumerate}
+    \item A detector label or tag is normalized to a SPPA tag and runtime label.
+    For example, labels such as \texttt{electric pylon},
+    \texttt{agricultural vehicle}, or \texttt{vehicle} are mapped to reviewed
+    semantic families such as vertical structure, farm vehicle, heavy vehicle,
+    or generic vehicle when the evidence supports only that level.
+    \item The generator resolves the normalized label through exact-class
+    rules, keyword-archetype rules, verifier-gated open-label proxy recipes, or
+    explicit unknown fallback.
+    \item Metric dimensions come from supplied dimensions, calibrated footprint
+    evidence, or bounded archetype priors. Without calibration, a mask remains
+    image-space evidence and does not by itself become metric geometry.
+    \item The selected recipe emits role-labeled primitives, such as body, cab,
+    cargo, wheel, torso, head, leg, trunk, canopy, mast, crossbar, or fallback
+    volume. When parts are semantically attached, the recipe also emits explicit
+    lightweight connector cylinders between contact points, for example bicycle
+    frame tubes, rider-to-bike limbs, tower braces, or tractor-trailer hitches.
+    Each primitive records type, local transform, scale, material role, and
+    uncertainty metadata.
+    \item The descriptor is consumed by Unreal, which creates primitive
+    components once per track and archetype and then applies pose, confidence,
+    material, or compatible shape updates without rerunning a generative model.
+\end{enumerate}
+
+For an animal-like object, SPPA does not infer anatomy from first principles
+or edit a mesh by hand at runtime. A label such as \texttt{cow},
+\texttt{horse}, \texttt{dog}, or a conservative \texttt{quadruped} family
+selects a semantic morphology profile inside the same quadruped generator.
+Those profiles control torso proportions, head/neck placement, legs, tail,
+horn/hoof hints, and optional markings, while the emitted proxy remains a
+low-polygon part graph rather than a watertight biological reconstruction.
+This explains why \texttt{biker} is visually cleaner from text alone: wheels
+and frame tubes are discrete geometric roles, whereas an animal is an organic
+shape represented only by bounded semantic priors unless image or metric
+evidence is available. A local text-only animal probe over
+\texttt{cow}, \texttt{bull}, \texttt{horse}, \texttt{dog}, \texttt{sheep},
+\texttt{goat}, \texttt{deer}, and \texttt{quadruped} generated all cases
+through this shared profile path, with 836--1180 triangles and at most
+0.61 ms in-process part synthesis before export. For a tractor or tractor-trailer, the system need not detect the exact
+taxonomic class to be useful: a detector output such as \texttt{vehicle},
+\texttt{agricultural vehicle}, \texttt{truck}, or \texttt{trailer} can be
+normalized to a farm, heavy, or generic vehicle proxy. If the label is weak or
+adversarial, SPPA should prefer a conservative fallback volume over inventing a
+specific object. In the current implementation, a small set of useful UAV
+open-label cases such as \texttt{forklift}, \texttt{traffic cone},
+\texttt{water tank}, \texttt{shipping container}, \texttt{drone}, and
+\texttt{hay bale} may pass through a deterministic recipe verifier before they
+are accepted as generated proxy recipes; otherwise fallback remains the runtime
+behavior.
+
+This is also the honest novelty boundary. Primitive composition, CSG, shape
+programs, procedural modeling, silhouette consistency, multiview primitive
+optimization, and text-to-CAD are mature research areas
+\cite{biederman1987recognition,solina1990recovery,tulsiani2017learning,zou20173dprnn,sharma2018csgnet,mueller2006procedural,jones2020shapeassembly,jones2023shapecoder,khan2024text2cad,rukhovich2024cadrecode,trager2016silhouettes,ganeshan2026superfrusta,meng2026dualprim}.
+SPPA's contribution is not that boxes and cylinders can describe objects. Its
+contribution is a bounded UAV-runtime contract that converts imperfect semantic
+evidence into lightweight, controllable, updateable, and fallback-safe 3D proxy
+actors.
+
+\section{Representation Design Space}
+
+The relevant comparison is not a single ``3D representation'' baseline. A UAV
+digital twin can visualize a semantic detection through several families of
+representations, each making different assumptions about input evidence,
+runtime budget, geometry, and operator interpretation. Geometry-only displays
+such as boxes, ellipsoids, or billboards remain useful lower-bound controls,
+but they are not the scientific competitor. SPPA targets the gap between a
+generic box and a curated asset: a role-labeled primitive actor when only
+sparse semantic telemetry is available.
+
+Table~\ref{tab:representation-design-space} states the resulting deployment
+policy. It deliberately gives priority to curated assets and mapping geometry
+when those are the correct tools.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.10}
+\caption{Operational representation policy for semantic detections.}
+\label{tab:representation-design-space}
+\begin{tabularx}{\linewidth}{@{}L{0.28\linewidth}L{0.25\linewidth}Y L{0.20\linewidth}@{}}
+\toprule
+Situation & Preferred representation & Reason & Boundary \\
+\midrule
+Matched project asset exists & Curated asset backend & best appearance and lower measured cost in the cow/tower subset & asset library must match class and scale \\
+Known semantic family, no asset & SPPA primitive actor & persistent, local, role-labeled 3D proxy from label/pose input & finite reviewed archetypes \\
+Unknown or adversarial label & SPPA fallback volume & avoids inventing a specific object from weak semantics & not visually specific \\
+Clean crop plus offline budget & Image-to-3D or asset authoring & richer mesh can be generated outside the flight update loop & no per-frame track contract \\
+Planning or occupancy task & Occupancy / ESDF / map layer & represents navigable space and collision evidence & not a role-labeled display actor \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
 \section{Related Work}
 
-We position SPPA-MVFit against three literatures without claiming to replace them.
+SPPA overlaps with several mature research areas, but it does not replace them.
+Text-to-3D and image-to-3D generation methods such as DreamFusion, Magic3D,
+Point-E, Shap-E, TripoSR, TripoSG/Tripo P1, InstantMesh, Stable Fast 3D,
+SPAR3D, LGM, CRM, Unique3D, Direct3D-S2, PartCrafter, Pixal3D,
+TRELLIS/TRELLIS.2, Hunyuan3D 2.x, and commercial systems such as Rodin Gen-2.5 target visual asset generation or
+reconstruction
+\cite{poole2022dreamfusion,lin2022magic3d,nichol2022pointe,jun2023shape,tochilkin2024triposr,triposg2025,xu2024instantmesh,stability2024sf3d,sf3d2024,stability2025spar3d,tang2024lgm,wang2024crm,wu2024unique3d,wu2025direct3ds2,lin2025partcrafter,li2026pixal3d,xiang2024trellis,xiang2025trellis2,zhao2025hunyuan3d,hunyuan2025hunyuan3d21,hyper3d2026rodin25}.
+Their strength is fidelity when suitable visual or prompt evidence is
+available. SPPA targets a different runtime point: deterministic actor
+generation from sparse semantic telemetry, low polygon counts, and cheap
+per-frame updates.
+Recent benchmark work also highlights why a real image-to-3D ranking needs a
+shared reference set, metrics, and part/structure evaluation rather than a local
+figure assembled from heterogeneous inputs
+\cite{hunyuan2026hy3dbench,yang2026p3dbench}.
+For this reason, the artifact package includes an explicit SOTA-protocol
+readiness manifest and verifier. In the current artifact state that verifier
+keeps the comparative figure classified as an input-alignment audit, not as an
+image-to-3D SOTA leaderboard.
 
-\textbf{Neural image/text-to-3D} produces dense assets from crops or prompts
-\cite{poole2022dreamfusion,lin2022magic3d,nichol2022pointe,jun2023shape,tochilkin2024triposr,xu2024instantmesh,xiang2024trellis,zhao2025hunyuan3d}.
-SPPA targets sparse semantic telemetry and low-polygon twin actors under shared
-runtime budgets, not photoreal offline authoring.
+Monocular and open-vocabulary 3D detection estimate 3D boxes or object state
+from images \cite{brazil2022omni3d,yao2024ovmono3d}; YOLOE supplies approximate
+open-prompt detection/segmentation evidence rather than universal recognition
+\cite{wang2025yoloe}. Animal pose and animal
+reconstruction methods estimate detailed skeletons or category-specific 3D
+shape \cite{yu2021ap10k,li20243dfauna,hu2026sam3danimal}. These methods can
+provide stronger evidence to SPPA, but SPPA itself is a rendering/backend layer,
+not a detector or pose estimator.
 
-\textbf{Primitive and part-based shape models}---including recognition-by-components,
-superquadrics, learned volumetric primitives, hierarchical semantic parts, and
-visual hulls---are mature
-\cite{biederman1987recognition,solina1990recovery,tulsiani2017learning,mo2019partnet,laurentini1994visualhull,paschalidou2019superquadrics,trager2016silhouettes}.
-Our contribution is not a new primitive language, but an equal-budget test of
-whether a frozen family part graph improves occupancy as a spatial knowledge
-representation for lightweight proxies.
+Primitive representations have a long history. Marr's volumetric primitives,
+recognition-by-components, superquadrics, learned part decomposition, recent
+superquadric scene decomposition, residual primitive fitting, and positive/
+negative multiview primitives show that structured primitive geometry can encode
+compact shape abstractions
+\cite{marr1978representation,biederman1987recognition,solina1990recovery,paschalidou2019superquadrics,tulsiani2017learning,mo2019partnet,fedele2025superdec,ganeshan2026superfrusta,meng2026dualprim}.
+Neural primitive and CSG parsers show that networks can infer compact primitive
+or boolean programs from shape evidence \cite{zou20173dprnn,sharma2018csgnet}.
+Procedural modeling, shape grammars, and learned shape programs show how compact
+programs can generate or abstract structured objects
+\cite{mueller2006procedural,jones2020shapeassembly,jones2023shapecoder}.
+Text-to-CAD and point-cloud-to-code systems extend this program-generation line
+to natural-language CAD prompts and LLM-assisted CAD reconstruction
+\cite{khan2024text2cad,rukhovich2024cadrecode}. SPPA uses these ideas
+operationally, but the claimed novelty is the bounded, track-updateable
+semantic telemetry contract inside an Unreal UAV digital twin.
 
-\textbf{Digital twins, scene graphs, and mapping layers} provide context for
-object-level visualization
-\cite{armeni2019scenegraph,hornung2013octomap,oleynikova2017voxblox,epic2024nanite,ogc2023tiles}.
-SPPA is a display-actor contract, not a mapping substrate. Operator studies
-(NASA-TLX, SAGAT) remain future work
-\cite{hart1988nasatlx,endsley1988sagat,endsley1995situation}.
+Recent scene-level systems narrow the gap from other directions. SAM 3D
+decomposes a single image into composable per-object geometry with layout
+\cite{chen2026sam3d}, and PartCrafter generates part-structured meshes from one
+image \cite{lin2025partcrafter}; both are heavy offline reconstruction or
+generation pipelines, not millisecond telemetry-driven proxies with an update
+contract. SuperQuadricOcc reaches real-time semantic occupancy with superquadric
+volume rendering in driving scenes \cite{hayes2025superquadricocc}, and
+lightweight urban twins render proxy building geometry at interactive rates
+\cite{liu2025citygo}; neither constructs role-labeled, metric-scaled object
+actors from detector tags and sparse silhouettes. Test-time spatial control
+steers generative 3D models with coarse primitives \cite{fedele2025spacecontrol},
+which complements rather than replaces a deterministic proxy contract.
+
+Graphics systems already provide level-of-detail, impostors, billboards,
+streaming tiles, and virtualized geometry \cite{clark1976hierarchical,decoret2003billboard,epic2024nanite,ogc2023tiles}.
+3D and dynamic scene graphs maintain semantic world structure
+\cite{armeni2019scenegraph,rosinol2020dynamic,wu2021scenegraphfusion}. Occupancy
+grids, OctoMap, ESDF, and TSDF maps support planning and mapping
+\cite{hornung2013octomap,oleynikova2017voxblox}. SPPA should be read as a
+display actor representation that can consume such upstream evidence, not as a
+mapping substrate.
+
+Finally, any operator-facing claim must be evaluated with human-factors methods.
+SAGAT, situation-awareness theory, and NASA-TLX are relevant to a future SPPA
+operator study
+\cite{endsley1988sagat,endsley1995situation,hart1988nasatlx}. The present
+paper contains no pilot study.
+
+\section{SPPA Contract}
+
+At time \(t\), SPPA consumes an object state
+\[
+x_t = \{i, \ell, c, b_t, m_t, \xi_t, s_t, \Sigma_t, h_t\},
+\]
+where \(i\) is a track identifier, \(\ell\) a detector label, \(c\) confidence,
+\(b_t\) a bounding region, \(m_t\) an optional mask or footprint, \(\xi_t\) a
+world pose estimate, \(s_t\) optional metric dimensions, \(\Sigma_t\)
+uncertainty, and \(h_t\) the track history. The resolver maps \(\ell\) to one
+of three cases:
+
+\begin{itemize}
+    \item \texttt{exact\_class}: implemented label with a fixed archetype;
+    \item \texttt{keyword\_archetype}: out-of-template label mapped to a finite
+    reviewed archetype, such as vehicle or vertical structure;
+    \item \texttt{fallback\_unknown\_label}: unknown label rendered as a generic
+    uncertainty-aware volume.
+\end{itemize}
+
+This is deliberately not universal word-to-3D generation. SPPA can accept an
+open detector tag at runtime, but the tag is normalized into a reviewed family
+or a conservative unknown fallback before geometry is emitted. A language model
+may assist offline ontology expansion, but runtime resolution must remain
+bounded, reviewed, cached, and able to reject over-specific mappings.
+Figure~\ref{fig:sppa-flow} makes this boundary explicit: language-model support
+belongs to offline archetype authoring or review, while the runtime path maps a
+detector label to a reviewed archetype, generic fallback volume, descriptor
+parts, and Unreal components.
+The SPPA observation path makes the metric-evidence boundary explicit through a
+\texttt{SPPA-OBS-0.1} observation record. It stores detector evidence, camera
+and flight geometry, a projected local footprint when available, a metric
+dimension proposal, and a covariance-style uncertainty envelope. Unless the
+record marks telemetry and metric ground truth as measured, the resulting pose
+and scale are treated as scenario-relative evidence for a proxy contract rather
+than as flight-localization truth.
+The current implementation includes a versioned archetype-recipe contract with
+15 reviewed archetypes and 64 exact/keyword/fallback label checks. That contract
+verifies resolver status, allowed runtime archetype, required semantic material
+roles, and disabled runtime LLM use; it does not validate geometric correctness
+for arbitrary open-vocabulary labels. A separate offline recipe-review gate now
+tests five candidate mappings before caching: one accepted reviewed-family
+mapping, one fallback-only mapping, and three rejected mappings for visual
+artifact context, unreviewed topology/material roles, or attempted runtime LLM
+use. This is an implementation guard, not proof of open-vocabulary coverage.
+
+\subsection{Part Graph}
+
+Each archetype \(a\) defines a part graph
+\[
+G_a = (V_a,E_a), \quad v_k = (p_k,r_k,\tau_k,\rho_k),
+\]
+where \(p_k\) is a primitive type, \(r_k\) is its role, \(\tau_k\) its transform
+relative to the actor root, and \(\rho_k\) role-specific parameters such as
+dimension priors, color/material role, and confidence tags. The current
+implementation uses boxes, cylinders, ellipsoids, cones, and tori.
+
+Vehicle adaptation is the clearest implemented case. A long truck and a short
+truck should not be produced by globally scaling the same box. In the current
+vehicle grammar, cab and wheel dimensions remain bounded by role priors, while
+the cargo/body span and axle placement absorb length changes. In the synthetic
+truck check, two descriptors with equal width/height and different length keep
+cab scale fixed at \([1.656,2.070,1.952]\) m and wheel scale fixed at
+\([0.392,0.094]\) m, while cargo/body length changes from \(2.263\) m to
+\(5.188\) m. This is an internal part-invariance diagnostic, not a visual
+comparison against competing 3D generation methods and not proof that SPPA
+recovers true truck morphology from UAV imagery. The corresponding component
+views are kept in the artifact log rather than used as main-paper
+comparative evidence.
+
+\subsection{Pose, Yaw, and Updates}
+
+The descriptor separates actor pose \(\xi_t\) from part parameters \(q_t\). Pose
+changes are per-frame updates; topology regeneration is avoided unless the
+class/archetype changes or new evidence crosses a configured threshold. A
+typical update packet therefore changes only root transform, confidence,
+material/uncertainty tags, or a small set of shape parameters.
+
+Yaw ambiguity is handled explicitly. A top-down footprint or PCA orientation gives an
+axial orientation modulo \(\pi\), not necessarily a signed heading modulo
+\(2\pi\). Signed yaw requires velocity, asymmetry, multi-frame evidence, or an
+external heading source. If no reliable sign exists, the descriptor sets
+\texttt{yaw\_ambiguous=true}. The exact thresholds and weights in the fitting
+objective are exposed as versioned protocol parameters in the current
+implementation, not calibrated constants.
+
+When a mask polygon is available, the descriptor records both the axis-aligned
+mask box and an oriented image-space footprint from PCA projections. This is
+used as footprint evidence and axial yaw evidence. If explicit metric
+dimensions or an explicit image-to-ground scale are supplied, the current
+generator can convert the calibrated footprint to metric length/width and pass
+those dimensions to the part-parametric builder. Without such calibration, the
+mask remains image-space evidence only and does not change metric geometry.
+
+\section{Implementation}
+
+The prototype has three layers. The first is a Python OBJ/MTL prototype generator
+for a finite set of explicit and keyword-resolved archetypes, including
+vehicles, vulnerable road users, vegetation, vertical structures, generic
+quadrupeds, and unknown fallback volumes. This path is useful for visual
+inspection and lightweight local timing only.
+
+The second layer emits versioned descriptors and update packets. A
+\texttt{SPPA-DESC-0.2} record stores resolver source, match type, fallback
+reason, scale source, axis-aligned and oriented mask footprint evidence, yaw
+ambiguity, shape confidence, material source, optional observed-color evidence,
+part list, primitive counts, and scheduler metadata. A \texttt{SPPA-UPD-0.2}
+record separates create/regenerate payloads from pose/no-op/shape updates. The
+design goal is to generate once per track/archetype, update pose/material/
+uncertainty every frame, and apply shape-parameter changes in place when the
+part topology is unchanged.
+When supplied by the SPPA observation bridge, the descriptor additionally
+preserves the observation identifier, covariance matrix, position/scale/yaw
+uncertainty estimates, and visual uncertainty policy. These fields are carried
+as auditable metadata; they do not make the visual uncertainty encoding a
+validated human-factors result.
+In the current generator, \texttt{descriptor\_id} is a topology-cache identity:
+it excludes pose, timestamp, confidence, and observed color, which remain in
+\texttt{input\_hash} or update fields. This separation is required for cheap
+per-frame updates; otherwise a pose update would look like a new mesh
+descriptor.
+
+The third layer is an optional Unreal Engine 5.7 telemetry backend. The same
+obstacle payload can drive either curated asset actors or semantic proxy actors.
+The asset backend remains the default. The SPPA backend can ingest descriptor
+JSON, construct primitive components from the \texttt{parts} array, apply
+pose/no-op/shape update packets, and reject invalid JSON or mismatched
+descriptor identifiers without changing the current actor. This implements a
+runtime switch without forcing a migration away from curated assets.
+
+\noindent The current resolver coverage regression checks 34 direct labels,
+including reviewed archetypes, conservative fallback contexts, and
+verifier-gated open-label recipes. A separate recipe-manifest contract checks 23
+archetypes and 95 exact or keyword labels against the runtime generator. These
+checks verify resolver consistency and recipe roles; they are not evidence that
+the ontology is complete.
 
 \section{Family-Conditioned SPPA-MVFit}
 \label{sec:mvfit}
@@ -202,11 +507,8 @@ with identical bounds for every graph \(g\). Text-only SPPA uses the family
 graph at the default \(\theta_0\). Generic-MVFit and SPPA-MVFit optimize the
 same five parameters with the same silhouette disagreement objective and a
 fixed 31-candidate local search budget; only the graph identity differs
-(\texttt{generic} vs family). This equal-budget construction is the paper's
-identification strategy: any occupancy gain is attributed to the family part
-prior, not to extra parameters, extra views, or a stronger optimizer.
-Baselines include axis-aligned box, ellipsoid, capsule, billboard, and
-nonsemantic visual hull~\cite{laurentini1994visualhull} from the same masks.
+(\texttt{generic} vs family). Baselines include axis-aligned box, ellipsoid,
+capsule, billboard, and nonsemantic visual hull from the same masks.
 
 \subsection{Preregistered confirmatory protocol}
 
@@ -229,16 +531,6 @@ synthetic geometry, not an externally blinded public UAV benchmark.
 
 \section{Primary Results}
 \label{sec:primary-results}
-
-\paragraph{Spatial estimand.}
-The spatial quantity under test is object-level occupancy of a lightweight proxy
-actor in a shared metric twin frame. Calibrated orthographic top and side
-silhouettes provide two projected occupancy constraints; 64-cubed voxel IoU is the
-spatial-quality metric against independent synthetic source occupancy. Family
-tokens are observed inputs that select a frozen part graph (a spatial prior over
-role-labeled volumes), not inferred open-set labels. This is a synthetic
-spatial-proxy evaluation for digital-twin display actors; it is not a cartographic
-map task and not a measured UAV sensing product.
 
 Table~\ref{tab:mvfit-h1} reports the sealed confirmatory decision.
 Table~\ref{tab:mvfit-means} reports clean-condition method means and wall-clock
@@ -276,76 +568,907 @@ high-complexity geometry reference, not a lightweight runtime actor.}
 \input{benchmarks/results/sppa_mvfit_secondary_deltas.tex}
 \end{table}
 
-H1 passes: mean \(\Delta\mathrm{IoU}=0.190\) with 95\% CI \([0.181,0.199]\).
-The confirmatory estimand is the equal-stratum paired mean difference;
-Table~\ref{tab:mvfit-means} is descriptive. The CSG-ID stratum mean difference is
-\(0.209\) and the implicit-OOD stratum mean difference is \(0.172\); neither is
-non-positive. Table~\ref{tab:mvfit-family} reports all twelve family$\times$stratum
-cells from the sealed analysis: every cell is positive, with the smallest gain on
-compact vehicles under implicit-OOD (\(\Delta=0.043\)) and the largest on
-rider-cycle under CSG-ID (\(\Delta=0.458\)).
-Figure~\ref{fig:mvfit-h1} shows illustrative held-out occupancy for three families.
-
-SPPA-MVFit exceeds SPPA text-only (mean \(\Delta=0.130\), CI \([0.116,0.143]\)) and
-lightweight geometric baselines. Mean IoU of SPPA-MVFit (\(0.557\)) is slightly above
-the classical nonsemantic visual hull (\(0.522\))~\cite{laurentini1994visualhull}, but
-visual hull is denser free occupancy without an eight-part role-labeled actor
-contract; it is a high-complexity geometry reference, not a defeated runtime
-competitor. Secondary comparisons use the same stratified bootstrap intervals;
-null-centered bootstrap \(p\)-values with Holm adjustment are recorded in the
-analysis artifact (Amendment~04). Single-pass clean-call wall time for SPPA-MVFit
-during the sealed evaluation is median \(9.4\)~ms (p95 \(10.6\)~ms) on the benchmark
-machine; this is not a warm-timing Unreal frame-time claim and is not the protocol
-H4 multi-call cost design. A resolution-sensitivity check at grids 48/64/80 on the
-prespecified actor subset passes the protocol threshold. Candidate silhouette
-renders during fitting used the executed \(96\times 96\) observation grid on both
-arms (Amendment~04 alignment of protocol text with frozen code).
-
 \begin{table}[H]
 \centering
 \footnotesize
-\caption{Sealed family$\times$stratum clean-mask mean $\Delta$ IoU
-(SPPA-MVFit $-$ Generic-MVFit). All twelve cells are positive.}
-\label{tab:mvfit-family}
+\caption{Paired clean-mask mean IoU differences of SPPA-MVFit minus
+Generic-MVFit by morphology family and source stratum. All twelve cells are
+positive; the smallest gain is the compact-vehicle implicit-OOD cell. The
+equal-stratum aggregate is the primary estimate of Table~\ref{tab:mvfit-h1}.}
+\label{tab:mvfit-family-strata}
 \input{benchmarks/results/sppa_mvfit_family_strata.tex}
 \end{table}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{figures/sppa_mvfit_h1_occupancy_examples.png}
-\caption{Illustrative synthetic occupancy for three held-out morphology cases
-(ground-truth source, Generic-MVFit, SPPA-MVFit). The figure is qualitative
-support for the tables; the confirmatory decision is Table~\ref{tab:mvfit-h1}.}
-\label{fig:mvfit-h1}
+\caption{Held-out synthetic occupancy examples for three families: ground truth
+(left), Generic-MVFit (center), and SPPA-MVFit (right). Illustrative only; the
+confirmatory decision uses Table~\ref{tab:mvfit-h1}, not this figure.}
+\label{fig:mvfit-h1-examples}
 \end{figure}
+
+H1 passes: mean \(\Delta\mathrm{IoU}=0.190\) with 95\% CI \([0.181,0.199]\).
+The CSG-ID stratum mean difference is \(0.209\) and the implicit-OOD stratum
+mean difference is \(0.172\); neither is non-positive, so a cross-stratum
+generalization warning is not triggered by the protocol rule.
+Table~\ref{tab:mvfit-family-strata} reports the paired difference in every
+family-by-stratum cell and Figure~\ref{fig:mvfit-h1-examples} shows qualitative
+occupancy examples. SPPA-MVFit also
+exceeds SPPA text-only (mean \(\Delta=0.130\), CI \([0.117,0.143]\)) and all
+lightweight geometric baselines. Mean IoU of SPPA-MVFit (\(0.557\)) is slightly
+above nonsemantic visual hull~\cite{laurentini1994visual} (\(0.522\)), but visual hull is denser occupancy
+geometry without a role-labeled lightweight actor contract; the paper therefore
+does not present visual hull as a defeated runtime competitor. Median SPPA-MVFit
+time is \(9.4\)~ms (p95 \(10.6\)~ms), below the secondary local-cost gates of
+100~ms median / 250~ms p95. A resolution-sensitivity check at grids 48/64/80 on
+the prespecified actor subset passes the protocol threshold.
 
 \noindent\textcolor{red}{Claim boundary: these occupancy gains are measured on
 synthetic calibrated silhouettes with known family tokens. They are not UAV
 flight measurements, not detector accuracy, and not operator-facing benefit.}
 
+\section{Secondary Systems Evidence}
 
-\section{Deployment Context (Secondary)}
-\label{sec:secondary-context}
+The following subsections retain deployment-oriented regressions and qualitative
+probes. They constrain engineering claims; they do not replace the primary
+endpoint in Section~\ref{sec:primary-results}.
 
-Outside H1, production SPPA targets the operational twin use case: sparse
-semantic evidence to low-polygon role-labeled actors with millisecond local
-build, optional calibrated footprint dims, mesh LOD
-(high/balanced/ultra-light), and pose updates without topology rebuild.
-Table~\ref{tab:use-case-sota} summarizes local operational metrics under
-balanced LOD (mean about 685 triangles and 0.22~ms build on four probe
-families; typically 20--60 times fewer triangles than TripoSR-class meshes
-in the same audit). These metrics support deployment feasibility only; they do
-not replace the sealed occupancy endpoint and do not claim photoreal
-image-to-3D ranking or measured flight validity.
+\subsection{Measured External Neural Wave on Sealed Held-Out Cases}
+\label{sec:neural-external-wave}
+
+The stress test of Table~\ref{tab:sota-stress-test} is qualitative and uses
+ad-hoc local crops. To answer the expected reviewer question---how SPPA-MVFit
+compares to external neural image-to-3D generators on the \emph{same} sealed
+held-out cases---a secondary analysis was prospectively registered as protocol
+Amendment~05 before any measurement. It does not re-seal predictions and does
+not change H1, its interval, or any sealed artifact.
+
+\paragraph{Protocol.}
+Sixty sealed test actors were selected deterministically (five per
+morphology-by-stratum cell, lexicographic \texttt{case\_id} order). Each neural
+generator received two prespecified inputs: (a) a clean-crop shaded oblique
+render of the source actor, the generator's best input condition, and (b) the
+actual 96\(\times\)96 top telemetry mask as the input image, the closest visual
+analog of the channel SPPA consumes. Outputs were aligned to ground truth by a
+frozen frame convention (a one-time 48-candidate signed-permutation search on
+twelve disjoint calibration cases, frozen afterwards), uniform scale to the
+ground-truth bounding box, and ground-truth bounding-box center and yaw frame;
+no per-case tuning was allowed. Voxel IoU was measured at \(64^3\) with the
+sealed voxelizer and WORLD frame. Two hard crashes (2/240 runs, Hunyuan3D
+oblique condition) are reported as exclusions; SF3D (install failure), SPAR3D
+(gated weights), and TRELLIS.2 (no Windows environment) remain documented
+environment-level exclusions. SPPA-MVFit, Generic-MVFit, and visual-hull rows
+are the existing sealed clean-condition results on the same sixty cases.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.10}
+\caption{Measured external neural wave (Amendment~05, secondary). Mean voxel
+IoU at \(64^3\) on the same sixty sealed held-out cases, with parenthesized
+paired \(\Delta\)IoU versus SPPA-MVFit. Triangles and payload are mesh-output
+means; generation time is warm per-case wall time (model load excluded) on the
+same RTX 5090; VRAM is uncapped peak CUDA allocation. SPPA rows are CPU-only
+and their payload is the update descriptor, not a mesh. Exact per-case values
+are released in \texttt{benchmarks/results/sppa\_neural\_external\_wave.json}.}
+\label{tab:neural-external-wave}
+\begin{tabular}{llrrrrr}
+\toprule
+Method & Input & IoU & Triangles & ms & VRAM (MB) & Payload \\
+\midrule
+SPPA-MVFit (ours) & masks top+side & 0.561 & 536 & 9.2 & -- & 1.45 kB \\
+Generic-MVFit & same masks & 0.364 (-0.197) & 1,280 & 11.4 & -- & 1.43 kB \\
+Visual hull & same masks & 0.516 (-0.045) & 51,432 & 0.2 & -- & 32.8 kB \\
+\midrule
+TripoSR (a) & clean render & 0.128 (-0.433) & 28,145 & 384.1 & 1,869 & 1.47 MB \\
+TripoSR (b) & top mask & 0.231 (-0.331) & 46,053 & 379.4 & 1,870 & 2.45 MB \\
+Hunyuan3D-2m (a) & clean render & 0.157 (-0.403) & 686,733 & 1,350.9 & 4,591 & 10.5 MB \\
+Hunyuan3D-2m (b) & top mask & 0.171 (-0.390) & 3,089,274 & 1,915.5 & 4,747 & 46.5 MB \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Reading.}
+On the sealed cases SPPA-MVFit exceeds the measured neural generators on mean
+voxel IoU by \(0.330\)--\(0.433\) while using \(52\times\)--\(5{,}767\times\)
+fewer triangle equivalents, running \(41\times\)--\(208\times\) faster on CPU
+only, with zero CUDA memory and a payload \(10^3\)--\(10^4\times\) smaller.
+Two observations sharpen the boundary. First, both generators score
+\emph{higher} from the harsh top mask than from their generous clean-crop
+render: single-view image-to-3D models hallucinate occluded structure, whereas
+a calibrated footprint constrains occupancy directly; telemetry-shaped evidence
+is not a degraded image but a different measurement channel. Second, the
+visual hull remains the strongest occupancy baseline per millisecond, but it
+carries no part roles, no family conditioning, and no update contract. This
+table measures an operating point, not a leaderboard: condition (a) gives
+neural generators richer input than telemetry, condition (b) gives them input
+they were not trained for, photoreal asset quality remains neural territory,
+and a visual beauty ranking against SOTA generators remains prohibited by the
+claim-evidence matrix. Per-case rows, alignment calibration, environment
+exclusions, and code hashes are released in
+\texttt{benchmarks/results/sppa\_neural\_external\_wave.\{json,md,tex\}}.
+
+\subsection{Verifier-Gated Open-Label Probe}
+
+We evaluate the open-label route with 20 deliberately awkward labels that were
+not selected as the original paper demo classes. The set includes heavy
+equipment, vertical structures, containers, UAV-like objects, agricultural
+objects, and unsafe visual-artifact contexts. Table~\ref{tab:open-label-probe}
+shows the progression from the earlier contract-alignment probe to the current
+verifier-gated recipe implementation. The metric and tag-only conditions use
+the same labels; metric inputs provide declared dimensions, while tag-only
+inputs use template priors.
 
 \begin{table}[H]
 \centering
 \footnotesize
-\caption{Operational use-case metrics for SPPA proxies (metric dims, balanced
-LOD). Not a photoreal image-to-3D leaderboard.}
-\label{tab:use-case-sota}
-\input{benchmarks/results/sppa_use_case_sota_benchmark.tex}
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.10}
+\caption{Uncached open-label SPPA probe. Family/proxy means non-fallback
+runtime output. Verified recipes are accepted only after deterministic checks
+over required roles, fallback-role absence, primitive budget, and dimensions.}
+\label{tab:open-label-probe}
+\begin{tabularx}{\linewidth}{@{}L{0.32\linewidth}L{0.15\linewidth}L{0.15\linewidth}L{0.16\linewidth}Y@{}}
+\toprule
+Condition & Fallback & Family/proxy & Verified recipes & Critical mismatches \\
+\midrule
+Before alignment & 12/20 raw, 13/20 norm. & 8/20 raw, 7/20 norm. & 0/20 & 7 \\
+After contract alignment & 12/20 & 8/20 & 0/20 & 0 \\
+Verifier-gated recipes, metric & 4/20 & 16/20 & 8/20 & 0 \\
+Verifier-gated recipes, tag-only & 4/20 & 16/20 & 8/20 & 0 \\
+\bottomrule
+\end{tabularx}
 \end{table}
+
+The remaining fallback cases in this probe are intentional: \texttt{dog
+statue}, \texttt{toy tractor}, \texttt{worker helmet}, and \texttt{cow
+silhouette} are visual-artifact or object-part contexts. This is a stronger
+claim than pure fallback but still narrower than arbitrary text-to-3D: SPPA
+accepts a generated proxy only when the recipe contract passes.
+
+\subsection{OBJ Construction Sanity Check}
+
+The original OBJ construction timing covered the initial seven-class prototype set
+and is retained only as a legacy construction/export sanity check. In that run,
+per-object export stayed below 0.1 s including Python startup and file export
+overhead, with meshes ranging from 488 vertices and 396 faces for
+\texttt{biker} to 856 vertices and 786 faces for \texttt{truck}. The current
+generator has since been extended to a broader finite-archetype resolver. These
+numbers are therefore implementation evidence for the OBJ construction path only, not
+current-ontology coverage, Unreal instancing timings, or end-to-end
+detection-to-render latency.
+
+\subsection{Benchmark Alignment and Generator Substitutability Stress Test}
+
+Table~\ref{tab:sota-stress-test} is a substitutability stress comparison, not a
+SOTA ranking. A real SOTA ranking for image-to-3D would require the same
+detection crops or reference images, preferably with target meshes or structured
+human-preference scores, and should include contemporary high-fidelity systems
+such as TRELLIS.2, Pixal3D, Direct3D-S2, TripoSG/Tripo P1, Hunyuan3D 2.1,
+PartCrafter, and Rodin Gen-2.5 alongside fast feed-forward methods such as
+SF3D, SPAR3D, and TripoSR. SPPA would not be ranked as an image-to-3D asset generator in
+that protocol, because its intended input is a semantic detection state rather
+than a visual crop. The local stress test asks a narrower systems question:
+whether generators that were runnable in the local Windows workstation stack can
+replace a bounded runtime proxy under a portable-flight profile. Neural
+generators are expected to produce richer assets when they receive appropriate
+prompts or images; SPPA's question is persistence, updateability, and
+deterministic fallback from sparse telemetry.
+
+All neural runs used the same RTX 5090 workstation with a 6 GB PyTorch CUDA
+allocator budget. This was an artificial local engineering stress setting, not
+a physical GPU partition or a measured deployment profile. The cap used
+PyTorch's documented memory-fraction mechanism
+\cite{pytorch2026memoryfraction}; it does not establish portability to a
+particular laptop, aircraft computer, or concurrently loaded Unreal runtime.
+
+\begin{table}[h]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.10}
+\caption{Preliminary July 2026 substitutability stress comparison over six
+object classes. Times are local wall-clock measurements under constrained input
+settings, not statistical or end-to-end UAV/VR validation.}
+\label{tab:sota-stress-test}
+\begin{tabularx}{\linewidth}{@{}L{0.27\linewidth}L{0.17\linewidth}L{0.14\linewidth}Y L{0.15\linewidth}@{}}
+\toprule
+Method & Input & Wall & Tris & VRAM \\
+\midrule
+SPPA finite archetype & label/tag & 0.0016 s med. & 488--1,668 & 0 MB \\
+Shap-E text \(K=16\) & prompt/tag & 2.0080 s & 17,884--131,668 & 6,120 MB \\
+Point-E text + SDF32 & prompt/tag & 6.4266 s & 1,026--5,454 & 3,644 MB \\
+TripoSR warm \(128^3\) & RGBA crop & 0.4604 s & 19,284--31,012 & 2,028 MB \\
+Hunyuan3D-2mini Turbo & RGBA crop & 1.5042 s & 332,020--1,698,032 & 6,092 MB \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+These heterogeneous data do not support an ordinal task-fit ranking. The former
+6/6-versus-0/6 table encoded SPPA's declared capabilities as scoring criteria and
+is therefore circular; it is excluded from the redesigned evidence. Geometry,
+latency, complexity, persistence, and input provenance are reported as separate
+measurements. Figure~\ref{fig:input-alignment-grid} remains only a qualitative
+failure audit: neural generators can be visually richer when given suitable
+visual evidence, while SPPA occupies a different representation point.
+
+Several contemporary image-to-3D candidates are intentionally excluded from the
+numeric table. Stable Fast 3D installed in a Python 3.10 environment but emitted
+no benchmark event before the 20 minute timeout in this pass. SPAR3D installation
+completed, but model loading failed before inference because the required weights
+were gated. TRELLIS.2, Pixal3D, Direct3D-S2, TripoSG/Tripo P1, Hunyuan3D 2.1,
+PartCrafter, and Rodin Gen-2.5 were not executed under the frozen four-image
+local protocol. These are unresolved coverage gaps or reproducibility outcomes,
+not measured failures of output quality. Therefore the table is valid only as a
+bounded SPPA runtime substitutability stress test, not as a July 2026 visual
+image-to-3D SOTA ranking.
+
+The fast-baseline boundary is narrower than the visual-SOTA boundary. For a fair
+runtime comparison against SPPA, a method must both be plausibly fast for the
+target operating point and have a successful local run under the same frozen
+input/resource protocol. Under that rule, TripoSR and Hunyuan3D-2mini Turbo are
+the reproduced image-conditioned rows in Table~\ref{tab:sota-stress-test}.
+Stable Fast 3D and SPAR3D remain the most important missing fast baselines:
+external sources report sub-second generation, but the local artifact contains
+only a timeout/no-event outcome for SF3D and a gated-weights outcome for SPAR3D.
+TRELLIS.2 reports fast low-resolution H100 timings, but it is not yet a
+reproduced portable-profile baseline here. The remaining contemporary methods
+are related visual-SOTA context, not fair fast-runtime rows without local timing
+provenance. The generated audit
+\texttt{benchmarks/results/sota\_fast\_method\_eligibility.md} records this
+eligibility decision.
+
+Figure~\ref{fig:input-alignment-grid} is a qualitative method-behaviour audit
+across six object cases. Its first row is deliberately a text/tag card, not an
+image crop, not a proxy image, and not real detection ground truth. The
+image-conditioned baseline meshes shown below were produced from separate local
+RGBA proxy crops that are omitted from the grid to avoid making the input row
+look like an SPPA output. The final benchmark should replace this audit with
+recorded detection crops, masks, bounding boxes, or a public benchmark reference
+set, and should report explicit quality metrics. An input-provenance manifest
+and verifier prevent the figure from being re-labeled as a detector or
+ground-truth benchmark without new evidence. A separate synthetic YOLO reference
+manifest currently provides three 2D ground-truth bbox labels
+(\texttt{biker}, \texttt{cow}, and \texttt{tower}), but those legacy samples are
+bbox-only for this audit and do not provide readable crops for the six-class
+visual grid.
+The point of the figure is narrower: neural generators produce meshes with
+different fidelity/cost assumptions, while SPPA produces a bounded actor-like
+primitive proxy from the semantic label.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{figures/sppa_input_alignment_six_case_visual_grid.png}
+\caption{Input-aligned visual audit for the six local stress-test cases. The
+top row is deliberately text/tag only, not a proxy image and not ground truth.
+SPPA uses the current deterministic semantic-to-proxy generator in its text/tag
+contract; Shap-E and Point-E use text prompts/tags; TripoSR and Hunyuan3D use
+separate RGBA crop inputs that are omitted from this grid because proxy crops
+can visually resemble SPPA outputs. Meshes are rendered in a canonical
+inspection frame; this changes only the viewer orientation, not the generated
+geometry. This is a qualitative audit artifact, not a SOTA ranking.}
+\label{fig:input-alignment-grid}
+\end{figure}
+
+Figure~\ref{fig:real-input-probe} adds four real-image stress probes for the
+cyclist, electrical-tower, tractor, and tractor-with-trailer cases. These
+user-supplied crops are real input evidence, not 3D ground truth. The test is
+deliberately dual-input. In the image path, a YOLOE-26s open-vocabulary detector
+reads the real image and produces approximate semantic evidence. In the tag-only
+path, SPPA receives a semantic tag/text input without using the image crop. In
+both cases the semantic text is routed through a SPPA normalizer before proxy
+selection, so the paper does not depend on YOLOE producing an exact object name.
+The broad comparison grid therefore shows a single final SPPA output for each
+case, while a separate ablation below reports the text-only,
+detector+metric, and detector+metric+visual variants. Detector masks, bboxes,
+and declared replay
+geometry are retained as evidence for audit, scale, pose, and uncertainty, but
+the full SOTA grid does not show them as a separate competing SPPA method. A
+separate input-mode ablation below isolates their effect inside the same SPPA
+generator: text-only selects prior dimensions, detector+metric evidence changes
+scale/family, and detector+metric+visual evidence adds only budgeted
+role-conditioned geometry when generic image-space cues support existing roles.
+When color evidence is used, it is a conservative chromatic median inside the
+detector evidence and is applied only to observable semantic material roles. It
+is not texture recovery, instance segmentation truth, or a visual-quality claim.
+For example, YOLOE only
+labels the tractor-with-trailer crop as \texttt{vehicle}. Detector-only
+normalization maps that weak label to a conservative heavy-vehicle proxy; when
+the same detector evidence is combined with its long metric footprint, SPPA
+refines it to \texttt{articulated\_vehicle}. The reviewed text input
+\texttt{tractor\_trailer} remains the more specific text-conditioned path and is
+reported separately. This is deliberately not a claim that the image path has
+identified the exact tractor or trailer type. Shap-E and Point-E receive
+tag/text prompts; TripoSR and Hunyuan3D receive the same low-quality image crops.
+The result should be read as an input-quality and semantic-normalization
+boundary check, not as a visual SOTA ranking.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{figures/sppa_real_input_probe_grid.png}
+\caption{Real input probes for cyclist, electrical tower, tractor, and
+tractor-with-trailer cases. The first column is real input evidence, not ground
+truth. The detector path records YOLOE semantic evidence and reviewed 2D crop
+provenance. SPPA is shown once as the complete semantic proxy output, while
+YOLOE mask/bbox evidence and declared replay geometry are audited separately
+instead of being displayed as a second SPPA variant.
+Shap-E and Point-E use tag/text prompts; TripoSR and Hunyuan3D use image crops.
+This artifact demonstrates why the protocol must separate detector evidence,
+reviewed semantic text, crop annotations, and ground-truth 3D references.}
+\label{fig:real-input-probe}
+\end{figure}
+
+Because the full comparison grid compresses the original frames, the submission
+supplement adds a zoomed detector-evidence audit (Supplementary Figure~S1).
+This makes the limits of the real-image probes visible: the cyclist, tower, and
+tractor-with-trailer cases are useful stress inputs, but their detector masks
+are moderate-confidence, small-object evidence rather than clean supervision.
+SPPA therefore records uncertainty and sends detector silhouette/bbox evidence
+through a class-aware constraint-fusion step before primitive generation; it
+does not treat the crop as a ground-truth mesh, mask, or metric measurement. In
+the real probes, this means vertical-structure height evidence may be kept with
+uncertainty even when the mask is weak, while noisy vehicle footprints can set a
+soft metric scale after their implausible length/width ratios are clamped by the
+semantic family prior. Unsafe image-derived yaw/pose is still withheld from the
+runtime descriptor.
+To keep the connector improvement aligned with the lightweight SPPA claim, the
+same four SPPA outputs are also checked by a runtime-budget regression: the
+current run totals 13.238~ms, with a worst single proxy of 3.844~ms, 2,012
+triangles, 1,060 vertices, a 48.6~KB OBJ, and a 32.3~KB descriptor.
+
+\input{benchmarks/results/sppa_observation_fusion_audit.tex}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.08}
+\caption{Real-probe semantic normalization. The image-side detector evidence is
+not treated as exact ground truth; SPPA maps it to a proxy family, optionally
+refining weak detector labels when metric observation supports a safer
+conservative shape.}
+\label{tab:real-probe-normalization}
+\begin{tabularx}{\linewidth}{@{}L{0.17\linewidth}L{0.17\linewidth}L{0.22\linewidth}L{0.24\linewidth}Y@{}}
+\toprule
+Probe & YOLOE image evidence & Detector-only family & Detector+observation family & SPPA reviewed text \\
+\midrule
+Cyclist road image & \texttt{person + motorcycle} & \texttt{two\_wheeled\_rider} \(\rightarrow\) \texttt{biker} & \texttt{two\_wheeled\_rider} \(\rightarrow\) \texttt{biker} & \texttt{biker} \\
+Mountain tower image & \texttt{electric pylon} & \texttt{power\_tower} \(\rightarrow\) \texttt{vertical\_structure} & \texttt{power\_tower} \(\rightarrow\) \texttt{vertical\_structure} & \texttt{tower} \\
+Mountain tractor image & \texttt{agricultural vehicle} & \texttt{farm\_vehicle} \(\rightarrow\) \texttt{farm\_vehicle} & \texttt{farm\_vehicle} \(\rightarrow\) \texttt{farm\_vehicle} & \texttt{tractor} \\
+Tractor with trailer image & \texttt{vehicle} & \texttt{generic\_vehicle} \(\rightarrow\) \texttt{heavy\_vehicle} & \texttt{articulated\_vehicle} \(\rightarrow\) \texttt{articulated\_vehicle} & \texttt{tractor}+trailer \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The dual-input benchmark is now frozen as an explicit artifact rather than a
+visual impression. The image track starts from YOLOE detector evidence on the
+real images and writes detector crops, confidence, and SPPA-normalized families.
+The tag/text track receives no image: SPPA, Shap-E, and Point-E use only the
+reviewed semantic phrase. Table~\ref{tab:real-yoloe-dual-input-benchmark}
+summarizes the bounded systems claim supported by this artifact. It remains
+separate from any full visual image-to-3D leaderboard because no 3D reference
+meshes or completed human-preference scores exist for these real images.
+
+\input{benchmarks/results/real_yoloe_dual_input_benchmark.tex}
+
+Figure~\ref{fig:sppa-input-mode-comparison} and
+Table~\ref{tab:sppa-input-mode-comparison} isolate the same SPPA generator under
+three input contracts. The text-only branch receives only the reviewed phrase.
+The detector+metric branch receives real YOLOE detector text and declared replay
+scale. The visual branch adds agnostic image-space primitive cues and optional
+observed material color, but those cues may only condition existing semantic
+roles; they cannot introduce a new class, texture, or ground-truth part
+segmentation. This makes the image-side claim stronger and narrower: visual
+evidence now causes a measured geometry delta in all four cases, while the
+additional cost remains 20--40 triangles for the cyclist, tower, and tractor
+cases and 24 triangles for the articulated vehicle case.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth,height=0.76\textheight,keepaspectratio]{figures/sppa_input_mode_comparison_grid.png}
+\caption{SPPA input-mode ablation on the four real-image probes. Each row uses
+the same deterministic generator under three evidence contracts. Text-only
+activates a reviewed recipe and prior dimensions. YOLOE+metric uses detector
+text plus declared replay scale. YOLOE+metric+visual adds only low-cost
+role-conditioned primitives when agnostic image-space cues support existing
+roles. This is an ablation of SPPA evidence handling, not ground-truth 3D
+evaluation.}
+\label{fig:sppa-input-mode-comparison}
+\end{figure}
+
+\input{benchmarks/results/sppa_input_mode_comparison.tex}
+
+To avoid turning Figure~\ref{fig:sppa-input-mode-comparison} into a subjective
+visual argument, we also score the same rows by bounded evidence-channel
+coverage. The score counts only audited SPPA channels: semantic normalization,
+metric replay, visual role cues, yaw gating, and observed material color. It
+does not score mesh beauty, human preference, or 3D ground-truth accuracy. Under
+that narrower metric, the reviewed text branch consumes one channel, the
+detector+metric branch consumes two channels in all four cases, and the
+detector+metric+visual branch consumes four channels in three cases and five in
+the tractor case where conservative observed color is also applied. All rows
+remain inside the lightweight runtime budget. Timing values in
+Table~\ref{tab:sppa-evidence-channel-coverage} are wall-clock milliseconds:
+3.7~ms corresponds to 0.0037~s, not 3.7~s.
+
+\input{benchmarks/results/sppa_evidence_channel_coverage.tex}
+
+Table~\ref{tab:sppa-detector-observation-refinement} isolates the more
+ambitious image-side SPPA route. This route does not use the reviewed tag; it
+starts from YOLOE detector text and metric replay evidence. The important
+boundary is visible in the tractor-with-trailer case: the system refines
+\texttt{vehicle} to a conservative \texttt{articulated\_vehicle}, not to the
+more specific reviewed \texttt{tractor\_trailer} class.
+
+\input{benchmarks/results/sppa_detector_observation_refinement_audit.tex}
+
+We also run a metric proxy replay on the same four real images
+(Table~\ref{tab:real-image-assumed-flight-replay}). This replay uses the real
+YOLOE detector outputs above, but injects declared UAV pose, AGL, camera mount,
+and family height priors as scenario parameters. It is therefore a real-image
+and real-detector test of the SPPA observation-to-descriptor path, not a
+measured flight-localization result. The replay now emits a
+\texttt{SPPA-OBS-0.1} identifier and descriptor uncertainty metadata for each
+case; those fields document the scenario-relative status rather than upgrading
+the replay to ground truth. The detector artifact now stores native
+YOLOE/Ultralytics mask polygons for the selected detections, so the replay can
+exercise the native detector-mask path rather than only a bbox or CV-derived
+silhouette proxy. These masks are still detector evidence, not ground-truth
+segmentations. The full-frame detector evidence for these four cases is
+included in the zoomed audit in Supplementary Figure~S1.
+
+To test the user's intended bridge from detector evidence to proxy parts without
+injecting class-specific part layouts, we added an experimental agnostic
+image-space primitive probe (Figure~\ref{fig:sppa-agnostic-image-space-parts}).
+The fitter receives only real crop pixels, the detector bbox, and unlabeled mask
+polygons; detector labels and reviewed SPPA tags are retained only for audit. It
+extracts generic cues such as round primitive pairs, coherent line structure,
+principal axes, and mask envelopes. The intended unit is therefore any detector
+crop, not a cyclist-specific or vehicle-specific rule: the same procedure is
+applied to all objects and can only report generic visual primitive evidence
+that is actually visible in the crop. On the four real images, the probe finds a
+strong round-pair cue for the cyclist and tractor, a coherent multi-line cue for
+the tower, and a multi-line cue for the tractor/trailer case while retaining
+raw circular primitives only as audit evidence. This
+supports a more ambitious image-to-primitive research path, but it is not yet a
+claim of universal part recovery or ground-truth 3D reconstruction. The current
+SPPA descriptor now consumes this evidence in a role-conditioned way
+(Table~\ref{tab:sppa-visual-part-evidence}): generic round and line cues can
+annotate existing roles such as tires, frame elements, tower metal, attachments,
+or container details. The descriptor also stores a compact image-space geometry
+profile--for example round-pair axis/radius ratios or dominant line
+orientation--once per object, so the information is available for downstream
+pose/scale reasoning without duplicating it in every primitive. When no metric
+yaw, telemetry heading, track velocity, or mask-PCA yaw is available, SPPA also
+records an axial image-space orientation from the same profile. This orientation
+is explicitly marked as image-space and ambiguous; it is not a world yaw until a
+camera/ground projection module consumes it. These cues cannot create a new
+semantic class or add mesh topology. This is a deliberately bounded bridge from
+pixels to proxy structure.
+
+\input{benchmarks/results/sppa_visual_part_evidence_audit.tex}
+
+The visual orientation field is also checked against the UAV metric projection
+branch (Table~\ref{tab:sppa-visual-metric-yaw}). This comparison is deliberately
+not used as a hidden correction step: raw pixel yaw and projected
+ground-footprint yaw are independent ambiguous axial cues with different error
+sources. The fair comparison therefore projects the visual axis endpoints
+(wheel-pair centers or the longest image-space line) through the same declared
+UAV camera model before comparing them with the footprint yaw. With this
+projection-aware gate the four real probes produce no strong divergence:
+two axes are aligned and two are weakly aligned under the declared replay
+geometry. SPPA still keeps the metric yaw tied to camera/flight projection and
+uses the projected visual axis only as support/gating evidence. When the gate is
+non-divergent, the descriptor selects the axial projected-footprint yaw in the
+declared replay frame; it does not treat the raw image-space axis as world yaw
+and does not claim ground truth. This makes the current system more conservative,
+but also more defensible: it shows how visible primitives can support pose
+reasoning only after the UAV projection model is in the loop. The descriptor
+schema and submission precheck enforce this as a conditional contract: whenever
+\texttt{visual\_metric\_yaw\_consistency} is declared as evidence, the projected
+visual-axis gate, axial footprint-yaw selection, coordinate frame, ambiguity
+flag, and policy identifier must be present in the descriptor.
+
+\input{benchmarks/results/sppa_visual_metric_yaw_consistency.tex}
+
+Supplementary Figure~S2 shows the same bridge visually:
+the crop-level evidence is generic and unlabeled, the descriptor records only
+role support plus a compact image-space profile and, when available, a
+projection-gated axial footprint yaw; the proxy render remains the lightweight
+SPPA mesh. This is the current honest ambition boundary: SPPA uses visual
+evidence to condition parts and gate orientation fields that already belong to
+the normalized proxy, without claiming dense single-image reconstruction,
+detector-supervised part segmentation, or ground-truth world-frame yaw.
+
+A connector regression guards the main failure mode visible in naive primitive
+generators: disconnected pieces. Table~\ref{tab:sppa-connector-constraints}
+reports the generated descriptor counts and length ranges. This remains a
+lightweight semantic-connectivity claim, not a photorealistic reconstruction
+claim.
+
+\input{benchmarks/results/sppa_connector_constraints.tex}
+
+The anti-shortcut and robustness battery is summarized in
+Table~\ref{tab:sppa-visual-bridge-robustness}. The checks mutate labels,
+case identities, image paths, detector-mask ordering and duplicates, combined
+non-geometric side channels, mirror transforms, and deterministic photometric
+variants. Synthetic controls, a deterministic sweep, and a four-seed fuzz test
+exercise known primitive cases. Primary decisions pass in every row; mirror and
+photometric checks still retain secondary audit warnings for line-support and
+weak-pair drift. This is the intended boundary: the battery constrains
+shortcuts and regression failures in the visual bridge, but it does not prove
+universal primitive correctness or real UAV illumination rates.
+
+\input{benchmarks/results/sppa_visual_bridge_robustness_table.tex}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{figures/sppa_agnostic_mask_vs_image_cues_grid.png}
+\caption{Experimental agnostic image-space primitive probe. The method uses real
+pixels, detector bboxes, and unlabeled masks for every object, while semantic
+labels are audit-only. Green circles indicate validated round-pair candidates
+when the geometry supports them; magenta lines show generic line evidence from
+edges plus bbox/mask/PCA support lines used for deterministic stability.
+The right column records the anti-label audit and confidence grade for each
+case. This is an analysis probe for future image-conditioned part cues, not the
+runtime generator used for the SPPA outputs in Figure~\ref{fig:real-input-probe}.}
+\label{fig:sppa-agnostic-image-space-parts}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.08}
+\caption{Real-image SPPA metric replay using bbox plus native YOLOE mask
+polygon. Images and YOLOE detections are real local inputs; flight telemetry and
+height priors are declared replay parameters, so position and scale are
+scenario-relative rather than measured ground truth.}
+\label{tab:real-image-assumed-flight-replay}
+\begin{tabularx}{\linewidth}{@{}L{0.18\linewidth}L{0.24\linewidth}L{0.23\linewidth}L{0.18\linewidth}Y@{}}
+\toprule
+Case & YOLOE evidence & SPPA proxy & Scenario dims (m) & Local pose (m) \\
+\midrule
+Cyclist & \texttt{person + motorcycle} & \texttt{biker} & \(3.59 \times 1.77 \times 1.85\) & \(N=-3.67, E=-1.75\) \\
+Tower & \texttt{electric pylon} & \texttt{vertical\_structure} & \(12.77 \times 2.89 \times 28.00\) & \(N=-1.72, E=0.56\) \\
+Tractor & \texttt{agricultural vehicle} & \texttt{farm\_vehicle} & \(4.95 \times 4.32 \times 2.60\) & \(N=-8.45, E=-10.96\) \\
+Tractor/trailer & \texttt{vehicle} & \texttt{heavy\_vehicle} & \(16.85 \times 6.21 \times 3.40\) & \(N=-2.38, E=-7.61\) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+A dedicated replay verifier checks this native-mask path. For the four real
+images, the selected YOLOE detections all include native mask polygons with 12,
+35, 33, and 54 points respectively. The replay bridge projects those masks into
+candidate oriented footprints before the SPPA constraint-fusion gate decides
+which scale, footprint, and pose components are safe to carry into the selected
+runtime proxy. This verifies the detector-evidence data path and byte-budget
+handling; it still does not verify mask correctness against ground-truth
+segmentation, and the final descriptor may omit unsafe mask-derived pose.
+
+The controlled SPPA contract benchmark isolates the difference between a
+label-only semantic prior baseline and the current metric-observation path.
+Synthetic masks
+are generated from declared object dimensions under a nadir pinhole camera, then
+compiled through the SPPA observation and descriptor contracts. This is a
+regression of contract behavior, not a real UAV segmentation benchmark. Under
+this controlled setting, the label-only baseline had summed dimension-error
+P50/P95 of \(2.400/13.900\) m; the current metric-observation path had
+\(0.000/0.000\) m. Mean improvement was \(4.653\) m, with descriptor build
+P50/P95 of \(372.0/460.5\) \(\mu\)s and a maximum of 1,692 triangles.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.08}
+\caption{SPPA controlled contract benchmark. The baseline is the semantic
+prior without metric observation; the current path uses synthetic metric mask evidence through
+\texttt{SPPA-OBS-0.1}. This supports scale-adaptation plumbing only, not real
+detector-mask quality or real flight calibration.}
+\label{tab:sppa-contract-benchmark}
+\begin{tabularx}{\linewidth}{@{}L{0.22\linewidth}L{0.16\linewidth}r r r Y@{}}
+\toprule
+Case & Label & Baseline err. (m) & Current err. (m) & Improve (m) & Source \\
+\midrule
+Cyclist long view & \texttt{cyclist} & 0.470 & 0.000 & 0.470 & mask-projected footprint \\
+Tower tall proxy & \texttt{electric pylon} & 13.900 & 0.000 & 13.900 & mask-projected footprint \\
+Tractor wide & \texttt{agricultural vehicle} & 7.850 & 0.000 & 7.850 & mask-projected footprint \\
+Truck/trailer long & \texttt{truck} & 2.400 & 0.000 & 2.400 & mask-projected footprint \\
+Cow close & \texttt{cow} & 2.450 & 0.000 & 2.450 & mask-projected footprint \\
+Car small & \texttt{car} & 0.850 & 0.000 & 0.850 & mask-projected footprint \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+A second SPPA benchmark isolates the value of mask-footprint evidence relative
+to axis-aligned bboxes. We generate 162 synthetic rotated rectangles across
+three labels, three sizes, three aspect ratios, and six axial rotations under a
+known nadir camera, then run both paths through the same
+\texttt{SPPA-OBS-0.1} bridge. The bbox path over-estimates rotated footprints:
+summed dimensional error is \(2.417/6.407\) m at P50/P95 and axial-yaw error is
+\(15.0/45.0^\circ\). The mask/silhouette path has \(0.000/0.000\) m error
+against the supplied synthetic polygon reference and preserves the polygon in
+100\% of generated descriptors. Non-axis-aligned median improvement is
+\(2.951\) m. This supports the contract claim that silhouette evidence prevents
+bbox inflation when such evidence exists; it is still not a claim that the real
+YOLOE replay above has ground-truth masks.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.08}
+\caption{SPPA bbox-vs-silhouette projection benchmark under known synthetic
+camera geometry. The mask path uses supplied synthetic polygons; real detector
+mask quality is outside this table.}
+\label{tab:sppa-silhouette-projection}
+\begin{tabularx}{\linewidth}{@{}L{0.32\linewidth}r r r Y@{}}
+\toprule
+Path & Cases & Dim. err. P50/P95 (m) & Yaw err. P50/P95 & Descriptor evidence \\
+\midrule
+Bbox-only projection & 162 & \(2.417/6.407\) & \(15.0/45.0^\circ\) & axis-aligned bbox \\
+Mask/silhouette projection & 162 & \(0.000/0.000\) & \(0.0/0.0^\circ\) & polygon preserved in descriptor \\
+Non-axis improvement & 135 & \(2.951/6.407\) & -- & bbox inflation removed when polygon exists \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+These results narrow the argument. TripoSR and Hunyuan3D are better choices
+when the goal is high-fidelity asset generation from a usable image crop.
+Shap-E and Point-E demonstrate that text-conditioned meshes can be produced
+from the same tag path, but their outputs are not track-persistent proxy
+contracts. SPPA's measured advantage is different: no GPU inference,
+millisecond-scale local proxy creation, bounded primitive geometry, and
+per-track updateability. Whether that advantage matters to pilots is still
+unproven.
+
+\subsection{Role-Preservation Diagnostic}
+
+The main competitor set for SPPA is the set of operational representation
+alternatives in Table~\ref{tab:representation-design-space}, especially curated assets and fast
+text/image-to-3D generators. Geometry-only displays are retained only as
+negative controls and lower-bound runtime references; construction timings for
+isolated boxes, capsules, or ellipsoids are therefore not reported as a result.
+
+The implemented diagnostic asks whether SPPA preserves semantic part roles while
+adapting dimensions. For four synthetic vehicle variants, median dimension error
+was 0.3926 for fixed templates, 0.0000 for trivial global scaling, and 0.0223
+for SPPA parametric vehicles. The global-scaling result is deliberately not a
+win condition: it fits the outer box by deforming all parts together, including
+cab and wheels. The SPPA diagnostic is therefore not a morphology benchmark. Its
+supported claim is narrower: role-assigned parts such as cargo, cab, windows,
+and wheels can follow different update rules instead of collapsing into a scaled
+copy of the same object.
+A dedicated short/long truck invariance check makes this concrete: increasing
+vehicle length from 5.2 m to 8.2 m kept cab scale delta at 0.0, tire scale delta
+at 0.0, increased cargo length by 2.925 m, and increased tire count from 6 to 8.
+
+A calibrated-mask variant now exercises the same path from observed footprint
+evidence rather than manually supplied dimensions. Over 64 synthetic rectangle
+masks with explicit ground scale, the calibrated mask-to-shape benchmark derived
+metric length/width with 0.000/0.000 m P50/P95 summed dimensional error and kept
+the uncalibrated control path at \texttt{template\_prior}. Local geometry build
+time was 442/480 \(\mu\)s at P50/P95, and descriptor build time was
+297/321 \(\mu\)s at P50/P95. This verifies only the deterministic contract path
+\emph{mask polygon + supplied ground scale \(\rightarrow\) parametric parts};
+it is not evidence of real UAV segmentation quality, camera calibration
+accuracy, or silhouette-to-part assignment under occlusion.
+
+\subsection{Descriptor and Unreal Runtime Tests}
+
+The descriptor/update benchmark generated descriptors for exact labels,
+keyword-resolved labels, and unsupported labels. Exact and keyword labels
+resolved to known finite archetypes; unsupported labels produced unknown
+fallback descriptors. In the replay benchmark, descriptor build with parts over
+81,568 threshold-expanded rows had P50/P95 of 391.8/515.0 \(\mu\)s.
+The P99 was 671.2 \(\mu\)s, but the maximum descriptor-build observation was
+360.050 ms. Scheduler decisions had P50/P95/P99 of 9.2/14.2/19.2 \(\mu\)s, and
+update-packet builds had P50/P95/P99 of 16.8/75.3/91.0 \(\mu\)s. Contract
+validation passed 453 descriptor and update-packet checks. These are Python
+contract measurements, not Unreal frame time; they support typical-case local
+contract cost, not a hard real-time guarantee.
+
+A preliminary link-budget model over the same replay separates byte accounting
+from radio-link validation. If no-op packets are suppressed, measured SPPA JSON
+update traffic was 25.8--37.4 kB/s across scheduler thresholds; emitting every
+packet was 78.5--94.0 kB/s. A favorable modeled binary box stream was about
+3.27 kB/s, while modeled compressed video at 2/5/10 Mbps corresponds to
+250/625/1250 kB/s. This does not show that SPPA is the lowest-bandwidth
+semantic representation. It shows that SPPA is a richer actor representation
+with byte cost between sparse boxes and continuous video/mesh transfer under
+this replay model.
+
+An additional adversarial resolver audit covered 12 compound or misleading
+labels. Visual-artifact contexts such as \texttt{toy truck},
+\texttt{vehicle shadow}, \texttt{dog statue}, and \texttt{person poster} were
+forced to the unknown fallback; equipment-only labels such as
+\texttt{worker helmet} also fell back instead of spawning a person. Compound
+family labels such as \texttt{animal feed trailer}, \texttt{horse trailer},
+\texttt{emergency vehicle}, \texttt{road sign}, and \texttt{field worker}
+resolved to reviewed family archetypes. This is a resolver-contract check, not
+a human-factors validation of fallback interpretation.
+
+The offline recipe-review gate complements this resolver audit. It evaluates
+candidate language/ontology recipes against the finite primitive vocabulary,
+known material roles, runtime resolver result, triangle budget, and the rule
+that no language model may be called in runtime. In the current artifact, the
+gate accepted a \texttt{dump truck} candidate as a reviewed heavy-vehicle
+mapping, allowed an \texttt{unlisted obstacle} only as fallback, and rejected
+\texttt{person poster}, \texttt{delivery drone}, and
+\texttt{construction crane} candidates for false semantics, unreviewed
+topology/material roles, or runtime-LLM dependence. This supports the narrower
+claim that SPPA has a cache-admission guard for candidate recipes.
+
+A mask-footprint benchmark then evaluated descriptor-level shape evidence over
+162 synthetic rectangle masks: three lengths, three aspect ratios, six axial
+rotations, and three corner-jitter levels. Across clean non-axis-aligned masks,
+the AABB dimensional error was 50.568/109.808 px at P50/P95, while the PCA
+oriented footprint recovered 0.000/0.000 px dimensional error and 0.000/0.000
+deg axial-yaw error. With jittered non-axis-aligned masks, AABB error was
+51.957/114.235 px and oriented-footprint error was 6.615/12.389 px, with
+0.158/0.666 deg yaw error. Axis-aligned masks can tie the AABB baseline, and
+jitter can make AABB slightly better for those aligned cases; the supported
+claim is therefore limited to extracting oriented image-space footprint evidence
+from supplied polygon masks, not real UAV silhouette recovery.
+
+Unreal tests then exercised the native backend in three steps. First, an
+actor-level regression test loaded a real \texttt{SPPA-DESC-0.2} fixture with 12
+parts, generated 12 static-mesh components, propagated material/evidence/
+uncertainty tags, accepted valid pose updates, rejected mismatched descriptor
+updates, rejected invalid JSON without replacing the current proxy, and applied
+a matching-topology \texttt{shape\_param\_update} while preserving the same
+component names. Second, component replay used the same \texttt{obstacles} array payload shape as
+\texttt{/api/ui/data}. Third, a local-loopback HTTP replay exercised Unreal's
+HTTP polling branch with the same payload. A recorded-payload adapter then
+converted seven logged \texttt{obstacle\_ingest} observations into common
+asset-compatible, SPPA emit-all, and SPPA changed-only payload streams. Unreal
+Editor-Cmd consumed those recorded streams through the same component entry
+point with asset, actor-proxy, and instanced-proxy backends. A later packaged
+executable run consumed the same streams with rendered frames. This is stronger
+than a payload-only adapter check, but it remains an internal short-stream
+replay; it is not live network telemetry, VR, phase-aligned GPU-profiler evidence, or
+operator validation.
+
+\begin{table}[h]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.12}
+\caption{Selected Unreal evidence that constrains the SPPA claim. Values are
+preliminary and do not include VR headset, live-network, broad curated-asset
+validation, or phase-aligned GPU-profiler validation. Auxiliary regression checks are kept in the
+artifact package, not in this summary table.}
+\label{tab:unreal-selected}
+\begin{tabularx}{\linewidth}{@{}L{0.26\linewidth}Y L{0.24\linewidth}L{0.22\linewidth}@{}}
+\toprule
+Test & Result & Main boundary & Claim impact \\
+\midrule
+Backend switch smoke & Same obstacle input selects assets, actor proxies, or
+HISM proxies; default remains assets & Editor smoke, not operator workflow &
+SPPA is optional, not a forced replacement \\
+Editor-Cmd recorded replay & 27/27 payload applications accepted across
+asset, actor-proxy, and HISM backends; SPPA emit-all P95 apply:
+1.614/3.805/4.049 ms & component ingestion under Editor-Cmd/Null-RHI & recorded
+streams reach all backend routes \\
+Packaged recorded replay \texttt{20260703T024800Z} & 27/27 payload
+applications accepted; frame P95 assets/proxy/HISM: 16.551/6.531/4.809 ms;
+apply P95: 2.566/5.670/3.246 ms & one short replay, no live network, no
+phase-aligned GPU profiler, no headset & recorded streams run in packaged executable \\
+Packaged synthetic 100-object replay & actor-proxy pose/shape frame P95:
+17.814/19.256 ms & synthetic desktop obstacles; misses 60 FPS P95 & desktop
+feasibility only, not VR readiness \\
+Packaged HISM scaling \texttt{20260703T033655Z}/\texttt{033840Z} & 11 active
+draw groups; 100-object no-CSV rerun shape frame P95: 37.126 ms; 250/500 shape
+P95: 94.018/186.113 ms & synthetic desktop obstacles; shape updates miss 30 FPS
+P95 at 100+ objects & batching helps draw pressure, but dense shape updates
+remain limiting \\
+Packaged HISM partial updates \texttt{20260703T040602Z} & 10\% pose and 10\%
+shape changed-track schedule; 500-object pose/shape frame P95:
+16.528/29.787 ms with 11 draw groups & synthetic scheduler rate, not
+flight-derived; dense all-object updates still fail & partial-update contract
+supports changed-only scheduling, not dense all-track updates \\
+Packaged cow/tower asset subset & project assets vs. SPPA shape frame P95:
+6.789 vs. 22.445 ms & narrow two-label subset & curated assets remain better
+when available \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The packaged evidence consists of synthetic density replay, HISM batching
+diagnostics, and a short recorded-payload replay. The baseline packaged replay,
+\texttt{20260702T122743Z}, used three repetitions, 30 warmup frames, and 120
+measured frames per phase. At 100 synthetic obstacles,
+\texttt{semantic\_proxy} used 432 components, about 208,864 estimated triangles,
+and 432 estimated draw calls; pose and shape frame P95 were 17.814 ms and
+19.256 ms. This passed a 33.3 ms P95 desktop frame budget in that run but missed
+a 16.7 ms P95 budget, and phase-aligned GPU-profiler counters were not captured.
+The allowed claim is therefore limited to packaged desktop feasibility in
+specific measured cases, not VR readiness.
+
+The recorded-payload packaged run, \texttt{20260703T024800Z}, replayed three
+externally generated JSONL streams through the same asset/proxy backend switch:
+common asset-compatible payloads, SPPA emit-all payloads, and SPPA changed-only
+payloads. All 27 applications were accepted. The HISM route had median active
+draw-group count 6 and frame P95 4.809 ms in this short replay, while the actor
+proxy had median component count 31 and frame P95 6.531 ms. This is useful
+integration evidence, but it is still a short internal replay without live
+network timing, phase-aligned GPU-profiler counters, headset execution, or
+operator evidence.
+
+The HISM measurements are a separate opt-in diagnostic family, not a replacement
+for the baseline replay. In \texttt{20260702T215340Z}, a one-repetition run with
+shorter measurement windows, the HISM route reduced the 100-object component and
+estimated draw-call count from 432 to 11, and reduced
+\texttt{shape\_param\_update} action P95 from 20.736 ms to 13.270 ms. The
+100-object shape-stream frame P95 improved from 42.903 ms to 33.626 ms, which
+was still above the 30 FPS P95 budget. The HISM update path was then changed to
+defer render-state dirty marking during batch instance updates and flush once per
+touched group. A longer HISM-only packaged run,
+\texttt{20260703T031246Z}, used three repetitions, 30 warmup frames, and 120
+measured frames per phase at 100 objects. It reported 11 active draw groups,
+pose-stream frame P95 13.884 ms, shape-stream frame P95 29.715 ms, and
+shape-stream frame P99 35.021 ms, with 6 of 360 shape frames above 33 ms. This
+was promising but not robust. A later dense sweep without Unreal CSV profiling,
+\texttt{20260703T033655Z}, tested 100, 250, and 500 objects with the same HISM
+backend. The 100-object shape-stream frame P95 was 38.657 ms, and an isolated
+100-object no-CSV rerun, \texttt{20260703T033840Z}, reported 37.126 ms. At 250
+and 500 objects, shape-stream P95 rose to 94.018 ms and 186.113 ms, respectively.
+The supported conclusion is therefore narrower: HISM batching keeps the proxy
+scene at 11 active draw groups across these synthetic densities and create-steady
+frames remain cheap, but stable 30 FPS P95 shape-update performance is not yet
+demonstrated even at 100 objects. This still does not support a 60 FPS, headset,
+live-network, or phase-aligned GPU-profiler claim.
+
+The HISM path was then extended with an explicit
+\texttt{partial\_obstacle\_update} contract: unmentioned entities are retained,
+while mentioned entities replace their old instance keys before new parts are
+upserted. The backend verifier creates two entities, applies a partial
+shape-update to only one, and verifies 6/6 expected live/HISM instances after
+the untouched entity is preserved. A new packaged run,
+\texttt{20260703T040154Z}, confirmed that dense 100-object shape updates still
+fail (shape-stream P95 46.151 ms). With shape updates limited to 10\% of
+objects but dense pose updates retained, shape-stream P95 stayed below
+33.3 ms through 500 objects, but pose-stream P95 reached 52.474/104.502 ms at
+250/500 objects. Under a changed-track schedule with both pose and shape updates
+limited to 10\%, \texttt{20260703T040602Z} reported 500-object pose/shape
+frame P95 of 16.528/29.787 ms and no measured hitches above 33 ms. The allowed
+claim is therefore conditional: partial updates support a changed-only scheduler
+stress case, but the 10\% rate is not yet derived from flight logs and does not
+prove dense all-object update performance.
+
+Current HISM regressions expose \texttt{SEMANTIC\_PROXY\_INSTANCED} as a live
+opt-in backend, preserve local pose through the component route, reject
+mismatched descriptor/update packets, support group-level material and
+uncertainty tags, provide an opt-in collision policy, and support eight
+per-instance custom-data floats for resolved color, confidence, evidence source,
+and uncertainty. In an observed-color stress run at 100 objects, per-instance
+custom data reduced active HISM components/draw calls from 188 to 11 and reduced
+create/pose/shape action P95 from 27.792/9.669/18.303 ms to
+18.608/7.050/15.351 ms, but did not improve the corresponding shape-stream frame
+P95 (37.725 vs. 38.136 ms). This supports HISM as an engineering direction for
+batching, not as completed dense-VR validation; phase-aligned GPU-profiler measurements
+and operational collision semantics remain open.
+The same backend verifier now includes a local georeferenced-pose regression:
+direct HISM payloads using \texttt{world\_m} and \texttt{world\_cm}, and
+component-routed payloads using both \texttt{SemanticProxy} and
+\texttt{SemanticProxyInstanced}, place a zero-centered descriptor at
+[1250,-400,120] cm with yaw 37 deg. This is only local-frame pose preservation,
+not evidence of live UAV georeferencing, camera calibration, Cesium accuracy, or
+VR runtime behavior.
+
+A second packaged run adds a narrower real-asset baseline for the two labels
+with reviewed project static meshes in the repository, \texttt{cow} and
+\texttt{tower}. At 50 objects, \texttt{project\_assets} used 50 static-mesh
+components and about 167,300 estimated triangles; \texttt{semantic\_proxy} used
+200 components and about 113,200 estimated triangles. The real-asset subset had
+lower P95 frame times for create, pose, and shape phases, with shape-stream P95
+6.789 ms versus 22.445 ms for SPPA. This is not a failure of the SPPA claim: it
+shows that curated assets are preferable when an appropriate asset exists and
+loads cheaply. SPPA's intended gap is uncovered or mismatched semantic telemetry,
+not replacement of available high-quality assets.
 
 \section{Discussion}
 
@@ -353,39 +1476,54 @@ The confirmatory result answers the preregistered question: under identical
 calibrated silhouettes and optimizer budget, a frozen family part graph improves
 lightweight occupancy over a generic eight-part graph by a large and stable
 margin. The knowledge representation, not a clever optimizer, is the active
-ingredient. For a geovisualization / spatial digital-twin venue, the transferable
-message is that semantic part structure is a spatial prior that can be measured
-with occupancy IoU on twin-scale actors, without requiring photoreal reconstruction.
-Secondary gains over text-only SPPA show that silhouette evidence helps when the
-same family graph is held fixed. Gains over boxes, capsules, and billboards are
-expected but still quantified under the shared protocol.
+ingredient. Secondary gains over text-only SPPA show that silhouette evidence
+helps when the same family graph is held fixed. Gains over boxes, capsules, and
+billboards are expected but still quantified under the shared protocol.
 
 Several limits remain binding. The held-out set is synthetic and
 developer-held-out; positive OOD-stratum differences do not license claims about
 real UAV masks, detectors, or metric flight geometry. Family tokens are
 supplied, so the experiment is family-conditioned rather than open-set.
-Nonsemantic visual hull can approach SPPA-MVFit IoU because it is free to
+Nonsemantic visual hull~\cite{laurentini1994visual} can approach SPPA-MVFit IoU because it is free to
 materialize denser occupancy without an eight-part role-labeled actor contract;
 runtime persistence, updateability, and semantic roles are separate properties.
-Neural image-to-3D generators remain preferable for offline asset authoring when
-budget and crops allow, but they are the wrong primary competitor for sparse
-telemetry under twin runtime constraints. A clean proxy can still look more
-certain than the underlying evidence; uncertainty encoding is specified, not
-human-validated.
+Neural image-to-3D generators remain the wrong competitor for sparse telemetry
+without crops, but they remain preferable for offline asset authoring when
+budget allows; the measured wave of
+Section~\ref{sec:neural-external-wave} quantifies this boundary on the sealed
+cases rather than by analogy. Unreal/HISM packaged measurements constrain deployment cost but
+do not establish dense VR readiness, headset performance, or operator benefit.
+A clean proxy can still look more certain than the underlying evidence; visual
+uncertainty encoding is specified, not human-validated.
+
+Three upgrade paths are deliberately left to future work because any of them
+would have invalidated the sealed confirmatory comparison had they been
+introduced mid-course. First, the frozen coordinate-descent fitter with its
+preregistered evaluation budget could be replaced by population-based
+(CMA-ES) or differentiable-rendering gradient fitting, which we expect to add
+small IoU gains at similar cost; the present paper isolates the representation
+effect, so the optimizer was held fixed on purpose. Second, the primitive
+vocabulary could be extended from boxes, ellipsoids, and cylinders to
+superquadrics; the implicit-OOD stratum already shows the current vocabulary's
+ceiling against such sources. Third, the iterative fit could be amortized by a
+small learned mask-to-\(\theta\) predictor, keeping the primitive
+representation, role labels, and update contract while moving per-case cost
+from milliseconds toward microseconds. None of these changes alters the claim
+evaluated here: family conditioning is the active ingredient, and the sealed
+protocol measures it independently of fitter sophistication.
 
 \section{Threats to Validity}
 
-First, confirmatory geometry is synthetic and developer-held-out; external
-public UAV validity is untested. Second, family tokens are observed inputs, not
-discovered open-set labels. Third, silhouettes are clean orthographic projections
-plus prespecified corruptions, not real detector masks. Fourth, secondary
-operational metrics (triangle budgets, local build times) use a different
-contract from H1 and must not be pooled into one quality score. Fifth, fitter
-timing is local CPU wall-clock, not Unreal frame time. Sixth, secondary
-inference uses stratified bootstrap intervals with null-centered \(p\)/Holm in
-the analysis artifact (Amendment~04). Seventh, Amendment~03 was a local
-protocol-release gate after external review infrastructure failure, not peer
-review.
+First, confirmatory geometry is synthetic. Even the implicit-OOD stratum is
+internally generated, so external public UAV validity is untested. Second,
+family tokens are observed inputs; the experiment does not evaluate open-set
+family discovery. Third, silhouettes are clean orthographic projections plus
+prespecified corruptions, not real detector masks. Fourth, secondary systems
+evidence (Unreal, YOLOE real probes, neural-generator grids) uses different
+contracts and must not be pooled into a single quality score. Fifth, timing is
+local CPU wall-clock for the fitter, not flight-laptop Unreal frame time. Sixth,
+the Holms-style secondary \(p\)-values in the analysis artifact are not used in
+this manuscript; secondary inference is reported via bootstrap intervals only.
 
 \section{Claim Boundaries}
 
@@ -412,10 +1550,9 @@ Not supported:
 
 \section{Conclusion}
 
-The novelty of this paper is a sealed, equal-budget demonstration that a
-reviewed semantic-family part graph is a measurable occupancy prior for
-lightweight multiview proxy fitting. Under a preregistered comparison,
-SPPA-MVFit improves clean 3D occupancy
+Family-conditioned SPPA-MVFit shows that a reviewed semantic part graph is a
+measurable occupancy prior for lightweight multiview proxy fitting. Under a
+preregistered equal-budget comparison, SPPA-MVFit improves clean 3D occupancy
 over Generic-MVFit by \(0.190\) absolute IoU (95\% CI \([0.181,0.199]\)) on 240
 held-out synthetic actors, with positive CSG-ID and implicit-OOD strata and
 millisecond-scale local cost. The deployment-facing SPPA contract remains a

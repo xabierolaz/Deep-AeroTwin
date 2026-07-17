@@ -1,0 +1,551 @@
+{
+  "schema": "sppa-use-case-sota-v1",
+  "claim_boundary": "Operational UAV digital-twin proxy ranking, not photoreal SOTA.",
+  "virtues": [
+    "role_labeled_parts",
+    "millisecond_local_build",
+    "sub_2k_triangle_budget",
+    "metric_or_prior_dims",
+    "update_contract",
+    "conservative_fallback",
+    "orders_of_magnitude_lighter_than_neural_generators"
+  ],
+  "rows": [
+    {
+      "label": "biker",
+      "mode": "tag_only_prior_dims",
+      "lod": "balanced",
+      "triangles": 692,
+      "vertices": 408,
+      "parts": 27,
+      "build_ms": 0.354,
+      "effective_dims_m": {
+        "length": 1.7,
+        "width": 0.6,
+        "height": 1.85
+      },
+      "metric_dims_source": "semantic_prior_dims",
+      "neural_reference": {
+        "method": "TripoSR",
+        "triangles": 22436,
+        "gen_ms": 898.0
+      },
+      "triangle_ratio_vs_neural": 0.0308,
+      "speedup_vs_neural": 2538.2,
+      "use_case_sota_score": 0.7843,
+      "components": {
+        "structure_efficiency": 1.0,
+        "build_speed": 0.6445,
+        "evidence_use": 0.25,
+        "update_contract": 1.0,
+        "fallback_safety": 1.0,
+        "lightness_vs_neural": 0.2891
+      },
+      "claim_boundary": "Operational UAV digital-twin proxy score, not photoreal image-to-3D SOTA."
+    },
+    {
+      "label": "biker",
+      "mode": "tag_plus_metric_dims",
+      "lod": "balanced",
+      "triangles": 692,
+      "vertices": 408,
+      "parts": 27,
+      "build_ms": 0.24,
+      "effective_dims_m": {
+        "length": 1.85,
+        "width": 0.65,
+        "height": 1.65
+      },
+      "metric_dims_source": "metric_dims_input",
+      "neural_reference": {
+        "method": "TripoSR",
+        "triangles": 22436,
+        "gen_ms": 898.0
+      },
+      "triangle_ratio_vs_neural": 0.0308,
+      "speedup_vs_neural": 3743.2,
+      "use_case_sota_score": 0.8343,
+      "components": {
+        "structure_efficiency": 1.0,
+        "build_speed": 0.6445,
+        "evidence_use": 0.5,
+        "update_contract": 1.0,
+        "fallback_safety": 1.0,
+        "lightness_vs_neural": 0.2891
+      },
+      "claim_boundary": "Operational UAV digital-twin proxy score, not photoreal image-to-3D SOTA."
+    },
+    {
+      "label": "biker",
+      "mode": "tag_plus_metric_dims",
+      "lod": "ultra_light",
+      "triangles": 624,
+      "vertices": 368,
+      "parts": 25,
+      "build_ms": 0.208,
+      "effective_dims_m": {
+        "length": 1.85,
+        "width": 0.65,
+        "height": 1.65
+      },
+      "metric_dims_source": "metric_dims_input",
+      "neural_reference": {
+        "method": "TripoSR",
+        "triangles": 22436,
+        "gen_ms": 898.0
+      },
+      "triangle_ratio_vs_neural": 0.0278,
+      "speedup_vs_neural": 4315.2,
+      "use_case_sota_score": 0.8343,
+      "components": {
+        "structure_efficiency": 1.0,
+        "build_speed": 0.6445,
+        "evidence_use": 0.5,
+        "update_contract": 1.0,
+        "fallback_safety": 1.0,
+        "lightness_vs_neural": 0.2891
+      },
+      "claim_boundary": "Operational UAV digital-twin proxy score, not photoreal image-to-3D SOTA."
+    },
+    {
+      "label": "biker",
+      "mode": "tag_plus_metric_dims",
+      "lod": "high",
+      "triangles": 940,
+      "vertices": 528,
+      "parts": 23,
+      "build_ms": 0.306,
+      "effective_dims_m": {
+        "length": 1.85,
+        "width": 0.65,
+        "height": 1.65
+      },
+      "metric_dims_source": "metric_dims_input",
+      "neural_reference": {
+        "method": "TripoSR",
+        "triangles": 22436,
+        "gen_ms": 898.0
+      },
+      "triangle_ratio_vs_neural": 0.0419,
+      "speedup_vs_neural": 2936.6,
+      "use_case_sota_score": 0.8343,
+      "components": {
+        "structure_efficiency": 1.0,
+        "build_speed": 0.6445,
+        "evidence_use": 0.5,
+        "update_contract": 1.0,
+        "fallback_safety": 1.0,
+        "lightness_vs_neural": 0.2891
+      },
+      "claim_boundary": "Operational UAV digital-twin proxy score, not photoreal image-to-3D SOTA."
+    },
+    {
+      "label": "tower",
+      "mode": "tag_only_prior_dims",
+      "lod": "balanced",
+      "triangles": 396,
+      "vertices": 232,
+      "parts": 17,
+      "build_ms": 0.145,
+      "effective_dims_m": {
+        "length": 1.2,
+        "width": 1.2,
+        "height": 6.0
+      },
+      "metric_dims_source": "semantic_prior_dims",
+      "neural_reference": {
+        "method": "TripoSR",
+        "triangles": 24228,
+        "gen_ms": 1030.0
+      },
+      "triangle_ratio_vs_neural": 0.0163,
+      "speedup_vs_neural": 7083.9,
+      "use_case_sota_score": 0.7843,
+      "components": {
+        "structure_efficiency": 1.0,
+        "build_speed": 0.6445,
+        "evidence_use": 0.25,
+        "update_contract": 1.0,
+        "fallback_safety": 1.0,
+        "lightness_vs_neural": 0.2891
+      },
+      "claim_boundary": "Operational UAV digital-twin proxy score, not photoreal image-to-3D SOTA."
+    },
+    {
+      "label": "tower",
+      "mode": "tag_plus_metric_dims",
+      "lod": "balanced",
+      "triangles": 396,
+      "vertices": 232,
+      "parts": 17,
+      "build_ms": 0.147,
+      "effective_dims_m": {
+        "length": 4.5,
+        "width": 4.5,
+        "height": 28.0
+      },
+      "metric_dims_source": "metric_dims_input",
+      "neural_reference": {
+        "method": "TripoSR",
+        "triangles": 24228,
+        "gen_ms": 1030.0
+      },
+      "triangle_ratio_vs_neural": 0.0163,
+      "speedup_vs_neural": 7016.3,
+      "use_case_sota_score": 0.8343,
+      "components": {
+        "structure_efficiency": 1.0,
+        "build_speed": 0.6445,
+        "evidence_use": 0.5,
+        "update_contract": 1.0,
+        "fallback_safety": 1.0,
+        "lightness_vs_neural": 0.2891
+      },
+      "claim_boundary": "Operational UAV digital-twin proxy score, not photoreal image-to-3D SOTA."
+    },
+    {
+      "label": "tower",
+      "mode": "tag_plus_metric_dims",
+      "lod": "ultra_light",
+      "triangles": 396,
+      "vertices": 232,
+      "parts": 17,
+      "build_ms": 0.136,
+      "effective_dims_m": {
+        "length": 4.5,
+        "width": 4.5,
+        "height": 28.0
+      },
+      "metric_dims_source": "metric_dims_input",
+      "neural_reference": {
+        "method": "TripoSR",
+        "triangles": 24228,
+        "gen_ms": 1030.0
+      },
+      "triangle_ratio_vs_neural": 0.0163,
+      "speedup_vs_neural": 7573.5,
+      "use_case_sota_score": 0.8343,
+      "components": {
+        "structure_efficiency": 1.0,
+        "build_speed": 0.6445,
+        "evidence_use": 0.5,
+        "update_contract": 1.0,
+        "fallback_safety": 1.0,
+        "lightness_vs_neural": 0.2891
+      },
+      "claim_boundary": "Operational UAV digital-twin proxy score, not photoreal image-to-3D SOTA."
+    },
+    {
+      "label": "tower",
+      "mode": "tag_plus_metric_dims",
+      "lod": "high",
+      "triangles": 396,
+      "vertices": 232,
+      "parts": 17,
+      "build_ms": 0.136,
+      "effective_dims_m": {
+        "length": 4.5,
+        "width": 4.5,
+        "height": 28.0
+      },
+      "metric_dims_source": "metric_dims_input",
+      "neural_reference": {
+        "method": "TripoSR",
+        "triangles": 24228,
+        "gen_ms": 1030.0
+      },
+      "triangle_ratio_vs_neural": 0.0163,
+      "speedup_vs_neural": 7590.3,
+      "use_case_sota_score": 0.8343,
+      "components": {
+        "structure_efficiency": 1.0,
+        "build_speed": 0.6445,
+        "evidence_use": 0.5,
+        "update_contract": 1.0,
+        "fallback_safety": 1.0,
+        "lightness_vs_neural": 0.2891
+      },
+      "claim_boundary": "Operational UAV digital-twin proxy score, not photoreal image-to-3D SOTA."
+    },
+    {
+      "label": "tractor",
+      "mode": "tag_only_prior_dims",
+      "lod": "balanced",
+      "triangles": 576,
+      "vertices": 344,
+      "parts": 28,
+      "build_ms": 0.19,
+      "effective_dims_m": {
+        "length": 3.8,
+        "width": 2.0,
+        "height": 2.4
+      },
+      "metric_dims_source": "semantic_prior_dims",
+      "neural_reference": {
+        "method": "TripoSR",
+        "triangles": 36448,
+        "gen_ms": 1350.0
+      },
+      "triangle_ratio_vs_neural": 0.0158,
+      "speedup_vs_neural": 7090.3,
+      "use_case_sota_score": 0.7843,
+      "components": {
+        "structure_efficiency": 1.0,
+        "build_speed": 0.6445,
+        "evidence_use": 0.25,
+        "update_contract": 1.0,
+        "fallback_safety": 1.0,
+        "lightness_vs_neural": 0.2891
+      },
+      "claim_boundary": "Operational UAV digital-twin proxy score, not photoreal image-to-3D SOTA."
+    },
+    {
+      "label": "tractor",
+      "mode": "tag_plus_metric_dims",
+      "lod": "balanced",
+      "triangles": 576,
+      "vertices": 344,
+      "parts": 28,
+      "build_ms": 0.181,
+      "effective_dims_m": {
+        "length": 3.9,
+        "width": 2.1,
+        "height": 2.5
+      },
+      "metric_dims_source": "metric_dims_input",
+      "neural_reference": {
+        "method": "TripoSR",
+        "triangles": 36448,
+        "gen_ms": 1350.0
+      },
+      "triangle_ratio_vs_neural": 0.0158,
+      "speedup_vs_neural": 7466.8,
+      "use_case_sota_score": 0.8343,
+      "components": {
+        "structure_efficiency": 1.0,
+        "build_speed": 0.6445,
+        "evidence_use": 0.5,
+        "update_contract": 1.0,
+        "fallback_safety": 1.0,
+        "lightness_vs_neural": 0.2891
+      },
+      "claim_boundary": "Operational UAV digital-twin proxy score, not photoreal image-to-3D SOTA."
+    },
+    {
+      "label": "tractor",
+      "mode": "tag_plus_metric_dims",
+      "lod": "ultra_light",
+      "triangles": 464,
+      "vertices": 280,
+      "parts": 24,
+      "build_ms": 0.15,
+      "effective_dims_m": {
+        "length": 3.9,
+        "width": 2.1,
+        "height": 2.5
+      },
+      "metric_dims_source": "metric_dims_input",
+      "neural_reference": {
+        "method": "TripoSR",
+        "triangles": 36448,
+        "gen_ms": 1350.0
+      },
+      "triangle_ratio_vs_neural": 0.0127,
+      "speedup_vs_neural": 9000.0,
+      "use_case_sota_score": 0.8343,
+      "components": {
+        "structure_efficiency": 1.0,
+        "build_speed": 0.6445,
+        "evidence_use": 0.5,
+        "update_contract": 1.0,
+        "fallback_safety": 1.0,
+        "lightness_vs_neural": 0.2891
+      },
+      "claim_boundary": "Operational UAV digital-twin proxy score, not photoreal image-to-3D SOTA."
+    },
+    {
+      "label": "tractor",
+      "mode": "tag_plus_metric_dims",
+      "lod": "high",
+      "triangles": 836,
+      "vertices": 450,
+      "parts": 20,
+      "build_ms": 0.229,
+      "effective_dims_m": {
+        "length": 3.9,
+        "width": 2.1,
+        "height": 2.5
+      },
+      "metric_dims_source": "metric_dims_input",
+      "neural_reference": {
+        "method": "TripoSR",
+        "triangles": 36448,
+        "gen_ms": 1350.0
+      },
+      "triangle_ratio_vs_neural": 0.0229,
+      "speedup_vs_neural": 5902.9,
+      "use_case_sota_score": 0.8343,
+      "components": {
+        "structure_efficiency": 1.0,
+        "build_speed": 0.6445,
+        "evidence_use": 0.5,
+        "update_contract": 1.0,
+        "fallback_safety": 1.0,
+        "lightness_vs_neural": 0.2891
+      },
+      "claim_boundary": "Operational UAV digital-twin proxy score, not photoreal image-to-3D SOTA."
+    },
+    {
+      "label": "tractor_trailer",
+      "mode": "tag_only_prior_dims",
+      "lod": "balanced",
+      "triangles": 1076,
+      "vertices": 636,
+      "parts": 49,
+      "build_ms": 0.345,
+      "effective_dims_m": {
+        "length": 7.6,
+        "width": 2.15,
+        "height": 2.7
+      },
+      "metric_dims_source": "semantic_prior_dims",
+      "neural_reference": {
+        "method": "TripoSR",
+        "triangles": 27644,
+        "gen_ms": 1200.0
+      },
+      "triangle_ratio_vs_neural": 0.0389,
+      "speedup_vs_neural": 3482.3,
+      "use_case_sota_score": 0.7843,
+      "components": {
+        "structure_efficiency": 1.0,
+        "build_speed": 0.6445,
+        "evidence_use": 0.25,
+        "update_contract": 1.0,
+        "fallback_safety": 1.0,
+        "lightness_vs_neural": 0.2891
+      },
+      "claim_boundary": "Operational UAV digital-twin proxy score, not photoreal image-to-3D SOTA."
+    },
+    {
+      "label": "tractor_trailer",
+      "mode": "tag_plus_metric_dims",
+      "lod": "balanced",
+      "triangles": 1076,
+      "vertices": 636,
+      "parts": 49,
+      "build_ms": 0.327,
+      "effective_dims_m": {
+        "length": 8.2,
+        "width": 2.3,
+        "height": 2.9
+      },
+      "metric_dims_source": "metric_dims_input",
+      "neural_reference": {
+        "method": "TripoSR",
+        "triangles": 27644,
+        "gen_ms": 1200.0
+      },
+      "triangle_ratio_vs_neural": 0.0389,
+      "speedup_vs_neural": 3669.7,
+      "use_case_sota_score": 0.8343,
+      "components": {
+        "structure_efficiency": 1.0,
+        "build_speed": 0.6445,
+        "evidence_use": 0.5,
+        "update_contract": 1.0,
+        "fallback_safety": 1.0,
+        "lightness_vs_neural": 0.2891
+      },
+      "claim_boundary": "Operational UAV digital-twin proxy score, not photoreal image-to-3D SOTA."
+    },
+    {
+      "label": "tractor_trailer",
+      "mode": "tag_plus_metric_dims",
+      "lod": "ultra_light",
+      "triangles": 852,
+      "vertices": 508,
+      "parts": 41,
+      "build_ms": 0.267,
+      "effective_dims_m": {
+        "length": 8.2,
+        "width": 2.3,
+        "height": 2.9
+      },
+      "metric_dims_source": "metric_dims_input",
+      "neural_reference": {
+        "method": "TripoSR",
+        "triangles": 27644,
+        "gen_ms": 1200.0
+      },
+      "triangle_ratio_vs_neural": 0.0308,
+      "speedup_vs_neural": 4491.0,
+      "use_case_sota_score": 0.8343,
+      "components": {
+        "structure_efficiency": 1.0,
+        "build_speed": 0.6445,
+        "evidence_use": 0.5,
+        "update_contract": 1.0,
+        "fallback_safety": 1.0,
+        "lightness_vs_neural": 0.2891
+      },
+      "claim_boundary": "Operational UAV digital-twin proxy score, not photoreal image-to-3D SOTA."
+    },
+    {
+      "label": "tractor_trailer",
+      "mode": "tag_plus_metric_dims",
+      "lod": "high",
+      "triangles": 1576,
+      "vertices": 838,
+      "parts": 33,
+      "build_ms": 0.468,
+      "effective_dims_m": {
+        "length": 8.2,
+        "width": 2.3,
+        "height": 2.9
+      },
+      "metric_dims_source": "metric_dims_input",
+      "neural_reference": {
+        "method": "TripoSR",
+        "triangles": 27644,
+        "gen_ms": 1200.0
+      },
+      "triangle_ratio_vs_neural": 0.057,
+      "speedup_vs_neural": 2562.5,
+      "use_case_sota_score": 0.8343,
+      "components": {
+        "structure_efficiency": 1.0,
+        "build_speed": 0.6445,
+        "evidence_use": 0.5,
+        "update_contract": 1.0,
+        "fallback_safety": 1.0,
+        "lightness_vs_neural": 0.2891
+      },
+      "claim_boundary": "Operational UAV digital-twin proxy score, not photoreal image-to-3D SOTA."
+    }
+  ],
+  "summary": {
+    "mean_score_metric_balanced": 0.8343,
+    "mean_triangles_metric_balanced": 685.0,
+    "mean_build_ms_metric_balanced": 0.224
+  },
+  "gates": {
+    "max_mean_triangles_balanced": 900,
+    "max_mean_build_ms_balanced": 1.0,
+    "max_any_triangles_balanced": 1600,
+    "max_mean_triangles_ultra": 700,
+    "max_mean_build_ms_ultra": 1.0,
+    "min_mean_score_balanced": 0.75,
+    "min_mean_lighter_vs_triposr": 15.0
+  },
+  "gate_metrics": {
+    "mean_triangles_balanced": 685.0,
+    "mean_build_ms_balanced": 0.224,
+    "mean_score_balanced": 0.8343,
+    "mean_triangles_ultra": 584.0,
+    "mean_build_ms_ultra": 0.19,
+    "mean_lighter_vs_triposr": 45.7
+  },
+  "gate_status": "passed",
+  "gate_failures": []
+}

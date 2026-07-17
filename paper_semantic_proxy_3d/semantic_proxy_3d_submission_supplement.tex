@@ -7,6 +7,7 @@
 \usepackage{array}
 \usepackage{float}
 \usepackage{xcolor}
+\usepackage{graphicx}
 \usepackage{hyperref}
 
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
@@ -28,15 +29,6 @@ longer historical technical diary is \textbf{not} submitted. This document
 records the sealed confirmatory protocol path, key hashes, and claim boundaries.
 Primary scientific tables appear in the main paper.
 
-\section*{Novelty in one paragraph}
-
-The scientific novelty is \emph{not} a denser mesh, a new neural reconstructor,
-or a live LLM geometry system. It is a sealed equal-budget demonstration that a
-frozen semantic-family part graph is a measurable occupancy prior for lightweight
-multiview proxy fitting: SPPA-MVFit versus Generic-MVFit on the same top/side
-silhouettes, same five parameters, same 31-candidate budget. The Unreal
-descriptor/update path is deployment context only.
-
 \section*{Primary endpoint (held-out)}
 
 \begin{itemize}
@@ -46,10 +38,7 @@ descriptor/update path is deployment context only.
 \item Decision: stratified bootstrap 95\% CI lower bound \(> +0.030\).
 \item Result: mean \(\Delta=0.190\), CI \([0.181,0.199]\), \textbf{H1 PASS}.
 \item Strata: CSG-ID \(0.209\), implicit-OOD \(0.172\) (both positive).
-\item All twelve family$\times$stratum cells positive (min \(\Delta=0.043\)).
 \item Provenance: \texttt{synthetic\_geometry} only.
-\item Protocol release: Amendment~03 local triple-role gate (not external peer review).
-\item Analysis hygiene: Amendment~04 (fit grid 96; null-centered secondary \(p\)).
 \end{itemize}
 
 \section*{Reproduction commands}
@@ -111,7 +100,51 @@ silhouettes; shared generator; optional runtime contract evidence.
 Not supported: measured flight, real-UAV 3D GT accuracy, operator benefit,
 universal open-set geometry, or neural image-to-3D SOTA ranking.
 
-Real-image figures in the main paper remain qualitative probes without 3D
-ground truth and use declared replay assumptions where telemetry is shown.
+Real-image figures in the main paper and in this supplement remain qualitative
+probes without 3D ground truth and use declared replay assumptions where
+telemetry is shown.
+
+\section*{Supplementary figures}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\setcounter{figure}{0}
+
+The two audit artifacts below are referenced from the main paper as
+Supplementary Figures~S1 and~S2. They duplicate no main-paper figure: S1
+provides the zoomed detector-evidence detail that the compressed comparison
+grid cannot show, and S2 provides the multi-view renders behind the visual part
+evidence audit table.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth,height=0.75\textheight,keepaspectratio]{figures/sppa_real_detection_zoom_audit.png}
+\caption{Zoomed real-input audit for the four user-supplied probes. Red boxes
+and green masks are YOLOE detector evidence. The evidence panel reports
+confidence, mask size, bbox area, inferred replay dimensions, yaw, and the
+SPPA low-confidence shape flag. The zoom panel shows the final selected proxy;
+the separate input-mode ablation reports text-only, detector+metric, and
+detector+metric+visual variants. The evidence panel reports raw detector dimensions and
+the final SPPA dimensions, showing that the tractor's nearly square footprint is
+not copied but corrected through the vehicle aspect prior, while low-confidence
+image pose is not used. SPPA recipes include
+explicit connector primitives for semantically attached parts, such as bicycle
+frame tubes, tower braces, tractor axles, and tractor-trailer hitch/axle
+connectors. The full frames in the first column are also the real-image replay
+evidence: red boxes are the selected YOLOE or composite detector bboxes and
+green polygons are the native YOLOE/Ultralytics mask contours used by the
+observation bridge, which remain detector evidence rather than ground-truth
+masks.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{figures/sppa_visual_part_evidence_grid.png}
+\caption{Visual part evidence bridge on the four real probes. Green
+circles/pairs and magenta lines are generic image-space cues from pixels,
+detector boxes, and unlabeled mask geometry. SPPA maps those cues only onto
+descriptor roles already present in the selected proxy and records a compact
+image-space geometry profile; when the visual--metric gate is non-divergent, the
+selected yaw is the declared-replay axial footprint yaw. The semantic class and
+mesh topology are unchanged.}
+\end{figure}
 
 \end{document}

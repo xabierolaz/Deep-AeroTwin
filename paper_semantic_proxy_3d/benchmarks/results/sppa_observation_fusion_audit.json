@@ -1,0 +1,93 @@
+{
+  "claim_boundary": "Real-input SPPA observation-fusion audit. It verifies deterministic constraint fusion over detector-derived replay dimensions; it does not prove ground-truth 3D reconstruction or detector mask correctness.",
+  "failures": [],
+  "objects_csv": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified\\objects.csv",
+  "rows": [
+    {
+      "descriptor_bytes": 19271,
+      "fused_aspect": 2.547,
+      "fused_dims_m": {
+        "height": 1.85,
+        "length": 1.84961796335876,
+        "width": 0.7261462398812663
+      },
+      "gate": "vehicle_soft_low_confidence_fusion",
+      "image_pose_used": false,
+      "label": "biker",
+      "observation_applied": true,
+      "raw_aspect": 2.02,
+      "raw_dims_m": {
+        "height": 1.85,
+        "length": 3.5855289222297833,
+        "width": 1.7746039610295448
+      },
+      "triangles": 1036,
+      "wall_ms": 3.39
+    },
+    {
+      "descriptor_bytes": 13277,
+      "fused_aspect": 1.939,
+      "fused_dims_m": {
+        "height": 28.0,
+        "length": 5.6000000000000005,
+        "width": 2.888305332620233
+      },
+      "gate": "vertical_height_only_low_confidence_shape",
+      "image_pose_used": false,
+      "label": "tower",
+      "observation_applied": true,
+      "raw_aspect": 4.421,
+      "raw_dims_m": {
+        "height": 28.0,
+        "length": 12.770027617473518,
+        "width": 2.888305332620233
+      },
+      "triangles": 270,
+      "wall_ms": 1.151
+    },
+    {
+      "descriptor_bytes": 13066,
+      "fused_aspect": 1.9,
+      "fused_dims_m": {
+        "height": 2.6,
+        "length": 4.521013585073474,
+        "width": 2.379480834249197
+      },
+      "gate": "vehicle_soft_aspect_fusion",
+      "image_pose_used": false,
+      "label": "tractor",
+      "observation_applied": true,
+      "raw_aspect": 1.144,
+      "raw_dims_m": {
+        "height": 2.6,
+        "length": 4.946368595428787,
+        "width": 4.323472800216441
+      },
+      "triangles": 880,
+      "wall_ms": 1.784
+    },
+    {
+      "descriptor_bytes": 21523,
+      "fused_aspect": 3.224,
+      "fused_dims_m": {
+        "height": 3.4,
+        "length": 12.109413187143534,
+        "width": 3.756258782392249
+      },
+      "gate": "vehicle_soft_low_confidence_fusion",
+      "image_pose_used": false,
+      "label": "tractor_trailer",
+      "observation_applied": true,
+      "raw_aspect": 2.714,
+      "raw_dims_m": {
+        "height": 3.4,
+        "length": 16.854949218313088,
+        "width": 6.210188307188842
+      },
+      "triangles": 1904,
+      "wall_ms": 2.902
+    }
+  ],
+  "run_dir": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified",
+  "status": "passed"
+}

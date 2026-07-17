@@ -1,0 +1,351 @@
+\begin{thebibliography}{10}
+
+\bibitem{armeni2019scenegraph}
+Iro Armeni, Zhi-Yang He, JunYoung Gwak, Amir~R. Zamir, Martin Fischer, Jitendra
+  Malik, and Silvio Savarese.
+\newblock 3d scene graph: A structure for unified semantics, 3d space, and
+  camera.
+\newblock In {\em Proceedings of the IEEE/CVF International Conference on
+  Computer Vision}, pages 5664--5673, 2019.
+
+\bibitem{biederman1987recognition}
+Irving Biederman.
+\newblock Recognition-by-components: A theory of human image understanding.
+\newblock {\em Psychological Review}, 94(2):115--147, 1987.
+
+\bibitem{brazil2022omni3d}
+Garrick Brazil, Abhinav Kumar, Julian Straub, Nikhila Ravi, Justin Johnson, and
+  Georgia Gkioxari.
+\newblock Omni3d: A large benchmark and model for 3d object detection in the
+  wild.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, 2023.
+
+\bibitem{clark1976hierarchical}
+James~H. Clark.
+\newblock Hierarchical geometric models for visible surface algorithms.
+\newblock {\em Communications of the ACM}, 19(10):547--554, 1976.
+
+\bibitem{decoret2003billboard}
+Xavier Decoret, Fredo Durand, Francois~X. Sillion, and Julie Dorsey.
+\newblock Billboard clouds for extreme model simplification.
+\newblock {\em ACM Transactions on Graphics}, 22(3):689--696, 2003.
+
+\bibitem{endsley1988sagat}
+Mica~R. Endsley.
+\newblock Situation awareness global assessment technique (sagat).
+\newblock In {\em Proceedings of the IEEE 1988 National Aerospace and
+  Electronics Conference}, 1988.
+
+\bibitem{endsley1995situation}
+Mica~R. Endsley.
+\newblock Toward a theory of situation awareness in dynamic systems.
+\newblock {\em Human Factors}, 37(1):32--64, 1995.
+
+\bibitem{epic2024nanite}
+{Epic Games}.
+\newblock Nanite virtualized geometry in unreal engine, 2024.
+
+\bibitem{epic2026uehardware}
+{Epic Games}.
+\newblock {Hardware and Software Specifications for Unreal Engine}.
+\newblock Unreal Engine documentation, 2026.
+\newblock Accessed 2026-07-01.
+
+\bibitem{fedele2025superdec}
+Elisabetta Fedele, Boyang Sun, Leonidas Guibas, Marc Pollefeys, and Francis
+  Engelmann.
+\newblock Superdec: 3d scene decomposition with superquadric primitives.
+\newblock {\em arXiv preprint arXiv:2504.00992}, 2025.
+
+\bibitem{hart1988nasatlx}
+Sandra~G. Hart and Lowell~E. Staveland.
+\newblock Development of nasa-tlx (task load index): Results of empirical and
+  theoretical research.
+\newblock In Peter~A. Hancock and Najmedin Meshkati, editors, {\em Human Mental
+  Workload}, pages 139--183. North-Holland, Amsterdam, 1988.
+
+\bibitem{hornung2013octomap}
+Armin Hornung, Kai~M. Wurm, Maren Bennewitz, Cyrill Stachniss, and Wolfram
+  Burgard.
+\newblock Octomap: An efficient probabilistic 3d mapping framework based on
+  octrees.
+\newblock {\em Autonomous Robots}, 34(3):189--206, 2013.
+
+\bibitem{hu2026sam3danimal}
+Shaofei Hu, Gengshan Yang, Shunsuke~Saito Lu, et~al.
+\newblock Sam 3d animal: Pan-category 3d animal reconstruction from a single
+  image with shape prior.
+\newblock {\em arXiv preprint arXiv:2605.07604}, 2026.
+
+\bibitem{hyper3d2026rodin25}
+{Hyper3D}.
+\newblock Hyper3d rodin gen-2.5, 2026.
+
+\bibitem{jones2020shapeassembly}
+R.~Kenny Jones, Theresa Barton, Xianghao Xu, Kai Wang, Ellen Jiang, Paul
+  Guerrero, Niloy~J. Mitra, and Daniel Ritchie.
+\newblock Shapeassembly: Learning to generate programs for 3d shape structure
+  synthesis.
+\newblock {\em ACM Transactions on Graphics}, 39(6), 2020.
+
+\bibitem{jones2023shapecoder}
+R.~Kenny Jones, Paul Guerrero, Niloy~J. Mitra, and Daniel Ritchie.
+\newblock Shapecoder: Discovering abstractions for visual programs from
+  unstructured primitives.
+\newblock {\em ACM Transactions on Graphics}, 42(4), 2023.
+
+\bibitem{jun2023shape}
+Heewoo Jun and Alex Nichol.
+\newblock Shap-e: Generating conditional 3d implicit functions.
+\newblock {\em arXiv preprint arXiv:2305.02463}, 2023.
+
+\bibitem{khan2024text2cad}
+Mohammad~Sadil Khan, Sankalp Sinha, Talha~Uddin Sheikh, Didier Stricker,
+  Sk~Aziz Ali, and Muhammad~Zeshan Afzal.
+\newblock Text2cad: Generating sequential cad designs from beginner-to-expert
+  level text prompts.
+\newblock In {\em Advances in Neural Information Processing Systems},
+  volume~37, 2024.
+
+\bibitem{li2026pixal3d}
+Dong-Yang Li, Wang Zhao, Yuxin Chen, Wenbo Hu, Meng-Hao Guo, Fang-Lue Zhang,
+  Ying Shan, and Shi-Min Hu.
+\newblock Pixal3d: Pixel-aligned 3d generation from images.
+\newblock {\em arXiv preprint arXiv:2605.10922}, 2026.
+
+\bibitem{li20243dfauna}
+Zizhang Li, Dor Litvak, Ruining Li, Yunzhi Zhang, Tomas Jakab, Christian
+  Rupprecht, Shangzhe Wu, Andrea Vedaldi, and Jiajun Wu.
+\newblock Learning the 3d fauna of the web.
+\newblock {\em arXiv preprint arXiv:2401.02400}, 2024.
+
+\bibitem{lin2022magic3d}
+Chen-Hsuan Lin, Jun Gao, Luming Tang, Towaki Takikawa, Xiaohui Zeng, Xun Huang,
+  Karsten Kreis, Sanja Fidler, Ming-Yu Liu, and Tsung-Yi Lin.
+\newblock Magic3d: High-resolution text-to-3d content creation.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, 2023.
+
+\bibitem{lin2025partcrafter}
+Yuchen Lin, Chenguo Lin, Panwang Pan, Honglei Yan, Yiqiang Feng, Yadong Mu, and
+  Katerina Fragkiadaki.
+\newblock Partcrafter: Structured 3d mesh generation via compositional latent
+  diffusion transformers.
+\newblock {\em arXiv preprint arXiv:2506.05573}, 2025.
+
+\bibitem{marr1978representation}
+David Marr and H.~Keith Nishihara.
+\newblock Representation and recognition of the spatial organization of
+  three-dimensional shapes.
+\newblock {\em Proceedings of the Royal Society of London. Series B, Biological
+  Sciences}, 200(1140):269--294, 1978.
+
+\bibitem{mueller2006procedural}
+Pascal Mueller, Peter Wonka, Simon Haegler, Andreas Ulmer, and Luc Van~Gool.
+\newblock Procedural modeling of buildings.
+\newblock {\em ACM Transactions on Graphics}, 25(3):614--623, 2006.
+
+\bibitem{nichol2022pointe}
+Alex Nichol, Heewoo Jun, Prafulla Dhariwal, Pamela Mishkin, and Mark Chen.
+\newblock Point-e: A system for generating 3d point clouds from complex
+  prompts.
+\newblock {\em arXiv preprint arXiv:2212.08751}, 2022.
+
+\bibitem{nvidia2026rtx50laptop}
+{NVIDIA}.
+\newblock {GeForce RTX 50 Series Gaming Laptops: Compare Specs}.
+\newblock Web page, 2026.
+\newblock Accessed 2026-07-01.
+
+\bibitem{oleynikova2017voxblox}
+Helen Oleynikova, Zachary Taylor, Marius Fehr, Juan Nieto, and Roland Siegwart.
+\newblock Voxblox: Incremental 3d euclidean signed distance fields for on-board
+  mav planning.
+\newblock In {\em IEEE/RSJ International Conference on Intelligent Robots and
+  Systems}, pages 1366--1373, 2017.
+
+\bibitem{ogc2023tiles}
+{Open Geospatial Consortium}.
+\newblock Ogc 3d tiles 1.1 community standard, 2023.
+
+\bibitem{paschalidou2019superquadrics}
+Despoina Paschalidou, Ali~Osman Ulusoy, and Andreas Geiger.
+\newblock Superquadrics revisited: Learning 3d shape parsing beyond cuboids.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, 2019.
+
+\bibitem{poole2022dreamfusion}
+Ben Poole, Ajay Jain, Jonathan~T. Barron, and Ben Mildenhall.
+\newblock Dreamfusion: Text-to-3d using 2d diffusion.
+\newblock {\em arXiv preprint arXiv:2209.14988}, 2022.
+
+\bibitem{pytorch2026memoryfraction}
+{PyTorch Contributors}.
+\newblock {torch.cuda.memory.set\_per\_process\_memory\_fraction}.
+\newblock PyTorch documentation, 2026.
+\newblock Accessed 2026-07-01.
+
+\bibitem{rosinol2020dynamic}
+Antoni Rosinol, Arjun Gupta, Marcus Abate, Jingnan Shi, and Luca Carlone.
+\newblock 3d dynamic scene graphs: Actionable spatial perception with places,
+  objects, and humans.
+\newblock In {\em Robotics: Science and Systems}, 2020.
+
+\bibitem{rukhovich2024cadrecode}
+Danila Rukhovich, Elona Dupont, Dimitrios Mallis, Kseniya Cherenkova, Anis
+  Kacem, and Djamila Aouada.
+\newblock Cad-recode: Reverse engineering cad code from point clouds.
+\newblock In {\em Proceedings of the IEEE/CVF International Conference on
+  Computer Vision}, 2025.
+
+\bibitem{sharma2018csgnet}
+Gopal Sharma, Rishabh Goyal, Difan Liu, Evangelos Kalogerakis, and Subhransu
+  Maji.
+\newblock Csgnet: Neural shape parser for constructive solid geometry.
+\newblock In {\em Proceedings of the IEEE Conference on Computer Vision and
+  Pattern Recognition}, 2018.
+
+\bibitem{solina1990recovery}
+Franc Solina and Ruzena Bajcsy.
+\newblock Recovery of parametric models from range images: The case for
+  superquadrics with global deformations.
+\newblock {\em IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  12(2):131--147, 1990.
+
+\bibitem{stability2024sf3d}
+{Stability AI}.
+\newblock Introducing stable fast 3d: Rapid 3d asset generation from single
+  images, 2024.
+
+\bibitem{sf3d2024}
+{Stability AI}.
+\newblock Sf3d: Stable fast 3d mesh reconstruction with uv-unwrapping and
+  illumination disentanglement.
+\newblock {\em arXiv preprint arXiv:2408.00653}, 2024.
+
+\bibitem{stability2025spar3d}
+{Stability AI}.
+\newblock Spar3d: Stable point-aware reconstruction of 3d objects from single
+  images, 2025.
+
+\bibitem{tang2024lgm}
+Jiaxiang Tang, Zhaoxi Chen, Xiaokang Chen, Tengfei Wang, Gang Zeng, and Ziwei
+  Liu.
+\newblock Lgm: Large multi-view gaussian model for high-resolution 3d content
+  creation.
+\newblock {\em arXiv preprint arXiv:2402.05054}, 2024.
+
+\bibitem{hunyuan2025hunyuan3d21}
+{Team Hunyuan3D}.
+\newblock Hunyuan3d 2.1: From images to high-fidelity 3d assets with
+  production-ready pbr material.
+\newblock {\em arXiv preprint arXiv:2506.15442}, 2025.
+
+\bibitem{hunyuan2026hy3dbench}
+{Team Hunyuan3D}.
+\newblock Hy3d-bench: Generation of 3d assets.
+\newblock {\em arXiv preprint arXiv:2602.03907}, 2026.
+
+\bibitem{tochilkin2024triposr}
+Dmitry Tochilkin, David Pankratz, Zexiang Liu, Zixuan Huang, Adam Letts,
+  Yangguang Li, Ding Liang, Christian Laforte, Varun Jampani, and Yan-Pei Cao.
+\newblock Triposr: Fast 3d object reconstruction from a single image.
+\newblock {\em arXiv preprint arXiv:2403.02151}, 2024.
+
+\bibitem{tulsiani2017learning}
+Shubham Tulsiani, Hao Su, Leonidas~J. Guibas, Alexei~A. Efros, and Jitendra
+  Malik.
+\newblock Learning shape abstractions by assembling volumetric primitives.
+\newblock In {\em Proceedings of the IEEE Conference on Computer Vision and
+  Pattern Recognition}, pages 2635--2643, 2017.
+
+\bibitem{steam2026hardware}
+{Valve Corporation}.
+\newblock {Steam Hardware \& Software Survey: May 2026}.
+\newblock Web survey, 2026.
+\newblock Accessed 2026-07-01.
+
+\bibitem{triposg2025}
+{VAST-AI Research} and {Tripo}.
+\newblock Triposg: High-fidelity 3d shape synthesis using large-scale rectified
+  flow models.
+\newblock {\em arXiv preprint arXiv:2502.06608}, 2025.
+
+\bibitem{wang2024crm}
+Zhengyi Wang, Yikai Wang, Yifei Chen, Chendong Xiang, Shuo Chen, Dajiang Yu,
+  Chongxuan Li, Hang Su, and Jun Zhu.
+\newblock Crm: Single image to 3d textured mesh with convolutional
+  reconstruction model.
+\newblock {\em arXiv preprint arXiv:2403.05034}, 2024.
+
+\bibitem{wu2024unique3d}
+Kailu Wu, Fangfu Liu, Zhihan Cai, Runjie Yan, Hanyang Wang, Yating Hu, Yueqi
+  Duan, and Kaisheng Ma.
+\newblock Unique3d: High-quality and efficient 3d mesh generation from a single
+  image.
+\newblock {\em arXiv preprint arXiv:2405.20343}, 2024.
+
+\bibitem{wu2025direct3ds2}
+Shuang Wu, Youtian Lin, Feihu Zhang, Yifei Zeng, Yikang Yang, Yajie Bao,
+  Jiachen Qian, Siyu Zhu, Philip Torr, Xun Cao, and Yao Yao.
+\newblock Direct3d-s2: Gigascale 3d generation made easy with spatial sparse
+  attention.
+\newblock {\em arXiv preprint arXiv:2505.17412}, 2025.
+
+\bibitem{wu2021scenegraphfusion}
+Shun-Cheng Wu, Johanna Wald, Keisuke Tateno, Nassir Navab, and Federico
+  Tombari.
+\newblock Scenegraphfusion: Incremental 3d scene graph prediction from rgb-d
+  sequences.
+\newblock In {\em Proceedings of the IEEE/CVF Conference on Computer Vision and
+  Pattern Recognition}, 2021.
+
+\bibitem{xiang2025trellis2}
+Jianfeng Xiang, Xiaoxue Chen, Sicheng Xu, Ruicheng Wang, Zelong Lv, Yu~Deng,
+  Hongyuan Zhu, Yue Dong, Hao Zhao, Nicholas~Jing Yuan, and Jiaolong Yang.
+\newblock Native and compact structured latents for 3d generation.
+\newblock {\em arXiv preprint arXiv:2512.14692}, 2025.
+
+\bibitem{xiang2024trellis}
+Jianfeng Xiang, Zelong Lv, Sicheng Xu, Yu~Deng, Ruicheng Wang, Bowen Zhang,
+  Dong Chen, Xin Tong, and Jiaolong Yang.
+\newblock Structured 3d latents for scalable and versatile 3d generation.
+\newblock {\em arXiv preprint arXiv:2412.01506}, 2024.
+
+\bibitem{xu2024instantmesh}
+Jiale Xu, Weihao Cheng, Yiming Gao, Xintao Wang, Shenghua Gao, and Ying Shan.
+\newblock Instantmesh: Efficient 3d mesh generation from a single image with
+  sparse-view large reconstruction models.
+\newblock {\em arXiv preprint arXiv:2404.07191}, 2024.
+
+\bibitem{yang2026p3dbench}
+Yikang Yang, Zhanpeng Hu, Youtian Lin, Mengqi Zhou, Jingxi Xu, Feihu Zhang,
+  Jiaheng Liu, and Yao Yao.
+\newblock P3d-bench: Benchmarking mllms for parametric 3d generation and
+  structural reasoning.
+\newblock {\em arXiv preprint arXiv:2606.11152}, 2026.
+
+\bibitem{yao2024ovmono3d}
+Jin Yao, Hao Gu, Xuweiyi Chen, Jiayun Wang, and Zezhou Cheng.
+\newblock Open vocabulary monocular 3d object detection.
+\newblock {\em arXiv preprint arXiv:2411.16833}, 2024.
+
+\bibitem{yu2021ap10k}
+Hang Yu, Yufei Xu, Jing Zhang, Wei Zhao, Ziyu Guan, and Dacheng Tao.
+\newblock Ap-10k: A benchmark for animal pose estimation in the wild.
+\newblock In {\em Advances in Neural Information Processing Systems}, 2021.
+
+\bibitem{zhao2025hunyuan3d}
+Zibo Zhao, Zeqiang Lai, Qingxiang Lin, Yunfei Zhao, Haolin Liu, et~al.
+\newblock Hunyuan3d 2.0: Scaling diffusion models for high resolution textured
+  3d assets generation.
+\newblock {\em arXiv preprint arXiv:2501.12202}, 2025.
+
+\bibitem{zou20173dprnn}
+Chuhang Zou, Ersin Yumer, Jimei Yang, Duygu Ceylan, and Derek Hoiem.
+\newblock 3d-prnn: Generating shape primitives with recurrent neural networks.
+\newblock In {\em Proceedings of the IEEE International Conference on Computer
+  Vision}, pages 900--909, 2017.
+
+\end{thebibliography}

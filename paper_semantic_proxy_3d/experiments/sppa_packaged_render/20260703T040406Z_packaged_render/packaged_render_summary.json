@@ -1,0 +1,1292 @@
+{
+  "claim_scope": "Packaged executable internal obstacle replay with rendered frames. This summary uses Tick delta frame time and estimated triangles/draw calls from static mesh components; it is not an HTTP/network replay unless stated by the manifest.",
+  "manifest": {
+    "mode": "packaged_internal_replay_render_stats",
+    "claim_scope": "Packaged executable internal obstacle replay with rendered frames; not live HTTP/network telemetry and estimated draw/triangle counts unless CSV profiler is parsed separately. semantic_proxy_instanced is an opt-in HISM batch renderer for dense-scene scaling diagnostics, not the default live telemetry backend.",
+    "created_utc": "20260703T040451Z",
+    "engine_version": "5.7.4-51494982+++UE5+Release-5.7",
+    "command_line": "/Game/SPPABenchmark -PorceSPPAPackagedBenchmark -PorceSPPABenchmarkOutDir=D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_packaged_render\\20260703T040406Z_packaged_render -PorceSPPABenchmarkCounts=100,250,500 -PorceSPPABenchmarkBackends=semantic_proxy_instanced -PorceSPPABenchmarkRepetitions=3 -PorceSPPABenchmarkWarmupFrames=30 -PorceSPPABenchmarkMeasureFrames=120 -PorceSPPABenchmarkUpdateEveryFrames=15 -PorceSPPABenchmarkSeed=20260702 -PorceSPPABenchmarkResX=1280 -PorceSPPABenchmarkResY=720 -PorceSPPABenchmarkPoseUpdateFraction=1 -PorceSPPABenchmarkShapeUpdateFraction=0.1 -windowed -ResX=1280 -ResY=720 -NoSound -Unattended -abslog=D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_packaged_render\\20260703T040406Z_packaged_render\\packaged_render_run.log -PorceSPPABenchmarkNoCsvProfile",
+    "out_dir": "D:/Deep-AeroTwin-UE57-Test/experiments/sppa_packaged_render/20260703T040406Z_packaged_render",
+    "repetitions": 3,
+    "warmup_frames": 30,
+    "measure_frames": 120,
+    "update_every_frames": 15,
+    "pose_update_fraction": 1,
+    "shape_update_fraction": 0.1,
+    "seed": 20260702,
+    "csv_profile_requested": false,
+    "observed_color_stress": false,
+    "recorded_payload_replay": false,
+    "counts": [
+      100,
+      250,
+      500
+    ],
+    "backends": [
+      "semantic_proxy_instanced"
+    ],
+    "labels": [
+      "cow",
+      "biker",
+      "tree",
+      "car",
+      "truck",
+      "tower",
+      "unknown_label"
+    ],
+    "recorded_streams": [],
+    "unreal_assets_scope": "unreal_assets uses the lightweight placeholder benchmark actor; project_assets uses reviewed project static meshes for the labels available in this repository.",
+    "artifacts": [
+      "packaged_frame_stats.csv",
+      "packaged_action_rows.csv",
+      "packaged_failures.csv",
+      "run_manifest.json"
+    ]
+  },
+  "frame_summary": [
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 100,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 360,
+        "mean": 8.514776966666666,
+        "p50": 8.41005,
+        "p95": 9.59582,
+        "p99": 15.202918820000033,
+        "max": 16.798098,
+        "min": 6.675899
+      },
+      "fps": {
+        "n": 360,
+        "mean": 118.78498500277777,
+        "p50": 118.905453,
+        "p95": 134.90315515,
+        "p99": 140.77087142000002,
+        "max": 149.792557,
+        "min": 59.530552
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 100,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 9.195104174999999,
+        "p50": 8.3369495,
+        "p95": 22.521416900000002,
+        "p99": 23.56522836,
+        "max": 23.983501,
+        "min": 5.8893
+      },
+      "fps": {
+        "n": 360,
+        "mean": 117.47020613333333,
+        "p50": 119.9479595,
+        "p95": 152.2474125,
+        "p99": 168.25237216,
+        "max": 169.799454,
+        "min": 41.695332
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 100,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 8.640602527777778,
+        "p50": 8.548901,
+        "p95": 9.559316,
+        "p99": 10.819676820000002,
+        "max": 12.151502,
+        "min": 6.969698
+      },
+      "fps": {
+        "n": 360,
+        "mean": 116.24480263055555,
+        "p50": 116.9741095,
+        "p95": 127.40857670000001,
+        "p99": 133.32749367000002,
+        "max": 143.478241,
+        "min": 82.29435
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 250,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 360,
+        "mean": 8.262748891666668,
+        "p50": 8.191348999999999,
+        "p95": 9.40608695,
+        "p99": 10.138035230000007,
+        "max": 11.718299,
+        "min": 6.048299
+      },
+      "fps": {
+        "n": 360,
+        "mean": 121.79555983055555,
+        "p50": 122.080036,
+        "p95": 136.63171815,
+        "p99": 141.9448618,
+        "max": 165.335724,
+        "min": 85.336617
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 516016.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 250,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 11.237879480555556,
+        "p50": 8.29795,
+        "p95": 52.47412995,
+        "p99": 55.54035000000002,
+        "max": 57.602604,
+        "min": 5.828798
+      },
+      "fps": {
+        "n": 360,
+        "mean": 116.10173766666666,
+        "p50": 120.511696,
+        "p95": 144.76797445000003,
+        "p99": 162.11738214000002,
+        "max": 171.561966,
+        "min": 17.360327
+      },
+      "hitch_frames_gt_33ms": 24,
+      "hitch_frames_gt_50ms": 22,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 516016.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 250,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 8.93302138888889,
+        "p50": 8.4106515,
+        "p95": 15.47690985,
+        "p99": 16.48899441000001,
+        "max": 17.2313,
+        "min": 5.623501
+      },
+      "fps": {
+        "n": 360,
+        "mean": 116.29703656944444,
+        "p50": 118.8968735,
+        "p95": 141.31151685,
+        "p99": 162.970164,
+        "max": 177.82518,
+        "min": 58.033924
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 516016.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 500,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 360,
+        "mean": 8.35537386388889,
+        "p50": 7.9941505,
+        "p95": 10.015153250000001,
+        "p99": 10.629969589999998,
+        "max": 10.750503,
+        "min": 6.783198
+      },
+      "fps": {
+        "n": 360,
+        "mean": 121.11789504166667,
+        "p50": 125.09147250000001,
+        "p95": 137.3220423,
+        "p99": 144.84875849,
+        "max": 147.42308,
+        "min": 93.018906
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 1028400.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 500,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 14.7768087,
+        "p50": 8.1334505,
+        "p95": 104.50163280000002,
+        "p99": 109.62800222999999,
+        "max": 111.663902,
+        "min": 5.723298
+      },
+      "fps": {
+        "n": 360,
+        "mean": 115.87694404444444,
+        "p50": 122.9491615,
+        "p95": 142.9651885,
+        "p99": 159.22862613000007,
+        "max": 174.724442,
+        "min": 8.955445
+      },
+      "hitch_frames_gt_33ms": 24,
+      "hitch_frames_gt_50ms": 24,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 1028400.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 500,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 360,
+        "mean": 9.294364169444444,
+        "p50": 7.888298499999999,
+        "p95": 29.304959150000002,
+        "p99": 30.982275,
+        "max": 31.2967,
+        "min": 6.023899
+      },
+      "fps": {
+        "n": 360,
+        "mean": 122.42792863333332,
+        "p50": 126.770054,
+        "p95": 147.56831375000002,
+        "p99": 155.36282001,
+        "max": 166.005447,
+        "min": 31.95225
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 1028400.0,
+      "estimated_draw_calls_p50": 11.0
+    }
+  ],
+  "frame_summary_by_repetition": [
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 100,
+      "repetition": 0,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 8.600490041666665,
+        "p50": 8.219801,
+        "p95": 10.0536128,
+        "p99": 16.66902119,
+        "max": 16.798098,
+        "min": 6.675899
+      },
+      "fps": {
+        "n": 120,
+        "mean": 119.39074085,
+        "p50": 121.657486,
+        "p95": 137.89043259999997,
+        "p99": 146.40199005,
+        "max": 149.792557,
+        "min": 59.530552
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 100,
+      "repetition": 0,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 9.133893366666666,
+        "p50": 8.2676485,
+        "p95": 22.29940095,
+        "p99": 23.547384,
+        "max": 23.679604,
+        "min": 5.926501
+      },
+      "fps": {
+        "n": 120,
+        "mean": 118.27562463333334,
+        "p50": 120.95339949999999,
+        "p95": 151.07946795,
+        "p99": 160.62983896999998,
+        "max": 168.733627,
+        "min": 42.230438
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 100,
+      "repetition": 0,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 8.667600833333333,
+        "p50": 8.553049000000001,
+        "p95": 9.560480900000002,
+        "p99": 9.88819619,
+        "max": 10.2503,
+        "min": 7.651798
+      },
+      "fps": {
+        "n": 120,
+        "mean": 115.71212261666666,
+        "p50": 116.9173775,
+        "p95": 124.86038054999999,
+        "p99": 128.21755037,
+        "max": 130.688232,
+        "min": 97.558121
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 100,
+      "repetition": 1,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 8.627832558333333,
+        "p50": 8.6204,
+        "p95": 9.3537649,
+        "p99": 9.77325119,
+        "max": 10.050099,
+        "min": 7.6387
+      },
+      "fps": {
+        "n": 120,
+        "mean": 116.19576251666668,
+        "p50": 116.00394800000001,
+        "p95": 126.21514055,
+        "p99": 128.31428436000002,
+        "max": 130.912323,
+        "min": 99.501503
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 100,
+      "repetition": 1,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 9.193109166666666,
+        "p50": 8.296050000000001,
+        "p95": 22.836455899999997,
+        "p99": 23.758612760000002,
+        "max": 23.983501,
+        "min": 5.8893
+      },
+      "fps": {
+        "n": 120,
+        "mean": 118.03653215,
+        "p50": 120.539299,
+        "p95": 152.80145754999998,
+        "p99": 169.19196473,
+        "max": 169.799454,
+        "min": 41.695332
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 100,
+      "repetition": 1,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 8.824061691666666,
+        "p50": 8.697951,
+        "p95": 10.187254849999999,
+        "p99": 11.752368380000002,
+        "max": 12.151502,
+        "min": 7.548899
+      },
+      "fps": {
+        "n": 120,
+        "mean": 113.99152404166666,
+        "p50": 114.9697075,
+        "p95": 124.7924343,
+        "p99": 129.00385357,
+        "max": 132.469666,
+        "min": 82.29435
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 100,
+      "repetition": 2,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 8.3160083,
+        "p50": 8.262349,
+        "p95": 9.364465099999999,
+        "p99": 9.73731381,
+        "max": 10.106102,
+        "min": 7.1311
+      },
+      "fps": {
+        "n": 120,
+        "mean": 120.76845164166666,
+        "p50": 121.03095250000001,
+        "p95": 131.89086805,
+        "p99": 136.15409846,
+        "max": 140.23082,
+        "min": 98.950127
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 100,
+      "repetition": 2,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 9.258309991666666,
+        "p50": 8.490201,
+        "p95": 21.50349175,
+        "p99": 22.838225,
+        "max": 23.2348,
+        "min": 5.943101
+      },
+      "fps": {
+        "n": 120,
+        "mean": 116.09846161666665,
+        "p50": 117.7828405,
+        "p95": 151.81175345,
+        "p99": 160.87805045000002,
+        "max": 168.262329,
+        "min": 43.038891
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 100,
+      "repetition": 2,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 8.430145058333332,
+        "p50": 8.372501,
+        "p95": 9.282347,
+        "p99": 9.533504380000002,
+        "max": 9.742201,
+        "min": 6.969698
+      },
+      "fps": {
+        "n": 120,
+        "mean": 119.03076123333334,
+        "p50": 119.43863300000001,
+        "p95": 131.33384025,
+        "p99": 136.10578327,
+        "max": 143.478241,
+        "min": 102.646217
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 208864.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 250,
+      "repetition": 0,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 8.0532758,
+        "p50": 7.9341005,
+        "p95": 9.500364099999999,
+        "p99": 9.72489757,
+        "max": 11.718299,
+        "min": 6.048299
+      },
+      "fps": {
+        "n": 120,
+        "mean": 125.3235617,
+        "p50": 126.0383415,
+        "p95": 140.49463065,
+        "p99": 158.54475503000003,
+        "max": 165.335724,
+        "min": 85.336617
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 516016.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 250,
+      "repetition": 0,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 10.656495025,
+        "p50": 7.7800005,
+        "p95": 52.47412995,
+        "p99": 53.42623219,
+        "max": 54.0382,
+        "min": 5.828798
+      },
+      "fps": {
+        "n": 120,
+        "mean": 124.3261348,
+        "p50": 128.534866,
+        "p95": 160.28434165,
+        "p99": 168.98598768,
+        "max": 171.561966,
+        "min": 18.505428
+      },
+      "hitch_frames_gt_33ms": 8,
+      "hitch_frames_gt_50ms": 8,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 516016.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 250,
+      "repetition": 0,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 8.60243745,
+        "p50": 8.1548985,
+        "p95": 15.69292305,
+        "p99": 16.304516,
+        "max": 16.802299,
+        "min": 6.019
+      },
+      "fps": {
+        "n": 120,
+        "mean": 120.55995862500001,
+        "p50": 122.6262245,
+        "p95": 142.9777409,
+        "p99": 161.82185942,
+        "max": 166.140549,
+        "min": 59.515663
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 516016.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 250,
+      "repetition": 1,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 8.105110816666667,
+        "p50": 8.091852,
+        "p95": 8.66968805,
+        "p99": 8.84696595,
+        "max": 9.209201,
+        "min": 7.368199
+      },
+      "fps": {
+        "n": 120,
+        "mean": 123.561643125,
+        "p50": 123.5812075,
+        "p95": 131.2923676,
+        "p99": 134.81304377,
+        "max": 135.718369,
+        "min": 108.587059
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 516016.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 250,
+      "repetition": 1,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 11.6560317,
+        "p50": 8.655051,
+        "p95": 54.82751595,
+        "p99": 56.30334957,
+        "max": 57.602604,
+        "min": 6.153997
+      },
+      "fps": {
+        "n": 120,
+        "mean": 111.72164913333333,
+        "p50": 115.5395355,
+        "p95": 147.57168225,
+        "p99": 160.1602399,
+        "max": 162.496017,
+        "min": 17.360327
+      },
+      "hitch_frames_gt_33ms": 8,
+      "hitch_frames_gt_50ms": 8,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 516016.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 250,
+      "repetition": 1,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 9.589458341666667,
+        "p50": 9.03585,
+        "p95": 15.47690985,
+        "p99": 16.960141,
+        "max": 17.2313,
+        "min": 6.3457
+      },
+      "fps": {
+        "n": 120,
+        "mean": 107.70439367499999,
+        "p50": 110.67028400000001,
+        "p95": 126.30020819999996,
+        "p99": 154.56517426000002,
+        "max": 157.587021,
+        "min": 58.033924
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 516016.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 250,
+      "repetition": 2,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 8.629860058333332,
+        "p50": 8.6275485,
+        "p95": 9.69899195,
+        "p99": 10.32323357,
+        "max": 11.0058,
+        "min": 7.150601
+      },
+      "fps": {
+        "n": 120,
+        "mean": 116.50147466666667,
+        "p50": 115.907791,
+        "p95": 130.7007519,
+        "p99": 139.62937673,
+        "max": 139.848373,
+        "min": 90.861183
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 516016.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 250,
+      "repetition": 2,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 11.401111716666666,
+        "p50": 8.4758975,
+        "p95": 49.34050505,
+        "p99": 55.007894570000005,
+        "max": 56.098,
+        "min": 6.599199
+      },
+      "fps": {
+        "n": 120,
+        "mean": 112.25742906666666,
+        "p50": 117.9816015,
+        "p95": 136.53320085,
+        "p99": 144.00039213,
+        "max": 151.533539,
+        "min": 17.825947
+      },
+      "hitch_frames_gt_33ms": 8,
+      "hitch_frames_gt_50ms": 6,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 516016.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 250,
+      "repetition": 2,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 8.607168374999999,
+        "p50": 8.098198,
+        "p95": 15.1496751,
+        "p99": 16.11955076,
+        "max": 16.252201,
+        "min": 5.623501
+      },
+      "fps": {
+        "n": 120,
+        "mean": 120.62675740833333,
+        "p50": 123.4842645,
+        "p95": 140.91845049999998,
+        "p99": 163.76654072,
+        "max": 177.82518,
+        "min": 61.530128
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 516016.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 500,
+      "repetition": 0,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.642466616666667,
+        "p50": 7.6624005,
+        "p95": 8.246546050000001,
+        "p99": 8.46201657,
+        "max": 8.558799,
+        "min": 6.783198
+      },
+      "fps": {
+        "n": 120,
+        "mean": 131.12229780833334,
+        "p50": 130.507408,
+        "p95": 141.49402320000002,
+        "p99": 146.90360225999999,
+        "max": 147.42308,
+        "min": 116.838829
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 1028400.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 500,
+      "repetition": 0,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 14.068872475000001,
+        "p50": 7.700950000000001,
+        "p95": 102.25638364999999,
+        "p99": 106.20342615000001,
+        "max": 106.565697,
+        "min": 5.8049
+      },
+      "fps": {
+        "n": 120,
+        "mean": 123.65236146666666,
+        "p50": 129.85422549999998,
+        "p95": 154.6363558,
+        "p99": 166.55040296,
+        "max": 172.26825,
+        "min": 9.383883
+      },
+      "hitch_frames_gt_33ms": 8,
+      "hitch_frames_gt_50ms": 8,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 1028400.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 500,
+      "repetition": 0,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 8.926765033333334,
+        "p50": 7.5474995,
+        "p95": 29.0054228,
+        "p99": 30.284877,
+        "max": 31.013899,
+        "min": 6.023899
+      },
+      "fps": {
+        "n": 120,
+        "mean": 128.30348275,
+        "p50": 132.49445350000002,
+        "p95": 149.45753265,
+        "p99": 155.72816441,
+        "max": 166.005447,
+        "min": 32.243607
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 1028400.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 500,
+      "repetition": 1,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 7.925477533333334,
+        "p50": 7.819948500000001,
+        "p95": 8.60187895,
+        "p99": 9.333499,
+        "max": 9.996303,
+        "min": 7.121198
+      },
+      "fps": {
+        "n": 120,
+        "mean": 126.53813839166668,
+        "p50": 127.8780745,
+        "p95": 137.2528873,
+        "p99": 139.05844579,
+        "max": 140.425812,
+        "min": 100.036987
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 1028400.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 500,
+      "repetition": 1,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 14.735782575,
+        "p50": 8.122200500000002,
+        "p95": 106.087876,
+        "p99": 109.23531110000002,
+        "max": 109.432602,
+        "min": 6.226499
+      },
+      "fps": {
+        "n": 120,
+        "mean": 116.61152325833334,
+        "p50": 123.1193505,
+        "p95": 150.48915979999998,
+        "p99": 156.18749041,
+        "max": 160.603912,
+        "min": 9.138044
+      },
+      "hitch_frames_gt_33ms": 8,
+      "hitch_frames_gt_50ms": 8,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 1028400.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 500,
+      "repetition": 1,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 9.724890850000001,
+        "p50": 8.270049,
+        "p95": 30.0921878,
+        "p99": 31.09192562,
+        "max": 31.2922,
+        "min": 6.717503
+      },
+      "fps": {
+        "n": 120,
+        "mean": 115.94644538333334,
+        "p50": 120.91827,
+        "p95": 138.03416934999998,
+        "p99": 141.10701278,
+        "max": 148.864838,
+        "min": 31.956846
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 1028400.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 500,
+      "repetition": 2,
+      "phase": "create_steady",
+      "frame_ms": {
+        "n": 120,
+        "mean": 9.498177441666666,
+        "p50": 9.546399000000001,
+        "p95": 10.460382,
+        "p99": 10.691942000000001,
+        "max": 10.750503,
+        "min": 7.6541
+      },
+      "fps": {
+        "n": 120,
+        "mean": 105.693248925,
+        "p50": 104.75178149999999,
+        "p95": 117.49014155,
+        "p99": 125.7151941,
+        "max": 130.648926,
+        "min": 93.018906
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 1028400.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 500,
+      "repetition": 2,
+      "phase": "pose_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 15.52577105,
+        "p50": 8.941799,
+        "p95": 107.60067685,
+        "p99": 111.16462481,
+        "max": 111.663902,
+        "min": 5.723298
+      },
+      "fps": {
+        "n": 120,
+        "mean": 107.36694740833333,
+        "p50": 111.8343775,
+        "p95": 137.45759900000002,
+        "p99": 145.38496073000002,
+        "max": 174.724442,
+        "min": 8.955445
+      },
+      "hitch_frames_gt_33ms": 8,
+      "hitch_frames_gt_50ms": 8,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 1028400.0,
+      "estimated_draw_calls_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 500,
+      "repetition": 2,
+      "phase": "shape_stream",
+      "frame_ms": {
+        "n": 120,
+        "mean": 9.231436624999999,
+        "p50": 7.8453985,
+        "p95": 29.048975050000003,
+        "p99": 30.094185380000003,
+        "max": 31.2967,
+        "min": 6.133698
+      },
+      "fps": {
+        "n": 120,
+        "mean": 123.03385776666667,
+        "p50": 127.463398,
+        "p95": 150.2834842,
+        "p99": 159.04775987000002,
+        "max": 163.033783,
+        "min": 31.95225
+      },
+      "hitch_frames_gt_33ms": 0,
+      "hitch_frames_gt_50ms": 0,
+      "managed_actors_p50": 1.0,
+      "static_mesh_components_p50": 11.0,
+      "estimated_triangles_p50": 1028400.0,
+      "estimated_draw_calls_p50": 11.0
+    }
+  ],
+  "action_summary": [
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 100,
+      "action": "create",
+      "elapsed_ms": {
+        "n": 3,
+        "mean": 20.083166666666667,
+        "p50": 20.1819,
+        "p95": 21.321749999999998,
+        "p99": 21.42307,
+        "max": 21.4484,
+        "min": 18.6192
+      },
+      "ok_rows": 3,
+      "rows": 3,
+      "static_mesh_components_p50": 11
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 100,
+      "action": "pose_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 9.273906666666667,
+        "p50": 9.3073,
+        "p95": 9.73963,
+        "p99": 9.810947,
+        "max": 9.8271,
+        "min": 8.609
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 100,
+      "action": "shape_param_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 2.43615,
+        "p50": 2.4099000000000004,
+        "p95": 2.7013749999999996,
+        "p99": 2.7549159999999997,
+        "max": 2.7664,
+        "min": 2.1745
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 250,
+      "action": "create",
+      "elapsed_ms": {
+        "n": 3,
+        "mean": 49.8681,
+        "p50": 47.501,
+        "p95": 54.94868,
+        "p99": 55.610696000000004,
+        "max": 55.7762,
+        "min": 46.3271
+      },
+      "ok_rows": 3,
+      "rows": 3,
+      "static_mesh_components_p50": 11
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 250,
+      "action": "pose_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 22.328036666666666,
+        "p50": 22.42585,
+        "p95": 23.75642,
+        "p99": 23.925968,
+        "max": 23.9639,
+        "min": 19.607
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 250,
+      "action": "shape_param_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 6.077003333333334,
+        "p50": 6.034050000000001,
+        "p95": 6.5102899999999995,
+        "p99": 6.645085,
+        "max": 6.6954,
+        "min": 5.5407
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 500,
+      "action": "create",
+      "elapsed_ms": {
+        "n": 3,
+        "mean": 92.99286666666667,
+        "p50": 93.5767,
+        "p95": 95.29903,
+        "p99": 95.45212599999999,
+        "max": 95.4904,
+        "min": 89.9115
+      },
+      "ok_rows": 3,
+      "rows": 3,
+      "static_mesh_components_p50": 11
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 500,
+      "action": "pose_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 45.840403333333335,
+        "p50": 45.829800000000006,
+        "p95": 47.643465,
+        "p99": 48.212715,
+        "max": 48.3132,
+        "min": 43.0999
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 11.0
+    },
+    {
+      "backend": "semantic_proxy_instanced",
+      "count": 500,
+      "action": "shape_param_update",
+      "elapsed_ms": {
+        "n": 30,
+        "mean": 12.80115,
+        "p50": 12.8433,
+        "p95": 13.872134999999998,
+        "p99": 14.509308,
+        "max": 14.6325,
+        "min": 11.7244
+      },
+      "ok_rows": 30,
+      "rows": 30,
+      "static_mesh_components_p50": 11.0
+    }
+  ],
+  "max_density": {
+    "semantic_proxy_instanced": {
+      "create_steady": {
+        "max_count_at_30fps_p95": 500,
+        "max_count_at_60fps_p95": 500
+      },
+      "pose_stream": {
+        "max_count_at_30fps_p95": 100,
+        "max_count_at_60fps_p95": null
+      },
+      "shape_stream": {
+        "max_count_at_30fps_p95": 500,
+        "max_count_at_60fps_p95": 250
+      }
+    }
+  }
+}

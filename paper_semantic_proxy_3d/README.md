@@ -22,6 +22,25 @@ Official files:
 - `semantic_proxy_3d_paper.bbl`
 - `semantic_proxy_3d_paper.pdf`
 - `figures/`
+- `SUBMISSION_PRECHECK.md`
+
+Do not submit `semantic_proxy_3d_technical_supplement.pdf` as a formal
+supplement in its current form. It is an artifact log: useful for audit trails,
+regression details, and generated evidence, but too long and too diary-like for
+the first submission package.
+
+Before treating the paper as submission-ready, run from the repository root:
+
+```powershell
+rtk python tools\sppa_sota_benchmark\verify_sppa_submission_precheck.py
+```
+
+Use the strict mode only when testing whether all full-experimental-paper gates
+have been closed:
+
+```powershell
+rtk python tools\sppa_sota_benchmark\verify_sppa_submission_precheck.py --strict
+```
 
 Related evidence lives in:
 

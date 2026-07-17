@@ -1,0 +1,79 @@
+{
+  "claim_boundary": "This verifies combined non-geometric side-channel invariance for the agnostic image-space primitive-cue fitter on the frozen real-image replay. It guards against label, identity, filename, detector-class, detector-order, duplicate-mask, and redundant-native-mask shortcuts, but not primitive correctness.",
+  "failures": [],
+  "neutral_image_dir": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_agnostic_shape_fitting\\20260704_side_channel_invariance\\neutral_inputs",
+  "replay_json": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\real_image_assumed_flight_replay.json",
+  "rows": [
+    {
+      "baseline_hash": "490dcf3be26d65f517d3b2beb21f03c052d56d451aa50fede9b9695802320b88",
+      "geometry_changed_after_side_channel_mutation": false,
+      "mutated_case_id": "anonymous_detected_object_000",
+      "mutated_hash": "490dcf3be26d65f517d3b2beb21f03c052d56d451aa50fede9b9695802320b88",
+      "mutated_image": "experiments/sppa_agnostic_shape_fitting/20260704_side_channel_invariance/neutral_inputs/object_crop_000.png",
+      "mutations": [
+        "neutral_case_id",
+        "neutral_image_path",
+        "adversarial_semantic_fields",
+        "adversarial_detection_class_fields",
+        "reversed_and_duplicated_used_detections",
+        "removed_redundant_native_mask"
+      ],
+      "original_case_id": "biker",
+      "status": "pass"
+    },
+    {
+      "baseline_hash": "fe418fda12dfabb3213b30ad43e9125836b31cce30a2a9b17709b5d14bc242ed",
+      "geometry_changed_after_side_channel_mutation": false,
+      "mutated_case_id": "anonymous_detected_object_001",
+      "mutated_hash": "fe418fda12dfabb3213b30ad43e9125836b31cce30a2a9b17709b5d14bc242ed",
+      "mutated_image": "experiments/sppa_agnostic_shape_fitting/20260704_side_channel_invariance/neutral_inputs/object_crop_001.png",
+      "mutations": [
+        "neutral_case_id",
+        "neutral_image_path",
+        "adversarial_semantic_fields",
+        "adversarial_detection_class_fields",
+        "reversed_and_duplicated_used_detections",
+        "removed_redundant_native_mask"
+      ],
+      "original_case_id": "tower",
+      "status": "pass"
+    },
+    {
+      "baseline_hash": "40067244b1e2507f6323bfe6bfae032d7cb94c161d022191c89b55c65d1926e4",
+      "geometry_changed_after_side_channel_mutation": false,
+      "mutated_case_id": "anonymous_detected_object_002",
+      "mutated_hash": "40067244b1e2507f6323bfe6bfae032d7cb94c161d022191c89b55c65d1926e4",
+      "mutated_image": "experiments/sppa_agnostic_shape_fitting/20260704_side_channel_invariance/neutral_inputs/object_crop_002.png",
+      "mutations": [
+        "neutral_case_id",
+        "neutral_image_path",
+        "adversarial_semantic_fields",
+        "adversarial_detection_class_fields",
+        "reversed_and_duplicated_used_detections",
+        "removed_redundant_native_mask"
+      ],
+      "original_case_id": "tractor",
+      "status": "pass"
+    },
+    {
+      "baseline_hash": "c96269de9b5f8297b959f9b1bd360fb1e364ecf8f2405cb497b344287169fe37",
+      "geometry_changed_after_side_channel_mutation": false,
+      "mutated_case_id": "anonymous_detected_object_003",
+      "mutated_hash": "c96269de9b5f8297b959f9b1bd360fb1e364ecf8f2405cb497b344287169fe37",
+      "mutated_image": "experiments/sppa_agnostic_shape_fitting/20260704_side_channel_invariance/neutral_inputs/object_crop_003.png",
+      "mutations": [
+        "neutral_case_id",
+        "neutral_image_path",
+        "adversarial_semantic_fields",
+        "adversarial_detection_class_fields",
+        "reversed_and_duplicated_used_detections",
+        "removed_redundant_native_mask"
+      ],
+      "original_case_id": "tractor_trailer",
+      "status": "pass"
+    }
+  ],
+  "rows_checked": 4,
+  "schema": "SPPA-AGNOSTIC-SIDE-CHANNEL-INVARIANCE-VERIFY-0.1",
+  "status": "pass"
+}

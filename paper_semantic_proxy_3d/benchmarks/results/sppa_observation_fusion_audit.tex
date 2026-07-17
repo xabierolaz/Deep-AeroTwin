@@ -3,16 +3,19 @@
 \footnotesize
 \setlength{\tabcolsep}{3pt}
 \renewcommand{\arraystretch}{1.08}
-\caption{Real-input SPPA observation-fusion audit. Raw replay dimensions come from YOLOE mask/bbox projection under declared assumed-flight telemetry; SPPA dimensions are the selected constraint-fused proxy dimensions.}
+\caption{Real-input SPPA observation-fusion audit. Detector confidence (Conf.) is
+the selected YOLOE detection score. Raw replay dimensions come from YOLOE
+mask/bbox projection under declared assumed-flight telemetry; SPPA dimensions
+are the selected constraint-fused proxy dimensions.}
 \label{tab:sppa-observation-fusion-audit}
-\begin{tabularx}{\linewidth}{@{}L{0.14\linewidth}L{0.19\linewidth}L{0.19\linewidth}L{0.19\linewidth}r r Y@{}}
+\begin{tabularx}{\linewidth}{@{}L{0.105\linewidth}r L{0.17\linewidth}L{0.17\linewidth}L{0.15\linewidth}r r Y@{}}
 \toprule
-Case & Raw L/W/H (m) & SPPA L/W/H (m) & Gate & Pose & Tris & Boundary \\
+Case & Conf. & Raw L/W/H (m) & SPPA L/W/H (m) & Gate & Pose & Tris & Boundary \\
 \midrule
-biker & 3.59 x 1.77 x 1.85 & 1.85 x 0.73 x 1.85 & soft low-conf fusion & no & 1036 & scale only \\
-tower & 12.77 x 2.89 x 28.00 & 5.60 x 2.89 x 28.00 & height-only fusion & no & 270 & scale only \\
-tractor & 4.95 x 4.32 x 2.60 & 4.52 x 2.38 x 2.60 & soft aspect fusion & no & 880 & scale only \\
-tractor\_trailer & 16.85 x 6.21 x 3.40 & 12.11 x 3.76 x 3.40 & soft low-conf fusion & no & 1904 & scale only \\
+biker & 0.40 & 3.59 x 1.77 x 1.85 & 1.85 x 0.73 x 1.85 & soft low-conf fusion & no & 1036 & scale only \\
+tower & 0.46 & 12.77 x 2.89 x 28.00 & 5.60 x 2.89 x 28.00 & height-only fusion & no & 270 & scale only \\
+tractor & 0.52 & 4.95 x 4.32 x 2.60 & 4.52 x 2.38 x 2.60 & soft aspect fusion & no & 880 & scale only \\
+tractor\_\allowbreak{}trailer & 0.47 & 16.85 x 6.21 x 3.40 & 12.11 x 3.76 x 3.40 & soft low-conf fusion & no & 1904 & scale only \\
 \bottomrule
 \end{tabularx}
 \end{table}

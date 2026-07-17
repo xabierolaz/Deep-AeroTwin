@@ -1,0 +1,336 @@
+{
+  "audit_warnings": [
+    "biker: bright_high_contrast: image cue confidence changed round_part_pair_candidate -> weak_round_pair_candidate",
+    "biker: bright_high_contrast: strong round pair count changed 3 -> 0",
+    "biker: bright_high_contrast: all round-pair count changed 3 -> 2",
+    "biker: mild_sensor_noise: all round-pair count changed 3 -> 4",
+    "tower: dark_low_contrast: all round-pair count changed 0 -> 1",
+    "tower: soft_blur: edge density changed 0.23511 -> 0.08403",
+    "tractor: dark_low_contrast: strong round pair count changed 3 -> 2",
+    "tractor: dark_low_contrast: all round-pair count changed 3 -> 2",
+    "tractor: bright_high_contrast: strong round pair count changed 3 -> 2",
+    "tractor: bright_high_contrast: all round-pair count changed 3 -> 2",
+    "tractor_trailer: dark_low_contrast: all round-pair count changed 0 -> 2",
+    "tractor_trailer: bright_high_contrast: all round-pair count changed 0 -> 1",
+    "tractor_trailer: soft_blur: edge density changed 0.21675 -> 0.11677",
+    "tractor_trailer: soft_blur: all round-pair count changed 0 -> 2",
+    "tractor_trailer: mild_sensor_noise: all round-pair count changed 0 -> 2"
+  ],
+  "claim_boundary": "This verifies primary-decision stability under deterministic photometric perturbations on the frozen real-image replay. It guards against trivial illumination dependence, but not real-world illumination coverage.",
+  "failures": [],
+  "replay_json": "D:\\Deep-AeroTwin-UE57-Test\\paper_semantic_proxy_3d\\benchmarks\\results\\real_image_assumed_flight_replay.json",
+  "rows": [
+    {
+      "case_id": "biker",
+      "variants": [
+        {
+          "audit_warnings": [],
+          "baseline_edge_density": 0.11424,
+          "baseline_family": "round_pair",
+          "baseline_lines": 16,
+          "baseline_scope": "round_part_pair_candidate",
+          "baseline_strong_round_pairs": 3,
+          "failures": [],
+          "status": "pass",
+          "variant": "dark_low_contrast",
+          "variant_edge_density": 0.09435,
+          "variant_family": "round_pair",
+          "variant_lines": 16,
+          "variant_scope": "round_part_pair_candidate",
+          "variant_strong_round_pairs": 3
+        },
+        {
+          "audit_warnings": [
+            "bright_high_contrast: image cue confidence changed round_part_pair_candidate -> weak_round_pair_candidate",
+            "bright_high_contrast: strong round pair count changed 3 -> 0",
+            "bright_high_contrast: all round-pair count changed 3 -> 2"
+          ],
+          "baseline_edge_density": 0.11424,
+          "baseline_family": "round_pair",
+          "baseline_lines": 16,
+          "baseline_scope": "round_part_pair_candidate",
+          "baseline_strong_round_pairs": 3,
+          "failures": [],
+          "status": "pass",
+          "variant": "bright_high_contrast",
+          "variant_edge_density": 0.1222,
+          "variant_family": "round_pair",
+          "variant_lines": 16,
+          "variant_scope": "weak_round_pair_candidate",
+          "variant_strong_round_pairs": 0
+        },
+        {
+          "audit_warnings": [],
+          "baseline_edge_density": 0.11424,
+          "baseline_family": "round_pair",
+          "baseline_lines": 16,
+          "baseline_scope": "round_part_pair_candidate",
+          "baseline_strong_round_pairs": 3,
+          "failures": [],
+          "status": "pass",
+          "variant": "soft_blur",
+          "variant_edge_density": 0.08871,
+          "variant_family": "round_pair",
+          "variant_lines": 16,
+          "variant_scope": "round_part_pair_candidate",
+          "variant_strong_round_pairs": 3
+        },
+        {
+          "audit_warnings": [
+            "mild_sensor_noise: all round-pair count changed 3 -> 4"
+          ],
+          "baseline_edge_density": 0.11424,
+          "baseline_family": "round_pair",
+          "baseline_lines": 16,
+          "baseline_scope": "round_part_pair_candidate",
+          "baseline_strong_round_pairs": 3,
+          "failures": [],
+          "status": "pass",
+          "variant": "mild_sensor_noise",
+          "variant_edge_density": 0.13596,
+          "variant_family": "round_pair",
+          "variant_lines": 16,
+          "variant_scope": "round_part_pair_candidate",
+          "variant_strong_round_pairs": 3
+        }
+      ]
+    },
+    {
+      "case_id": "tower",
+      "variants": [
+        {
+          "audit_warnings": [
+            "dark_low_contrast: all round-pair count changed 0 -> 1"
+          ],
+          "baseline_edge_density": 0.23511,
+          "baseline_family": "linear_structure",
+          "baseline_lines": 16,
+          "baseline_scope": "multi_line_structure_candidate",
+          "baseline_strong_round_pairs": 0,
+          "failures": [],
+          "status": "pass",
+          "variant": "dark_low_contrast",
+          "variant_edge_density": 0.19645,
+          "variant_family": "linear_structure",
+          "variant_lines": 16,
+          "variant_scope": "multi_line_structure_candidate",
+          "variant_strong_round_pairs": 0
+        },
+        {
+          "audit_warnings": [],
+          "baseline_edge_density": 0.23511,
+          "baseline_family": "linear_structure",
+          "baseline_lines": 16,
+          "baseline_scope": "multi_line_structure_candidate",
+          "baseline_strong_round_pairs": 0,
+          "failures": [],
+          "status": "pass",
+          "variant": "bright_high_contrast",
+          "variant_edge_density": 0.27638,
+          "variant_family": "linear_structure",
+          "variant_lines": 16,
+          "variant_scope": "multi_line_structure_candidate",
+          "variant_strong_round_pairs": 0
+        },
+        {
+          "audit_warnings": [
+            "soft_blur: edge density changed 0.23511 -> 0.08403"
+          ],
+          "baseline_edge_density": 0.23511,
+          "baseline_family": "linear_structure",
+          "baseline_lines": 16,
+          "baseline_scope": "multi_line_structure_candidate",
+          "baseline_strong_round_pairs": 0,
+          "failures": [],
+          "status": "pass",
+          "variant": "soft_blur",
+          "variant_edge_density": 0.08403,
+          "variant_family": "linear_structure",
+          "variant_lines": 16,
+          "variant_scope": "multi_line_structure_candidate",
+          "variant_strong_round_pairs": 0
+        },
+        {
+          "audit_warnings": [],
+          "baseline_edge_density": 0.23511,
+          "baseline_family": "linear_structure",
+          "baseline_lines": 16,
+          "baseline_scope": "multi_line_structure_candidate",
+          "baseline_strong_round_pairs": 0,
+          "failures": [],
+          "status": "pass",
+          "variant": "mild_sensor_noise",
+          "variant_edge_density": 0.24444,
+          "variant_family": "linear_structure",
+          "variant_lines": 16,
+          "variant_scope": "multi_line_structure_candidate",
+          "variant_strong_round_pairs": 0
+        }
+      ]
+    },
+    {
+      "case_id": "tractor",
+      "variants": [
+        {
+          "audit_warnings": [
+            "dark_low_contrast: strong round pair count changed 3 -> 2",
+            "dark_low_contrast: all round-pair count changed 3 -> 2"
+          ],
+          "baseline_edge_density": 0.28921,
+          "baseline_family": "round_pair",
+          "baseline_lines": 16,
+          "baseline_scope": "round_part_pair_candidate",
+          "baseline_strong_round_pairs": 3,
+          "failures": [],
+          "status": "pass",
+          "variant": "dark_low_contrast",
+          "variant_edge_density": 0.2732,
+          "variant_family": "round_pair",
+          "variant_lines": 16,
+          "variant_scope": "round_part_pair_candidate",
+          "variant_strong_round_pairs": 2
+        },
+        {
+          "audit_warnings": [
+            "bright_high_contrast: strong round pair count changed 3 -> 2",
+            "bright_high_contrast: all round-pair count changed 3 -> 2"
+          ],
+          "baseline_edge_density": 0.28921,
+          "baseline_family": "round_pair",
+          "baseline_lines": 16,
+          "baseline_scope": "round_part_pair_candidate",
+          "baseline_strong_round_pairs": 3,
+          "failures": [],
+          "status": "pass",
+          "variant": "bright_high_contrast",
+          "variant_edge_density": 0.29392,
+          "variant_family": "round_pair",
+          "variant_lines": 16,
+          "variant_scope": "round_part_pair_candidate",
+          "variant_strong_round_pairs": 2
+        },
+        {
+          "audit_warnings": [],
+          "baseline_edge_density": 0.28921,
+          "baseline_family": "round_pair",
+          "baseline_lines": 16,
+          "baseline_scope": "round_part_pair_candidate",
+          "baseline_strong_round_pairs": 3,
+          "failures": [],
+          "status": "pass",
+          "variant": "soft_blur",
+          "variant_edge_density": 0.2487,
+          "variant_family": "round_pair",
+          "variant_lines": 16,
+          "variant_scope": "round_part_pair_candidate",
+          "variant_strong_round_pairs": 3
+        },
+        {
+          "audit_warnings": [],
+          "baseline_edge_density": 0.28921,
+          "baseline_family": "round_pair",
+          "baseline_lines": 16,
+          "baseline_scope": "round_part_pair_candidate",
+          "baseline_strong_round_pairs": 3,
+          "failures": [],
+          "status": "pass",
+          "variant": "mild_sensor_noise",
+          "variant_edge_density": 0.28545,
+          "variant_family": "round_pair",
+          "variant_lines": 16,
+          "variant_scope": "round_part_pair_candidate",
+          "variant_strong_round_pairs": 3
+        }
+      ]
+    },
+    {
+      "case_id": "tractor_trailer",
+      "variants": [
+        {
+          "audit_warnings": [
+            "dark_low_contrast: all round-pair count changed 0 -> 2"
+          ],
+          "baseline_edge_density": 0.21675,
+          "baseline_family": "linear_structure",
+          "baseline_lines": 16,
+          "baseline_scope": "multi_line_structure_candidate",
+          "baseline_strong_round_pairs": 0,
+          "failures": [],
+          "status": "pass",
+          "variant": "dark_low_contrast",
+          "variant_edge_density": 0.18139,
+          "variant_family": "linear_structure",
+          "variant_lines": 16,
+          "variant_scope": "multi_line_structure_candidate",
+          "variant_strong_round_pairs": 0
+        },
+        {
+          "audit_warnings": [
+            "bright_high_contrast: all round-pair count changed 0 -> 1"
+          ],
+          "baseline_edge_density": 0.21675,
+          "baseline_family": "linear_structure",
+          "baseline_lines": 16,
+          "baseline_scope": "multi_line_structure_candidate",
+          "baseline_strong_round_pairs": 0,
+          "failures": [],
+          "status": "pass",
+          "variant": "bright_high_contrast",
+          "variant_edge_density": 0.22851,
+          "variant_family": "linear_structure",
+          "variant_lines": 16,
+          "variant_scope": "multi_line_structure_candidate",
+          "variant_strong_round_pairs": 0
+        },
+        {
+          "audit_warnings": [
+            "soft_blur: edge density changed 0.21675 -> 0.11677",
+            "soft_blur: all round-pair count changed 0 -> 2"
+          ],
+          "baseline_edge_density": 0.21675,
+          "baseline_family": "linear_structure",
+          "baseline_lines": 16,
+          "baseline_scope": "multi_line_structure_candidate",
+          "baseline_strong_round_pairs": 0,
+          "failures": [],
+          "status": "pass",
+          "variant": "soft_blur",
+          "variant_edge_density": 0.11677,
+          "variant_family": "linear_structure",
+          "variant_lines": 16,
+          "variant_scope": "multi_line_structure_candidate",
+          "variant_strong_round_pairs": 0
+        },
+        {
+          "audit_warnings": [
+            "mild_sensor_noise: all round-pair count changed 0 -> 2"
+          ],
+          "baseline_edge_density": 0.21675,
+          "baseline_family": "linear_structure",
+          "baseline_lines": 16,
+          "baseline_scope": "multi_line_structure_candidate",
+          "baseline_strong_round_pairs": 0,
+          "failures": [],
+          "status": "pass",
+          "variant": "mild_sensor_noise",
+          "variant_edge_density": 0.23744,
+          "variant_family": "linear_structure",
+          "variant_lines": 16,
+          "variant_scope": "multi_line_structure_candidate",
+          "variant_strong_round_pairs": 0
+        }
+      ]
+    }
+  ],
+  "rows_checked": 4,
+  "schema": "SPPA-AGNOSTIC-PHOTOMETRIC-STABILITY-VERIFY-0.1",
+  "status": "pass",
+  "variant_image_dir": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_agnostic_shape_fitting\\20260704_photometric_stability\\variant_inputs",
+  "variants": [
+    "dark_low_contrast",
+    "bright_high_contrast",
+    "soft_blur",
+    "mild_sensor_noise"
+  ],
+  "variants_checked": 16
+}

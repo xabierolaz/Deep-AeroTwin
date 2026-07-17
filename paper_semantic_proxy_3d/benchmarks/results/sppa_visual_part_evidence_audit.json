@@ -1,0 +1,227 @@
+{
+  "claim_boundary": "Visual part evidence is role-conditioned support from generic image-space cues. It can annotate existing SPPA roles in the descriptor and add low-cost conditioning primitives to those existing roles, but it cannot introduce new classes, replace the semantic normalizer, or claim ground-truth part segmentation. The associated geometry profile is image-space only and is recorded once per descriptor to avoid descriptor bloat.",
+  "failures": [],
+  "objects_csv": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified\\objects.csv",
+  "rows": [
+    {
+      "applied": true,
+      "case": "biker",
+      "descriptor_bytes": 31964,
+      "expected_roles": [
+        "bike_frame",
+        "vehicle_tire"
+      ],
+      "geometry_label_used": false,
+      "geometry_profile_applied": true,
+      "geometry_profile_features": [
+        "line_structure",
+        "round_pair"
+      ],
+      "geometry_profile_version": "SPPA-VISUAL-GEOMETRY-PROFILE-0.1",
+      "label_used": false,
+      "line_dominant_angle_deg": 55.862,
+      "line_max_length_px": 70.725,
+      "part_role_counts": {
+        "bike_frame": 10,
+        "vehicle_metal_or_hub": 2,
+        "vehicle_tire": 3
+      },
+      "roles": [
+        "bike_frame",
+        "vehicle_metal_or_hub",
+        "vehicle_tire"
+      ],
+      "round_pair_axis_angle_deg": -120.16,
+      "round_pair_radius_ratio": 1.0247,
+      "round_pair_separation_radius_ratio": 6.9488,
+      "scope": "round_part_pair_candidate",
+      "triangles": 1056,
+      "visual_metric_yaw_consistency": {
+        "agreement": "aligned",
+        "applied": true,
+        "axial_delta_deg": 3.228,
+        "claim_boundary": "Declared UAV replay projection; not measured telemetry, GT yaw, or manual correction.",
+        "footprint_yaw_deg": 1.612,
+        "policy": "support_gate_only",
+        "projected_visual_axis_yaw_deg": 4.84,
+        "source": "projected_visual_axis",
+        "version": "SPPA-VISUAL-METRIC-YAW-CONSISTENCY-0.1",
+        "visual_axis_source": "round_pair"
+      },
+      "visual_shape_conditioning_added_parts": 1,
+      "visual_shape_conditioning_added_triangles": 20,
+      "visual_shape_conditioning_additions": [
+        "round_pair_conditioned_wheelbase_rails"
+      ],
+      "visual_shape_conditioning_applied": true,
+      "wall_ms": 3.573,
+      "yaw_ambiguous": true,
+      "yaw_coordinate_frame": "declared_assumed_flight_replay_local_ned",
+      "yaw_deg": 1.612,
+      "yaw_source": "projected_footprint_yaw_gate"
+    },
+    {
+      "applied": true,
+      "case": "tower",
+      "descriptor_bytes": 31203,
+      "expected_roles": [
+        "vertical_structure_metal"
+      ],
+      "geometry_label_used": false,
+      "geometry_profile_applied": true,
+      "geometry_profile_features": [
+        "line_structure"
+      ],
+      "geometry_profile_version": "SPPA-VISUAL-GEOMETRY-PROFILE-0.1",
+      "label_used": false,
+      "line_dominant_angle_deg": 96.706,
+      "line_max_length_px": 64.475,
+      "part_role_counts": {
+        "vertical_structure_metal": 19
+      },
+      "roles": [
+        "vertical_structure_metal"
+      ],
+      "round_pair_axis_angle_deg": null,
+      "round_pair_radius_ratio": null,
+      "round_pair_separation_radius_ratio": null,
+      "scope": "multi_line_structure_candidate",
+      "triangles": 436,
+      "visual_metric_yaw_consistency": {
+        "agreement": "aligned",
+        "applied": true,
+        "axial_delta_deg": 4.633,
+        "claim_boundary": "Declared UAV replay projection; not measured telemetry, GT yaw, or manual correction.",
+        "footprint_yaw_deg": 8.622,
+        "policy": "support_gate_only",
+        "projected_visual_axis_yaw_deg": 13.254,
+        "source": "projected_visual_axis",
+        "version": "SPPA-VISUAL-METRIC-YAW-CONSISTENCY-0.1",
+        "visual_axis_source": "longest_line"
+      },
+      "visual_shape_conditioning_added_parts": 2,
+      "visual_shape_conditioning_added_triangles": 40,
+      "visual_shape_conditioning_additions": [
+        "line_conditioned_lateral_tower_braces"
+      ],
+      "visual_shape_conditioning_applied": true,
+      "wall_ms": 1.27,
+      "yaw_ambiguous": true,
+      "yaw_coordinate_frame": "declared_assumed_flight_replay_local_ned",
+      "yaw_deg": 8.622,
+      "yaw_source": "projected_footprint_yaw_gate"
+    },
+    {
+      "applied": true,
+      "case": "tractor",
+      "descriptor_bytes": 31799,
+      "expected_roles": [
+        "vehicle_attachment",
+        "vehicle_tire"
+      ],
+      "geometry_label_used": false,
+      "geometry_profile_applied": true,
+      "geometry_profile_features": [
+        "line_structure",
+        "round_pair"
+      ],
+      "geometry_profile_version": "SPPA-VISUAL-GEOMETRY-PROFILE-0.1",
+      "label_used": false,
+      "line_dominant_angle_deg": 121.412,
+      "line_max_length_px": 30.017,
+      "part_role_counts": {
+        "vehicle_attachment": 5,
+        "vehicle_metal_or_hub": 9,
+        "vehicle_tire": 4
+      },
+      "roles": [
+        "vehicle_attachment",
+        "vehicle_metal_or_hub",
+        "vehicle_tire"
+      ],
+      "round_pair_axis_angle_deg": 130.333,
+      "round_pair_radius_ratio": 1.0,
+      "round_pair_separation_radius_ratio": 7.6124,
+      "scope": "round_part_pair_candidate",
+      "triangles": 1096,
+      "visual_metric_yaw_consistency": {
+        "agreement": "weakly_aligned",
+        "applied": true,
+        "axial_delta_deg": 28.256,
+        "claim_boundary": "Declared UAV replay projection; not measured telemetry, GT yaw, or manual correction.",
+        "footprint_yaw_deg": 80.077,
+        "policy": "support_gate_only",
+        "projected_visual_axis_yaw_deg": 108.333,
+        "source": "projected_visual_axis",
+        "version": "SPPA-VISUAL-METRIC-YAW-CONSISTENCY-0.1",
+        "visual_axis_source": "round_pair"
+      },
+      "visual_shape_conditioning_added_parts": 2,
+      "visual_shape_conditioning_added_triangles": 40,
+      "visual_shape_conditioning_additions": [
+        "round_pair_conditioned_vehicle_side_rails"
+      ],
+      "visual_shape_conditioning_applied": true,
+      "wall_ms": 2.19,
+      "yaw_ambiguous": true,
+      "yaw_coordinate_frame": "declared_assumed_flight_replay_local_ned",
+      "yaw_deg": 80.077,
+      "yaw_source": "projected_footprint_yaw_gate"
+    },
+    {
+      "applied": true,
+      "case": "tractor_trailer",
+      "descriptor_bytes": 32595,
+      "expected_roles": [
+        "container_detail"
+      ],
+      "geometry_label_used": false,
+      "geometry_profile_applied": true,
+      "geometry_profile_features": [
+        "line_structure"
+      ],
+      "geometry_profile_version": "SPPA-VISUAL-GEOMETRY-PROFILE-0.1",
+      "label_used": false,
+      "line_dominant_angle_deg": 98.203,
+      "line_max_length_px": 116.469,
+      "part_role_counts": {
+        "container_detail": 4,
+        "vehicle_attachment": 5
+      },
+      "roles": [
+        "container_detail",
+        "vehicle_attachment"
+      ],
+      "round_pair_axis_angle_deg": null,
+      "round_pair_radius_ratio": null,
+      "round_pair_separation_radius_ratio": null,
+      "scope": "multi_line_structure_candidate",
+      "triangles": 2012,
+      "visual_metric_yaw_consistency": {
+        "agreement": "weakly_aligned",
+        "applied": true,
+        "axial_delta_deg": 28.092,
+        "claim_boundary": "Declared UAV replay projection; not measured telemetry, GT yaw, or manual correction.",
+        "footprint_yaw_deg": 77.377,
+        "policy": "support_gate_only",
+        "projected_visual_axis_yaw_deg": 49.286,
+        "source": "projected_visual_axis",
+        "version": "SPPA-VISUAL-METRIC-YAW-CONSISTENCY-0.1",
+        "visual_axis_source": "longest_line"
+      },
+      "visual_shape_conditioning_added_parts": 2,
+      "visual_shape_conditioning_added_triangles": 24,
+      "visual_shape_conditioning_additions": [
+        "line_conditioned_side_ribs"
+      ],
+      "visual_shape_conditioning_applied": true,
+      "wall_ms": 3.296,
+      "yaw_ambiguous": true,
+      "yaw_coordinate_frame": "declared_assumed_flight_replay_local_ned",
+      "yaw_deg": 77.377,
+      "yaw_source": "projected_footprint_yaw_gate"
+    }
+  ],
+  "run_dir": "D:\\Deep-AeroTwin-UE57-Test\\experiments\\sppa_sota_benchmark\\runs\\20260704_real_all_sppa_unified",
+  "status": "passed"
+}
