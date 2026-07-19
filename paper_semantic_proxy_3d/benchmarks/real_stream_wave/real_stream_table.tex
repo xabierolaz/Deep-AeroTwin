@@ -1,0 +1,26 @@
+% E7 Real Stream Wave - exploratory post-hoc (not confirmatory).
+% Loc./footprint columns: GT-matched subset (n=217, tower anchors; wrong detector
+% tokens kept as a natural condition). Reprojection/latency: all n=1902 cases.
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Method & $n$ & Loc. err. 3D med. [P25, P75] (m)$^{\dagger}$ & Footprint IoU$^{\dagger}$ & 2D reproj. IoU & Latency (ms) \\
+\midrule
+SPPA-MVFit (this work) & 1902 & 32.76 [27.86, 37.39] & 0.000 & 0.298 [0.218, 0.392] & 11.82 \\
+Generic-MVFit & 1902 & 32.75 [27.67, 37.29] & 0.000 & 0.423 [0.394, 0.448] & 13.44 \\
+OBB & 1902 & 32.71 [27.73, 37.16] & 0.000 & 0.446 [0.398, 0.492] & 0.22 \\
+AABB & 1902 & 32.66 [27.73, 36.44] & 0.000 & 0.330 [0.299, 0.357] & 0.25 \\
+Visual hull (non-semantic) & 1902 & 32.71 [27.73, 37.16] & 0.000 & 0.446 [0.398, 0.493] & 0.50 \\
+Capsule & 1902 & 32.71 [27.73, 37.16] & 0.000 & 0.445 [0.422, 0.466] & 1.31 \\
+\bottomrule
+\end{tabular}
+
+% Token arm (SPPA-MVFit only): the 138 GT-matched cases where the REAL detector
+% emitted a wrong family token (114 cow->tower, 24 biker->tower confusions).
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Token condition & $n$ & 2D reproj. IoU med. [P25, P75] \\
+\midrule
+Real detector token (wrong) & 138 & 0.381 [0.303, 0.410] \\
+Correct-token refit (counterfactual) & 138 & 0.025 [0.023, 0.034] \\
+\bottomrule
+\end{tabular}

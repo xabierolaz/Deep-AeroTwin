@@ -4,22 +4,15 @@
 
 Please consider our manuscript for *Journal of Geovisualization and Spatial Analysis*:
 
-**Family-Conditioned Multiview Occupancy Fitting for Semantic Proxy Actors in a Synthetic UAV Digital-Twin Setting (SPPA-MVFit)**
+**Family-Conditioned Multiview Fitting for Semantic Primitive Proxy Actors in UAV Digital Twins (SPPA-MVFit)**
 
 ## Why JGSA
 
 We study **semantic part structure as a spatial occupancy prior** for lightweight
 3D proxy actors in UAV digital twins—an identification question in geovisualization
-/ spatial analysis, not a photoreal reconstruction leaderboard.
-
-## Fit to journal criteria (speed, JCR, UPNA)
-
-| Criterion | Notes |
-|---|---|
-| Scope | Spatial proxy occupancy, dynamic twin objects, synthetic spatial evaluation |
-| JCR | Q1 (UPNA transformative impact workbook row; reconfirm on submission day) |
-| Speed | Springer hybrid continuous publication; journal indicators report median ~6 days to first decision |
-| APC | Springer Nature Spain CRUE–CSIC hybrid agreement (confirm remaining quota with UPNA library) |
+/ spatial analysis, not a photoreal reconstruction leaderboard. The manuscript
+anchors this scope explicitly in its Introduction (dynamic-object geovisualization
+in 3D spatial twins).
 
 ## Novelty (one sentence)
 
@@ -31,7 +24,7 @@ Mean paired voxel-IoU gain **0.190** (95% CI **[0.181, 0.199]**), *n*=240, margi
 
 ## Package
 
-- Compact main paper (cut systems diary) + **short** formal supplement  
+- Full main paper (23 pages, 15 figures, 7 tables) + formal supplement (10 pages: post-hoc analyses, real-stream case study, real-image probes, deployment/Unreal evidence, protocol details)  
 - Sealed reproducibility under `reproducibility/sppa_mvfit/`  
 - Highlights in `HIGHLIGHTS.md`  
 - **Not** submitted: 38-page engineering diary  

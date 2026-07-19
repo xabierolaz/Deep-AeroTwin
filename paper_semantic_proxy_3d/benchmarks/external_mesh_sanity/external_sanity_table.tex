@@ -1,0 +1,20 @@
+% external sanity check (exploratory, post-hoc) - real meshes, clean condition
+% voxel IoU (64^3) mean [95% bootstrap CI], seed 77157, 10000 resamples
+\begin{tabular}{lrrrrrrr}
+\toprule
+Method & compact & articulated & quadruped & branching & lattice & rider & All \\
+\midrule
+\textbf{SPPA-MVFit} & \textbf{0.632} & \textbf{0.633} & \textbf{0.423} & \textbf{0.215} & \textbf{0.157} & \textbf{0.361} & \textbf{0.413} \\
+Generic-MVFit & 0.508 & 0.319 & 0.393 & 0.382 & 0.288 & 0.288 & 0.370 \\
+SPPA text-only & 0.449 & 0.188 & 0.242 & 0.058 & 0.101 & 0.172 & 0.213 \\
+AABB & 0.577 & 0.593 & 0.386 & 0.244 & 0.368 & 0.259 & 0.411 \\
+Ellipsoid & 0.613 & 0.527 & 0.496 & 0.369 & 0.470 & 0.398 & 0.485 \\
+Capsule & 0.654 & 0.605 & 0.477 & 0.365 & 0.472 & 0.342 & 0.492 \\
+Billboard & 0.164 & 0.070 & 0.256 & 0.111 & 0.077 & 0.333 & 0.172 \\
+Visual hull & 0.809 & 0.783 & 0.715 & 0.462 & 0.581 & 0.530 & 0.656 \\
+\midrule
+\multicolumn{8}{l}{\footnotesize $n$ per family: compact=10, articulated=8, quadruped=10, branching=8, lattice=8, rider=8 (total 52).}\\
+\multicolumn{8}{l}{\footnotesize Overall mean [CI95]: SPPA-MVFit 0.413 [0.359, 0.467]; Generic 0.370; Visual hull 0.656.}\\
+\multicolumn{8}{l}{\footnotesize Paired SPPA$-$Generic: +0.043 [-0.007, +0.094].}\\
+\bottomrule
+\end{tabular}

@@ -1,0 +1,393 @@
+{
+  "schema": "sppa-mvfit-posthoc-graph-x-fitting-2x2-v1",
+  "analysis_type": "exploratory post-hoc analysis (not confirmatory)",
+  "condition": "clean",
+  "actors": 240,
+  "new_cell_definition": "generic_nofit = voxelize_actor(build_actor('generic', default_theta()), 64) vs voxelize_source(private GT, 64); theta0 = [0,0,0,1,0]; no mask-driven initialization, mirroring sealed sppa_text_only which also ignores masks",
+  "sources": {
+    "generic_nofit": "NEW: computed from sealed method module + released private GT",
+    "other_cells": "sealed raw_metrics.csv clean rows"
+  },
+  "cell_mean_voxel_iou": {
+    "overall": {
+      "generic_nofit": 0.17992827503094114,
+      "generic_fit": 0.36739425920715024,
+      "sppa_nofit": 0.4274753198858666,
+      "sppa_fit": 0.557440587657612
+    },
+    "csg_id": {
+      "generic_nofit": 0.1646964120673346,
+      "generic_fit": 0.34213047417550985,
+      "sppa_nofit": 0.40391486632865453,
+      "sppa_fit": 0.5506435382922954
+    },
+    "implicit_ood": {
+      "generic_nofit": 0.19516013799454773,
+      "generic_fit": 0.3926580442387907,
+      "sppa_nofit": 0.45103577344307877,
+      "sppa_fit": 0.5642376370229287
+    }
+  },
+  "effects": {
+    "overall": {
+      "graph_effect_nofit": {
+        "mean_difference": 0.24754704485492554,
+        "ci95_low_percentile": 0.23437183503733708,
+        "ci95_high_percentile": 0.26057864255931745,
+        "bootstrap_resamples": 10000,
+        "bootstrap_seed": 77157,
+        "actor_count": 240,
+        "cell_counts": {
+          "articulated_vehicle|csg_id": 20,
+          "articulated_vehicle|implicit_ood": 20,
+          "branching_vertical|csg_id": 20,
+          "branching_vertical|implicit_ood": 20,
+          "compact_vehicle|csg_id": 20,
+          "compact_vehicle|implicit_ood": 20,
+          "lattice_tower|csg_id": 20,
+          "lattice_tower|implicit_ood": 20,
+          "quadruped|csg_id": 20,
+          "quadruped|implicit_ood": 20,
+          "rider_cycle|csg_id": 20,
+          "rider_cycle|implicit_ood": 20
+        },
+        "cell_point_estimates": {
+          "articulated_vehicle|csg_id": 0.34033278354489194,
+          "articulated_vehicle|implicit_ood": 0.3685642630368017,
+          "branching_vertical|csg_id": 0.18213968699965094,
+          "branching_vertical|implicit_ood": 0.25493555665295947,
+          "compact_vehicle|csg_id": 0.324173714841785,
+          "compact_vehicle|implicit_ood": 0.3594529066799267,
+          "lattice_tower|csg_id": 0.08415475943287283,
+          "lattice_tower|implicit_ood": 0.11061613491550644,
+          "quadruped|csg_id": 0.09765791352054623,
+          "quadruped|implicit_ood": 0.15210845091574382,
+          "rider_cycle|csg_id": 0.406851867228173,
+          "rider_cycle|implicit_ood": 0.2895765004902485
+        },
+        "effect": "SPPA-nofit - Generic-nofit"
+      },
+      "fitting_effect_generic": {
+        "mean_difference": 0.1874659841762092,
+        "ci95_low_percentile": 0.18163621297564939,
+        "ci95_high_percentile": 0.19298318561245187,
+        "bootstrap_resamples": 10000,
+        "bootstrap_seed": 77157,
+        "actor_count": 240,
+        "cell_counts": {
+          "articulated_vehicle|csg_id": 20,
+          "articulated_vehicle|implicit_ood": 20,
+          "branching_vertical|csg_id": 20,
+          "branching_vertical|implicit_ood": 20,
+          "compact_vehicle|csg_id": 20,
+          "compact_vehicle|implicit_ood": 20,
+          "lattice_tower|csg_id": 20,
+          "lattice_tower|implicit_ood": 20,
+          "quadruped|csg_id": 20,
+          "quadruped|implicit_ood": 20,
+          "rider_cycle|csg_id": 20,
+          "rider_cycle|implicit_ood": 20
+        },
+        "cell_point_estimates": {
+          "articulated_vehicle|csg_id": 0.2461256742689509,
+          "articulated_vehicle|implicit_ood": 0.27535061230552427,
+          "branching_vertical|csg_id": 0.24301778888121905,
+          "branching_vertical|implicit_ood": 0.2249369067886518,
+          "compact_vehicle|csg_id": 0.3314549715651331,
+          "compact_vehicle|implicit_ood": 0.3647311734111007,
+          "lattice_tower|csg_id": 0.032222391455499585,
+          "lattice_tower|implicit_ood": 0.053392543932240376,
+          "quadruped|csg_id": 0.15263847188013366,
+          "quadruped|implicit_ood": 0.15393971716571647,
+          "rider_cycle|csg_id": 0.059145074598115535,
+          "rider_cycle|implicit_ood": 0.1126364838622245
+        },
+        "effect": "Generic-fit - Generic-nofit"
+      },
+      "fitting_effect_sppa": {
+        "mean_difference": 0.1299652677717454,
+        "ci95_low_percentile": 0.11650738836453116,
+        "ci95_high_percentile": 0.143363295508628,
+        "bootstrap_resamples": 10000,
+        "bootstrap_seed": 77157,
+        "actor_count": 240,
+        "cell_counts": {
+          "articulated_vehicle|csg_id": 20,
+          "articulated_vehicle|implicit_ood": 20,
+          "branching_vertical|csg_id": 20,
+          "branching_vertical|implicit_ood": 20,
+          "compact_vehicle|csg_id": 20,
+          "compact_vehicle|implicit_ood": 20,
+          "lattice_tower|csg_id": 20,
+          "lattice_tower|implicit_ood": 20,
+          "quadruped|csg_id": 20,
+          "quadruped|implicit_ood": 20,
+          "rider_cycle|csg_id": 20,
+          "rider_cycle|implicit_ood": 20
+        },
+        "cell_point_estimates": {
+          "articulated_vehicle|csg_id": 0.01879132939933843,
+          "articulated_vehicle|implicit_ood": 0.03186353735426898,
+          "branching_vertical|csg_id": 0.2603991770686013,
+          "branching_vertical|implicit_ood": 0.18020769063104394,
+          "compact_vehicle|csg_id": 0.10835682847452262,
+          "compact_vehicle|implicit_ood": 0.04825770946296006,
+          "lattice_tower|csg_id": 0.12304981794458252,
+          "lattice_tower|implicit_ood": 0.10556447656205872,
+          "quadruped|csg_id": 0.2597336014695189,
+          "quadruped|implicit_ood": 0.1908262840396266,
+          "rider_cycle|csg_id": 0.11004127742528165,
+          "rider_cycle|implicit_ood": 0.12249148342914111
+        },
+        "effect": "SPPA-fit - SPPA-nofit"
+      },
+      "graph_effect_fit": {
+        "mean_difference": 0.19004632845046177,
+        "ci95_low_percentile": 0.1806905996652672,
+        "ci95_high_percentile": 0.1991697153982903,
+        "bootstrap_resamples": 10000,
+        "bootstrap_seed": 77157,
+        "actor_count": 240,
+        "cell_counts": {
+          "articulated_vehicle|csg_id": 20,
+          "articulated_vehicle|implicit_ood": 20,
+          "branching_vertical|csg_id": 20,
+          "branching_vertical|implicit_ood": 20,
+          "compact_vehicle|csg_id": 20,
+          "compact_vehicle|implicit_ood": 20,
+          "lattice_tower|csg_id": 20,
+          "lattice_tower|implicit_ood": 20,
+          "quadruped|csg_id": 20,
+          "quadruped|implicit_ood": 20,
+          "rider_cycle|csg_id": 20,
+          "rider_cycle|implicit_ood": 20
+        },
+        "cell_point_estimates": {
+          "articulated_vehicle|csg_id": 0.11299843867527934,
+          "articulated_vehicle|implicit_ood": 0.12507718808554633,
+          "branching_vertical|csg_id": 0.1995210751870332,
+          "branching_vertical|implicit_ood": 0.21020634049535158,
+          "compact_vehicle|csg_id": 0.10107557175117454,
+          "compact_vehicle|implicit_ood": 0.042979442731786034,
+          "lattice_tower|csg_id": 0.17498218592195575,
+          "lattice_tower|implicit_ood": 0.1627880675453248,
+          "quadruped|csg_id": 0.20475304310993145,
+          "quadruped|implicit_ood": 0.18899501778965394,
+          "rider_cycle|csg_id": 0.4577480700553391,
+          "rider_cycle|implicit_ood": 0.2994315000571651
+        },
+        "effect": "SPPA-fit - Generic-fit (headline)"
+      }
+    },
+    "csg_id": {
+      "graph_effect_nofit": {
+        "mean_difference": 0.23921845426131996,
+        "ci95_low_percentile": 0.22019304458355984,
+        "ci95_high_percentile": 0.2579301568059242,
+        "bootstrap_resamples": 10000,
+        "bootstrap_seed": 77157,
+        "actor_count": 120,
+        "cell_counts": {
+          "articulated_vehicle|csg_id": 20,
+          "branching_vertical|csg_id": 20,
+          "compact_vehicle|csg_id": 20,
+          "lattice_tower|csg_id": 20,
+          "quadruped|csg_id": 20,
+          "rider_cycle|csg_id": 20
+        },
+        "cell_point_estimates": {
+          "articulated_vehicle|csg_id": 0.34033278354489194,
+          "branching_vertical|csg_id": 0.18213968699965094,
+          "compact_vehicle|csg_id": 0.324173714841785,
+          "lattice_tower|csg_id": 0.08415475943287283,
+          "quadruped|csg_id": 0.09765791352054623,
+          "rider_cycle|csg_id": 0.406851867228173
+        },
+        "effect": "SPPA-nofit - Generic-nofit"
+      },
+      "fitting_effect_generic": {
+        "mean_difference": 0.17743406210817528,
+        "ci95_low_percentile": 0.16841244846566078,
+        "ci95_high_percentile": 0.18631332780923948,
+        "bootstrap_resamples": 10000,
+        "bootstrap_seed": 77157,
+        "actor_count": 120,
+        "cell_counts": {
+          "articulated_vehicle|csg_id": 20,
+          "branching_vertical|csg_id": 20,
+          "compact_vehicle|csg_id": 20,
+          "lattice_tower|csg_id": 20,
+          "quadruped|csg_id": 20,
+          "rider_cycle|csg_id": 20
+        },
+        "cell_point_estimates": {
+          "articulated_vehicle|csg_id": 0.2461256742689509,
+          "branching_vertical|csg_id": 0.24301778888121905,
+          "compact_vehicle|csg_id": 0.3314549715651331,
+          "lattice_tower|csg_id": 0.032222391455499585,
+          "quadruped|csg_id": 0.15263847188013366,
+          "rider_cycle|csg_id": 0.059145074598115535
+        },
+        "effect": "Generic-fit - Generic-nofit"
+      },
+      "fitting_effect_sppa": {
+        "mean_difference": 0.1467286719636409,
+        "ci95_low_percentile": 0.12428696133016633,
+        "ci95_high_percentile": 0.16889241106672695,
+        "bootstrap_resamples": 10000,
+        "bootstrap_seed": 77157,
+        "actor_count": 120,
+        "cell_counts": {
+          "articulated_vehicle|csg_id": 20,
+          "branching_vertical|csg_id": 20,
+          "compact_vehicle|csg_id": 20,
+          "lattice_tower|csg_id": 20,
+          "quadruped|csg_id": 20,
+          "rider_cycle|csg_id": 20
+        },
+        "cell_point_estimates": {
+          "articulated_vehicle|csg_id": 0.01879132939933843,
+          "branching_vertical|csg_id": 0.2603991770686013,
+          "compact_vehicle|csg_id": 0.10835682847452262,
+          "lattice_tower|csg_id": 0.12304981794458252,
+          "quadruped|csg_id": 0.2597336014695189,
+          "rider_cycle|csg_id": 0.11004127742528165
+        },
+        "effect": "SPPA-fit - SPPA-nofit"
+      },
+      "graph_effect_fit": {
+        "mean_difference": 0.20851306411678558,
+        "ci95_low_percentile": 0.1921897481965896,
+        "ci95_high_percentile": 0.22454921908556447,
+        "bootstrap_resamples": 10000,
+        "bootstrap_seed": 77157,
+        "actor_count": 120,
+        "cell_counts": {
+          "articulated_vehicle|csg_id": 20,
+          "branching_vertical|csg_id": 20,
+          "compact_vehicle|csg_id": 20,
+          "lattice_tower|csg_id": 20,
+          "quadruped|csg_id": 20,
+          "rider_cycle|csg_id": 20
+        },
+        "cell_point_estimates": {
+          "articulated_vehicle|csg_id": 0.11299843867527934,
+          "branching_vertical|csg_id": 0.1995210751870332,
+          "compact_vehicle|csg_id": 0.10107557175117454,
+          "lattice_tower|csg_id": 0.17498218592195575,
+          "quadruped|csg_id": 0.20475304310993145,
+          "rider_cycle|csg_id": 0.4577480700553391
+        },
+        "effect": "SPPA-fit - Generic-fit (headline)"
+      }
+    },
+    "implicit_ood": {
+      "graph_effect_nofit": {
+        "mean_difference": 0.25587563544853115,
+        "ci95_low_percentile": 0.23848705228092135,
+        "ci95_high_percentile": 0.27264181371900664,
+        "bootstrap_resamples": 10000,
+        "bootstrap_seed": 77157,
+        "actor_count": 120,
+        "cell_counts": {
+          "articulated_vehicle|implicit_ood": 20,
+          "branching_vertical|implicit_ood": 20,
+          "compact_vehicle|implicit_ood": 20,
+          "lattice_tower|implicit_ood": 20,
+          "quadruped|implicit_ood": 20,
+          "rider_cycle|implicit_ood": 20
+        },
+        "cell_point_estimates": {
+          "articulated_vehicle|implicit_ood": 0.3685642630368017,
+          "branching_vertical|implicit_ood": 0.25493555665295947,
+          "compact_vehicle|implicit_ood": 0.3594529066799267,
+          "lattice_tower|implicit_ood": 0.11061613491550644,
+          "quadruped|implicit_ood": 0.15210845091574382,
+          "rider_cycle|implicit_ood": 0.2895765004902485
+        },
+        "effect": "SPPA-nofit - Generic-nofit"
+      },
+      "fitting_effect_generic": {
+        "mean_difference": 0.19749790624424302,
+        "ci95_low_percentile": 0.19053737134850915,
+        "ci95_high_percentile": 0.20406971442784852,
+        "bootstrap_resamples": 10000,
+        "bootstrap_seed": 77157,
+        "actor_count": 120,
+        "cell_counts": {
+          "articulated_vehicle|implicit_ood": 20,
+          "branching_vertical|implicit_ood": 20,
+          "compact_vehicle|implicit_ood": 20,
+          "lattice_tower|implicit_ood": 20,
+          "quadruped|implicit_ood": 20,
+          "rider_cycle|implicit_ood": 20
+        },
+        "cell_point_estimates": {
+          "articulated_vehicle|implicit_ood": 0.27535061230552427,
+          "branching_vertical|implicit_ood": 0.2249369067886518,
+          "compact_vehicle|implicit_ood": 0.3647311734111007,
+          "lattice_tower|implicit_ood": 0.053392543932240376,
+          "quadruped|implicit_ood": 0.15393971716571647,
+          "rider_cycle|implicit_ood": 0.1126364838622245
+        },
+        "effect": "Generic-fit - Generic-nofit"
+      },
+      "fitting_effect_sppa": {
+        "mean_difference": 0.11320186357984989,
+        "ci95_low_percentile": 0.0981680696970309,
+        "ci95_high_percentile": 0.12818034201508824,
+        "bootstrap_resamples": 10000,
+        "bootstrap_seed": 77157,
+        "actor_count": 120,
+        "cell_counts": {
+          "articulated_vehicle|implicit_ood": 20,
+          "branching_vertical|implicit_ood": 20,
+          "compact_vehicle|implicit_ood": 20,
+          "lattice_tower|implicit_ood": 20,
+          "quadruped|implicit_ood": 20,
+          "rider_cycle|implicit_ood": 20
+        },
+        "cell_point_estimates": {
+          "articulated_vehicle|implicit_ood": 0.03186353735426898,
+          "branching_vertical|implicit_ood": 0.18020769063104394,
+          "compact_vehicle|implicit_ood": 0.04825770946296006,
+          "lattice_tower|implicit_ood": 0.10556447656205872,
+          "quadruped|implicit_ood": 0.1908262840396266,
+          "rider_cycle|implicit_ood": 0.12249148342914111
+        },
+        "effect": "SPPA-fit - SPPA-nofit"
+      },
+      "graph_effect_fit": {
+        "mean_difference": 0.171579592784138,
+        "ci95_low_percentile": 0.16242775921480235,
+        "ci95_high_percentile": 0.1808200666174322,
+        "bootstrap_resamples": 10000,
+        "bootstrap_seed": 77157,
+        "actor_count": 120,
+        "cell_counts": {
+          "articulated_vehicle|implicit_ood": 20,
+          "branching_vertical|implicit_ood": 20,
+          "compact_vehicle|implicit_ood": 20,
+          "lattice_tower|implicit_ood": 20,
+          "quadruped|implicit_ood": 20,
+          "rider_cycle|implicit_ood": 20
+        },
+        "cell_point_estimates": {
+          "articulated_vehicle|implicit_ood": 0.12507718808554633,
+          "branching_vertical|implicit_ood": 0.21020634049535158,
+          "compact_vehicle|implicit_ood": 0.042979442731786034,
+          "lattice_tower|implicit_ood": 0.1627880675453248,
+          "quadruped|implicit_ood": 0.18899501778965394,
+          "rider_cycle|implicit_ood": 0.2994315000571651
+        },
+        "effect": "SPPA-fit - Generic-fit (headline)"
+      }
+    }
+  },
+  "interaction_overall": -0.057500716404463775,
+  "bootstrap": {
+    "resamples": 10000,
+    "seed": 77157,
+    "stratification": "family x stratum cells"
+  }
+}

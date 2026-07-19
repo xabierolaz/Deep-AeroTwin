@@ -1,0 +1,263 @@
+{
+  "schema": "sppa-mvfit-posthoc-robustness-conditions-v1",
+  "analysis_type": "exploratory post-hoc analysis (not confirmatory)",
+  "source": "reproducibility/sppa_mvfit/results/test/raw_metrics.csv (sealed)",
+  "actors_per_condition": {
+    "clean": 240,
+    "mild_morphology": 240,
+    "moderate_morphology": 240,
+    "partial_occlusion": 240,
+    "mask_corruption": 240
+  },
+  "bootstrap": {
+    "approach": "stratified paired bootstrap replicating benchmark/analyze_test.py",
+    "stratification": "family x stratum (12 cells, equal weight per cell)",
+    "resamples": 10000,
+    "seed": 77157
+  },
+  "mean_voxel_iou_by_method_condition": {
+    "sppa_mvfit": {
+      "clean": 0.557440587657612,
+      "mild_morphology": 0.5115162122631841,
+      "moderate_morphology": 0.4177585799276426,
+      "partial_occlusion": 0.5445118981740797,
+      "mask_corruption": 0.5551508772961591
+    },
+    "generic_mvfit": {
+      "clean": 0.36739425920715024,
+      "mild_morphology": 0.34900119463047063,
+      "moderate_morphology": 0.2993161845613352,
+      "partial_occlusion": 0.35528955587742966,
+      "mask_corruption": 0.36660667598886293
+    },
+    "sppa_text_only": {
+      "clean": 0.4274753198858666,
+      "mild_morphology": 0.4274753198858666,
+      "moderate_morphology": 0.4274753198858666,
+      "partial_occlusion": 0.4274753198858666,
+      "mask_corruption": 0.4274753198858666
+    },
+    "bbox": {
+      "clean": 0.24786249680026742,
+      "mild_morphology": 0.264102781915568,
+      "moderate_morphology": 0.26378062954655573,
+      "partial_occlusion": 0.2579540009047094,
+      "mask_corruption": 0.24786249680026742
+    },
+    "ellipsoid": {
+      "clean": 0.3416582663604107,
+      "mild_morphology": 0.343279308435706,
+      "moderate_morphology": 0.323641316623524,
+      "partial_occlusion": 0.3534875300289695,
+      "mask_corruption": 0.3416582663604107
+    },
+    "capsule": {
+      "clean": 0.3247258462754612,
+      "mild_morphology": 0.33366032225107295,
+      "moderate_morphology": 0.3156753882356958,
+      "partial_occlusion": 0.33631787715203587,
+      "mask_corruption": 0.3247258462754612
+    },
+    "billboard": {
+      "clean": 0.17334256577327292,
+      "mild_morphology": 0.15287743407623602,
+      "moderate_morphology": 0.12225340103604493,
+      "partial_occlusion": 0.14816801117281067,
+      "mask_corruption": 0.17025682520920365
+    },
+    "nonsemantic_visual_hull": {
+      "clean": 0.5217090738486616,
+      "mild_morphology": 0.4695354410019258,
+      "moderate_morphology": 0.3557707814725466,
+      "partial_occlusion": 0.39692359945899136,
+      "mask_corruption": 0.5096003750658277
+    }
+  },
+  "paired_delta_sppa_minus_generic_by_condition": {
+    "clean": {
+      "mean_difference": 0.19004632845046177,
+      "ci95_low_percentile": 0.1806905996652672,
+      "ci95_high_percentile": 0.1991697153982903,
+      "bootstrap_resamples": 10000,
+      "bootstrap_seed": 77157,
+      "actor_count": 240,
+      "cell_counts": {
+        "articulated_vehicle|csg_id": 20,
+        "articulated_vehicle|implicit_ood": 20,
+        "branching_vertical|csg_id": 20,
+        "branching_vertical|implicit_ood": 20,
+        "compact_vehicle|csg_id": 20,
+        "compact_vehicle|implicit_ood": 20,
+        "lattice_tower|csg_id": 20,
+        "lattice_tower|implicit_ood": 20,
+        "quadruped|csg_id": 20,
+        "quadruped|implicit_ood": 20,
+        "rider_cycle|csg_id": 20,
+        "rider_cycle|implicit_ood": 20
+      },
+      "cell_point_estimates": {
+        "articulated_vehicle|csg_id": 0.11299843867527934,
+        "articulated_vehicle|implicit_ood": 0.12507718808554633,
+        "branching_vertical|csg_id": 0.1995210751870332,
+        "branching_vertical|implicit_ood": 0.21020634049535158,
+        "compact_vehicle|csg_id": 0.10107557175117454,
+        "compact_vehicle|implicit_ood": 0.042979442731786034,
+        "lattice_tower|csg_id": 0.17498218592195575,
+        "lattice_tower|implicit_ood": 0.1627880675453248,
+        "quadruped|csg_id": 0.20475304310993145,
+        "quadruped|implicit_ood": 0.18899501778965394,
+        "rider_cycle|csg_id": 0.4577480700553391,
+        "rider_cycle|implicit_ood": 0.2994315000571651
+      }
+    },
+    "mild_morphology": {
+      "mean_difference": 0.1625150176327136,
+      "ci95_low_percentile": 0.15213840265307269,
+      "ci95_high_percentile": 0.17307241913221733,
+      "bootstrap_resamples": 10000,
+      "bootstrap_seed": 77157,
+      "actor_count": 240,
+      "cell_counts": {
+        "articulated_vehicle|csg_id": 20,
+        "articulated_vehicle|implicit_ood": 20,
+        "branching_vertical|csg_id": 20,
+        "branching_vertical|implicit_ood": 20,
+        "compact_vehicle|csg_id": 20,
+        "compact_vehicle|implicit_ood": 20,
+        "lattice_tower|csg_id": 20,
+        "lattice_tower|implicit_ood": 20,
+        "quadruped|csg_id": 20,
+        "quadruped|implicit_ood": 20,
+        "rider_cycle|csg_id": 20,
+        "rider_cycle|implicit_ood": 20
+      },
+      "cell_point_estimates": {
+        "articulated_vehicle|csg_id": 0.12611496374231437,
+        "articulated_vehicle|implicit_ood": 0.15363932302103436,
+        "branching_vertical|csg_id": 0.17742842659297803,
+        "branching_vertical|implicit_ood": 0.20350138979879856,
+        "compact_vehicle|csg_id": 0.07597930750854585,
+        "compact_vehicle|implicit_ood": 0.02062958556594225,
+        "lattice_tower|csg_id": 0.17393771740670735,
+        "lattice_tower|implicit_ood": 0.14096287964481644,
+        "quadruped|csg_id": 0.15964646211922404,
+        "quadruped|implicit_ood": 0.13856530217187774,
+        "rider_cycle|csg_id": 0.35695757577520404,
+        "rider_cycle|implicit_ood": 0.22281727824511988
+      }
+    },
+    "moderate_morphology": {
+      "mean_difference": 0.1184423953663074,
+      "ci95_low_percentile": 0.10565346537420836,
+      "ci95_high_percentile": 0.131409013736413,
+      "bootstrap_resamples": 10000,
+      "bootstrap_seed": 77157,
+      "actor_count": 240,
+      "cell_counts": {
+        "articulated_vehicle|csg_id": 20,
+        "articulated_vehicle|implicit_ood": 20,
+        "branching_vertical|csg_id": 20,
+        "branching_vertical|implicit_ood": 20,
+        "compact_vehicle|csg_id": 20,
+        "compact_vehicle|implicit_ood": 20,
+        "lattice_tower|csg_id": 20,
+        "lattice_tower|implicit_ood": 20,
+        "quadruped|csg_id": 20,
+        "quadruped|implicit_ood": 20,
+        "rider_cycle|csg_id": 20,
+        "rider_cycle|implicit_ood": 20
+      },
+      "cell_point_estimates": {
+        "articulated_vehicle|csg_id": 0.13862507524791054,
+        "articulated_vehicle|implicit_ood": 0.09506935249711733,
+        "branching_vertical|csg_id": 0.21928735456442588,
+        "branching_vertical|implicit_ood": 0.22788005836865857,
+        "compact_vehicle|csg_id": 0.05564240004128314,
+        "compact_vehicle|implicit_ood": 0.06469346774489608,
+        "lattice_tower|csg_id": 0.06892942197000865,
+        "lattice_tower|implicit_ood": 0.06918997045612167,
+        "quadruped|csg_id": 0.04857928693613976,
+        "quadruped|implicit_ood": -0.013303548473653445,
+        "rider_cycle|csg_id": 0.24892974366542936,
+        "rider_cycle|implicit_ood": 0.197786161377351
+      }
+    },
+    "partial_occlusion": {
+      "mean_difference": 0.18922234229665022,
+      "ci95_low_percentile": 0.1789997621421796,
+      "ci95_high_percentile": 0.1996840027657749,
+      "bootstrap_resamples": 10000,
+      "bootstrap_seed": 77157,
+      "actor_count": 240,
+      "cell_counts": {
+        "articulated_vehicle|csg_id": 20,
+        "articulated_vehicle|implicit_ood": 20,
+        "branching_vertical|csg_id": 20,
+        "branching_vertical|implicit_ood": 20,
+        "compact_vehicle|csg_id": 20,
+        "compact_vehicle|implicit_ood": 20,
+        "lattice_tower|csg_id": 20,
+        "lattice_tower|implicit_ood": 20,
+        "quadruped|csg_id": 20,
+        "quadruped|implicit_ood": 20,
+        "rider_cycle|csg_id": 20,
+        "rider_cycle|implicit_ood": 20
+      },
+      "cell_point_estimates": {
+        "articulated_vehicle|csg_id": 0.1105304793883493,
+        "articulated_vehicle|implicit_ood": 0.1173556690663973,
+        "branching_vertical|csg_id": 0.1936889715125459,
+        "branching_vertical|implicit_ood": 0.23309488775689302,
+        "compact_vehicle|csg_id": 0.12056928820769335,
+        "compact_vehicle|implicit_ood": 0.04494317604858728,
+        "lattice_tower|csg_id": 0.1838128249192234,
+        "lattice_tower|implicit_ood": 0.161521693635584,
+        "quadruped|csg_id": 0.18738257744010794,
+        "quadruped|implicit_ood": 0.1901258332834132,
+        "rider_cycle|csg_id": 0.45051764398771976,
+        "rider_cycle|implicit_ood": 0.2771250623132882
+      }
+    },
+    "mask_corruption": {
+      "mean_difference": 0.1885442013072962,
+      "ci95_low_percentile": 0.17949994462674515,
+      "ci95_high_percentile": 0.19746809317625555,
+      "bootstrap_resamples": 10000,
+      "bootstrap_seed": 77157,
+      "actor_count": 240,
+      "cell_counts": {
+        "articulated_vehicle|csg_id": 20,
+        "articulated_vehicle|implicit_ood": 20,
+        "branching_vertical|csg_id": 20,
+        "branching_vertical|implicit_ood": 20,
+        "compact_vehicle|csg_id": 20,
+        "compact_vehicle|implicit_ood": 20,
+        "lattice_tower|csg_id": 20,
+        "lattice_tower|implicit_ood": 20,
+        "quadruped|csg_id": 20,
+        "quadruped|implicit_ood": 20,
+        "rider_cycle|csg_id": 20,
+        "rider_cycle|implicit_ood": 20
+      },
+      "cell_point_estimates": {
+        "articulated_vehicle|csg_id": 0.11206820591714302,
+        "articulated_vehicle|implicit_ood": 0.1275306652280864,
+        "branching_vertical|csg_id": 0.2034549545399534,
+        "branching_vertical|implicit_ood": 0.2110287433453834,
+        "compact_vehicle|csg_id": 0.09996310098609565,
+        "compact_vehicle|implicit_ood": 0.0367005892165593,
+        "lattice_tower|csg_id": 0.17312819374055516,
+        "lattice_tower|implicit_ood": 0.1592943660854065,
+        "quadruped|csg_id": 0.2008264499258025,
+        "quadruped|implicit_ood": 0.19220457069760327,
+        "rider_cycle|csg_id": 0.44909507802977355,
+        "rider_cycle|implicit_ood": 0.29723549797519244
+      }
+    }
+  },
+  "sanity_check": {
+    "clean_delta_expected": 0.19,
+    "clean_delta_observed": 0.19004632845046177,
+    "pass": true
+  }
+}

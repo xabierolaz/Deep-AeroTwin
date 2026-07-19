@@ -27,8 +27,7 @@ UPNA guide: https://guias-tematicas.unavarra.es/sp/subjects/guide.php?subject=Ac
 
 ## Submission package for JGSA
 
-- Main paper (cut version, target ~10–12 pages PDF)
-- Short supplement only
+- Main paper (23 pages: H1 confirmatory + preregistered robustness + boundary conditions + adversarial stratum + external sanity check + real detector stream case study) + 10-page supplement (post-hoc analyses + deployment systems evidence)
 - Highlights + cover letter (JGSA)
 - Sealed `reproducibility/sppa_mvfit/`
 - Corresponding author: UPNA email + normalized affiliation

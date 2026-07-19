@@ -1,0 +1,15 @@
+% E7 Real Stream Wave - exploratory post-hoc (not confirmatory). MAIN-TEXT version.
+% Loc./footprint columns: GT-matched subset (n=217, tower anchors; wrong detector
+% tokens kept as a natural condition). Reprojection/latency: all n=1902 cases.
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Method & Loc. err. 3D med. (m)$^{\dagger}$ & Footprint IoU$^{\dagger}$ & 2D reproj. IoU med. [P25, P75] & Latency (ms) \\
+\midrule
+SPPA-MVFit (this work) & 32.8 & 0.000 & 0.298 [0.218, 0.392] & 11.8 \\
+Generic-MVFit & 32.8 & 0.000 & 0.423 [0.394, 0.448] & 13.4 \\
+OBB & 32.7 & 0.000 & 0.446 [0.398, 0.492] & 0.22 \\
+AABB & 32.7 & 0.000 & 0.330 [0.299, 0.357] & 0.25 \\
+Visual hull (non-semantic) & 32.7 & 0.000 & 0.446 [0.398, 0.493] & 0.50 \\
+Capsule & 32.7 & 0.000 & 0.445 [0.422, 0.466] & 1.31 \\
+\bottomrule
+\end{tabular}

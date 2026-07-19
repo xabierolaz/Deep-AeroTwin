@@ -3,7 +3,7 @@
 Generated: 2026-07-17T12:22:37+00:00 UTC. Secondary descriptive analysis; sealed H1 unchanged.
 
 Subset: 60 sealed held-out cases (6 families x 2 strata x 5, lexicographic).
-Alignment: frozen frame convention (48-candidate signed-permutation search on 12 disjoint calibration cases, coarse 32-cubed + fine 64-cubed passes), uniform scale to GT bbox, GT bbox center, GT yaw frame.
+Alignment: frozen frame convention (48-candidate signed-permutation search fitted on 12 calibration cases — the first case of each family×stratum cell, which are inside the 60 evaluated cases; any selection bias can only inflate neural IoU, i.e. conservative for SPPA — coarse 32-cubed + fine 64-cubed passes), uniform scale to GT bbox, GT bbox center, GT yaw frame.
 Metrics: voxel IoU at 64-cubed (sealed voxelizer/grid), triangles, warm generation ms (model load excluded), peak CUDA VRAM, payload bytes.
 
 | Method | Input | IoU mean | dIoU vs SPPA | Triangles | Gen ms | VRAM MB | Payload B |

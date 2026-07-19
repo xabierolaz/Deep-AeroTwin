@@ -1,0 +1,926 @@
+{
+  "experiment": "E9 operational utility of roles: part query + part counting",
+  "label": "exploratory post-hoc analysis (not confirmatory)",
+  "design_document": "ROLE_QUERY_FROZEN.md (frozen before any metric)",
+  "n_actors": 120,
+  "n_queries": 920,
+  "n_queries_scored": 887,
+  "empty_gt_excluded": {
+    "n": 33,
+    "erratum": "frozen doc claimed GT components of matched pairs are never empty; 33/920 are empty at 64^3 (thin parts). Empty-GT queries are unscoreable (recall/centroid undefined): kept in results.jsonl, excluded from all aggregates. Sensitivity under inclusion-as-zero reported below.",
+    "roles_affected": [
+      "branching_vertical/branch_left",
+      "branching_vertical/branch_right",
+      "lattice_tower/leg_1",
+      "lattice_tower/leg_2",
+      "lattice_tower/leg_3",
+      "lattice_tower/leg_4",
+      "quadruped/leg_front_left",
+      "quadruped/leg_front_right",
+      "quadruped/leg_rear_left",
+      "quadruped/leg_rear_right",
+      "quadruped/tail",
+      "rider_cycle/frame_front",
+      "rider_cycle/frame_main",
+      "rider_cycle/frame_mid"
+    ]
+  },
+  "sensitivity_f1_include_empty_gt_as_zero": {
+    "sppa_mvfit": 0.418090308558957,
+    "generic_mvfit": 0.1401496327310613,
+    "hull_largest_cc": 0.10679124964031379,
+    "hull_lower_half_z": 0.08374282228983235
+  },
+  "theta_source": "sealed_method_outputs.jsonl (sppa_mvfit + generic_mvfit, clean, csg_id; no refitting)",
+  "hull_heuristics": {
+    "A": "largest 26-connected component of the 64^3 visual hull",
+    "B": "hull voxels with z <= midpoint of occupied z extent"
+  },
+  "generic_mapping": {
+    "compact_vehicle": [
+      0,
+      0,
+      3,
+      4,
+      5,
+      6,
+      1,
+      2
+    ],
+    "articulated_vehicle": [
+      1,
+      1,
+      2,
+      3,
+      1,
+      3,
+      5,
+      2
+    ],
+    "quadruped": [
+      0,
+      2,
+      3,
+      4,
+      5,
+      6,
+      2,
+      1
+    ],
+    "branching_vertical": [
+      0,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7,
+      7
+    ],
+    "lattice_tower": [
+      7,
+      7,
+      7,
+      7,
+      7,
+      0,
+      7,
+      7
+    ],
+    "rider_cycle": [
+      1,
+      2,
+      0,
+      0,
+      0,
+      7,
+      7,
+      2
+    ]
+  },
+  "validation_gates": {
+    "hull_vs_seal_max_abs_err": 0.0,
+    "e6_pairs_max_abs_err": 0.0,
+    "generic_mapping_matches_frozen": true,
+    "queries": 920
+  },
+  "overall": {
+    "n_queries": 887,
+    "sppa_mvfit_f1": 0.43364496490895205,
+    "generic_mvfit_f1": 0.14536376788340066,
+    "hull_largest_cc_f1": 0.11076431755252386,
+    "hull_lower_half_z_f1": 0.08685839515969082,
+    "sppa_mvfit_precision": 0.38756170464754136,
+    "generic_mvfit_precision": 0.15592509400142077,
+    "hull_largest_cc_precision": 0.06964870525541256,
+    "hull_lower_half_z_precision": 0.057110034346484866,
+    "sppa_mvfit_recall": 0.5650744622219653,
+    "generic_mvfit_recall": 0.25914367800478194,
+    "hull_largest_cc_recall": 0.9594137542277339,
+    "hull_lower_half_z_recall": 0.6170052571417859,
+    "sppa_mvfit_centroid_err": 0.055476576400362694,
+    "generic_mvfit_centroid_err": 0.17654959796532518,
+    "hull_largest_cc_centroid_err": 0.2214237970040101,
+    "hull_lower_half_z_centroid_err": 0.24925462332621878
+  },
+  "per_family": {
+    "compact_vehicle": {
+      "n_queries": 140,
+      "sppa_mvfit_f1": 0.5553370617583632,
+      "generic_mvfit_f1": 0.24628256176953822,
+      "hull_largest_cc_f1": 0.1388443729602637,
+      "hull_lower_half_z_f1": 0.12276950040097968,
+      "sppa_mvfit_precision": 0.4828383413576739,
+      "generic_mvfit_precision": 0.21259321674881088,
+      "hull_largest_cc_precision": 0.09685855643793881,
+      "hull_lower_half_z_precision": 0.10207683188547438,
+      "sppa_mvfit_recall": 0.7237558578191577,
+      "generic_mvfit_recall": 0.4145846709906079,
+      "hull_largest_cc_recall": 1.0,
+      "hull_lower_half_z_recall": 0.8233213450297661,
+      "sppa_mvfit_centroid_err": 0.038188800217955114,
+      "generic_mvfit_centroid_err": 0.08787971881762949,
+      "hull_largest_cc_centroid_err": 0.27151847390706246,
+      "hull_lower_half_z_centroid_err": 0.2772906611162947
+    },
+    "articulated_vehicle": {
+      "n_queries": 160,
+      "sppa_mvfit_f1": 0.4121523930945153,
+      "generic_mvfit_f1": 0.17072627184060943,
+      "hull_largest_cc_f1": 0.13976267256687316,
+      "hull_lower_half_z_f1": 0.14968448659614245,
+      "sppa_mvfit_precision": 0.32025874646211844,
+      "generic_mvfit_precision": 0.2697001328400894,
+      "hull_largest_cc_precision": 0.09371201907786622,
+      "hull_lower_half_z_precision": 0.09648775364734911,
+      "sppa_mvfit_recall": 0.6140392921577045,
+      "generic_mvfit_recall": 0.15569667882695398,
+      "hull_largest_cc_recall": 0.775,
+      "hull_lower_half_z_recall": 0.770754610029686,
+      "sppa_mvfit_centroid_err": 0.05768776781511129,
+      "generic_mvfit_centroid_err": 0.13405618317001908,
+      "hull_largest_cc_centroid_err": 0.2861664213305478,
+      "hull_lower_half_z_centroid_err": 0.23104023468925533
+    },
+    "quadruped": {
+      "n_queries": 143,
+      "sppa_mvfit_f1": 0.5980578888052643,
+      "generic_mvfit_f1": 0.23764059480319435,
+      "hull_largest_cc_f1": 0.12297756991907761,
+      "hull_lower_half_z_f1": 0.06372260989816964,
+      "sppa_mvfit_precision": 0.5277938910089506,
+      "generic_mvfit_precision": 0.1903741787188855,
+      "hull_largest_cc_precision": 0.08414182225065837,
+      "hull_lower_half_z_precision": 0.03966085703675961,
+      "sppa_mvfit_recall": 0.7905676292680781,
+      "generic_mvfit_recall": 0.3508179469757237,
+      "hull_largest_cc_recall": 1.0,
+      "hull_lower_half_z_recall": 0.5069199039166394,
+      "sppa_mvfit_centroid_err": 0.036595576398295526,
+      "generic_mvfit_centroid_err": 0.08209661236329725,
+      "hull_largest_cc_centroid_err": 0.2650143703666238,
+      "hull_lower_half_z_centroid_err": 0.27964587335461133
+    },
+    "branching_vertical": {
+      "n_queries": 138,
+      "sppa_mvfit_f1": 0.25257719340095686,
+      "generic_mvfit_f1": 0.032130709141985944,
+      "hull_largest_cc_f1": 0.1317539581441526,
+      "hull_lower_half_z_f1": 0.04381075009007069,
+      "sppa_mvfit_precision": 0.2625239629174952,
+      "generic_mvfit_precision": 0.046465891696859205,
+      "hull_largest_cc_precision": 0.07375196567361408,
+      "hull_lower_half_z_precision": 0.02726113847355279,
+      "sppa_mvfit_recall": 0.30826321267649576,
+      "generic_mvfit_recall": 0.10465195668879632,
+      "hull_largest_cc_recall": 1.0,
+      "hull_lower_half_z_recall": 0.2687390942950315,
+      "sppa_mvfit_centroid_err": 0.12528621869491113,
+      "generic_mvfit_centroid_err": 0.2752079315050983,
+      "hull_largest_cc_centroid_err": 0.1512317642876454,
+      "hull_lower_half_z_centroid_err": 0.26768895293485395
+    },
+    "lattice_tower": {
+      "n_queries": 156,
+      "sppa_mvfit_f1": 0.3075205817658458,
+      "generic_mvfit_f1": 0.037157442359218945,
+      "hull_largest_cc_f1": 0.08568669432533238,
+      "hull_lower_half_z_f1": 0.09199849025331164,
+      "sppa_mvfit_precision": 0.3107998335084336,
+      "generic_mvfit_precision": 0.06862272761295836,
+      "hull_largest_cc_precision": 0.045951887647396154,
+      "hull_lower_half_z_precision": 0.05191019933569301,
+      "sppa_mvfit_recall": 0.3529687511240719,
+      "generic_mvfit_recall": 0.04430371821406571,
+      "hull_largest_cc_recall": 1.0,
+      "hull_lower_half_z_recall": 0.5936087897965173,
+      "sppa_mvfit_centroid_err": 0.046988203706778794,
+      "generic_mvfit_centroid_err": 0.366940590883777,
+      "hull_largest_cc_centroid_err": 0.1497921945121642,
+      "hull_lower_half_z_centroid_err": 0.23123556478324445
+    },
+    "rider_cycle": {
+      "n_queries": 150,
+      "sppa_mvfit_f1": 0.4840024719266025,
+      "generic_mvfit_f1": 0.1528579736256968,
+      "hull_largest_cc_f1": 0.04875164537919365,
+      "hull_lower_half_z_f1": 0.04264111591827454,
+      "sppa_mvfit_precision": 0.43160571649430646,
+      "generic_mvfit_precision": 0.1403302710761578,
+      "hull_largest_cc_precision": 0.025638228599894834,
+      "hull_lower_half_z_precision": 0.022641817705431916,
+      "sppa_mvfit_recall": 0.6066288109394772,
+      "generic_mvfit_recall": 0.5025786890484479,
+      "hull_largest_cc_recall": 1.0,
+      "hull_lower_half_z_recall": 0.7101294979653107,
+      "sppa_mvfit_centroid_err": 0.031856153353857976,
+      "generic_mvfit_centroid_err": 0.10590734106698653,
+      "hull_largest_cc_centroid_err": 0.20312715603107093,
+      "hull_lower_half_z_centroid_err": 0.21532358188592374
+    }
+  },
+  "per_role": {
+    "compact_vehicle/body": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.8936237986480788,
+      "generic_mvfit_f1": 0.6980582675878401,
+      "hull_largest_cc_f1": 0.6836124467964443,
+      "hull_lower_half_z_f1": 0.6892702611772394,
+      "sppa_mvfit_centroid_err": 0.009981435429588154,
+      "generic_mvfit_centroid_err": 0.0346504135261683,
+      "hull_largest_cc_centroid_err": 0.021465068112017587,
+      "hull_lower_half_z_centroid_err": 0.03930192352009041
+    },
+    "compact_vehicle/cabin": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.5280127303366386,
+      "generic_mvfit_f1": 0.14444389238984107,
+      "hull_largest_cc_f1": 0.18024112076097945,
+      "hull_lower_half_z_f1": 0.0013484683264747646,
+      "sppa_mvfit_centroid_err": 0.053113420231556706,
+      "generic_mvfit_centroid_err": 0.12004377794321852,
+      "hull_largest_cc_centroid_err": 0.13265559421126433,
+      "hull_lower_half_z_centroid_err": 0.1870303096706758
+    },
+    "compact_vehicle/wheel_rear_left": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.4656985654831419,
+      "generic_mvfit_f1": 0.11043426297494534,
+      "hull_largest_cc_f1": 0.022455703591782516,
+      "hull_lower_half_z_f1": 0.03518895323456418,
+      "sppa_mvfit_centroid_err": 0.047356827829853544,
+      "generic_mvfit_centroid_err": 0.11832220653001209,
+      "hull_largest_cc_centroid_err": 0.3455581193334452,
+      "hull_lower_half_z_centroid_err": 0.33157524517431647
+    },
+    "compact_vehicle/wheel_rear_right": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.4656985654831419,
+      "generic_mvfit_f1": 0.11043426297494534,
+      "hull_largest_cc_f1": 0.022455703591782516,
+      "hull_lower_half_z_f1": 0.03518895323456418,
+      "sppa_mvfit_centroid_err": 0.04735682782985354,
+      "generic_mvfit_centroid_err": 0.11832220653001209,
+      "hull_largest_cc_centroid_err": 0.34555811933344527,
+      "hull_lower_half_z_centroid_err": 0.33157524517431647
+    },
+    "compact_vehicle/wheel_front_left": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.4656985654831419,
+      "generic_mvfit_f1": 0.2258205164362101,
+      "hull_largest_cc_f1": 0.022455703591782516,
+      "hull_lower_half_z_f1": 0.03518895323456418,
+      "sppa_mvfit_centroid_err": 0.04735682782985352,
+      "generic_mvfit_centroid_err": 0.0837245471370608,
+      "hull_largest_cc_centroid_err": 0.32725019323829635,
+      "hull_lower_half_z_centroid_err": 0.3218232850528823
+    },
+    "compact_vehicle/wheel_front_right": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.4656985654831419,
+      "generic_mvfit_f1": 0.2258205164362101,
+      "hull_largest_cc_f1": 0.022455703591782516,
+      "hull_lower_half_z_f1": 0.03518895323456418,
+      "sppa_mvfit_centroid_err": 0.047356827829853516,
+      "generic_mvfit_centroid_err": 0.08372454713706079,
+      "hull_largest_cc_centroid_err": 0.3272501932382964,
+      "hull_lower_half_z_centroid_err": 0.3218232850528824
+    },
+    "compact_vehicle/bumper_front": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.6029286413912567,
+      "generic_mvfit_f1": 0.20896621358677528,
+      "hull_largest_cc_f1": 0.018234228797291918,
+      "hull_lower_half_z_f1": 0.028011960364886908,
+      "sppa_mvfit_centroid_err": 0.014799434545126815,
+      "generic_mvfit_centroid_err": 0.056370332919873714,
+      "hull_largest_cc_centroid_err": 0.4008920298826723,
+      "hull_lower_half_z_centroid_err": 0.407905334168899
+    },
+    "articulated_vehicle/tractor": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.6703274886563435,
+      "generic_mvfit_f1": 0.5436050791673412,
+      "hull_largest_cc_f1": 0.1465437846061536,
+      "hull_lower_half_z_f1": 0.3573864747344555,
+      "sppa_mvfit_centroid_err": 0.06674089787727633,
+      "generic_mvfit_centroid_err": 0.06569595130818358,
+      "hull_largest_cc_centroid_err": 0.37729787681719207,
+      "hull_lower_half_z_centroid_err": 0.25623943025505846
+    },
+    "articulated_vehicle/cabin": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.3784049923047251,
+      "generic_mvfit_f1": 0.17195602634133128,
+      "hull_largest_cc_f1": 0.04134641954983017,
+      "hull_lower_half_z_f1": 0.002752850627032254,
+      "sppa_mvfit_centroid_err": 0.04797244887258584,
+      "generic_mvfit_centroid_err": 0.10181795655123298,
+      "hull_largest_cc_centroid_err": 0.4295077651984573,
+      "hull_lower_half_z_centroid_err": 0.33082061292521325
+    },
+    "articulated_vehicle/trailer": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.6620780791493052,
+      "generic_mvfit_f1": 0.29137030179755147,
+      "hull_largest_cc_f1": 0.6527602254166668,
+      "hull_lower_half_z_f1": 0.2612424370672832,
+      "sppa_mvfit_centroid_err": 0.04854453818008276,
+      "generic_mvfit_centroid_err": 0.13136087484391298,
+      "hull_largest_cc_centroid_err": 0.11766239906674218,
+      "hull_lower_half_z_centroid_err": 0.24901723393998593
+    },
+    "articulated_vehicle/hitch": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.2676343853387797,
+      "generic_mvfit_f1": 0.0,
+      "hull_largest_cc_f1": 0.004229108634188511,
+      "hull_lower_half_z_f1": 0.006593775913409544,
+      "sppa_mvfit_centroid_err": 0.044568223671114494,
+      "generic_mvfit_centroid_err": 0.17873183125793818,
+      "hull_largest_cc_centroid_err": 0.14931897119619975,
+      "hull_lower_half_z_centroid_err": 0.03367084362586117
+    },
+    "articulated_vehicle/wheel_1": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.3733107907216614,
+      "generic_mvfit_f1": 0.045084377927447905,
+      "hull_largest_cc_f1": 0.043645140142164196,
+      "hull_lower_half_z_f1": 0.14340489601152062,
+      "sppa_mvfit_centroid_err": 0.0600467844342501,
+      "generic_mvfit_centroid_err": 0.1329705457035883,
+      "hull_largest_cc_centroid_err": 0.47167987630839214,
+      "hull_lower_half_z_centroid_err": 0.3402039350267845
+    },
+    "articulated_vehicle/wheel_2": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.4169100298404844,
+      "generic_mvfit_f1": 0.16102080497756618,
+      "hull_largest_cc_f1": 0.04338030005323682,
+      "hull_lower_half_z_f1": 0.14142363483863274,
+      "sppa_mvfit_centroid_err": 0.05321560498305507,
+      "generic_mvfit_centroid_err": 0.16268704537996906,
+      "hull_largest_cc_centroid_err": 0.30691041921766005,
+      "hull_lower_half_z_centroid_err": 0.16825244094367753
+    },
+    "articulated_vehicle/wheel_3": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.35082527549180476,
+      "generic_mvfit_f1": 0.08116745736145556,
+      "hull_largest_cc_f1": 0.09384785258973861,
+      "hull_lower_half_z_f1": 0.14331926655977717,
+      "sppa_mvfit_centroid_err": 0.058410701463897007,
+      "generic_mvfit_centroid_err": 0.1868757813097591,
+      "hull_largest_cc_centroid_err": 0.15326392400193764,
+      "hull_lower_half_z_centroid_err": 0.09047468361589203
+    },
+    "articulated_vehicle/wheel_4": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.1777281032530184,
+      "generic_mvfit_f1": 0.07160612715218181,
+      "hull_largest_cc_f1": 0.09234854954300648,
+      "hull_lower_half_z_f1": 0.14135255701702845,
+      "sppa_mvfit_centroid_err": 0.08200294303862873,
+      "generic_mvfit_centroid_err": 0.11230947900556847,
+      "hull_largest_cc_centroid_err": 0.28369013883780175,
+      "hull_lower_half_z_centroid_err": 0.37964269718156995
+    },
+    "quadruped/body": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.8193292367999498,
+      "generic_mvfit_f1": 0.6534655613714914,
+      "hull_largest_cc_f1": 0.6516202841542508,
+      "hull_lower_half_z_f1": 0.043854615973472386,
+      "sppa_mvfit_centroid_err": 0.01102899304061265,
+      "generic_mvfit_centroid_err": 0.044049357965529154,
+      "hull_largest_cc_centroid_err": 0.049639914333521135,
+      "hull_lower_half_z_centroid_err": 0.22645296261047268
+    },
+    "quadruped/head": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.6198399660884856,
+      "generic_mvfit_f1": 0.007029570760914044,
+      "hull_largest_cc_f1": 0.07431062992675436,
+      "hull_lower_half_z_f1": 0.0,
+      "sppa_mvfit_centroid_err": 0.017499181340645324,
+      "generic_mvfit_centroid_err": 0.15884876936183523,
+      "hull_largest_cc_centroid_err": 0.36743915496579804,
+      "hull_lower_half_z_centroid_err": 0.4699887911253736
+    },
+    "quadruped/leg_rear_left": {
+      "n": 19,
+      "sppa_mvfit_f1": 0.5428184448239727,
+      "generic_mvfit_f1": 0.2657226069940263,
+      "hull_largest_cc_f1": 0.02647379158875997,
+      "hull_lower_half_z_f1": 0.10719506617184686,
+      "sppa_mvfit_centroid_err": 0.05660464848905744,
+      "generic_mvfit_centroid_err": 0.05672816403836386,
+      "hull_largest_cc_centroid_err": 0.2956820573282125,
+      "hull_lower_half_z_centroid_err": 0.19536492898873364
+    },
+    "quadruped/leg_rear_right": {
+      "n": 18,
+      "sppa_mvfit_f1": 0.5569226856487417,
+      "generic_mvfit_f1": 0.2510614370599235,
+      "hull_largest_cc_f1": 0.029737871509649596,
+      "hull_lower_half_z_f1": 0.12052778558596515,
+      "sppa_mvfit_centroid_err": 0.05813155943363372,
+      "generic_mvfit_centroid_err": 0.06459736577363544,
+      "hull_largest_cc_centroid_err": 0.29829963325654263,
+      "hull_lower_half_z_centroid_err": 0.19584073185103237
+    },
+    "quadruped/leg_front_left": {
+      "n": 19,
+      "sppa_mvfit_f1": 0.5726127480578768,
+      "generic_mvfit_f1": 0.2819412489493553,
+      "hull_largest_cc_f1": 0.025306106962358993,
+      "hull_lower_half_z_f1": 0.1042211698606292,
+      "sppa_mvfit_centroid_err": 0.056406040566825424,
+      "generic_mvfit_centroid_err": 0.040166998033172426,
+      "hull_largest_cc_centroid_err": 0.26816757051315526,
+      "hull_lower_half_z_centroid_err": 0.20739670502817284
+    },
+    "quadruped/leg_front_right": {
+      "n": 18,
+      "sppa_mvfit_f1": 0.616747368888902,
+      "generic_mvfit_f1": 0.3045920255158293,
+      "hull_largest_cc_f1": 0.0282085952712353,
+      "hull_lower_half_z_f1": 0.11382401504468836,
+      "sppa_mvfit_centroid_err": 0.0564838987686354,
+      "generic_mvfit_centroid_err": 0.04033425272162741,
+      "hull_largest_cc_centroid_err": 0.27029376136030864,
+      "hull_lower_half_z_centroid_err": 0.209382595795322
+    },
+    "quadruped/neck": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.48145482472037326,
+      "generic_mvfit_f1": 0.018266341246044038,
+      "hull_largest_cc_f1": 0.04616118342548321,
+      "hull_lower_half_z_f1": 0.0,
+      "sppa_mvfit_centroid_err": 0.013617310171125902,
+      "generic_mvfit_centroid_err": 0.12821002482553784,
+      "hull_largest_cc_centroid_err": 0.2646703902075179,
+      "hull_lower_half_z_centroid_err": 0.37147295078825343
+    },
+    "quadruped/tail": {
+      "n": 9,
+      "sppa_mvfit_f1": 0.532282655615989,
+      "generic_mvfit_f1": 0.0,
+      "hull_largest_cc_f1": 0.013010674863460484,
+      "hull_lower_half_z_f1": 0.0,
+      "sppa_mvfit_centroid_err": 0.01999737713399602,
+      "generic_mvfit_centroid_err": 0.154208368068838,
+      "hull_largest_cc_centroid_err": 0.36824908224457314,
+      "hull_lower_half_z_centroid_err": 0.40939720614131364
+    },
+    "branching_vertical/trunk": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.6907549661443494,
+      "generic_mvfit_f1": 0.10552871804593653,
+      "hull_largest_cc_f1": 0.12249944692696668,
+      "hull_lower_half_z_f1": 0.22671078860345842,
+      "sppa_mvfit_centroid_err": 0.04296660518520963,
+      "generic_mvfit_centroid_err": 0.1729300813765326,
+      "hull_largest_cc_centroid_err": 0.1704340496740634,
+      "hull_lower_half_z_centroid_err": 0.07565210307059929
+    },
+    "branching_vertical/crown_1": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.35923808728080187,
+      "generic_mvfit_f1": 0.02236108129978949,
+      "hull_largest_cc_f1": 0.1994220885648193,
+      "hull_lower_half_z_f1": 0.0014607509970863363,
+      "sppa_mvfit_centroid_err": 0.1109233861996598,
+      "generic_mvfit_centroid_err": 0.2377600014951559,
+      "hull_largest_cc_centroid_err": 0.15403230326144807,
+      "hull_lower_half_z_centroid_err": 0.3586731237547133
+    },
+    "branching_vertical/crown_2": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.12214494548006753,
+      "generic_mvfit_f1": 0.010799515682312811,
+      "hull_largest_cc_f1": 0.1826656099468773,
+      "hull_lower_half_z_f1": 0.012330530798272912,
+      "sppa_mvfit_centroid_err": 0.1972967770168501,
+      "generic_mvfit_centroid_err": 0.2382790946169354,
+      "hull_largest_cc_centroid_err": 0.16704632403030145,
+      "hull_lower_half_z_centroid_err": 0.3598944583222298
+    },
+    "branching_vertical/crown_3": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.04510026296031665,
+      "generic_mvfit_f1": 0.04860711327578929,
+      "hull_largest_cc_f1": 0.20543026814981752,
+      "hull_lower_half_z_f1": 0.01225441202228704,
+      "sppa_mvfit_centroid_err": 0.23546355505837974,
+      "generic_mvfit_centroid_err": 0.24313812867129378,
+      "hull_largest_cc_centroid_err": 0.1592660148707921,
+      "hull_lower_half_z_centroid_err": 0.3546299252398089
+    },
+    "branching_vertical/crown_4": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.17762007467676946,
+      "generic_mvfit_f1": 0.03440546477587488,
+      "hull_largest_cc_f1": 0.18274005662014733,
+      "hull_lower_half_z_f1": 0.019842787178956302,
+      "sppa_mvfit_centroid_err": 0.16867332417192957,
+      "generic_mvfit_centroid_err": 0.2422287941646096,
+      "hull_largest_cc_centroid_err": 0.14724779085411566,
+      "hull_lower_half_z_centroid_err": 0.3463576530115208
+    },
+    "branching_vertical/branch_left": {
+      "n": 19,
+      "sppa_mvfit_f1": 0.13427800269905532,
+      "generic_mvfit_f1": 0.0,
+      "hull_largest_cc_f1": 0.008526892829309527,
+      "hull_lower_half_z_f1": 0.01680387364157266,
+      "sppa_mvfit_centroid_err": 0.053085498131376196,
+      "generic_mvfit_centroid_err": 0.40781647766708384,
+      "hull_largest_cc_centroid_err": 0.1320172381262064,
+      "hull_lower_half_z_centroid_err": 0.1722178500199099
+    },
+    "branching_vertical/branch_right": {
+      "n": 19,
+      "sppa_mvfit_f1": 0.23195810037915301,
+      "generic_mvfit_f1": 0.0,
+      "hull_largest_cc_f1": 0.008678202945453642,
+      "hull_lower_half_z_f1": 0.014453922170455538,
+      "sppa_mvfit_centroid_err": 0.06181056646110603,
+      "generic_mvfit_centroid_err": 0.39702418239675963,
+      "hull_largest_cc_centroid_err": 0.12637506807803825,
+      "hull_lower_half_z_centroid_err": 0.19814689929758522
+    },
+    "lattice_tower/core": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.8197633922959172,
+      "generic_mvfit_f1": 0.23133342532800033,
+      "hull_largest_cc_f1": 0.21657477789824137,
+      "hull_lower_half_z_f1": 0.18530097453469924,
+      "sppa_mvfit_centroid_err": 0.028553033569267965,
+      "generic_mvfit_centroid_err": 0.3518416319395842,
+      "hull_largest_cc_centroid_err": 0.014680537943010141,
+      "hull_lower_half_z_centroid_err": 0.22568075574376928
+    },
+    "lattice_tower/leg_1": {
+      "n": 19,
+      "sppa_mvfit_f1": 0.26877238966212946,
+      "generic_mvfit_f1": 0.0,
+      "hull_largest_cc_f1": 0.06913693513424113,
+      "hull_lower_half_z_f1": 0.07116050568070514,
+      "sppa_mvfit_centroid_err": 0.03838745047960148,
+      "generic_mvfit_centroid_err": 0.4405703288578612,
+      "hull_largest_cc_centroid_err": 0.17131363911043979,
+      "hull_lower_half_z_centroid_err": 0.23874972902402752
+    },
+    "lattice_tower/leg_2": {
+      "n": 19,
+      "sppa_mvfit_f1": 0.26877238966212946,
+      "generic_mvfit_f1": 0.0,
+      "hull_largest_cc_f1": 0.06913693513424113,
+      "hull_lower_half_z_f1": 0.07116050568070514,
+      "sppa_mvfit_centroid_err": 0.03838745047960149,
+      "generic_mvfit_centroid_err": 0.4405703288578612,
+      "hull_largest_cc_centroid_err": 0.17131363911043979,
+      "hull_lower_half_z_centroid_err": 0.23874972902402752
+    },
+    "lattice_tower/leg_3": {
+      "n": 19,
+      "sppa_mvfit_f1": 0.26877238966212946,
+      "generic_mvfit_f1": 0.0,
+      "hull_largest_cc_f1": 0.06913693513424113,
+      "hull_lower_half_z_f1": 0.07116050568070514,
+      "sppa_mvfit_centroid_err": 0.03838745047960149,
+      "generic_mvfit_centroid_err": 0.44198578837152896,
+      "hull_largest_cc_centroid_err": 0.17131363911043979,
+      "hull_lower_half_z_centroid_err": 0.23874972902402752
+    },
+    "lattice_tower/leg_4": {
+      "n": 19,
+      "sppa_mvfit_f1": 0.26877238966212946,
+      "generic_mvfit_f1": 0.0,
+      "hull_largest_cc_f1": 0.06913693513424113,
+      "hull_lower_half_z_f1": 0.07116050568070514,
+      "sppa_mvfit_centroid_err": 0.038387450479601494,
+      "generic_mvfit_centroid_err": 0.44198578837152896,
+      "hull_largest_cc_centroid_err": 0.17131363911043976,
+      "hull_lower_half_z_centroid_err": 0.23874972902402752
+    },
+    "lattice_tower/platform_low": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.41518569113521425,
+      "generic_mvfit_f1": 0.0076020118407336785,
+      "hull_largest_cc_f1": 0.08989143440261341,
+      "hull_lower_half_z_f1": 0.16334241780241904,
+      "sppa_mvfit_centroid_err": 0.016547402469950928,
+      "generic_mvfit_centroid_err": 0.2955150249807641,
+      "hull_largest_cc_centroid_err": 0.2616705149713533,
+      "hull_lower_half_z_centroid_err": 0.05067029717059417
+    },
+    "lattice_tower/platform_mid": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.09017857142857141,
+      "generic_mvfit_f1": 0.0,
+      "hull_largest_cc_f1": 0.05322601954810872,
+      "hull_lower_half_z_f1": 0.09853491005203305,
+      "sppa_mvfit_centroid_err": 0.09525116571641412,
+      "generic_mvfit_centroid_err": 0.3880045012618799,
+      "hull_largest_cc_centroid_err": 0.021499644579362823,
+      "hull_lower_half_z_centroid_err": 0.1895005732213963
+    },
+    "lattice_tower/platform_high": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.0521978021978022,
+      "generic_mvfit_f1": 0.05089261323317379,
+      "hull_largest_cc_f1": 0.04594363037851261,
+      "hull_lower_half_z_f1": 0.0,
+      "sppa_mvfit_centroid_err": 0.08028407533475602,
+      "generic_mvfit_centroid_err": 0.1499188279753913,
+      "hull_largest_cc_centroid_err": 0.21953659108148327,
+      "hull_lower_half_z_centroid_err": 0.43053680888224244
+    },
+    "rider_cycle/wheel_rear": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.8198333435330325,
+      "generic_mvfit_f1": 0.2961659106138972,
+      "hull_largest_cc_f1": 0.12215374216402868,
+      "hull_lower_half_z_f1": 0.1316650780622799,
+      "sppa_mvfit_centroid_err": 0.022999419549498613,
+      "generic_mvfit_centroid_err": 0.0860301198558658,
+      "hull_largest_cc_centroid_err": 0.24185618020186395,
+      "hull_lower_half_z_centroid_err": 0.23957607984810117
+    },
+    "rider_cycle/wheel_front": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.8198333435330325,
+      "generic_mvfit_f1": 0.2961659106138972,
+      "hull_largest_cc_f1": 0.12215374216402868,
+      "hull_lower_half_z_f1": 0.1316650780622799,
+      "sppa_mvfit_centroid_err": 0.022999419549498606,
+      "generic_mvfit_centroid_err": 0.08603011985586581,
+      "hull_largest_cc_centroid_err": 0.23842704005829893,
+      "hull_lower_half_z_centroid_err": 0.23687429251285153
+    },
+    "rider_cycle/frame_main": {
+      "n": 17,
+      "sppa_mvfit_f1": 0.366850735617809,
+      "generic_mvfit_f1": 0.02720462174072355,
+      "hull_largest_cc_f1": 0.01960972655367805,
+      "hull_lower_half_z_f1": 0.021357541279202655,
+      "sppa_mvfit_centroid_err": 0.015569242942538416,
+      "generic_mvfit_centroid_err": 0.0463855018382011,
+      "hull_largest_cc_centroid_err": 0.01604143728336637,
+      "hull_lower_half_z_centroid_err": 0.02919786491748287
+    },
+    "rider_cycle/frame_mid": {
+      "n": 15,
+      "sppa_mvfit_f1": 0.49061445090856853,
+      "generic_mvfit_f1": 0.017778781743532646,
+      "hull_largest_cc_f1": 0.013079432207376934,
+      "hull_lower_half_z_f1": 0.014236361467896514,
+      "sppa_mvfit_centroid_err": 0.02805667726869799,
+      "generic_mvfit_centroid_err": 0.10440107147621154,
+      "hull_largest_cc_centroid_err": 0.12184096828887547,
+      "hull_lower_half_z_centroid_err": 0.13506702047019506
+    },
+    "rider_cycle/frame_front": {
+      "n": 18,
+      "sppa_mvfit_f1": 0.3253690753690754,
+      "generic_mvfit_f1": 0.012837060620712841,
+      "hull_largest_cc_f1": 0.008875688208117889,
+      "hull_lower_half_z_f1": 0.009687985662276164,
+      "sppa_mvfit_centroid_err": 0.026642352734218253,
+      "generic_mvfit_centroid_err": 0.12998253403465188,
+      "hull_largest_cc_centroid_err": 0.14463298412788816,
+      "hull_lower_half_z_centroid_err": 0.15855179682390255
+    },
+    "rider_cycle/torso": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.6639872772441112,
+      "generic_mvfit_f1": 0.5060916116190259,
+      "hull_largest_cc_f1": 0.06061130164937088,
+      "hull_lower_half_z_f1": 0.008776508396535303,
+      "sppa_mvfit_centroid_err": 0.019601244506181312,
+      "generic_mvfit_centroid_err": 0.02094462536933052,
+      "hull_largest_cc_centroid_err": 0.215235152890661,
+      "hull_lower_half_z_centroid_err": 0.23897727259839513
+    },
+    "rider_cycle/head": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.353748443850611,
+      "generic_mvfit_f1": 0.0,
+      "hull_largest_cc_f1": 0.014613106406868678,
+      "hull_lower_half_z_f1": 0.0,
+      "sppa_mvfit_centroid_err": 0.04028289963173256,
+      "generic_mvfit_centroid_err": 0.18887234449643692,
+      "hull_largest_cc_centroid_err": 0.3888755660593195,
+      "hull_lower_half_z_centroid_err": 0.41262094802119653
+    },
+    "rider_cycle/fork": {
+      "n": 20,
+      "sppa_mvfit_f1": 0.0,
+      "generic_mvfit_f1": 0.0,
+      "hull_largest_cc_f1": 0.011639486846190263,
+      "hull_lower_half_z_f1": 0.010151336581670719,
+      "sppa_mvfit_centroid_err": 0.07478368500354612,
+      "generic_mvfit_centroid_err": 0.17771508762408367,
+      "hull_largest_cc_centroid_err": 0.20387409740027115,
+      "hull_lower_half_z_centroid_err": 0.21806320348986455
+    }
+  },
+  "paired_bootstrap_actor_macro": {
+    "sppa_minus_generic_mvfit_f1": {
+      "mean_difference": 0.28975760364050857,
+      "ci95_low": 0.2680740293822484,
+      "ci95_high": 0.3119047862177388,
+      "null_centered_two_sided_p": 0.0,
+      "resamples": 10000,
+      "seed": 77157,
+      "actor_count": 120
+    },
+    "generic_mvfit_minus_sppa_centroid": {
+      "mean_difference": 0.11914976753318451,
+      "ci95_low": 0.11119546771410148,
+      "ci95_high": 0.12668265006147186,
+      "null_centered_two_sided_p": 0.0,
+      "resamples": 10000,
+      "seed": 77157,
+      "actor_count": 120
+    },
+    "sppa_minus_hull_largest_cc_f1": {
+      "mean_difference": 0.3242238324420451,
+      "ci95_low": 0.3042209969532241,
+      "ci95_high": 0.3444003341995141,
+      "null_centered_two_sided_p": 0.0,
+      "resamples": 10000,
+      "seed": 77157,
+      "actor_count": 120
+    },
+    "hull_largest_cc_minus_sppa_centroid": {
+      "mean_difference": 0.16535375084670198,
+      "ci95_low": 0.16087635651274326,
+      "ci95_high": 0.1698401767232193,
+      "null_centered_two_sided_p": 0.0,
+      "resamples": 10000,
+      "seed": 77157,
+      "actor_count": 120
+    },
+    "sppa_minus_hull_lower_half_z_f1": {
+      "mean_difference": 0.35014907712399584,
+      "ci95_low": 0.329778063681236,
+      "ci95_high": 0.3705815370514754,
+      "null_centered_two_sided_p": 0.0,
+      "resamples": 10000,
+      "seed": 77157,
+      "actor_count": 120
+    },
+    "hull_lower_half_z_minus_sppa_centroid": {
+      "mean_difference": 0.19513114170396006,
+      "ci95_low": 0.18874599744884213,
+      "ci95_high": 0.20152384863192205,
+      "null_centered_two_sided_p": 0.0,
+      "resamples": 10000,
+      "seed": 77157,
+      "actor_count": 120
+    }
+  },
+  "counting": {
+    "per_family": {
+      "compact_vehicle": {
+        "part": "wheel",
+        "n": 20,
+        "gt_counts": [
+          4
+        ],
+        "sppa_pred": 4,
+        "generic_pred": 4,
+        "hull_pred_mean": 1.0,
+        "sppa_exact": 1.0,
+        "generic_exact": 1.0,
+        "hull_exact": 0.0,
+        "sppa_mae": 0.0,
+        "generic_mae": 0.0,
+        "hull_mae": 3.0
+      },
+      "articulated_vehicle": {
+        "part": "wheel",
+        "n": 20,
+        "gt_counts": [
+          4
+        ],
+        "sppa_pred": 4,
+        "generic_pred": 4,
+        "hull_pred_mean": 1.45,
+        "sppa_exact": 1.0,
+        "generic_exact": 1.0,
+        "hull_exact": 0.0,
+        "sppa_mae": 0.0,
+        "generic_mae": 0.0,
+        "hull_mae": 2.55
+      },
+      "quadruped": {
+        "part": "leg",
+        "n": 20,
+        "gt_counts": [
+          4
+        ],
+        "sppa_pred": 4,
+        "generic_pred": 4,
+        "hull_pred_mean": 1.0,
+        "sppa_exact": 1.0,
+        "generic_exact": 1.0,
+        "hull_exact": 0.0,
+        "sppa_mae": 0.0,
+        "generic_mae": 0.0,
+        "hull_mae": 3.0
+      },
+      "branching_vertical": {
+        "part": "crown",
+        "n": 20,
+        "gt_counts": [
+          3,
+          4,
+          5,
+          6
+        ],
+        "sppa_pred": 4,
+        "generic_pred": 1,
+        "hull_pred_mean": 1.0,
+        "sppa_exact": 0.2,
+        "generic_exact": 0.0,
+        "hull_exact": 0.0,
+        "sppa_mae": 1.0,
+        "generic_mae": 3.4,
+        "hull_mae": 3.4
+      },
+      "lattice_tower": {
+        "part": "platform",
+        "n": 20,
+        "gt_counts": [
+          4
+        ],
+        "sppa_pred": 3,
+        "generic_pred": 2,
+        "hull_pred_mean": 1.0,
+        "sppa_exact": 0.0,
+        "generic_exact": 0.0,
+        "hull_exact": 0.0,
+        "sppa_mae": 1.0,
+        "generic_mae": 2.0,
+        "hull_mae": 3.0
+      },
+      "rider_cycle": {
+        "part": "wheel",
+        "n": 20,
+        "gt_counts": [
+          2
+        ],
+        "sppa_pred": 2,
+        "generic_pred": 2,
+        "hull_pred_mean": 1.0,
+        "sppa_exact": 1.0,
+        "generic_exact": 1.0,
+        "hull_exact": 0.0,
+        "sppa_mae": 0.0,
+        "generic_mae": 0.0,
+        "hull_mae": 1.0
+      }
+    },
+    "overall_exact": {
+      "sppa": 0.7,
+      "generic": 0.6666666666666666,
+      "hull": 0.0
+    },
+    "overall_mae": {
+      "sppa": 0.3333333333333333,
+      "generic": 0.9,
+      "hull": 2.658333333333333
+    }
+  },
+  "protocol": {
+    "bootstrap_resamples": 10000,
+    "bootstrap_seed": 77157,
+    "cells": "family (csg_id only), mean of cell means",
+    "centroid_normalizer": "GT occupancy bbox diagonal, world meters"
+  },
+  "wallclock_seconds_total": 7.392507900018245
+}

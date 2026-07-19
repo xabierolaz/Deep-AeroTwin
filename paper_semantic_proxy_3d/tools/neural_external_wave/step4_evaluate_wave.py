@@ -56,8 +56,8 @@ MODEL_TO_METHOD = {"triposr_warm": "triposr", "hunyuan3d_2mini_turbo_shape": "hu
 CONDITIONS = ("oblique", "mask")
 
 EXCLUDED_METHODS = [
-    {"method": "SF3D (Stable Fast 3D)", "reason": "install failed on Python 3.12 / torch 2.10 / CUDA 12.9 (gpytoolbox, texture_baker build); documented in runs/20260701_195624/sf3d_timeout_note.md"},
-    {"method": "SPAR3D", "reason": "gated model weights; access not granted; documented in runs/20260701_195624/spar3d_access_note.md"},
+    {"method": "SF3D (Stable Fast 3D)", "reason": "install/build failure under the Amendment 05 Python 3.12 / torch 2.10 / CUDA 12.9 stack (gpytoolbox, texture_baker build); an earlier Python 3.10 attempt produced no benchmark event before a 20-minute timeout; documented in benchmarks/neural_external_wave/exclusion_notes/sf3d_timeout_note.md"},
+    {"method": "SPAR3D", "reason": "gated model weights; access not granted; documented in benchmarks/neural_external_wave/exclusion_notes/spar3d_access_note.md"},
     {"method": "TRELLIS.2", "reason": "no working Windows environment in this repo (setup.sh is Linux-only); not installed"},
 ]
 

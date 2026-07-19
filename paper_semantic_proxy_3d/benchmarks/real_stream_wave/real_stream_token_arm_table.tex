@@ -1,0 +1,10 @@
+% Token arm (SPPA-MVFit only): the 138 GT-matched cases where the REAL detector
+% emitted a wrong family token (114 cow->tower, 24 biker->tower confusions).
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Token condition & $n$ & 2D reproj. IoU med. [P25, P75] \\
+\midrule
+Real detector token (wrong) & 138 & 0.381 [0.303, 0.410] \\
+Correct-token refit (counterfactual) & 138 & 0.025 [0.023, 0.034] \\
+\bottomrule
+\end{tabular}

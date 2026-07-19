@@ -1,0 +1,108 @@
+{
+  "experiment": "E4 optimizer budget sweep",
+  "label": "exploratory post-hoc analysis (not confirmatory)",
+  "n_actors": 240,
+  "condition": "clean",
+  "metric": "voxel_iou_64cubed",
+  "seal_validation": {
+    "budget31_max_abs_err": 0.0
+  },
+  "monkeypatch": {
+    "what": "method.sppa_mvfit.STEP_FRACTIONS and PROTOCOL['fit_candidate_budget'] set in memory, restored in finally",
+    "budgets_to_step_fractions": {
+      "11": [
+        0.2
+      ],
+      "21": [
+        0.2,
+        0.1
+      ],
+      "31": [
+        0.2,
+        0.1,
+        0.05
+      ],
+      "61": [
+        0.2,
+        0.1,
+        0.05,
+        0.025,
+        0.0125,
+        0.00625
+      ]
+    }
+  },
+  "summary_per_budget": {
+    "11": {
+      "mean_iou": 0.5283467391294069,
+      "mean_ms": 3.574489582630728,
+      "median_ms": 3.5371500125620514,
+      "p95_ms": 4.9917399970581755
+    },
+    "21": {
+      "mean_iou": 0.546845032985973,
+      "mean_ms": 7.590040416107513,
+      "median_ms": 7.539650003309362,
+      "p95_ms": 9.355394991871433
+    },
+    "31": {
+      "mean_iou": 0.557440587657612,
+      "mean_ms": 12.565786666770387,
+      "median_ms": 12.393150012940168,
+      "p95_ms": 14.179384992166888
+    },
+    "61": {
+      "mean_iou": 0.5599052611344917,
+      "mean_ms": 24.03393666621317,
+      "median_ms": 23.641799998586066,
+      "p95_ms": 27.690414991229773
+    }
+  },
+  "paired_bootstrap_vs_31": {
+    "11_minus_31": {
+      "mean_difference": -0.029093848528205207,
+      "ci95_low": -0.035554447506120954,
+      "ci95_high": -0.022760984275773853,
+      "null_centered_two_sided_p": 0.0,
+      "resamples": 10000,
+      "seed": 77157,
+      "actor_count": 240
+    },
+    "21_minus_31": {
+      "mean_difference": -0.01059555467163903,
+      "ci95_low": -0.014950929001872823,
+      "ci95_high": -0.006405799477601097,
+      "null_centered_two_sided_p": 0.0,
+      "resamples": 10000,
+      "seed": 77157,
+      "actor_count": 240
+    },
+    "61_minus_31": {
+      "mean_difference": 0.002464673476879467,
+      "ci95_low": -0.0005835264222278313,
+      "ci95_high": 0.00545111281219326,
+      "null_centered_two_sided_p": 0.108,
+      "resamples": 10000,
+      "seed": 77157,
+      "actor_count": 240
+    }
+  },
+  "per_stratum_mean_iou": {
+    "csg_id": {
+      "11": 0.5193281497184408,
+      "21": 0.5347974886151481,
+      "31": 0.5506435382922954,
+      "61": 0.5515746749035751
+    },
+    "implicit_ood": {
+      "11": 0.5373653285403729,
+      "21": 0.558892577356798,
+      "31": 0.5642376370229287,
+      "61": 0.568235847365408
+    }
+  },
+  "protocol": {
+    "bootstrap_resamples": 10000,
+    "bootstrap_seed": 77157
+  }
+}

@@ -1,0 +1,1373 @@
+{
+  "schema": "sppa-mvfit-posthoc-failure-convergence-v1",
+  "analysis_type": "exploratory post-hoc analysis (not confirmatory)",
+  "failure_threshold_iou": 0.25,
+  "failures_by_family_stratum": {
+    "compact_vehicle|csg_id": {
+      "n": 20,
+      "failures": 0,
+      "rate": 0.0,
+      "case_ids": []
+    },
+    "compact_vehicle|implicit_ood": {
+      "n": 20,
+      "failures": 0,
+      "rate": 0.0,
+      "case_ids": []
+    },
+    "articulated_vehicle|csg_id": {
+      "n": 20,
+      "failures": 0,
+      "rate": 0.0,
+      "case_ids": []
+    },
+    "articulated_vehicle|implicit_ood": {
+      "n": 20,
+      "failures": 0,
+      "rate": 0.0,
+      "case_ids": []
+    },
+    "quadruped|csg_id": {
+      "n": 20,
+      "failures": 0,
+      "rate": 0.0,
+      "case_ids": []
+    },
+    "quadruped|implicit_ood": {
+      "n": 20,
+      "failures": 0,
+      "rate": 0.0,
+      "case_ids": []
+    },
+    "branching_vertical|csg_id": {
+      "n": 20,
+      "failures": 0,
+      "rate": 0.0,
+      "case_ids": []
+    },
+    "branching_vertical|implicit_ood": {
+      "n": 20,
+      "failures": 0,
+      "rate": 0.0,
+      "case_ids": []
+    },
+    "lattice_tower|csg_id": {
+      "n": 20,
+      "failures": 5,
+      "rate": 0.25,
+      "case_ids": [
+        "test-csg_id-lattice_tower-017",
+        "test-csg_id-lattice_tower-007",
+        "test-csg_id-lattice_tower-011",
+        "test-csg_id-lattice_tower-018",
+        "test-csg_id-lattice_tower-008"
+      ]
+    },
+    "lattice_tower|implicit_ood": {
+      "n": 20,
+      "failures": 0,
+      "rate": 0.0,
+      "case_ids": []
+    },
+    "rider_cycle|csg_id": {
+      "n": 20,
+      "failures": 0,
+      "rate": 0.0,
+      "case_ids": []
+    },
+    "rider_cycle|implicit_ood": {
+      "n": 20,
+      "failures": 0,
+      "rate": 0.0,
+      "case_ids": []
+    }
+  },
+  "family_worst10": {
+    "compact_vehicle": [
+      {
+        "case_id": "test-csg_id-compact_vehicle-018",
+        "stratum": "csg_id",
+        "voxel_iou": 0.5145813734713076,
+        "normalized_symmetric_chamfer": 0.01230968535756389,
+        "volume_error": 0.8596802841918295
+      },
+      {
+        "case_id": "test-csg_id-compact_vehicle-014",
+        "stratum": "csg_id",
+        "voxel_iou": 0.5544883635020318,
+        "normalized_symmetric_chamfer": 0.012198388944927287,
+        "volume_error": 0.48552864737152984
+      },
+      {
+        "case_id": "test-csg_id-compact_vehicle-009",
+        "stratum": "csg_id",
+        "voxel_iou": 0.5770507349454718,
+        "normalized_symmetric_chamfer": 0.01076181617863279,
+        "volume_error": 0.3774124374553252
+      },
+      {
+        "case_id": "test-csg_id-compact_vehicle-006",
+        "stratum": "csg_id",
+        "voxel_iou": 0.6141953619114546,
+        "normalized_symmetric_chamfer": 0.010646774031186534,
+        "volume_error": 0.23226433430515064
+      },
+      {
+        "case_id": "test-csg_id-compact_vehicle-007",
+        "stratum": "csg_id",
+        "voxel_iou": 0.6212914485165794,
+        "normalized_symmetric_chamfer": 0.00872494618443671,
+        "volume_error": 0.5244565217391305
+      },
+      {
+        "case_id": "test-csg_id-compact_vehicle-000",
+        "stratum": "csg_id",
+        "voxel_iou": 0.6406639004149378,
+        "normalized_symmetric_chamfer": 0.009372291015158992,
+        "volume_error": 0.06907378335949764
+      },
+      {
+        "case_id": "test-csg_id-compact_vehicle-015",
+        "stratum": "csg_id",
+        "voxel_iou": 0.647175421209118,
+        "normalized_symmetric_chamfer": 0.008256982080933594,
+        "volume_error": 0.1011378002528445
+      },
+      {
+        "case_id": "test-csg_id-compact_vehicle-012",
+        "stratum": "csg_id",
+        "voxel_iou": 0.6572637517630465,
+        "normalized_symmetric_chamfer": 0.008449434572616833,
+        "volume_error": 0.13506965475469412
+      },
+      {
+        "case_id": "test-csg_id-compact_vehicle-004",
+        "stratum": "csg_id",
+        "voxel_iou": 0.6835886214442013,
+        "normalized_symmetric_chamfer": 0.007762915130053626,
+        "volume_error": 0.1527700055959709
+      },
+      {
+        "case_id": "test-implicit_ood-compact_vehicle-018",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.687156738487537,
+        "normalized_symmetric_chamfer": 0.007971545172322375,
+        "volume_error": 0.34980876728449545
+      }
+    ],
+    "articulated_vehicle": [
+      {
+        "case_id": "test-csg_id-articulated_vehicle-017",
+        "stratum": "csg_id",
+        "voxel_iou": 0.44747353704813264,
+        "normalized_symmetric_chamfer": 0.020696748040708316,
+        "volume_error": 0.7971825549980702
+      },
+      {
+        "case_id": "test-csg_id-articulated_vehicle-006",
+        "stratum": "csg_id",
+        "voxel_iou": 0.4491296518607443,
+        "normalized_symmetric_chamfer": 0.018606940787987702,
+        "volume_error": 0.6691542288557214
+      },
+      {
+        "case_id": "test-csg_id-articulated_vehicle-001",
+        "stratum": "csg_id",
+        "voxel_iou": 0.4573979908222746,
+        "normalized_symmetric_chamfer": 0.017335645456843324,
+        "volume_error": 0.6743286299499317
+      },
+      {
+        "case_id": "test-csg_id-articulated_vehicle-010",
+        "stratum": "csg_id",
+        "voxel_iou": 0.4710990150336962,
+        "normalized_symmetric_chamfer": 0.017972515582252026,
+        "volume_error": 0.7965016013796502
+      },
+      {
+        "case_id": "test-csg_id-articulated_vehicle-012",
+        "stratum": "csg_id",
+        "voxel_iou": 0.47123655913978496,
+        "normalized_symmetric_chamfer": 0.018067666894533877,
+        "volume_error": 0.939312567132116
+      },
+      {
+        "case_id": "test-csg_id-articulated_vehicle-003",
+        "stratum": "csg_id",
+        "voxel_iou": 0.4875534598091896,
+        "normalized_symmetric_chamfer": 0.01902067489326947,
+        "volume_error": 0.755993498577814
+      },
+      {
+        "case_id": "test-csg_id-articulated_vehicle-019",
+        "stratum": "csg_id",
+        "voxel_iou": 0.49180555555555555,
+        "normalized_symmetric_chamfer": 0.015891318786319587,
+        "volume_error": 0.5404446546830652
+      },
+      {
+        "case_id": "test-csg_id-articulated_vehicle-005",
+        "stratum": "csg_id",
+        "voxel_iou": 0.4989097252507632,
+        "normalized_symmetric_chamfer": 0.016748355288309025,
+        "volume_error": 0.7554783538214859
+      },
+      {
+        "case_id": "test-csg_id-articulated_vehicle-004",
+        "stratum": "csg_id",
+        "voxel_iou": 0.5019951087656069,
+        "normalized_symmetric_chamfer": 0.01869556038210681,
+        "volume_error": 0.8474865788189361
+      },
+      {
+        "case_id": "test-csg_id-articulated_vehicle-009",
+        "stratum": "csg_id",
+        "voxel_iou": 0.5146221532091098,
+        "normalized_symmetric_chamfer": 0.017424714491260054,
+        "volume_error": 0.6742060772218414
+      }
+    ],
+    "quadruped": [
+      {
+        "case_id": "test-implicit_ood-quadruped-002",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.5136507936507937,
+        "normalized_symmetric_chamfer": 0.007607113549022341,
+        "volume_error": 0.591304347826087
+      },
+      {
+        "case_id": "test-csg_id-quadruped-015",
+        "stratum": "csg_id",
+        "voxel_iou": 0.5223880597014925,
+        "normalized_symmetric_chamfer": 0.0076254149098511845,
+        "volume_error": 0.6346863468634686
+      },
+      {
+        "case_id": "test-csg_id-quadruped-011",
+        "stratum": "csg_id",
+        "voxel_iou": 0.5419558359621451,
+        "normalized_symmetric_chamfer": 0.008024248770829136,
+        "volume_error": 0.7155555555555555
+      },
+      {
+        "case_id": "test-implicit_ood-quadruped-009",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.5450917797286512,
+        "normalized_symmetric_chamfer": 0.007350760287447184,
+        "volume_error": 0.711484593837535
+      },
+      {
+        "case_id": "test-csg_id-quadruped-008",
+        "stratum": "csg_id",
+        "voxel_iou": 0.5460902733630006,
+        "normalized_symmetric_chamfer": 0.008983219982299341,
+        "volume_error": 0.6492374727668845
+      },
+      {
+        "case_id": "test-csg_id-quadruped-001",
+        "stratum": "csg_id",
+        "voxel_iou": 0.5490506329113924,
+        "normalized_symmetric_chamfer": 0.006179549356385696,
+        "volume_error": 0.7891737891737892
+      },
+      {
+        "case_id": "test-implicit_ood-quadruped-003",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.5677966101694916,
+        "normalized_symmetric_chamfer": 0.005716998306075667,
+        "volume_error": 0.48322147651006714
+      },
+      {
+        "case_id": "test-csg_id-quadruped-014",
+        "stratum": "csg_id",
+        "voxel_iou": 0.5678571428571428,
+        "normalized_symmetric_chamfer": 0.008702923908989484,
+        "volume_error": 0.7154639175257732
+      },
+      {
+        "case_id": "test-implicit_ood-quadruped-000",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.5685146443514645,
+        "normalized_symmetric_chamfer": 0.0076139699502533005,
+        "volume_error": 0.5965367965367966
+      },
+      {
+        "case_id": "test-csg_id-quadruped-013",
+        "stratum": "csg_id",
+        "voxel_iou": 0.5886524822695035,
+        "normalized_symmetric_chamfer": 0.006165779712492533,
+        "volume_error": 0.5310734463276836
+      }
+    ],
+    "branching_vertical": [
+      {
+        "case_id": "test-csg_id-branching_vertical-010",
+        "stratum": "csg_id",
+        "voxel_iou": 0.4374498797113071,
+        "normalized_symmetric_chamfer": 0.012452602285188276,
+        "volume_error": 0.19132029339853301
+      },
+      {
+        "case_id": "test-csg_id-branching_vertical-001",
+        "stratum": "csg_id",
+        "voxel_iou": 0.43970588235294117,
+        "normalized_symmetric_chamfer": 0.011969361545278596,
+        "volume_error": 0.7655367231638418
+      },
+      {
+        "case_id": "test-csg_id-branching_vertical-009",
+        "stratum": "csg_id",
+        "voxel_iou": 0.4532447623914154,
+        "normalized_symmetric_chamfer": 0.013469440906266256,
+        "volume_error": 0.3093788063337393
+      },
+      {
+        "case_id": "test-implicit_ood-branching_vertical-001",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.4564362001124227,
+        "normalized_symmetric_chamfer": 0.013756698910737254,
+        "volume_error": 0.5884115884115884
+      },
+      {
+        "case_id": "test-implicit_ood-branching_vertical-008",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.4798019285900443,
+        "normalized_symmetric_chamfer": 0.013102055292768684,
+        "volume_error": 0.4794759825327511
+      },
+      {
+        "case_id": "test-implicit_ood-branching_vertical-013",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.48256467941507314,
+        "normalized_symmetric_chamfer": 0.012839176118941815,
+        "volume_error": 0.3866002716161159
+      },
+      {
+        "case_id": "test-implicit_ood-branching_vertical-017",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.48298313110387686,
+        "normalized_symmetric_chamfer": 0.011523670619620816,
+        "volume_error": 0.20360598065083554
+      },
+      {
+        "case_id": "test-implicit_ood-branching_vertical-012",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.48346456692913387,
+        "normalized_symmetric_chamfer": 0.013071945690360121,
+        "volume_error": 0.11764705882352941
+      },
+      {
+        "case_id": "test-implicit_ood-branching_vertical-016",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.48549280177187154,
+        "normalized_symmetric_chamfer": 0.013315757237760495,
+        "volume_error": 0.32801110725442556
+      },
+      {
+        "case_id": "test-implicit_ood-branching_vertical-018",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.4888888888888889,
+        "normalized_symmetric_chamfer": 0.011845175478092083,
+        "volume_error": 0.31279872543813064
+      }
+    ],
+    "lattice_tower": [
+      {
+        "case_id": "test-csg_id-lattice_tower-017",
+        "stratum": "csg_id",
+        "voxel_iou": 0.14728682170542637,
+        "normalized_symmetric_chamfer": 0.009671668975931382,
+        "volume_error": 1.3636363636363635
+      },
+      {
+        "case_id": "test-csg_id-lattice_tower-007",
+        "stratum": "csg_id",
+        "voxel_iou": 0.14805194805194805,
+        "normalized_symmetric_chamfer": 0.009999888612097933,
+        "volume_error": 1.4
+      },
+      {
+        "case_id": "test-csg_id-lattice_tower-011",
+        "stratum": "csg_id",
+        "voxel_iou": 0.1726457399103139,
+        "normalized_symmetric_chamfer": 0.009135387496372807,
+        "volume_error": 1.076470588235294
+      },
+      {
+        "case_id": "test-csg_id-lattice_tower-018",
+        "stratum": "csg_id",
+        "voxel_iou": 0.1822429906542056,
+        "normalized_symmetric_chamfer": 0.011680799672790489,
+        "volume_error": 1.2435897435897436
+      },
+      {
+        "case_id": "test-csg_id-lattice_tower-008",
+        "stratum": "csg_id",
+        "voxel_iou": 0.2390745501285347,
+        "normalized_symmetric_chamfer": 0.008253426123681431,
+        "volume_error": 0.22794117647058823
+      },
+      {
+        "case_id": "test-implicit_ood-lattice_tower-015",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.2513255567338282,
+        "normalized_symmetric_chamfer": 0.006296790771061008,
+        "volume_error": 0.3790322580645161
+      },
+      {
+        "case_id": "test-csg_id-lattice_tower-000",
+        "stratum": "csg_id",
+        "voxel_iou": 0.2565217391304348,
+        "normalized_symmetric_chamfer": 0.006793635892492538,
+        "volume_error": 0.4491525423728814
+      },
+      {
+        "case_id": "test-implicit_ood-lattice_tower-013",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.25662376987130964,
+        "normalized_symmetric_chamfer": 0.006670261756980181,
+        "volume_error": 0.610062893081761
+      },
+      {
+        "case_id": "test-csg_id-lattice_tower-005",
+        "stratum": "csg_id",
+        "voxel_iou": 0.26112759643916916,
+        "normalized_symmetric_chamfer": 0.008640671281400133,
+        "volume_error": 0.004694835680751174
+      },
+      {
+        "case_id": "test-implicit_ood-lattice_tower-009",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.26517571884984026,
+        "normalized_symmetric_chamfer": 0.007849347922994073,
+        "volume_error": 0.8557692307692307
+      }
+    ],
+    "rider_cycle": [
+      {
+        "case_id": "test-csg_id-rider_cycle-009",
+        "stratum": "csg_id",
+        "voxel_iou": 0.3268892794376098,
+        "normalized_symmetric_chamfer": 0.009508535728722714,
+        "volume_error": 1.2127659574468086
+      },
+      {
+        "case_id": "test-csg_id-rider_cycle-007",
+        "stratum": "csg_id",
+        "voxel_iou": 0.3488372093023256,
+        "normalized_symmetric_chamfer": 0.008614629110783185,
+        "volume_error": 1.1274509803921569
+      },
+      {
+        "case_id": "test-csg_id-rider_cycle-017",
+        "stratum": "csg_id",
+        "voxel_iou": 0.36178107606679033,
+        "normalized_symmetric_chamfer": 0.008574252924627296,
+        "volume_error": 0.9126984126984127
+      },
+      {
+        "case_id": "test-implicit_ood-rider_cycle-017",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.3951890034364261,
+        "normalized_symmetric_chamfer": 0.00526023815789597,
+        "volume_error": 0.5859872611464968
+      },
+      {
+        "case_id": "test-implicit_ood-rider_cycle-002",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.4115755627009646,
+        "normalized_symmetric_chamfer": 0.005748396116029168,
+        "volume_error": 0.676829268292683
+      },
+      {
+        "case_id": "test-implicit_ood-rider_cycle-004",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.42035398230088494,
+        "normalized_symmetric_chamfer": 0.00514375835584846,
+        "volume_error": 0.944954128440367
+      },
+      {
+        "case_id": "test-implicit_ood-rider_cycle-000",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.424390243902439,
+        "normalized_symmetric_chamfer": 0.004255762919399124,
+        "volume_error": 0.9795918367346939
+      },
+      {
+        "case_id": "test-implicit_ood-rider_cycle-019",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.430622009569378,
+        "normalized_symmetric_chamfer": 0.004615542387400085,
+        "volume_error": 0.8476190476190476
+      },
+      {
+        "case_id": "test-implicit_ood-rider_cycle-018",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.4425087108013937,
+        "normalized_symmetric_chamfer": 0.004934746736117018,
+        "volume_error": 0.6538461538461539
+      },
+      {
+        "case_id": "test-implicit_ood-rider_cycle-008",
+        "stratum": "implicit_ood",
+        "voxel_iou": 0.45,
+        "normalized_symmetric_chamfer": 0.004328763891907051,
+        "volume_error": 0.6710526315789473
+      }
+    ]
+  },
+  "worst_overall_10": [
+    {
+      "case_id": "test-csg_id-lattice_tower-017",
+      "family": "lattice_tower",
+      "stratum": "csg_id",
+      "voxel_iou": 0.14728682170542637
+    },
+    {
+      "case_id": "test-csg_id-lattice_tower-007",
+      "family": "lattice_tower",
+      "stratum": "csg_id",
+      "voxel_iou": 0.14805194805194805
+    },
+    {
+      "case_id": "test-csg_id-lattice_tower-011",
+      "family": "lattice_tower",
+      "stratum": "csg_id",
+      "voxel_iou": 0.1726457399103139
+    },
+    {
+      "case_id": "test-csg_id-lattice_tower-018",
+      "family": "lattice_tower",
+      "stratum": "csg_id",
+      "voxel_iou": 0.1822429906542056
+    },
+    {
+      "case_id": "test-csg_id-lattice_tower-008",
+      "family": "lattice_tower",
+      "stratum": "csg_id",
+      "voxel_iou": 0.2390745501285347
+    },
+    {
+      "case_id": "test-implicit_ood-lattice_tower-015",
+      "family": "lattice_tower",
+      "stratum": "implicit_ood",
+      "voxel_iou": 0.2513255567338282
+    },
+    {
+      "case_id": "test-csg_id-lattice_tower-000",
+      "family": "lattice_tower",
+      "stratum": "csg_id",
+      "voxel_iou": 0.2565217391304348
+    },
+    {
+      "case_id": "test-implicit_ood-lattice_tower-013",
+      "family": "lattice_tower",
+      "stratum": "implicit_ood",
+      "voxel_iou": 0.25662376987130964
+    },
+    {
+      "case_id": "test-csg_id-lattice_tower-005",
+      "family": "lattice_tower",
+      "stratum": "csg_id",
+      "voxel_iou": 0.26112759643916916
+    },
+    {
+      "case_id": "test-implicit_ood-lattice_tower-009",
+      "family": "lattice_tower",
+      "stratum": "implicit_ood",
+      "voxel_iou": 0.26517571884984026
+    }
+  ],
+  "lattice_tower_inspection": {
+    "test-csg_id-lattice_tower-007": {
+      "family": "lattice_tower",
+      "stratum": "csg_id",
+      "component_count": 9,
+      "gt_voxels_64": 520,
+      "components": [
+        {
+          "kind": "box",
+          "size": [
+            0.20283887,
+            0.20283887,
+            4.74501351
+          ],
+          "min_dim": 0.20283887,
+          "voxels_hit_64": 188,
+          "reference_volume": 0.17765625000000002,
+          "expected_cells_64": 118.43750000000001,
+          "capture_ratio": 1.5873350923482847
+        },
+        {
+          "kind": "cylinder",
+          "size": [
+            0.12677429,
+            0.12677429,
+            4.54730461
+          ],
+          "min_dim": 0.12677429,
+          "voxels_hit_64": 45,
+          "reference_volume": 0.05758593750000001,
+          "expected_cells_64": 38.39062500000001,
+          "capture_ratio": 1.172161172161172
+        },
+        {
+          "kind": "cylinder",
+          "size": [
+            0.12677429,
+            0.12677429,
+            4.54730461
+          ],
+          "min_dim": 0.12677429,
+          "voxels_hit_64": 45,
+          "reference_volume": 0.05758593750000001,
+          "expected_cells_64": 38.39062500000001,
+          "capture_ratio": 1.172161172161172
+        },
+        {
+          "kind": "cylinder",
+          "size": [
+            0.12677429,
+            0.12677429,
+            4.54730461
+          ],
+          "min_dim": 0.12677429,
+          "voxels_hit_64": 45,
+          "reference_volume": 0.05758593750000001,
+          "expected_cells_64": 38.39062500000001,
+          "capture_ratio": 1.172161172161172
+        },
+        {
+          "kind": "cylinder",
+          "size": [
+            0.12677429,
+            0.12677429,
+            4.54730461
+          ],
+          "min_dim": 0.12677429,
+          "voxels_hit_64": 45,
+          "reference_volume": 0.05758593750000001,
+          "expected_cells_64": 38.39062500000001,
+          "capture_ratio": 1.172161172161172
+        },
+        {
+          "kind": "box",
+          "size": [
+            1.02185434,
+            0.94436558,
+            0.09508072
+          ],
+          "min_dim": 0.09508072,
+          "voxels_hit_64": 60,
+          "reference_volume": 0.09618750000000001,
+          "expected_cells_64": 64.125,
+          "capture_ratio": 0.935672514619883
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.88916071,
+            0.82173431,
+            0.09508072
+          ],
+          "min_dim": 0.09508072,
+          "voxels_hit_64": 48,
+          "reference_volume": 0.07425000000000001,
+          "expected_cells_64": 49.50000000000001,
+          "capture_ratio": 0.9696969696969696
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.75646708,
+            0.69910304,
+            0.09508072
+          ],
+          "min_dim": 0.09508072,
+          "voxels_hit_64": 36,
+          "reference_volume": 0.045937500000000006,
+          "expected_cells_64": 30.625000000000004,
+          "capture_ratio": 1.1755102040816325
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.65949866,
+            0.60948788,
+            0.09508072
+          ],
+          "min_dim": 0.09508072,
+          "voxels_hit_64": 24,
+          "reference_volume": 0.04050000000000001,
+          "expected_cells_64": 27.000000000000004,
+          "capture_ratio": 0.8888888888888887
+        }
+      ]
+    },
+    "test-csg_id-lattice_tower-008": {
+      "family": "lattice_tower",
+      "stratum": "csg_id",
+      "component_count": 9,
+      "gt_voxels_64": 1088,
+      "components": [
+        {
+          "kind": "box",
+          "size": [
+            0.37277981,
+            0.37277981,
+            3.9346632
+          ],
+          "min_dim": 0.37277981,
+          "voxels_hit_64": 312,
+          "reference_volume": 0.5537109375,
+          "expected_cells_64": 369.140625,
+          "capture_ratio": 0.8452063492063492
+        },
+        {
+          "kind": "cylinder",
+          "size": [
+            0.23298738,
+            0.23298738,
+            3.7707189
+          ],
+          "min_dim": 0.23298738,
+          "voxels_hit_64": 114,
+          "reference_volume": 0.16456640625,
+          "expected_cells_64": 109.71093749999999,
+          "capture_ratio": 1.0390942106387526
+        },
+        {
+          "kind": "cylinder",
+          "size": [
+            0.23298738,
+            0.23298738,
+            3.7707189
+          ],
+          "min_dim": 0.23298738,
+          "voxels_hit_64": 114,
+          "reference_volume": 0.16456640625,
+          "expected_cells_64": 109.71093749999999,
+          "capture_ratio": 1.0390942106387526
+        },
+        {
+          "kind": "cylinder",
+          "size": [
+            0.23298738,
+            0.23298738,
+            3.7707189
+          ],
+          "min_dim": 0.23298738,
+          "voxels_hit_64": 114,
+          "reference_volume": 0.16456640625,
+          "expected_cells_64": 109.71093749999999,
+          "capture_ratio": 1.0390942106387526
+        },
+        {
+          "kind": "cylinder",
+          "size": [
+            0.23298738,
+            0.23298738,
+            3.7707189
+          ],
+          "min_dim": 0.23298738,
+          "voxels_hit_64": 114,
+          "reference_volume": 0.16456640625,
+          "expected_cells_64": 109.71093749999999,
+          "capture_ratio": 1.0390942106387526
+        },
+        {
+          "kind": "box",
+          "size": [
+            1.02520245,
+            1.06757354,
+            0.17474054
+          ],
+          "min_dim": 0.17474054,
+          "voxels_hit_64": 120,
+          "reference_volume": 0.1904765625,
+          "expected_cells_64": 126.984375,
+          "capture_ratio": 0.9449981543004798
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.89207405,
+            0.92894301,
+            0.17474054
+          ],
+          "min_dim": 0.17474054,
+          "voxels_hit_64": 120,
+          "reference_volume": 0.14568750000000003,
+          "expected_cells_64": 97.12500000000001,
+          "capture_ratio": 1.2355212355212353
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.75894565,
+            0.79031249,
+            0.17474054
+          ],
+          "min_dim": 0.17474054,
+          "voxels_hit_64": 96,
+          "reference_volume": 0.10500000000000001,
+          "expected_cells_64": 70.0,
+          "capture_ratio": 1.3714285714285714
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.66165952,
+            0.68900556,
+            0.17474054
+          ],
+          "min_dim": 0.17474054,
+          "voxels_hit_64": 48,
+          "reference_volume": 0.0826875,
+          "expected_cells_64": 55.125,
+          "capture_ratio": 0.8707482993197279
+        }
+      ]
+    },
+    "test-csg_id-lattice_tower-011": {
+      "family": "lattice_tower",
+      "stratum": "csg_id",
+      "component_count": 9,
+      "gt_voxels_64": 680,
+      "components": [
+        {
+          "kind": "box",
+          "size": [
+            0.22702855,
+            0.22702855,
+            5.38872186
+          ],
+          "min_dim": 0.22702855,
+          "voxels_hit_64": 216,
+          "reference_volume": 0.2727421875,
+          "expected_cells_64": 181.828125,
+          "capture_ratio": 1.1879350348027842
+        },
+        {
+          "kind": "cylinder",
+          "size": [
+            0.14189284,
+            0.14189284,
+            5.16419178
+          ],
+          "min_dim": 0.14189284,
+          "voxels_hit_64": 52,
+          "reference_volume": 0.079857421875,
+          "expected_cells_64": 53.23828125,
+          "capture_ratio": 0.9767407733509429
+        },
+        {
+          "kind": "cylinder",
+          "size": [
+            0.14189284,
+            0.14189284,
+            5.16419178
+          ],
+          "min_dim": 0.14189284,
+          "voxels_hit_64": 52,
+          "reference_volume": 0.079857421875,
+          "expected_cells_64": 53.23828125,
+          "capture_ratio": 0.9767407733509429
+        },
+        {
+          "kind": "cylinder",
+          "size": [
+            0.14189284,
+            0.14189284,
+            5.16419178
+          ],
+          "min_dim": 0.14189284,
+          "voxels_hit_64": 52,
+          "reference_volume": 0.079857421875,
+          "expected_cells_64": 53.23828125,
+          "capture_ratio": 0.9767407733509429
+        },
+        {
+          "kind": "cylinder",
+          "size": [
+            0.14189284,
+            0.14189284,
+            5.16419178
+          ],
+          "min_dim": 0.14189284,
+          "voxels_hit_64": 52,
+          "reference_volume": 0.079857421875,
+          "expected_cells_64": 53.23828125,
+          "capture_ratio": 0.9767407733509429
+        },
+        {
+          "kind": "box",
+          "size": [
+            1.26551487,
+            1.13365705,
+            0.10641963
+          ],
+          "min_dim": 0.10641963,
+          "voxels_hit_64": 96,
+          "reference_volume": 0.14343750000000002,
+          "expected_cells_64": 95.62500000000001,
+          "capture_ratio": 1.0039215686274507
+        },
+        {
+          "kind": "box",
+          "size": [
+            1.10118053,
+            0.9864452,
+            0.10641963
+          ],
+          "min_dim": 0.10641963,
+          "voxels_hit_64": 80,
+          "reference_volume": 0.11928515625000001,
+          "expected_cells_64": 79.5234375,
+          "capture_ratio": 1.0059927301306613
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.93684619,
+            0.83923336,
+            0.10641963
+          ],
+          "min_dim": 0.10641963,
+          "voxels_hit_64": 48,
+          "reference_volume": 0.08964843750000001,
+          "expected_cells_64": 59.76562500000001,
+          "capture_ratio": 0.8031372549019606
+        },
+        {
+          "kind": "box",
+          "size": [
+            0.81675571,
+            0.73165547,
+            0.10641963
+          ],
+          "min_dim": 0.10641963,
+          "voxels_hit_64": 48,
+          "reference_volume": 0.0672890625,
+          "expected_cells_64": 44.859375,
+          "capture_ratio": 1.0700104493207943
+        }
+      ]
+    }
+  },
+  "all_methods_on_failing_cases": {
+    "test-csg_id-lattice_tower-007": {
+      "sppa_mvfit": 0.14805194805194805,
+      "generic_mvfit": 0.09944751381215469,
+      "sppa_text_only": 0.16455696202531644,
+      "bbox": 0.08666666666666667,
+      "ellipsoid": 0.10573248407643313,
+      "capsule": 0.10047846889952153,
+      "billboard": 0.14430379746835442,
+      "nonsemantic_visual_hull": 0.2090032154340836
+    },
+    "test-csg_id-lattice_tower-008": {
+      "sppa_mvfit": 0.2390745501285347,
+      "generic_mvfit": 0.1839863713798978,
+      "sppa_text_only": 0.16666666666666666,
+      "bbox": 0.18954703832752615,
+      "ellipsoid": 0.18277066356228172,
+      "capsule": 0.17653631284916202,
+      "billboard": 0.13522012578616352,
+      "nonsemantic_visual_hull": 0.43106180665610144
+    },
+    "test-csg_id-lattice_tower-011": {
+      "sppa_mvfit": 0.1726457399103139,
+      "generic_mvfit": 0.09771573604060914,
+      "sppa_text_only": 0.11358574610244988,
+      "bbox": 0.08521303258145363,
+      "ellipsoid": 0.09248554913294797,
+      "capsule": 0.08860759493670886,
+      "billboard": 0.14596949891067537,
+      "nonsemantic_visual_hull": 0.21013597033374537
+    },
+    "test-csg_id-lattice_tower-017": {
+      "sppa_mvfit": 0.14728682170542637,
+      "generic_mvfit": 0.10869565217391304,
+      "sppa_text_only": 0.1632183908045977,
+      "bbox": 0.0761904761904762,
+      "ellipsoid": 0.10090984284532671,
+      "capsule": 0.091441111923921,
+      "billboard": 0.13582677165354332,
+      "nonsemantic_visual_hull": 0.24719101123595505
+    },
+    "test-csg_id-lattice_tower-018": {
+      "sppa_mvfit": 0.1822429906542056,
+      "generic_mvfit": 0.08994708994708994,
+      "sppa_text_only": 0.23979591836734693,
+      "bbox": 0.08253968253968254,
+      "ellipsoid": 0.08964316797214969,
+      "capsule": 0.08637873754152824,
+      "billboard": 0.1349036402569593,
+      "nonsemantic_visual_hull": 0.18181818181818182
+    }
+  },
+  "voxel_cell_world_units": {
+    "x": 0.15,
+    "y": 0.1,
+    "z": 0.1
+  },
+  "convergence": {
+    "sppa_mvfit": {
+      "n_cases": 240,
+      "trace_length": 31,
+      "last_sweep_step_fraction": 0.05,
+      "last_sweep_improved_count": 213,
+      "last_sweep_improved_rate": 0.8875,
+      "theta_at_bound_count": 0,
+      "theta_at_bound_rate": 0.0,
+      "init_already_best_count": 1,
+      "init_already_best_rate": 0.004166666666666667,
+      "total_objective_improvement_mean": 0.06823599870028142,
+      "total_objective_improvement_median": 0.054050099632140594,
+      "init_objective_mean": 0.3038926766886573,
+      "final_objective_mean": 0.23565667798837595,
+      "improvement_per_evaluation_mean": [
+        0.0011319112140938347,
+        0.004566050736054988,
+        0.003007656985377361,
+        0.002500699336607201,
+        0.0053353998448142665,
+        0.0002334726106654581,
+        0.0034389991681988566,
+        0.00646503806557547,
+        0.00017700712703465094,
+        0.0022442723133906588,
+        0.0022739573223177793,
+        0.004406090521754443,
+        0.002181099889195385,
+        0.0020666448356370204,
+        0.004704340871959473,
+        0.0015595437880738458,
+        0.002249669015951398,
+        0.0021848525523928577,
+        0.0004899233427313091,
+        0.0019614212874586013,
+        0.0037280304837898647,
+        0.003279407665414454,
+        0.00130395075534536,
+        0.0008407666407985905,
+        0.0018999278727373891,
+        0.0012020242998596307,
+        0.0006681557845884223,
+        0.0013071385793732395,
+        0.0003749785094898205,
+        0.00045356727959979713
+      ],
+      "improvement_per_evaluation_p90": [
+        0.0,
+        0.0,
+        0.013936833176096836,
+        0.007272957394579793,
+        0.01584524958776168,
+        0.0,
+        0.014804003232814968,
+        0.022024544789363706,
+        0.0,
+        0.0,
+        0.0029662767177989807,
+        0.01198905376514816,
+        0.011178386993711778,
+        0.00908433287171092,
+        0.026644721180415713,
+        0.002256605157137877,
+        0.0058337906485504114,
+        0.007493165571116931,
+        0.0,
+        0.0,
+        0.013241154628626727,
+        0.014448841809015189,
+        0.004505665823001991,
+        0.0029723335150554807,
+        0.008207788322369793,
+        0.0046741828335364645,
+        0.002918102122500065,
+        0.00505395600881612,
+        0.0,
+        0.0
+      ],
+      "best_objective_curve_mean": [
+        0.3038926766886573,
+        0.30276076547456354,
+        0.2981947147385085,
+        0.2951870577531312,
+        0.29268635841652413,
+        0.28735095857170995,
+        0.2871174859610444,
+        0.2836784867928454,
+        0.27721344872726994,
+        0.2770364416002352,
+        0.2747921692868446,
+        0.2725182119645268,
+        0.2681121214427724,
+        0.265931021553577,
+        0.26386437671794005,
+        0.2591600358459805,
+        0.25760049205790664,
+        0.2553508230419552,
+        0.2531659704895623,
+        0.252676047146831,
+        0.25071462585937243,
+        0.2469865953755826,
+        0.24370718771016817,
+        0.24240323695482285,
+        0.2415624703140243,
+        0.2396625424412869,
+        0.23846051814142732,
+        0.23779236235683884,
+        0.23648522377746561,
+        0.23611024526797583,
+        0.23565667798837603
+      ],
+      "best_objective_curve_p10": [
+        0.16994846237684552,
+        0.16994846237684552,
+        0.16994846237684552,
+        0.16927515442140117,
+        0.16684700926288593,
+        0.16684700926288593,
+        0.16684700926288593,
+        0.16242962554807552,
+        0.15609713895219796,
+        0.15609713895219796,
+        0.15609713895219796,
+        0.15609713895219796,
+        0.15609713895219796,
+        0.15558243956181955,
+        0.15558243956181955,
+        0.15483471812834332,
+        0.1540373245012835,
+        0.15026424079797035,
+        0.14741323427083902,
+        0.14741323427083902,
+        0.14741323427083902,
+        0.1459144054621823,
+        0.1421670924547098,
+        0.14135488404499447,
+        0.1411658643195191,
+        0.13866575547650403,
+        0.13589547427567852,
+        0.1348699621949676,
+        0.1348699621949676,
+        0.1348699621949676,
+        0.1348699621949676
+      ],
+      "best_objective_curve_p90": [
+        0.515928856295759,
+        0.5150818041532765,
+        0.4793837552908073,
+        0.4636688582253126,
+        0.4636688582253126,
+        0.4636688582253126,
+        0.4636688582253126,
+        0.4605667159998959,
+        0.4571193256669173,
+        0.4571193256669173,
+        0.4571193256669173,
+        0.4571193256669173,
+        0.4524918173538394,
+        0.4522484267403384,
+        0.44824523737871397,
+        0.44824523737871397,
+        0.44824523737871397,
+        0.44824523737871397,
+        0.44721691566577415,
+        0.44721691566577415,
+        0.44721691566577415,
+        0.41899620788062025,
+        0.41899620788062025,
+        0.41899620788062025,
+        0.4187694927561819,
+        0.4187694927561819,
+        0.4187694927561819,
+        0.4187694927561819,
+        0.41715236371460446,
+        0.41580818523551577,
+        0.41580818523551577
+      ]
+    },
+    "generic_mvfit": {
+      "n_cases": 240,
+      "trace_length": 31,
+      "last_sweep_step_fraction": 0.05,
+      "last_sweep_improved_count": 221,
+      "last_sweep_improved_rate": 0.9208333333333333,
+      "theta_at_bound_count": 139,
+      "theta_at_bound_rate": 0.5791666666666667,
+      "init_already_best_count": 0,
+      "init_already_best_rate": 0.0,
+      "total_objective_improvement_mean": 0.06879659829425332,
+      "total_objective_improvement_median": 0.061595828064490266,
+      "init_objective_mean": 0.41662921229450084,
+      "final_objective_mean": 0.3478326140002475,
+      "improvement_per_evaluation_mean": [
+        0.0010251720384697404,
+        0.008537059488028333,
+        0.0024796963523191105,
+        0.00010162914860576608,
+        0.009561025159073892,
+        0.006616077733306695,
+        0.003912236184756215,
+        0.0045615452699988715,
+        0.001797602044100729,
+        0.004361785087813669,
+        0.0025404051265494995,
+        0.001406994268289559,
+        0.000607335252218792,
+        0.002808208339654476,
+        0.005560475187575932,
+        0.0005825118661441735,
+        0.0014118937097727898,
+        0.001539374417905121,
+        0.0011182812136391737,
+        0.001011132788378421,
+        0.00046251078512465476,
+        0.0005058066497930057,
+        0.0009167229312892563,
+        0.0005546838242250251,
+        0.0016242935256474541,
+        0.0006295274583973955,
+        0.0006970856789479365,
+        0.000929722695023975,
+        0.0005167257637928392,
+        0.00041907830541082307
+      ],
+      "improvement_per_evaluation_p90": [
+        0.0,
+        0.021132921260076768,
+        0.009367759801361708,
+        0.0,
+        0.04816494494611869,
+        0.026351259962593968,
+        0.011814491410668926,
+        0.019389765259458604,
+        0.0006467857006558008,
+        0.015878153338620447,
+        0.011162710015409598,
+        0.0,
+        0.0003199575217014789,
+        0.010915212202919211,
+        0.01967397037878397,
+        0.0,
+        0.005832747861181525,
+        0.005327386460296294,
+        0.0004167993615061973,
+        0.001887709046136753,
+        0.0014223074339769985,
+        0.0,
+        0.002729532452187949,
+        0.0023117205278189662,
+        0.0068730445616683655,
+        0.0020096289543997488,
+        0.002732100554138522,
+        0.003739568176295149,
+        0.001354301684654072,
+        0.0
+      ],
+      "best_objective_curve_mean": [
+        0.41662921229450073,
+        0.4156040402560309,
+        0.4070669807680026,
+        0.4045872844156836,
+        0.4044856552670778,
+        0.3949246301080038,
+        0.3883085523746973,
+        0.384396316189941,
+        0.37983477091994217,
+        0.3780371688758415,
+        0.3736753837880277,
+        0.3711349786614782,
+        0.36972798439318866,
+        0.36912064914096987,
+        0.3663124408013157,
+        0.36075196561373984,
+        0.3601694537475957,
+        0.35875756003782283,
+        0.35721818561991747,
+        0.3560999044062783,
+        0.35508877161789987,
+        0.3546262608327754,
+        0.3541204541829824,
+        0.35320373125169297,
+        0.35264904742746794,
+        0.3510247539018205,
+        0.35039522644342297,
+        0.3496981407644752,
+        0.3487684180694511,
+        0.3482516923056583,
+        0.3478326140002475
+      ],
+      "best_objective_curve_p10": [
+        0.2973099222976131,
+        0.2973099222976131,
+        0.28704297578280213,
+        0.28704297578280213,
+        0.28704297578280213,
+        0.2832814904022521,
+        0.2796974257238339,
+        0.2772948222337047,
+        0.26643637103296475,
+        0.26643637103296475,
+        0.2661102938368508,
+        0.2661102938368508,
+        0.2661102938368508,
+        0.2661102938368508,
+        0.26409631881664525,
+        0.26018163673892863,
+        0.2573731665149712,
+        0.2573731665149712,
+        0.2573731665149712,
+        0.25032514284731655,
+        0.25032514284731655,
+        0.25032514284731655,
+        0.25032514284731655,
+        0.2500764949139155,
+        0.2500764949139155,
+        0.2500764949139155,
+        0.24660661495163438,
+        0.24588323696598333,
+        0.24328655036039473,
+        0.24328655036039473,
+        0.24328655036039473
+      ],
+      "best_objective_curve_p90": [
+        0.5727349516520295,
+        0.5727349516520295,
+        0.5515882386674543,
+        0.5440574256416251,
+        0.5440574256416251,
+        0.5228224445792645,
+        0.5228224445792645,
+        0.5226248036509845,
+        0.5173162034472095,
+        0.5063077887094268,
+        0.5060116052502678,
+        0.5060116052502678,
+        0.5060116052502678,
+        0.5060116052502678,
+        0.5046059207875858,
+        0.49767175829772214,
+        0.49767175829772214,
+        0.4956325459722072,
+        0.49510908898570516,
+        0.49510908898570516,
+        0.49510908898570516,
+        0.49510908898570516,
+        0.49510908898570516,
+        0.4941739900027758,
+        0.4941739900027758,
+        0.488326633996136,
+        0.488326633996136,
+        0.488326633996136,
+        0.48815172030569803,
+        0.48551624088243156,
+        0.48551624088243156
+      ]
+    }
+  }
+}

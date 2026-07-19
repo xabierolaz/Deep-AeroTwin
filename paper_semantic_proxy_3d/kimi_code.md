@@ -173,11 +173,12 @@ pdflatex -interaction=nonstopmode semantic_proxy_3d_paper.tex; bibtex semantic_p
 
 | Hash | Qué es |
 |---|---|
+| `9f5c43f5` | Oleada neural medida (B2) + tabla Pareto (B3) + matriz (D1) + poda de figuras 36→33 págs. + S1/S2 en suplemento |
 | `4e2bba7` | Paper completo 34 págs. sellado (estado restaurado del paper) |
 | `0558971` | CLEAR ACCEPT tribunal + análisis v2 (estado restaurado de scripts/resultados) |
 | `3e7b8f3` | Fix stats v2 (null-centered p) |
 | `a0f5887` | Seal inicial (21:25) |
-| `f5aec7d` | HEAD: corte a 10 págs. (superseded en working tree) |
+| `f5aec7d` | Corte a 10 págs. (superseded en working tree) |
 
 ---
 
@@ -251,7 +252,199 @@ encuentra en `D:\AYTE DOCTOR\...`). No es un fallo del paper.
 **Nota editorial pendiente**: `JOURNAL_DECISION_20260716.md` línea ~30 aún dice
 "target ~10-12 pages" (decisión revertida); corregir cuando el usuario lo apruebe.
 
-**Pendiente sin cambios**: commit de TODOS los cambios de hoy (B2/B3/D1 + poda;
-PEDIR CONFIRMACIÓN), tribunal simulado sobre la versión FINAL (tras la poda),
-envío JGSA (APC UPNA + JCR Q1 el día del envío; package: main PDF + suplemento
-corto con S1/S2 + highlights + cover letter + `reproducibility/sppa_mvfit/`).
+**Commit HECHO**: `9f5c43f5` (327 ficheros; `supporting_artifacts/` 22 GB y
+`neural_external_wave/runs/` 3.4 GB excluidos vía `.gitignore` del paper —
+regenerables). Clean-clone gate PASS (0 missing/untracked/modified) y strict
+0 blockers sobre el estado commiteado. NOTA: esta línea y la fila de §9 quedan
+sin commitear (doc de trabajo; irán con el próximo commit).
+
+**Tribunal R3 HECHO** (2026-07-17, `editorial_audits/20260717/TRIBUNAL_ROUND_03.md`):
+**MINOR_REVISION** (Editor MINOR, Stats MINOR, Repro ACCEPT, Lit MINOR).
+8 P0 consolidados, TODOS editoriales/textuales (ciencia sellada intacta):
+(1) cover letter/JOURNAL_DECISION describen el manuscrito cortado obsoleto +
+título inconsistente; (2) highlights con números obsoletos (~685 tris/0.22 ms);
+(3) prosa run-ID Unreal líneas 1401-1471 duplica tabla (comprimir); (4)
+framing JGSA/geovisualization ausente del manuscrito (intro+keywords); (5)
+"twelve disjoint calibration cases" es FALSO (12/12 solapan con los 60
+evaluados; corregir + discloser dirección conservadora); (6) CI secundario en
+texto [0.117,0.143] vs sellado [0.116,0.144]; (7) motivo exclusión SF3D
+contradictorio entre secciones; (8) dos frases sobre competidores sin cita
+(claves bib ya existen). Corrección de registro: bib real = 64 refs (no 147),
+64/64 citadas, cero huérfanas.
+
+**Pase de respuesta HECHO + Tribunal R4 = CLEAR ACCEPT** (2026-07-18,
+`editorial_audits/20260718/TRIBUNAL_ROUND_04.md`, 4/4 ACCEPT, cero P0 nuevo):
+- Los 8 P0 de R3 corregidos (cover letter + título unificado + scorecard fuera;
+  highlights 536 tris/9.2 ms; JOURNAL_DECISION "full restored version, 34 pp";
+  prosa run-ID comprimida 40→21 líneas; párrafo framing JGSA en intro + keyword
+  "geovisualization of dynamic objects" + batty2018digitaltwins + ogc2023tiles;
+  "disjoint"→solape 12/12 declarado con dirección conservadora en tex+md; CI
+  [0.116,0.144]; SF3D harmonizado py3.12/py3.10; citas SF3D/SPAR3D/TRELLIS.2
+  colgadas; + P1s: caption n=58 + "unrounded per-case values", timing
+  "single-call descriptive", intervalos "per-comparison and unadjusted",
+  payload ≈3.2×10⁴×, frase asimetría de input, typo Holm-style, epic2026nanite,
+  notas SF3D/SPAR3D copiadas a benchmarks/neural_external_wave/exclusion_notes/
+  + pointers de step4, .gitignore aclarado, compresión narrativa stress-test
+  con back-ref a la oleada, wording repo-root en suplemento).
+- Main 34 págs., bib 65 entradas (65/65 citadas, 0 huérfanas), 0 errores /
+  0 refs indefinidas; strict 0 blockers.
+- Clean-clone falla SOLO por los 3 ficheros corregidos sin commitear
+  (paper.tex, references.bib, submission_supplement.tex) → pasa con el commit.
+- **OJO commit**: incluir `benchmarks/neural_external_wave/exclusion_notes/`
+  (untracked; `git commit -a` NO lo recoge) + actas R3/R4 + handoff.
+- Lección R4: el suplemento declara "p-values del artefacto no se usan en el
+  manuscrito" → la opción consistente fue etiquetar intervalos secundarios como
+  no ajustados, NO añadir p-Holm al texto.
+
+**Pendiente**: commit de la versión CLEAR ACCEPT (PEDIR CONFIRMACIÓN) →
+re-pasar clean-clone → envío JGSA (APC UPNA biblioteca.revistas@unavarra.es +
+JCR Q1 el día del envío; package: main PDF 34 pp + suplemento 4 pp S1/S2 +
+highlights + cover letter + `reproducibility/sppa_mvfit/`).
+
+---
+
+## 2026-07-18 — FEEDBACK EXTERNO UNIFICADO + REESTRUCTURACIÓN MAYOR (R5)
+
+**Origen**: 4 revisiones externas independientes (F1 revisor doble ciego, F2
+auditoría Q1/tribunal, F3 revisor Q1, F4 probabilidades por venue). Contrastados
+TODOS los puntos con 4 agentes (numérico/cobertura/viabilidad/estructura) sin
+fiarse de ninguno → `editorial_audits/20260718/UNIFIED_EXTERNAL_FEEDBACK.md`
+(14 temas; errores de los revisores documentados: F2 "14 págs", F1 "40×",
+corrupciones "inexistentes" que sí existían selladas). Decisiones usuario
+D1–D4 = "lo más ambicioso y honesto": test externo SÍ, role-IoU SÍ con mapeo
+congelado ex-ante, título se mantiene, poda agresiva.
+
+**Fase A — 12 piezas de evidencia nueva** (todo post-hoc FUERA del sello salvo
+la tabla de corrupciones, que es prerregistrada y sellada):
+`benchmarks/mvfit_posthoc_analysis/` (T1 robustez 5 condiciones Δ0.118–0.190;
+T2 2×2 grafo×fitting Generic-nofit 0.180; T3 Chamfer 0.008 + F-score 0.831;
+T4 fallos lattice 5/240 sub-voxel + convergencia; T5 drop-one-family
+0.152–0.214) y `benchmarks/mvfit_reviewer_experiments/` (E1 familia errónea
+0.205 vs generic 0.367 — prior malo PEOR que ninguno; E2 top-only 0.458 /
+side-only 0.545; E3 OBB 0.252 ≈ AABB; E4 barrido 11/21/31/61 = rodilla;
+E5 3 grafos genéricos alternativos TODOS peores → ventaja conservadora;
+E6 role-aware IoU 0.319 vs shuffle 0.053, mapeo congelado ex-ante).
+**Test externo** `benchmarks/external_mesh_sanity/`: 52 mallas reales
+(Objaverse LVIS + ModelNet40): SPPA 0.413 vs generic 0.370 (Δ+0.043 n.s. —
+el margen NO se replica) y visual hull 0.656 domina; reportado con honestidad
+total (modos de fallo: mismatch plantilla, geometría abierta, jirafa=horse).
+
+**Fase B+C — paper reestructurado**: main 34→**24 págs** (nuevas §7 Robustness
+and Boundary Conditions y §8 External Sanity Check; §10.x al suplemento, que
+pasa a 21 págs; 22→18 tablas main con las 6 nuevas; disclaimers 1/sección +
+puntero §13; §3 LLM → 1 párrafo; frase de victoria neural ELIMINADA → framing
+input-modality mismatch; tabla ontología 15/23/34/64/95/6; SMPL/3DMM/Hydra +
+4 refs bib nuevas; construcción grafo genérico + autoría documentada; margen
++0.030 con potencia 90% citada; hardware spec; números resolución; checkpoint
+yoloe-26s-seg.pt; abstract con frase honesta de no-réplica externa).
+Logs: `PRUNE_LOG.md`, `INTEGRATION_LOG.md` (misma carpeta). Backup pre-poda:
+`D:\Deep-AeroTwin-UE57-Test\sppa_audit\backup_pre_prune\`. Copia de trabajo de
+integración (ya sincronizada al canónico): `...\sppa_integration_work\`.
+
+**Tribunal R5 = ACCEPT con MINOR ISSUES 4/4** (`TRIBUNAL_ROUND_05.md`):
+20/24 verificaciones OK; 8 hallazgos menores H1–H8 TODOS corregidos el mismo
+día (OBB "practically identical", +0.002 redondeo, rango 0.09–0.37, "seven
+actor methods", nota timings re-run, boundary externa en suplemento, ref S.1,
+frase primitivas triviales §8).
+
+**Estado actual**: main 24 págs + suplemento 21 págs, 0 errores / 0 refs
+indefinidas (compilar con `-jobname=sppa_check` / `supp_check` — Acrobat tiene
+bloqueado `semantic_proxy_3d_paper.pdf`; al cerrarlo, recompilar jobname
+normal). Strict 0 blockers. Clean-clone falla SOLO por los 3 ficheros editados
+sin commitear → pasa con el commit.
+
+**Pendiente AHORA**: commit de TODO (PEDIR CONFIRMACIÓN): 3 ficheros paper +
+`benchmarks/mvfit_posthoc_analysis/` + `benchmarks/mvfit_reviewer_experiments/`
++ `benchmarks/external_mesh_sanity/` (OJO: puede pesar — revisar con git
+status/du; las mallas descargadas quizá deban ir a .gitignore conservando
+scripts+JSON+tablas) + `benchmarks/neural_external_wave/exclusion_notes/`
+(sigue untracked) + actas 20260718/ + figura external_sanity_qualitative.png
++ handoff. Después: re-pasar clean-clone y actualizar JOURNAL_DECISION /
+HIGHLIGHTS / cover letter si mencionan "34 pp" o tablas obsoletas.
+
+---
+
+## 2026-07-18 (tarde) — TRANSFORMACIÓN JGSA-FIT + TRIBUNAL R6 (ESTADO VIGENTE)
+
+**Esta sección sustituye al "Estado actual" anterior.** El paquete se
+reestructuró para JGSA (`Journal of Geovisualization and Spatial Analysis`,
+Springer, Q1, decisión en `JOURNAL_DECISION_20260716.md`):
+
+- **Main** `semantic_proxy_3d_paper.pdf`: **20 págs, 6 secciones + Data/Code
+  Availability, 6 tablas, 14 figuras** (3 renders Blender + 9 charts + 2 reuso
+  legítimo; scripts `tools/jgsa_figures/` + MANIFEST.md). 0 errores, 0 refs
+  indefinidas, 3 overfull ≤12.9 pt.
+- **Suplemento** `semantic_proxy_3d_submission_supplement.pdf`: **9 págs,
+  secciones S.1–S.9** (con punto; el main apunta 7 veces a "Section S.9" =
+  "Sealed and Post-Hoc Analysis Tables", que contiene TODAS las tablas
+  selladas y post-hoc incluidas las nuevas OBB y role-aware). 0 errores.
+- Actas del proceso: `editorial_audits/20260718/` — UNIFIED_EXTERNAL_FEEDBACK,
+  PRUNE_LOG, INTEGRATION_LOG, TRIBUNAL_ROUND_05, JGSA_BOARD_AUDIT,
+  JGSA_TRANSFORM_LOG, TRIBUNAL_ROUND_06.
+- Auditoría zero-trust JGSA (3 agentes externos): `sppa_audit/`,
+  `audit_sppa/AUDITORIA_SPPA.md`, `jgsa_bibliometric_profile.md` (en
+  `D:\Deep-AeroTwin-UE57-Test`).
+
+**Tribunal R6 = MAJOR de empaquetado, ciencia intacta**
+(`TRIBUNAL_ROUND_06.md`): todos los hallazgos eran figuras/punteros/captions
+y están TODOS corregidos (captions family-graphs/role-colored/wrong-family,
+tablas OBB+role-aware añadidas a S.9, figura role-colored sin etiqueta "E6:",
+figura external-scatter reescrita como scatter real por caso — medias
+verificadas 0.413/0.370/Δ+0.043 —, tabla externa sin overfull de 33 mm,
+numeración S.x con punto, `\externaldocument` al nombre canónico, docs de
+envío actualizados a 20 págs). Compilación final con NOMBRES CANÓNICOS (sin
+-jobname): main 20 págs + suplemento 9 págs, 0 undefined. Strict: 0 blockers,
+H1 pass.
+
+**Pendiente AHORA (en orden)**:
+1. **Commit de TODO (PENDIENTE CONFIRMACIÓN DEL USUARIO — NO commitear sin
+   ella)**: 3 ficheros paper (.tex main/supp + referencias si cambió),
+   `benchmarks/mvfit_posthoc_analysis/`, `benchmarks/reviewer_experiments/`,
+   `benchmarks/external_mesh_sanity/` (meshes/cache/cases YA en .gitignore —
+   750 MB fuera; entran scripts+JSON+tablas), `benchmarks/neural_external_wave/
+   exclusion_notes/`, `figures/fig_*.png`, `tools/jgsa_figures/`, actas
+   20260718/, kimi_code.md, .gitignore, COVER_LETTER_DRAFT.md,
+   JOURNAL_DECISION_20260716.md. Tras commit: re-pasar clean-clone gate.
+2. **R6-H7 / ancla externa**: Data/Code Availability dice "upon publication"
+   sin repo público ni DOI → decidir Zenodo o repo institucional ANTES de
+   enviar (riesgo editorial real).
+3. Checks del día de envío (en JOURNAL_DECISION): APC Springer/CRUE con
+   biblioteca UPNA, JCR Q1 vigente, guía de autor JGSA (anonimato si aplica).
+4. Opcional: `miktex update` (aviso out-of-sync inofensivo).
+
+**Números sagrados**: sin cambios (ver sección anterior). La ciencia sellada
+no se ha tocado en R6; las figuras nuevas se derivan de artefactos sellados o
+post-hoc ya commiteados/en disco.
+
+---
+
+## 2026-07-19 — E7/E8/E9 INTEGRADOS + HANDOFF A CLAUDE CODE (ESTADO VIGENTE)
+
+**Esta sección sustituye al estado anterior.** Petición del usuario: "arregla
+todo lo que tenemos en contra". Se atacaron los 4 puntos débiles con
+experimentos NUEVOS (agentes Debussy y Ethan), no solo redacción:
+
+- **E7 real stream** (`benchmarks/real_stream_wave/`): 1902 detecciones reales
+  (1394 frames, detector custom, mavlink, GT exacto 11 torres). Bug de doble
+  escalado encontrado y corregido por el agente. Resultados honestos: todos
+  observation-bound ~33 m; SPPA NO gana IoU 2D (0.298 vs 0.42-0.45); brazo
+  token: 0.381→0.025 al forzar token correcto; latencia 11.8 ms.
+- **E8 adversarial** (`benchmarks/mvfit_reviewer_experiments/e8_adversarial_family/`):
+  120 actores que violan priors de familia → ventaja cae +0.209→+0.141
+  [0.125,0.157] (destruye 1/3); empates en leaning lattice y cascade crown;
+  SPPA pierde 8.3% actores. Rompe la tautología con datos.
+- **E9 part-query** (`...\e9_role_query/`): F1 0.434 vs 0.145/0.111/0.087;
+  d_c 0.055; conteo 70% vs 0%. Frontera honesta: hull gana en copas
+  fusionadas; rider/fork=0.
+- **Paper**: main 23 págs (15 figs, 7 tabs), suplemento 10 págs (S.1–S.9 con
+  3 tablas nuevas). Intro con contribuciones (i)(ii)(iii); threats declara la
+  tautología; abstract/conclusión incluyen adversarial+stream. 0 undefined.
+- OJO heredoc bash: mangla `\` en tablas .tex → usar siempre Write tool
+  (lección aprendida con real_stream_main_table.tex / token_arm).
+- **Handoff a Claude Code**: `CLAUDE_CODE_HANDOFF.md` (este directorio).
+  Claude Code configurado autónomo: `~/.claude/settings.json` →
+  permissions.defaultMode=bypassPermissions (token z.ai dentro, NO copiar).
+
+**Pendiente AHORA**: (1) strict gate, (2) acta
+`editorial_audits/20260719/TRIBUNAL_ROUND_07.md`, (3) COMMIT — sigue SIN
+confirmación del usuario, (4) decisión DOI/Zenodo, (5) checks día de envío.
