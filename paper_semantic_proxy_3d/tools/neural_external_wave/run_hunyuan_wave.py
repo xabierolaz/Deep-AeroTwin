@@ -35,6 +35,7 @@ def main() -> None:
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--model-path", default="tencent/Hunyuan3D-2mini")
     parser.add_argument("--subfolder", default="hunyuan3d-dit-v2-mini-turbo")
+    parser.add_argument("--model-name", default="hunyuan3d_2mini_turbo_shape", help="event model tag (full model: hunyuan3d_2_full_shape)")
     parser.add_argument("--use-safetensors", action="store_true")
     parser.add_argument("--enable-flashvdm", action="store_true")
     parser.add_argument("--num-inference-steps", type=int, default=5)
@@ -87,7 +88,7 @@ def main() -> None:
     emit(
         "SPPA_BENCH_MODEL",
         {
-            "model": "hunyuan3d_2mini_turbo_shape",
+            "model": args.model_name,
             "status": "loaded",
             "load_sec": load_sec,
             "device": device,
@@ -139,7 +140,7 @@ def main() -> None:
             mesh.export(mesh_path)
             export_sec = time.perf_counter() - start
             payload = {
-                "model": "hunyuan3d_2mini_turbo_shape",
+                "model": args.model_name,
                 "label": label,
                 "prompt": item["prompt"],
                 "status": "ok",
@@ -152,7 +153,7 @@ def main() -> None:
             payload.update(mesh_stats(mesh_path))
         except Exception as exc:  # reported, not fatal (Amendment 05 E5)
             payload = {
-                "model": "hunyuan3d_2mini_turbo_shape",
+                "model": args.model_name,
                 "label": label,
                 "prompt": item["prompt"],
                 "status": "error",

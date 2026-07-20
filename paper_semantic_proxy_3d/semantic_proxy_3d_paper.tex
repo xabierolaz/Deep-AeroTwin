@@ -20,8 +20,8 @@
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 
-\title{Family-Conditioned Multiview Fitting for Semantic Primitive Proxy Actors\\
-in UAV Digital Twins (SPPA-MVFit)}
+\title{Instant Semantic Proxy Reconstruction for UAV Digital Twins\\
+under Degraded Sensing (SPPA-MVFit)}
 \author{Authors omitted for review}
 \date{}
 
@@ -30,31 +30,54 @@ in UAV Digital Twins (SPPA-MVFit)}
 \maketitle
 
 \begin{abstract}
-Object-level UAV telemetry is not a mesh: a detector may report a class family,
+Safe remote piloting through a geospatial digital twin breaks down exactly
+when the twin is stale and the image link is weak: a Cesium/Unreal twin shows
+the world as it was captured, not as it is now, and the operationally
+critical delta---a new or relocated tower, vehicles, animals, people near
+the flight path---is precisely what the static layer cannot contain.
+Object-level UAV telemetry is not a mesh: a detector reports a class family,
 confidence, track identifier, bounding region, and approximate pose, but no
-occupancy geometry. Geospatial digital twins that maintain live object layers
-nevertheless need a per-object 3D representation that is cheap to update in
-place and explicit about uncertainty. This paper studies whether a frozen
-semantic-family part graph improves lightweight 3D occupancy relative to an
-input-matched, equal-budget nonsemantic graph when both consume the same
-calibrated top and side silhouettes. The method, family-conditioned
+occupancy geometry. This paper studies instant per-object semantic proxy
+reconstruction: compiling each detection into a role-labeled primitive
+volume that updates the twin delta in place, at millisecond cost and
+telemetry bandwidth, and that keeps working as the observation degrades.
+The method, family-conditioned
 SPPA-MVFit, aligns five shared parameters of a fixed eight-part primitive
 actor with a 31-candidate silhouette objective. On a preregistered
 developer-held-out synthetic test of 240 actors balanced across six morphology
 families and two source strata, the paired mean voxel-IoU difference over
 Generic-MVFit is \(0.190\) (95\% CI \([0.181,0.199]\)), exceeding the
-prespecified \(+0.030\) margin, and the margin holds under all prespecified
-mask and morphology corruptions. Median fitter wall time is \(9.4\)~ms on the
-benchmark machine. A post-hoc sanity check on 52 external real meshes shows
+prespecified \(+0.030\) margin; in a post-hoc analysis of the sealed data
+under the preregistered observation corruptions, the margin holds under every
+condition, from mask corruption (cost \(\approx 0.001\) IoU) to moderate
+morphology corruption (\(0.118\), far above the margin). Median fitter wall
+time is \(9.4\)~ms per object on the benchmark machine, and \(11.8\)~ms
+median per detection on a real detector stream running at 2--15~Hz; measured
+SPPA JSON update traffic is 25.8--37.4~kB/s against a modeled
+\(\geq\)250~kB/s compressed-video link. A post-hoc sanity check on 52
+external real meshes shows
 the margin does not transfer (SPPA \(0.413\), generic \(0.370\), capsule
 \(0.492\), visual hull \(0.656\)); occupancy leadership outside the design
 distribution is not claimed. An adversarial stratum that violates the family
 priors while preserving semantic class destroys one third of the advantage
 (\(+0.209\) to \(+0.141\)) with identifiable tie zones, and a real detector
-stream case study (1{,}902 detections, exact tower-anchor ground truth) shows
-the field operating point is observation-bound and trades 2D image overlap for
-3D part structure. A descriptor/update contract and an optional
-Unreal Engine backend are reported as deployment context.
+stream case study (1{,}902 detections, exact tower-anchor ground truth)
+exercises the degraded-signal operating point, where detector-token
+confidence and prior fit separate wrong tokens from correct ones
+(AUC \(0.847\) and \(1.000\) respectively). Two exploratory post-hoc twin
+studies support this mission reading: E11 measures cross-view reconstruction
+fidelity against exact simulator ground truth on the georeferenced twin, and
+E14 demonstrates the same update contract fed by simulated LiDAR-class
+returns with no camera in the perception path; both are labeled exploratory,
+rely on simulated sensing, and lock positions to ground truth. The durable
+contribution is the
+twin-delta update contract---role labels, bounded in-place updates, a compact
+\(1.45\)~kB update descriptor, and a measured part-query value (F1
+\(0.434\))---reported with its declared limits: camera-validated, with
+LiDAR and night/fog/smoke operation evaluated only through prespecified
+synthetic corruptions and the simulated-twin E14 demonstration, not measured
+on hardware, and
+position assumed given (localization is outside this paper's scope).
 \end{abstract}
 
 \noindent\textbf{Keywords:} semantic 3D proxy; multiview silhouette fitting;
@@ -62,6 +85,35 @@ UAV digital twin; family-conditioned part graph; primitive actor; occupancy IoU;
 geovisualization of dynamic objects.
 
 \section{Introduction}
+
+The motivating mission is safe remote piloting through a geospatial twin: a
+pilot or operator supervises a UAV from a ground station that renders a live
+Unreal/Cesium 3D Tiles twin---potentially as an immersive VR
+interface---and must trust what the twin shows. That trust breaks in a
+specific way: the streamed Cesium layer is frozen at capture time, so it
+shows the field as it was, not as it is now, and the operationally critical
+delta---a new or relocated tower, vehicles, animals, people near the flight
+path---is exactly what the static layer cannot contain. When the live image
+link is degraded or insufficient to judge the scene, the twin should absorb
+whatever observation evidence does arrive and reconstruct that delta as
+explicit per-object volumes, immediately and at telemetry bandwidth.
+Figure~\ref{fig:mission-twin-delta} illustrates this twin-delta mission.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_mission_twin_delta.png}
+\caption{The twin-delta mission (conceptual illustration composed from
+existing project imagery; no new renders or measurements). (a)~The real
+world now contains an intruder tower (Blender photorealistic render).
+(b)~The streamed Cesium/Unreal twin is frozen at capture time and does not
+contain it. (c)~The twin after one detection is compiled into an SPPA proxy
+and inserted in place; the chip reports the sealed benchmark values for the
+compact update descriptor (\(1.45\)~kB) and the median CPU fit
+(\(9.4\)~ms per object). The imagery is illustrative; descriptor size and
+fitting time are the sealed values reported in
+Section~\ref{sec:primary-results}.}
+\label{fig:mission-twin-delta}
+\end{figure}
 
 Urban and geospatial digital twins increasingly maintain live object
 layers---vehicles, field equipment, temporary structures---alongside static
@@ -93,46 +145,43 @@ torso, head, and legs. A tree becomes a trunk and canopy volumes. Unknown or
 unsupported labels are not hallucinated into specific objects; they fall back to
 a generic uncertainty-aware display volume with explicit uncertainty metadata.
 
-The question studied here is therefore not whether SPPA produces prettier
-geometry than neural 3D generation, but a measurable spatial-proxy question:
-does a frozen semantic-family part graph improve lightweight 3D occupancy
-relative to an input-matched, equal-budget nonsemantic graph when both consume
-the same calibrated top and side silhouettes? A role-labeled primitive proxy
-turns detection-level semantics into displayable, analyzable 3D geometry with
-bounded cost; this paper isolates the occupancy value of the semantic part
-structure behind that representation under controlled synthetic conditions.
+The question studied here is deliberately narrow and measurable. Position is
+assumed given---localization is a separate problem, outside this paper's
+scope---and what the mission requires is reconstruction fidelity under
+degraded sensing: does a frozen semantic-family part graph improve lightweight
+3D occupancy relative to an input-matched, equal-budget nonsemantic
+graph---identical silhouettes, optimizer, parameter count, and candidate
+budget; only the graph changes---when both consume
+the same calibrated top and side silhouettes, and does the advantage survive
+the corrupted observations that a weak image link implies? A role-labeled
+primitive proxy turns detection-level semantics into displayable, analyzable
+3D geometry with bounded cost; this paper isolates the occupancy value of the
+semantic part structure behind that representation under controlled synthetic
+conditions and maps its behavior as the observation degrades.
 
-The contribution is \textbf{family-conditioned SPPA-MVFit}: a preregistered,
+The contribution is \textbf{family-conditioned SPPA-MVFit}: an instant
+detection-to-volume path whose semantic prior is validated by a preregistered,
 equal-budget comparison showing that the family graph improves clean voxel IoU
-over a generic eight-part graph by \(0.190\) (95\% CI \([0.181,0.199]\)) on 240
+over a generic eight-part graph by \(0.190\) (95\% CI \([0.181,0.199]\)) on
+240
 held-out synthetic actors, together with boundary analyses that map where the
 prior helps, where it hurts, and where it stops transferring. The optimizer is
 deliberately a shared five-parameter global alignment and is not claimed as a
 novel fitting algorithm; runtime persistence and updateability are reported as
 separate engineering properties rather than collapsed into a utility score.
-Concretely, the paper contributes: (i)~the comparison protocol itself---an
-input-matched, equal-budget, preregistered design that isolates the knowledge
-representation as the single varied factor; (ii)~a quantified boundary map of
-that representation---wrong-family tokens, adversarial family instances,
-single-view degradation, external real meshes, and a real detector
-stream---showing measurably where the prior stops helping; and (iii)~the
-lightweight actor contract (role labels, bounded updates, telemetry-scale
-descriptor), whose operational value is measured by a part-query task rather
-than asserted.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\linewidth]{figures/fig_pipeline_overview.png}
-\caption{SPPA semantic-label-to-parts-to-3D mechanism for the truck archetype. A
-language model, ontology tool, or human author may draft candidate part roles
-offline, but runtime execution uses only a reviewed versioned recipe \(z_r\). An
-input label activates an offline draft, the draft is reduced to reviewed part
-roles and bounded update rules, and runtime compiles those roles into primitive
-geometry. The short and long proxy variants illustrate the implemented
-role-specific rule: cargo length changes while cab and wheel priors remain
-bounded, so the object is not represented by root-scaling a single box.}
-\label{fig:pipeline-overview}
-\end{figure}
+Concretely, the paper contributes: (i)~an instant detection-to-volume
+path---a reviewed family recipe compiles one detection into a role-labeled
+eight-part actor in \(9.4\)~ms median CPU per object, emitted as a compact
+\(1.45\)~kB update descriptor, and sustains \(11.8\)~ms median per detection
+on a real 2--15~Hz detector stream; (ii)~preregistered evidence of volumetric
+fidelity and of robustness to a weak signal---the \(+0.190\) advantage
+(\([0.181,0.199]\)) is maintained under all prespecified mask and morphology
+corruptions, and the frontier where it stops is measured (wrong-family
+tokens, adversarial family instances, external real meshes, and a real
+detector stream); and (iii)~the twin-delta update contract---role labels,
+bounded in-place updates, measured 25.8--37.4~kB/s JSON update traffic
+against a modeled \(\geq\)250~kB/s video link, and an operational part-query
+value (F1 \(0.434\))---with its declared limits.
 
 \section{Related Work}
 
@@ -203,6 +252,47 @@ grids, OctoMap, ESDF, and TSDF maps support planning and mapping
 display actor representation that can consume such upstream evidence, not as a
 mapping substrate.
 
+Table~\ref{tab:sota-positioning} positions SPPA-MVFit against these paradigms
+on the properties that matter for a telemetry-driven UAV twin. Reading across
+the rows makes the research gap concrete: no current paradigm simultaneously
+(i)~consumes detector-level telemetry rather than pixels or prompts,
+(ii)~emits a role-labeled low-polygon actor rather than a dense mesh or a
+category surface, (iii)~updates that actor in place at millisecond CPU cost,
+and (iv)~exposes a bounded descriptor/update contract to the renderer. Neural
+generators fail (i) and (iii); category templates fail (i) and (iv); learned
+primitive decomposition fails (i) and (iii); scene graphs and occupancy maps
+solve a mapping problem, not the display-actor problem; and classical
+level-of-detail techniques require the curated asset that field operation
+cannot guarantee. SPPA-MVFit is designed for exactly this conjunction.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\caption{Positioning of SPPA-MVFit against state-of-the-art paradigms for
+per-object 3D in a telemetry-driven UAV digital twin. \emph{Telemetry input}:
+consumes detector tags/footprints rather than RGB or prompts. \emph{Role
+labels}: named semantic parts, not anonymous geometry. \emph{In-place update}:
+pose/shape updates without regenerating the actor. Cost is the per-object
+generation cost reported in this paper's measurements or the cited systems'
+operating points.}
+\label{tab:sota-positioning}
+\begin{tabularx}{\linewidth}{@{}L{0.235\linewidth}Y Y Y Y@{}}
+\toprule
+Paradigm (representative systems) & Telemetry input & Role labels & In-place update & Per-object cost \\
+\midrule
+Neural image/text-to-3D (TripoSR, Hunyuan3D-2, TripoSG) & no (image/prompt) & no & no & seconds, GPU; 28k--3.4M tris \\
+Category templates (3DMM, SMPL, SMAL) & no (scans/images) & category-specific & partial & offline fitting \\
+Learned primitive decomposition (SuperDec, DualPrim, superfrusta) & no (image/cloud) & implicit parts & no & GPU inference \\
+Scene graphs (Hydra, 3D DSG) & mapping sensors & object level & yes & mapping layer, not a display actor \\
+LOD / impostors / billboards & no (needs assets) & no & yes & negligible, but asset required \\
+Occupancy maps (OctoMap, voxblox) & depth sensors & no & yes & navigation map, not actors \\
+\midrule
+\textbf{SPPA-MVFit (this work)} & \textbf{yes} & \textbf{yes} & \textbf{yes} & \textbf{9.4~ms CPU; 8 parts; compact 1.45~kB update descriptor} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
 \section{Materials and Methods}
 
 \subsection{The SPPA contract and part graph}
@@ -252,12 +342,9 @@ the cargo/body span and axle placement absorb length changes. In the synthetic
 truck check, two descriptors with equal width/height and different length keep
 cab scale fixed at \([1.656,2.070,1.952]\) m and wheel scale fixed at
 \([0.392,0.094]\) m, while cargo/body length changes from \(2.263\) m to
-\(5.188\) m.
-
-\paragraph{Language model use (offline only).}
-A language model, ontology tool, or human author may propose candidate part
-decompositions offline; those candidates must be reviewed, versioned, and
-regression tested before admission. No language model is called at runtime.
+\(5.188\) m. Candidate part decompositions may be drafted offline by a
+language model, ontology tool, or human author, but only reviewed, versioned,
+regression-tested recipes are admitted and no language model runs at runtime.
 
 \paragraph{Pose, yaw, and updates.}
 The descriptor separates actor pose \(\xi_t\) from part parameters \(q_t\). Pose
@@ -294,6 +381,23 @@ records every decision with its reason. Because both paths share the builder
 and the descriptor contract, their outputs are directly comparable
 (Figure~\ref{fig:role-colored}).
 
+The evidence contract is sensor-agnostic by design. What the Project and
+Scale stages consume is an oriented ground footprint geo-projected from
+whatever sensor produced the observation, together with its declared
+geometry and uncertainty envelope; any sensor that delivers such a footprint
+enters the same contract and the same builder. In this paper the camera path
+is the validated one---it is exercised by the real-image probes of
+Section~\ref{sec:deployment-summary} and by the recorded detector stream of
+Section~\ref{sec:real-stream}. LiDAR is an interchangeable input by design:
+a LiDAR cluster reduces to the same geo-projected footprint and enters the
+same gate. No hardware LiDAR measurement is reported here; the camera-less
+path is exercised only in the simulated-LiDAR twin demonstration of
+Section~\ref{sec:e14}, and night, fog, or
+smoke operation is likewise evaluated only through
+the prespecified synthetic mask corruptions of
+Section~\ref{sec:robustness} and the simulated degraded arm of
+Section~\ref{sec:e14}, not through measured degraded-weather data.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.5\linewidth]{figures/fig_role_colored_blender.png}
@@ -302,7 +406,7 @@ labels are part of the emitted actor contract: they drive bounded per-role
 update rules, material/uncertainty tags, and the connector primitives between
 semantically attached parts. (b) Role-aware IoU of the fitted proxies against
 random-shuffle and cyclic-shuffle controls (\(0.319\) versus \(0.053\) and
-\(0.017\); Section~4.5).}
+\(0.017\); Section~\ref{sec:ablations}).}
 \label{fig:role-colored}
 \end{figure}
 
@@ -316,15 +420,37 @@ weak label only to the conservative \texttt{articulated\_vehicle} family. The
 shared builder then emits a 1{,}904-triangle proxy (Supplementary
 Section~S.4).
 
+The full chain is written out step by step as Algorithm~1 in Supplementary
+Section~S.1, and Figure~\ref{fig:worked-example} traces one measured
+detection of the real
+stream of Section~\ref{sec:real-stream} through every stage of that chain.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_worked_example.png}
+\caption{Worked end-to-end example on measured field data (frame 916 of the
+real stream, Section~\ref{sec:real-stream}). (a)~The detector reports a
+\texttt{tower} at confidence \(0.37\) together with a biker and a cow
+hypothesis. (b)~Detection evidence: a \(28{\times}93\)-px mask at the frame
+border. (c)~The geo-projected footprint (\(20.4\times2.7\)~m observed)
+against the exact simulator anchor of tower \texttt{t0}; the localization
+gap is set by the monocular observation geometry and is quantified for the
+whole stream in Supplementary Section~S.9. (d)~The compiled eight-part
+\texttt{lattice\_tower} proxy with semantic roles (spine, legs, platforms).
+(e)~The Unreal/Cesium twin layer in which the emitted actor is displayed.}
+\label{fig:worked-example}
+\end{figure}
+
 \subsection{Descriptor and runtime backend}
 \label{sec:implementation}
 
-A \texttt{SPPA-DESC-0.2} record stores resolver source, match type, fallback
-reason, scale source, mask footprint evidence, yaw ambiguity, shape confidence,
-material source, part list, primitive counts, and scheduler metadata; a
-\texttt{SPPA-UPD-0.2} record separates create/regenerate payloads from
-pose/no-op/shape updates, and \texttt{descriptor\_id} acts as a topology-cache
-identity so that a pose update never looks like a new mesh descriptor. The
+{\sloppy
+A \texttt{SPPA-DESC-0.2} record carries the resolved family, the role-labeled
+part list, and the evidence, uncertainty, and material tags needed to build
+the actor once per track; a \texttt{SPPA-UPD-0.2} record separates
+create/regenerate payloads from the pose/no-op/shape updates applied in place
+(the field-level record contents and the \texttt{descriptor\_id}
+topology-cache identity rule are detailed in Supplementary Section~S.8). The
 design goal is to generate once per track/archetype, update
 pose/material/uncertainty every frame, and apply shape-parameter changes in
 place when the part topology is unchanged. An optional Unreal Engine 5.7
@@ -332,6 +458,7 @@ backend ingests the same descriptors alongside curated assets, which remain
 the default; the SPPA backend constructs primitive components from the
 \texttt{parts} array, applies update packets, and rejects invalid JSON or
 mismatched descriptor identifiers without changing the current actor.
+\par}
 
 \subsection{Confirmatory protocol}
 \label{sec:mvfit}
@@ -355,21 +482,45 @@ mean top/side disagreement
 \(0.5(1-\mathrm{IoU}_{\mathrm{top}})+0.5(1-\mathrm{IoU}_{\mathrm{side}})\) plus
 a small centering regularizer---using a coordinate descent over three
 shrinking step fractions that evaluates exactly 31 objective values; only the
-graph identity differs (\texttt{generic} vs family). Baselines include
+graph identity differs (\texttt{generic} vs family). The fitting loop is
+written out exactly in Figure~\ref{alg:mvfit}. Baselines include
 axis-aligned box, ellipsoid, capsule, billboard, and nonsemantic visual hull
-from the same masks. The fitter is deliberately a five-parameter global
-alignment shared by all slots; the contribution is the family-conditioned
-representation and the runtime contract, not the optimizer
-(Figure~\ref{fig:fitting-sequence}).
+from the same masks.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\linewidth]{figures/fig_fitting_sequence_blender.png}
-\caption{Fitting of SPPA-MVFit on a held-out actor: (a)~the observed
-silhouette pair, (b)~initialization from the observed mask extents,
-(c)~the converged eight-part proxy, and (d)~the ground-truth voxel mesh.}
-\label{fig:fitting-sequence}
-\end{figure}
+\fbox{\begin{minipage}{0.94\linewidth}
+\footnotesize
+\textbf{Algorithm 2 --- SPPA-MVFit: 31-candidate silhouette fit
+(identical for every compared graph \(g\)).}\\[3pt]
+\textbf{Input:} graph \(g\); binary silhouettes \(S_{\mathrm{top}}\),
+\(S_{\mathrm{side}}\) (\(96{\times}96\)); metric world box.\\
+\textbf{Parameters:} \(\theta=(\log s_x,\log s_y,\log s_z,s_{\mathrm{sec}},
+o_{\mathrm{sec}})\), shared by all eight slots.\\
+\textbf{Objective:} \(J(\theta)=0.5\,(1-\mathrm{IoU}_{\mathrm{top}})
++0.5\,(1-\mathrm{IoU}_{\mathrm{side}})+\varepsilon\cdot\)centering,
+evaluated on the actor's projections against the observed silhouettes.\\[2pt]
+\begin{enumerate}[leftmargin=1.6em,itemsep=0pt,topsep=1pt]
+\item Initialize \(\theta_0\) from the observed mask extents; evaluate
+\(J(\theta_0)\) \hfill(1 evaluation)
+\item For each step fraction \(f\in\{0.10,\,0.03,\,0.01\}\) (three shrinking
+sweeps): for each of the five parameters, evaluate \(J\) at the current best
+\(\theta\) with that parameter moved by \(\pm f\) times its allowed range, and
+keep the better value \hfill(\(3\times5\times2=30\) evaluations)
+\item Return \(\theta^{\ast}\). Total cost: exactly \(1+30=31\) objective
+evaluations for every method---the budget is part of the controlled
+comparison, not a tuned choice.
+\end{enumerate}
+\end{minipage}}
+\caption{The complete fitting loop used by SPPA-MVFit and Generic-MVFit. The
+only difference between the two methods is the graph \(g\) passed to the
+shared builder; the parameterization, bounds, objective, initialization, and
+candidate budget are identical.}
+\label{alg:mvfit}
+\end{figure} The fitter is deliberately a five-parameter global
+alignment shared by all slots; the contribution is the family-conditioned
+representation and the runtime contract, not the optimizer (a fitted example
+sequence is shown in Supplementary Section~S.9).
 
 The \texttt{generic} graph was designed by the authors as a plausible
 family-agnostic prior: eight symmetric ellipsoid slots with no
@@ -450,35 +601,23 @@ implicit-OOD cell.
 (\(n{=}240\) actors). Provenance: \texttt{synthetic\_geometry}. H1 passes only
 if the stratified bootstrap 95\% lower bound exceeds \(+0.030\).}
 \label{tab:mvfit-h1}
-\input{benchmarks/results/sppa_mvfit_h1_summary.tex}
+\input{benchmarks/results/sppa\_mvfit_h1_summary.tex}
 \end{table}
 
 \begin{figure}[H]
 \centering
-\begin{minipage}{0.48\linewidth}
-\centering
-\includegraphics[width=\linewidth]{figures/fig_h1_by_family.png}
+\includegraphics[width=0.6\linewidth]{figures/fig_h1_by_family.png}
 \caption{Paired clean-mask mean IoU difference of SPPA-MVFit minus
 Generic-MVFit by morphology family and source stratum (\(n{=}240\)). All
 twelve cells are positive; the equal-stratum aggregate is the primary
 estimate of Table~\ref{tab:mvfit-h1}.}
 \label{fig:h1-by-family}
-\end{minipage}\hfill
-\begin{minipage}{0.48\linewidth}
-\centering
-\includegraphics[width=\linewidth]{figures/fig_robustness_conditions.png}
-\caption{Paired SPPA-MVFit minus Generic-MVFit mean IoU difference with 95\%
-bootstrap intervals under the five prespecified observation conditions
-(\(n{=}240\) per condition). The dashed line marks the prespecified
-\(+0.030\) margin; it is exceeded under every condition.}
-\label{fig:robustness-conditions}
-\end{minipage}
 \end{figure}
 
 Table~\ref{tab:mvfit-means} reports clean-condition method means and
-wall-clock costs, and Table~\ref{tab:mvfit-secondary} the paired differences
-of SPPA-MVFit against the remaining baselines under the same stratified
-bootstrap construction. SPPA-MVFit exceeds SPPA text-only (mean
+wall-clock costs; the paired differences of SPPA-MVFit against the remaining
+baselines under the same stratified bootstrap construction are tabulated in
+Supplementary Section~S.9. SPPA-MVFit exceeds SPPA text-only (mean
 \(\Delta=0.130\), CI \([0.116,0.144]\)) and all lightweight geometric
 baselines. Mean IoU of SPPA-MVFit (\(0.557\)) is slightly above nonsemantic
 visual hull~\cite{laurentini1994visual} (\(0.522\)), but visual hull is denser
@@ -486,10 +625,9 @@ occupancy geometry without a role-labeled lightweight actor contract, so it is
 not presented as a defeated runtime competitor. Median single-call descriptive
 SPPA-MVFit time is \(9.4\)~ms (p95 \(10.6\)~ms), below the secondary
 local-cost gates of 100~ms median / 250~ms p95. A resolution-sensitivity check
-at grids 48/64/80 on the prespecified actor subset reports paired differences
-of \(0.198\), \(0.197\), and \(0.188\), with maximum deviation
-\(|\Delta|\le 0.0094\), below the \(0.015\) protocol threshold. The secondary
-intervals in Table~\ref{tab:mvfit-secondary} are per-comparison intervals and
+at grids 48/64/80 on the prespecified actor subset changes the paired
+difference by at most \(0.0094\), below the \(0.015\) protocol threshold. The
+secondary intervals are per-comparison intervals and
 are not adjusted for multiplicity; confirmatory inference in this paper is H1
 only.
 
@@ -500,33 +638,52 @@ only.
 are 64-cubed voxel IoU. Timings are single-call wall-clock milliseconds on the
 benchmark machine and are not Unreal frame times.}
 \label{tab:mvfit-means}
-\input{benchmarks/results/sppa_mvfit_method_means.tex}
+\input{benchmarks/results/sppa\_mvfit_method_means.tex}
 \end{table}
+
+\subsection{Robustness to degraded observations (preregistered conditions)}
+\label{sec:robustness}
+
+The mission premise is a weak signal: the observation that reaches the twin
+may be noisy, partially occluded, or morphologically inconsistent with the
+family prior. This arm measures exactly that regime. The prespecified
+observation conditions---mild and moderate mask noise, partial occlusion,
+and moderate morphology corruption---were fixed in the protocol before
+evaluation; the results reported here are a post-hoc analysis of the sealed
+confirmatory data under those preregistered conditions
+(Table~\ref{tab:robustness-conditions};
+Figure~\ref{fig:robustness-conditions}). The margin is exceeded under all
+five conditions, and the contrast between corruption types is the headline:
+mask corruption costs the paired difference only \(\approx\)\(0.001\) IoU
+(\(0.189\) against \(0.190\) clean) and partial occlusion the same
+(\(0.189\)), while moderate morphology corruption---evidence that
+contradicts the graph prior---cuts it to \(0.118\) (CI \([0.106,0.131]\)),
+still far above the prespecified \(+0.030\) margin. Missing or noisy
+evidence is therefore nearly free for this method; contradictory evidence is
+what degrades it, and even that leaves the prespecified margin intact.
 
 \begin{table}[H]
 \centering
 \footnotesize
-\caption{Paired clean-mask mean IoU differences of SPPA-MVFit minus each
-comparator (stratified actor bootstrap 95\% intervals, per-comparison and
-unadjusted across secondary endpoints). Visual hull is a
-high-complexity geometry reference, not a lightweight runtime actor.}
-\label{tab:mvfit-secondary}
-\input{benchmarks/results/sppa_mvfit_secondary_deltas.tex}
+\caption{Robustness of the primary comparison to degraded observations
+(post-hoc analysis of the sealed confirmatory data under the preregistered
+conditions; \(n{=}240\) per condition). Method means and paired differences
+under the five prespecified observation conditions. The prespecified
+\(+0.030\) margin is exceeded under every condition. Per-condition means of
+all eight methods are in Supplementary Section~S.9.}
+\label{tab:robustness-conditions}
+\input{benchmarks/mvfit_posthoc_analysis/t1_robustness/robustness_conditions_table.tex}
 \end{table}
 
-\subsection{Robustness under corrupted observations and failure analysis}
-\label{sec:robustness}
-
-The prespecified observation conditions---mild and moderate mask noise,
-partial occlusion, and moderate morphology corruption---were fixed in the
-protocol and evaluated with the confirmatory run
-(Figure~\ref{fig:robustness-conditions}; per-condition table in Supplementary
-Section~S.9). The margin is exceeded under all five conditions, including
-moderate morphology corruption (\(\Delta=0.118\), CI \([0.106,0.131]\)).
-Moderate morphological corruption degrades the margin far more than mask
-corruption or partial occlusion (\(\Delta=0.189\) each): evidence that
-contradicts the graph prior hurts the fit more than missing or noisy evidence.
-
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{figures/fig_robustness_conditions.png}
+\caption{Paired SPPA-MVFit minus Generic-MVFit mean IoU difference with 95\%
+bootstrap intervals under the five prespecified observation conditions
+(\(n{=}240\) per condition). The dashed line marks the prespecified
+\(+0.030\) margin; it is exceeded under every condition.}
+\label{fig:robustness-conditions}
+\end{figure}
 
 Exactly \(5\) of \(240\) clean cases fall below the prespecified failure
 threshold (voxel IoU \(<0.25\)); all five are \texttt{lattice\_tower} CSG-ID
@@ -545,18 +702,7 @@ distance \(0.008\) for SPPA-MVFit versus \(0.009\) for visual hull and
 \(0.016\) for Generic-MVFit (Supplementary Section~S.9), and F-score at
 1.5 voxels of \(0.831\) versus
 \(0.799\) and \(0.560\) respectively
-(Table~\ref{tab:surface-metrics}).
-
-\begin{table}[H]
-\centering
-\footnotesize
-\caption{Surface metrics on the clean condition
-(\(n{=}240\)). F-score at a 1.5-voxel threshold against ground-truth
-surfaces; paired differences versus SPPA-MVFit with stratified bootstrap
-95\% intervals.}
-\label{tab:surface-metrics}
-\input{benchmarks/mvfit_posthoc_analysis/t3_surface/surface_metrics_table.tex}
-\end{table}
+(table in Supplementary Section~S.9).
 
 \subsection{Representation versus fitting: the graph-by-fitting decomposition}
 \label{sec:results-decomposition}
@@ -658,7 +804,7 @@ prior violation, and the failure zones are identifiable
 \subsection{Ablations and sensitivity analyses}
 \label{sec:ablations}
 
-\paragraph{View ablation and side-view acquisition.}
+\paragraph{View ablation.}
 \label{sec:view-ablation}
 The objective consumes a top and a side silhouette. Refitting with only the
 top view costs \(-0.100\) IoU (CI \([-0.112,-0.088]\)); refitting with only
@@ -666,23 +812,17 @@ the side view costs only \(-0.012\) (CI \([-0.021,-0.003]\))
 (Figure~\ref{fig:view-ablation}). The side view carries nearly all of the 3D
 information for this object envelope, and even the degraded top-only mode
 (\(0.458\)) stays above dual-view Generic-MVFit (\(0.367\)) and the box
-baselines. A side view is not available from a pure nadir pass: it requires an
-oblique pass or orbit, or a second platform. The operational pipeline already
-runs in a nadir footprint-only mode in production
-(Section~\ref{sec:pipeline}); the top-only arm quantifies exactly that
-degraded mode for the fitting path.
+baselines. A side view is not available from a pure nadir pass; the top-only
+arm therefore quantifies exactly the nadir observation regime---the
+footprint-only mode of the operational pipeline
+(Section~\ref{sec:pipeline})---for the fitting path.
 
 
 \paragraph{Oriented bounding box baseline.}
-The primitive baselines are axis-aligned. A rotation-aware oriented bounding
-box (top-mask minimum-area rectangle with gap-midpoint refinement, \(z\)
-extent from the side mask) scores \(0.252\), practically identical to the
-axis-aligned box (\(0.248\); paired difference \(-0.004\), CI
-\([-0.005,-0.003]\)): the benchmark actors are presented axis-aligned, so
-orientation freedom adds nothing, and SPPA-MVFit minus OBB is \(+0.306\) (CI
-\([0.297,0.314]\); table in Supplementary Section~S.9). The box family of baselines, oriented or not, does not
-close the representation gap. The wider representation design space is mapped
-in Supplementary Section~S.1.
+The primitive baselines are axis-aligned; a rotation-aware oriented bounding
+box baseline stays within \(0.004\) IoU of the axis-aligned box on this
+axis-aligned benchmark, so orientation freedom does not close the
+representation gap (full analysis in Supplementary Section~S.9).
 
 \paragraph{Generic-graph design sensitivity.}
 \label{sec:generic-sensitivity}
@@ -742,8 +882,9 @@ As a post-hoc exploratory case study outside the design distribution, the
 same methods were run on \(n{=}52\) real third-party meshes (Objaverse LVIS
 subset and ModelNet40), mapped to the six families through a class-to-family
 mapping frozen in writing before any evaluation and passed through visual
-quality control (Table~\ref{tab:external-sanity};
-Figures~\ref{fig:external-scatter} and~\ref{fig:external-gallery}). Mean fit
+quality control (Table~\ref{tab:external-sanity},
+Figure~\ref{fig:external-scatter}; a qualitative gallery of the two
+representative outcomes is retained in Supplementary Section~S.9). Mean fit
 time remains millisecond-scale (\(9.8\)~ms per case, CPU). This is a sanity
 check, not a benchmark: the sample is small, the class mapping is approximate,
 and the evaluation reuses the synthetic-grid protocol on real geometry.
@@ -773,18 +914,6 @@ zero.}
 \label{fig:external-scatter}
 \end{figure}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\linewidth]{figures/fig_external_gallery.png}
-\caption{External sanity check, qualitative. Left: a ModelNet40 car where
-the family graph helps (SPPA 0.628 vs generic 0.397). Right: an Objaverse
-water tower whose horizontal tank mismatches the vertical tower template
-(SPPA 0.118 vs generic 0.126)---the template--instance mismatch failure
-mode. Panels show observed masks, SPPA actor projections, and ground-truth
-voxel projections.}
-\label{fig:external-gallery}
-\end{figure}
-
 Three readings follow. First, the preregistered margin does not replicate on
 external meshes at this sample size: SPPA-MVFit scores \(0.413\) (CI
 \([0.359,0.467]\)) against Generic-MVFit \(0.370\) (CI \([0.335,0.405]\)), a
@@ -809,34 +938,43 @@ morphology corruption the pattern persists (SPPA \(0.380\), Generic
 \label{sec:neural-external-wave}
 
 A secondary analysis, specified in writing before any measurement, compares
-SPPA-MVFit with two measured external neural image-to-3D generators,
-TripoSR~\cite{tochilkin2024triposr} and
-Hunyuan3D-2mini-turbo~\cite{zhao2025hunyuan3d}, on sixty of the held-out cases
+SPPA-MVFit with four measured external neural image-to-3D generators,
+TripoSR~\cite{tochilkin2024triposr}, Hunyuan3D-2mini-turbo and the flagship
+Hunyuan3D-2 full model~\cite{zhao2025hunyuan3d}, and
+TripoSG~\cite{triposg2025}, on sixty of the held-out cases
 (Figure~\ref{fig:pareto-neural}; full table and protocol in Supplementary
 Section~S.2). Each generator received two inputs: a clean-crop shaded oblique
 render, its best condition, and the raw \(96\times96\) top telemetry mask, the
 closest visual analog of the channel SPPA consumes. On these cases SPPA-MVFit
 reaches \(0.561\) mean voxel IoU at \(9.2\)~ms CPU with a 1.45~kB update
-descriptor, against \(0.128\)--\(0.231\) for the measured neural outputs,
-whose meshes carry \(28\)k--\(3.1\)M triangles and MB-scale payloads on an
-RTX~5090. Two observations sharpen the boundary. First, both generators score
-\emph{higher} from the harsh top mask than from their generous clean-crop
-render: single-view image-to-3D models hallucinate occluded structure, whereas
+descriptor, against \(0.128\)--\(0.231\) for the measured neural outputs over
+seven of the eight method-by-input conditions---the eighth, TripoSG on the raw
+mask (\(0.002\)), is a documented input-parity artifact excluded from this
+range (Supplementary Section~S.2)---whose meshes carry \(28\)k--\(3.4\)M
+triangles and MB-scale payloads on an
+RTX~5090. Two observations sharpen the boundary. First, every generator with a
+parity-clean input comparison scores
+\emph{higher} from the harsh top mask than from its generous clean-crop
+render (TripoSR and both Hunyuan3D-2 variants): single-view image-to-3D
+models hallucinate occluded structure, whereas
 a calibrated footprint constrains occupancy directly---telemetry-shaped
 evidence is not a degraded image but a different measurement channel. Second,
 the wave measures one operating point per system under deliberately asymmetric
-input channels: Hunyuan3D-2mini-turbo is a distilled mini/turbo checkpoint,
-not the flagship model of its family, and the comparison is not an
-image-to-3D leaderboard.
+input channels, not an image-to-3D leaderboard; the distilled-checkpoint
+caveat is retired by measurement---the flagship fifty-step Hunyuan3D-2 full
+model scores \(0.148\) (oblique) and \(0.177\) (mask), inside the same band as
+its distilled mini/turbo variant.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.6\linewidth]{figures/fig_pareto_neural.png}
 \caption{Operating-point comparison on sixty held-out cases: mean voxel IoU
 against per-object payload in bytes (log scale) for SPPA-MVFit, Generic-MVFit,
-visual hull, and the measured neural generators under both input conditions.
-SPPA rows are CPU-only and their payload is the update descriptor, not a
-mesh; the juxtaposition is an input-modality mismatch shown for
+visual hull, and the four measured neural generators under both input
+conditions. SPPA rows are CPU-only and their payload is the update
+descriptor, not a mesh; TripoSG's mask-input point (\(0.002\)) is the
+documented input-parity artifact of Supplementary Section~S.2. The
+juxtaposition is an input-modality mismatch shown for
 operating-point context, not a leaderboard.}
 \label{fig:pareto-neural}
 \end{figure}
@@ -845,38 +983,26 @@ operating-point context, not a leaderboard.}
 \label{sec:deployment-summary}
 
 Four real-image probes exercise the dual-input contract of
-Section~\ref{sec:pipeline} (Figure~\ref{fig:probes-grid}): a YOLOE-26s
+Section~\ref{sec:pipeline} (probe grid in Supplementary Section~S.4): a
+YOLOE-26s
 open-vocabulary detector supplies approximate semantic evidence on the image
 path, while the tag path uses reviewed text only. Detector evidence is not
 treated as ground truth: weak labels are refined only to conservative
 families (YOLOE's \texttt{vehicle} on the tractor-trailer crop becomes
 \texttt{articulated\_vehicle}, never the reviewed \texttt{tractor\_trailer}
 class), implausible footprint aspect ratios are clamped by family priors, and
-unsafe image-derived pose is withheld from the runtime descriptor. A 20-label
-verifier-gated open-label probe accepts 16/20 labels into reviewed families
-with 8/20 verified recipes (Supplementary Section~S.3), and a
+unsafe image-derived pose is withheld from the runtime descriptor. A
 role-preservation diagnostic keeps cab and wheel priors fixed while cargo
 length changes (Supplementary Section~S.5). Per-probe evidence, replay
-audits, and input-mode ablations are in Supplementary Section~S.4; no 3D
+audits, and input-mode ablations are in Supplementary Section~S.4, and a
+verifier-gated open-label probe in Supplementary Section~S.3; no 3D
 ground truth exists for these images, so no IoU is reported for them.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.8\linewidth]{figures/fig_probes_grid.png}
-\caption{Real-image probes for biker, electrical tower, tractor, and
-tractor-with-trailer (rows). Columns: input crop, YOLOE detector evidence,
-the emitted SPPA proxy, and four reproduced text/image-to-3D baselines
-(Shap-E, Point-E, TripoSR, Hunyuan3D) annotated with generation time,
-triangle count, and VRAM. Detector output is evidence, not ground truth;
-the neural columns receive a single image or crop, an input-modality
-mismatch shown for operating-point context, not a ranking.}
-\label{fig:probes-grid}
-\end{figure}
 
 The deployment layer is the descriptor/update contract consumed by the
 optional Unreal Engine 5.7 backend. Table~\ref{tab:deployment-runtime-summary}
-condenses the runtime evidence and Figure~\ref{fig:runtime-scaling} the
-packaged scaling behavior; the full Unreal/HISM matrix with run identifiers is
+condenses the runtime evidence, including the packaged scaling behavior
+(scaling figure in Supplementary Section~S.8); the full Unreal/HISM matrix
+with run identifiers is
 Supplementary Section~S.8. Packaged replay at 100 synthetic objects passes a
 33.3~ms desktop frame budget but misses 60~FPS; dense shape updates remain the
 limiting factor even under HISM batching, and curated assets remain preferable
@@ -891,7 +1017,8 @@ on the two-label cow/tower subset).
 \caption{Condensed deployment runtime evidence (run identifiers omitted here;
 full matrix in Supplementary Section~S.8). Python contract timings are not
 Unreal frame times, and packaged runs are short synthetic replays, not live
-flight telemetry.}
+flight telemetry. The link-budget row is byte accounting on measured replay
+traffic against a modeled video reference, not a measured radio link.}
 \label{tab:deployment-runtime-summary}
 \begin{tabularx}{\linewidth}{@{}L{0.30\linewidth}Y Y@{}}
 \toprule
@@ -900,30 +1027,22 @@ Evidence & Summary value & Boundary \\
 Descriptor build (81,568-row replay) & P50/P95 \(391.8/515.0\)~\(\mu\)s & Python contract cost, not frame time \\
 Update-packet build & P50/P95 \(16.8/75.3\)~\(\mu\)s & Python contract cost \\
 Scheduler decision & P50/P95 \(9.2/14.2\)~\(\mu\)s & Python contract cost \\
+Measured SPPA JSON update traffic (no-op packets suppressed) & 25.8--37.4~kB/s; modeled compressed video \(\geq\)250~kB/s (2--10~Mbps) & byte accounting on replay; video rate modeled, link not validated \\
 Editor-Cmd and packaged recorded replay & 27/27 payload applications accepted & recorded streams, no live network \\
 Packaged 100-object replay & pose/shape frame P95 \(17.814/19.256\)~ms & desktop feasibility; misses 60 FPS P95 \\
+Packaged HISM dense-update scaling, 100/250/500 objects & shape frame P95 \(37.126/94.018/186.113\)~ms; pose frame P95 \(18.921/41.609/78.933\)~ms & dense updates exceed the 33.3~ms budget (shape from 100, pose from 250 objects); 60 FPS not reached \\
 Packaged HISM partial update, 500 objects & pose/shape frame P95 \(16.528/29.787\)~ms & 10\% changed-track synthetic schedule \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.5\linewidth]{figures/fig_runtime_scaling.png}
-\caption{Packaged-runtime scaling (HISM backend, dense-update streams):
-frame P95 versus object count for the create, pose-update, and shape-update
-streams. The 33.3~ms line marks a desktop 30~FPS budget; dense shape updates
-exceed it already at 100 objects and dense pose updates between 100 and 250,
-while the sparse 10\% changed-track schedule of
-Table~\ref{tab:deployment-runtime-summary} stays below it at 500 objects.}
-\label{fig:runtime-scaling}
-\end{figure}
-
 \subsection{A real detector stream case study}
 \label{sec:real-stream}
 
 The motivating scenario is a real detector running on a live georeferenced
-twin. As a post-hoc exploratory case study, a recorded 1{,}394-frame flight
+twin, and the value of this case study is precisely that its signal is
+degraded. As a post-hoc exploratory case study, a recorded 1{,}394-frame
+flight
 stream over the Ejea twin was re-analyzed end to end: a custom YOLO detector
 with real confidence noise and real confusions (cows hallucinated on tower
 textures), MAVLink telemetry, and exact simulator ground truth for the
@@ -932,36 +1051,72 @@ static tower anchors. Detections with locked telemetry yield 1{,}902 cases
 identical observation---an oriented ground footprint geo-projected from the
 detection box plus a monocular height estimate---so the comparison carries
 no input advantage, and wrong detector tokens are kept as a natural
-condition.
+condition. Figure~\ref{fig:stream-map} maps the flight and its detections
+against the simulator ground-truth anchors.
 
-Three findings bound the operating point honestly
-(Table~\ref{tab:real-stream}; Figure~\ref{fig:real-stream}). First,
-localization is observation-bound, not fitter-bound: all methods sit at
-\(\approx\)\(33\)~m median 3D error, exactly on the identity line of
-footprint-center error versus anchor error, because the low-altitude stream
-(AGL 10--23~m) compresses monocular range; footprint IoU against a
-\(5{\times}5\)~m base is degenerate for every method. Second, SPPA-MVFit
-does \emph{not} win the 2D reprojection metric on real evidence (\(0.298\)
-median versus \(0.42\)--\(0.45\) for box proxies): the family prior buys 3D
-part structure at the cost of image overlap when the monocular height
-estimate conflicts with the prior bounds (a \(13.75\)~m tower column versus
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.52\linewidth]{figures/fig_stream_map.png}
+\caption{The recorded flight in georeferenced coordinates (twin-local ENU,
+meters). The UAV trajectory (MAVLink telemetry) and the raw detector outputs
+with geo-reference are plotted against the exact simulator anchors; only
+towers \texttt{t0}--\texttt{t1} fall inside the observed corridor, so the
+GT-matched analyses (Supplementary Section~S.9) concentrate on them. The
+plotted detections are the raw stream events; the 1{,}902 cases of the case
+study are the telemetry-locked subset. Cow and biker detections are real
+detector outputs---many are hallucinations on terrain texture, kept
+deliberately as the natural wrong-token condition.}
+\label{fig:stream-map}
+\end{figure}
+
+Three findings characterize the degraded-signal operating point
+(Table~\ref{tab:real-stream}; Figure~\ref{fig:real-stream}). First, the
+family prior buys 3D part structure at the cost of 2D image overlap on real
+evidence: SPPA-MVFit does \emph{not} win the reprojection metric on this
+stream (\(0.298\)
+median versus \(0.42\)--\(0.45\) for box proxies), because the monocular
+height estimate conflicts with the prior bounds (a \(13.75\)~m tower column
+versus
 a \(\approx\)\(5\)~m observed extent). The stream carries no 3D ground
 truth, so the quantity the sealed benchmark measures---3D occupancy---cannot
 be scored here; what the stream adds is precisely the evidence-versus-prior
-tension that a ground-truth benchmark cannot see. Third, the tension is
-quantifiable: on the 138 GT-matched cases where the real detector emitted a
+tension that a ground-truth benchmark cannot see. Second, the tension is
+quantifiable and diagnostic: on the 138 GT-matched cases where the real
+detector emitted a
 wrong family token, refitting with the correct token collapses the 2D fit
 from \(0.381\) to \(0.025\)---the correct prior cannot explain the
 misleading evidence that triggered the wrong label (token-arm table in
-Supplementary Section~S.9). Fit latency (\(11.8\)~ms median) stays far below
-the 2--15~Hz stream rate, so the operating point is computationally viable
-even in this degraded mode.
+Supplementary Section~S.9). Third, the operating point is computationally
+viable: fit latency (\(11.8\)~ms median) stays far below
+the 2--15~Hz stream rate, even in this degraded mode. Localization tells a
+separate story and is outside this paper's scope: all methods share the same
+\(\approx\)\(33\)~m median 3D error, set by the monocular observation
+geometry of the low-altitude stream rather than by the fitter; the full
+localization analysis (localization and footprint columns, plan-view and
+error-identity panels) is retained in Supplementary Section~S.9.
 
-We read this study as the field counterpart of the boundary map: in
-production the system should run the footprint-only mode declared in
-Section~\ref{sec:pipeline} (and quantified by the top-only arm), reserve
-dual-view fitting for oblique passes, and treat detector-token confidence
-as a routing signal rather than a given.
+\paragraph{Token validation (post-hoc).}
+The same stream provides a measured token-validation signal (protocol frozen
+in writing before any outcome was computed; routing arm and ROC in
+Supplementary Section~S.9): on the 217 GT-matched cases,
+\(-\)confidence separates the 138 wrong-token from the 79 correct-token cases
+with AUC \(0.847\), and prior mismatch separates them perfectly in the
+direction opposite to intuition (AUC\((-\text{mismatch})=1.000\))---the
+cow/biker hallucinations receive small monocular heights
+(\(\approx\)\(1\)--\(2\)~m) that fit their wrong family priors suspiciously
+well, while true towers suffer severe monocular height underestimation
+(\(\approx\)\(5\)~m observed against a \(25\)~m prior). A suspiciously good
+prior fit is therefore a measured wrong-token signature on this stream.
+
+We read this study as the field counterpart of the robustness arm of
+Section~\ref{sec:robustness}: under a real degraded signal---real confidence
+noise, real wrong tokens, monocular height underestimation---the
+reconstruction path stays within its latency budget, and detector-token
+confidence and prior fit are measured validation signals the contract can
+act on when deciding whether to accept a family token, refine it to a
+conservative family, or fall back safely. The top-only arm of
+Section~\ref{sec:view-ablation} quantifies the nadir regime this stream
+represents.
 
 \begin{table}[H]
 \centering
@@ -970,51 +1125,286 @@ as a routing signal rather than a given.
 \caption{Real detector stream case study (exploratory post-hoc, not sealed):
 1{,}902 detections from a 1{,}394-frame flight over the georeferenced twin
 with a real custom detector, real telemetry, and exact tower-anchor ground
-truth. Localization and footprint columns: GT-matched subset (\(n{=}217\);
-wrong detector tokens kept as a natural condition); reprojection and
-latency: all cases. All methods are observation-bound at \(\approx\)\(33\)~m;
-SPPA-MVFit trades 2D image overlap for 3D part structure (the stream has no
-3D ground truth).}
+truth. Reprojection and latency columns cover all cases. The localization
+and footprint columns (GT-matched subset, \(n{=}217\), wrong detector tokens
+kept as a natural condition) are retained with the full table in
+Supplementary Section~S.9: all methods sit at \(\approx\)\(33\)~m median 3D
+error, set by the monocular observation geometry. SPPA-MVFit trades 2D image
+overlap for 3D part structure (the stream has no 3D ground truth).}
 \label{tab:real-stream}
-\input{benchmarks/real_stream_wave/real_stream_main_table.tex}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Method & 2D reproj. IoU med. [P25, P75] & Latency (ms) \\
+\midrule
+SPPA-MVFit (this work) & 0.298 [0.218, 0.392] & 11.8 \\
+Generic-MVFit & 0.423 [0.394, 0.448] & 13.4 \\
+OBB & 0.446 [0.398, 0.492] & 0.22 \\
+AABB & 0.330 [0.299, 0.357] & 0.25 \\
+Visual hull (non-semantic) & 0.446 [0.398, 0.493] & 0.50 \\
+Capsule & 0.445 [0.422, 0.466] & 1.31 \\
+\bottomrule
+\end{tabular}
 \end{table}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.82\linewidth]{figures/fig_real_stream.png}
-\caption{Real stream case study. (a)~Frame 478 with detector boxes and exact
-ground-truth anchors. (b)~Plan view of a tower case: the observed footprint
-(dashed) and all fitted proxies sit \(\approx\)\(35\)~m from the exact
-anchor---observation-bound. (c)~2D reprojection IoU by detector class.
-(d)~Fitted-centroid error versus observation error: the identity line holds
-for all methods.}
+\includegraphics[width=\linewidth]{figures/fig_real_stream_main.png}
+\caption{Real stream case study, degraded-signal view. (a)~Frame 478 with
+detector boxes and exact ground-truth anchors reprojected through the same
+camera model. (b)~2D reprojection IoU against the real image evidence, by
+detector class: SPPA-MVFit does not win this 2D metric; the family prior
+buys 3D part structure instead. The plan-view and observation-error panels
+that document the (out-of-scope) localization behavior are retained in
+Supplementary Section~S.9.}
 \label{fig:real-stream}
+\end{figure}
+
+\subsection{Reconstruction fidelity across view angles in the twin (E11, exploratory)}
+\label{sec:e11}
+
+The confirmatory study and the real-stream case study leave one mission
+question open: does the reconstruction stay faithful across the view angles
+a flight actually delivers, against exact 3D ground truth? E11 is an
+exploratory post-hoc study (not confirmatory; its protocol was frozen before
+any outcome) on the georeferenced twin. It captures 308 twin frames
+(\(640{\times}640\), FOV \(70^{\circ}\)) of the 11 real lattice towers of the
+Ejea map along three view rings per tower---oblique \(30^{\circ}\) and
+oblique \(45^{\circ}\) (12 azimuths each) and nadir (4 azimuths, \(+60\)~m)---runs the real YOLO detector of
+Section~\ref{sec:real-stream} on those frames, and fits all methods with
+positions locked to the exact simulator ground truth. Only reconstruction
+fidelity is evaluated; no localization metrics are computed or claimed. The
+evidence is hybrid and declared as such: simulated twin imagery, a real
+detector, and exact simulator ground truth.
+
+Table~\ref{tab:e11} and Figure~\ref{fig:e11-oblique} summarize the study. On
+the oblique rings---the views a real pass delivers---SPPA-MVFit leads every
+baseline with separated confidence intervals: mean voxel IoU \(0.118\)
+(\([0.112,0.123]\)) at \(30^{\circ}\) and \(0.087\) (\([0.076,0.099]\)) at
+\(45^{\circ}\), against \(0.040\) and \(0.037\) for the best baseline
+(capsule); the paired per-case deltas over each baseline are all positive
+with CIs far from zero. On the correct-token subset the SPPA fits reach
+\(0.125\) and \(0.147\). The monocular height estimate that anchors the fit
+averages \(21.3\)~m across tower detections against an exact ground-truth
+height of \(20.71\)~m. At nadir the tower is invisible to the detector
+(zero tower detections on that ring): the nadir rows fit the spurious
+non-tower tokens that do arrive, and there the wrong family token hurts
+exactly as the wrong-family analysis of Section~\ref{sec:wrong-family}
+predicts---shape-free boxes score higher on those cases. The nadir ring
+therefore quantifies the footprint-only degraded regime rather than a
+reconstruction regime, and is declared as such.
+
+Two honest caveats temper the oblique result. First, the absolute IoU
+values are modest: a lattice tower is mostly air at \(64^3\) (mean GT
+occupancy \(\approx\)\(3.2\)k of 262{,}144 voxels), so voxel-exact agreement
+is dominated by sub-voxel member placement. Second, cross-view consistency
+cuts the other way superficially: boxes are trivially more self-consistent
+across views (pairwise proxy IoU up to \(0.636\)--\(0.677\) for AABB)
+because a box fitted from any view is nearly the same box---while their IoU
+against ground truth stays at \(0.02\)--\(0.04\). SPPA proxies agree at
+\(0.290\) (\(30^{\circ}\)) and \(0.273\) (\(45^{\circ}\)) across views, and
+the per-tower SPPA consensus proxy reaches \(0.099\)
+(\([0.095,0.104]\)) against ground truth: consistency is reported alongside
+fidelity, not in its place.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\caption{E11 oblique twin wave (exploratory post-hoc, not confirmatory;
+positions locked to ground truth; hybrid evidence: simulated imagery, real
+detector, exact simulator GT). Mean 3D voxel IoU against the exact tower
+meshes at \(64^3\) with paired bootstrap 95\% CIs (10k resamples). At nadir
+the detector never fires on the tower; nadir rows fit spurious non-tower
+tokens and quantify the degraded footprint-only regime. Box/voxel baselines
+are token-free.}
+\label{tab:e11}
+\begin{tabular}{llccc}
+\toprule
+Ring & Method & mean 3D IoU [95\% CI] / median & $n$ & SPPA$-$method [95\% CI] \\
+\midrule
+oblique30 & sppa\_mvfit & 0.118 [0.112, 0.123] / 0.125 & 149 &  \\
+ & generic\_mvfit & 0.044 [0.042, 0.045] / 0.045 & 149 & +0.074 [+0.069, +0.079] \\
+ & obb & 0.031 [0.030, 0.032] / 0.031 & 149 & +0.087 [+0.081, +0.092] \\
+ & aabb & 0.023 [0.022, 0.025] / 0.019 & 149 & +0.094 [+0.088, +0.100] \\
+ & visual\_hull & 0.031 [0.030, 0.033] / 0.031 & 149 & +0.086 [+0.080, +0.092] \\
+ & capsule & 0.040 [0.039, 0.041] / 0.040 & 149 & +0.078 [+0.072, +0.083] \\
+\midrule
+oblique45 & sppa\_mvfit & 0.087 [0.076, 0.099] / 0.127 & 154 &  \\
+ & generic\_mvfit & 0.024 [0.023, 0.025] / 0.026 & 154 & +0.063 [+0.053, +0.074] \\
+ & obb & 0.035 [0.032, 0.039] / 0.022 & 154 & +0.052 [+0.037, +0.066] \\
+ & aabb & 0.033 [0.029, 0.037] / 0.021 & 154 & +0.054 [+0.040, +0.069] \\
+ & visual\_hull & 0.035 [0.032, 0.039] / 0.022 & 154 & +0.052 [+0.037, +0.066] \\
+ & capsule & 0.037 [0.034, 0.040] / 0.028 & 154 & +0.050 [+0.036, +0.063] \\
+\midrule
+nadir (no tower detections) & sppa\_mvfit & 0.002 [0.002, 0.003] / 0.002 & 48 &  \\
+ & generic\_mvfit & 0.014 [0.011, 0.016] / 0.019 & 48 & -0.011 [-0.014, -0.009] \\
+ & obb & 0.050 [0.041, 0.059] / 0.050 & 48 & -0.048 [-0.057, -0.039] \\
+ & aabb & 0.050 [0.041, 0.059] / 0.050 & 48 & -0.048 [-0.057, -0.039] \\
+ & visual\_hull & 0.051 [0.041, 0.060] / 0.051 & 48 & -0.048 [-0.057, -0.039] \\
+ & capsule & 0.056 [0.045, 0.067] / 0.073 & 48 & -0.053 [-0.064, -0.042] \\
+\midrule
+\multicolumn{5}{l}{Correct-token subset (tower detections only; box/voxel baselines are token-free)} \\
+\midrule
+oblique30 (correct token) & sppa\_mvfit & 0.125 [0.122, 0.128] / 0.126 & 140 &  \\
+ & generic\_mvfit & 0.045 [0.044, 0.047] / 0.046 & 140 &  \\
+oblique45 (correct token) & sppa\_mvfit & 0.147 [0.144, 0.151] / 0.148 & 89 &  \\
+ & generic\_mvfit & 0.029 [0.028, 0.030] / 0.029 & 89 &  \\
+\midrule
+\multicolumn{5}{l}{Cross-view consistency (mean pairwise 3D IoU of proxies across views)} \\
+\midrule
+ & sppa\_mvfit & \multicolumn{3}{l}{obl30 0.290; obl45 0.273; nadir-vs-obl n/a} \\
+ & generic\_mvfit & \multicolumn{3}{l}{obl30 0.414; obl45 0.459; nadir-vs-obl n/a} \\
+ & obb & \multicolumn{3}{l}{obl30 0.467; obl45 0.513; nadir-vs-obl n/a} \\
+ & aabb & \multicolumn{3}{l}{obl30 0.636; obl45 0.677; nadir-vs-obl n/a} \\
+ & visual\_hull & \multicolumn{3}{l}{obl30 0.468; obl45 0.511; nadir-vs-obl n/a} \\
+ & capsule & \multicolumn{3}{l}{obl30 0.412; obl45 0.450; nadir-vs-obl n/a} \\
+ & SPPA consensus proxy vs GT & \multicolumn{3}{l}{0.099 [0.095, 0.104] (per-tower means)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_e11_oblique.png}
+\caption{E11 oblique twin wave (exploratory post-hoc; positions locked to
+ground truth). (a)~Sample real-detector detections on simulated twin
+frames. (b)~3D voxel IoU against exact simulator ground truth by view ring:
+SPPA-MVFit leads on the oblique rings; the nadir ring carries no tower
+detections and quantifies the degraded regime. (c)~Cross-view consistency
+per tower: boxes are trivially more self-consistent while remaining far
+from ground truth. (d)~An SPPA proxy reprojected onto the source view.}
+\label{fig:e11-oblique}
+\end{figure}
+
+\subsection{Camera-less sensing in the twin: a simulated-LiDAR demonstration (E14, exploratory)}
+\label{sec:e14}
+
+E14 asks whether the same reconstruction contract can be fed when the camera
+is useless (night, fog, smoke): an exploratory post-hoc demonstration whose
+returns are SIMULATED LiDAR-class line raycasts inside Unreal Engine 5.7 PIE
+on the Ejea twin---not hardware, and with no camera anywhere in the
+perception path. Positions are locked to ground truth; the scope is
+reconstruction only. Five poses per tower (55 scans) fire a
+\(361{\times}16\) azimuth--elevation ray fan (5{,}776 rays per scan);
+degradation is applied offline with frozen seeds so a clean arm (5\%
+dropout, \(2\)~cm range noise, \(150\)~m max range) and a degraded
+heavy-fog arm (50\% dropout, \({\times}4/{\times}2\) angular downsampling to
+728 rays per scan, \(5\)~cm noise, \(100\)~m max range) are exactly paired.
+A GT-free vertical-structure clustering stage detects each tower and emits
+only an oriented footprint, yaw, and height; the sealed SPPA-MVFit
+production mode and the E7 baselines consume exactly that.
+
+Table~\ref{tab:e14} and Figure~\ref{fig:e14-lidar} give the outcome, and the
+honest reading is threefold. First, the camera-less contract works at the
+envelope level: the recovered footprint is \(7.9{\times}4.0\)~m against a
+ground-truth \(7.42{\times}3.43\)~m across all 11 towers, yaw is within
+\(\approx\)\(6^{\circ}\), height within \(\approx\)\(5\%\) (median), and
+footprint IoU is \(0.43\). Second, voxel-exact 3D IoU is \(\approx\)\(0.08\)
+for every method, SPPA included: the lattice occupies only
+\(\approx\)\(1{,}100\) of 262{,}144 voxels, so even the oriented box's
+structural ceiling is \(|GT|/|OBB| \approx 0.08\), and the metric at
+\(64^3\) is dominated by sub-voxel member placement. SPPA-MVFit does not
+beat the baselines on this truth (clean arm: SPPA \(0.081\)
+\([0.076,0.086]\), generic \(0.084\), capsule \(0.083\)); with a 1-voxel
+tolerance (post-hoc supplementary measure) SPPA reaches \(0.168\) against
+capsule's \(0.190\). What SPPA buys here is economy, not IoU leadership:
+\(\approx\)\(2.8\)k occupied voxels against the box's \(14.3\)k at
+comparable IoU (voxel precision \(10.5\%\) versus \(6.7\%\))---its mass
+lands on structure while the box's mass is mostly air. Third, degradation is
+measured rather than assumed: at 50\% dropout with angular downsampling,
+4 of 11 towers are lost to detection failure---that detection loss is the
+real cost of the degraded arm. The seven survivors are pairwise comparable
+to their clean-arm fits (paired delta \(+0.002\) \([-0.002,+0.006]\),
+\(n{=}7\)); degraded-arm means are computed on survivors and suffer survivor
+bias, so the paired comparison is the one reported.
+
+The sensor-model limits are declared: UE simple-collision hulls stand in for
+laser returns, and beam divergence, multi-return behavior, reflectivity, and
+motion distortion are not modelled. E14 therefore supports the sensor-agnostic
+contract of Section~\ref{sec:pipeline} as a simulated demonstration only; it
+is not evidence of hardware LiDAR performance.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\caption{E14 LiDAR twin wave (exploratory post-hoc; SIMULATED LiDAR-class
+returns from UE raycasts, no camera in the path; positions locked to ground
+truth). Mean 3D voxel IoU against the welded tower mesh at \(64^3\) with
+bootstrap 95\% CIs (10k resamples), clean versus degraded (heavy-fog) arms.
+The degraded arm loses 4 of 11 towers to detection failure; its means are
+computed on the 7 survivors (survivor bias declared---the paired
+clean-versus-degraded delta for SPPA-MVFit is \(+0.002\)
+\([-0.002,+0.006]\), \(n{=}7\)).}
+\label{tab:e14}
+\begin{tabular}{llrrr}
+\toprule
+Arm & Method & Mean IoU$_{3D}$ & Median & 95\% CI (boot.) \\
+\midrule
+Clean & SPPA-MVFit & 0.081 & 0.082 & [0.076, 0.086] \\
+ & Generic-MVFit & 0.084 & 0.083 & [0.082, 0.087] \\
+ & OBB & 0.066 & 0.066 & [0.064, 0.068] \\
+ & AABB & 0.057 & 0.060 & [0.053, 0.061] \\
+ & Visual hull & 0.065 & 0.066 & [0.063, 0.068] \\
+ & Capsule & 0.083 & 0.083 & [0.082, 0.085] \\
+\midrule
+Degraded (heavy fog; 4 det.\ fail) & SPPA-MVFit & 0.082 & 0.081 & [0.076, 0.088] \\
+ & Generic-MVFit & 0.096 & 0.096 & [0.094, 0.099] \\
+ & OBB & 0.087 & 0.079 & [0.074, 0.108] \\
+ & AABB & 0.059 & 0.056 & [0.052, 0.068] \\
+ & Visual hull & 0.088 & 0.079 & [0.076, 0.108] \\
+ & Capsule & 0.105 & 0.094 & [0.092, 0.128] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_e14_lidar.png}
+\caption{E14 simulated-LiDAR demonstration (exploratory post-hoc; returns
+are UE raycasts, not hardware). (a)~Simulated LiDAR-class returns on tower
+t3. (b)~Recovered footprint and SPPA proxy against the ground-truth top
+silhouette: the camera-less contract recovers the envelope (footprint, yaw,
+height) reliably. (c)~Voxel-exact 3D IoU by arm and method: all methods sit
+at the lattice's sub-voxel structural ceiling (\(\approx\)\(0.08\)); SPPA's
+advantage in this setting is proxy economy, not IoU leadership.}
+\label{fig:e14-lidar}
 \end{figure}
 
 \section{Discussion}
 \label{sec:discussion}
 
-The confirmatory result answers the preregistered question: under identical
+The motivating mission is the stale-twin delta: when the image link cannot
+show the scene, the twin must still absorb the detections that arrive and
+reconstruct the objects its static layers lack, per object and at telemetry
+bandwidth. The confirmatory result answers the preregistered question behind
+that mission: under identical
 calibrated silhouettes and optimizer budget, a frozen family part graph
 improves lightweight occupancy over a generic eight-part graph by a large and
 stable margin. The decomposition of
 Section~\ref{sec:results-decomposition} shows that the knowledge
 representation, not a clever optimizer, is the active ingredient; secondary
 gains over text-only SPPA show that silhouette evidence helps when the same
-family graph is held fixed.
+family graph is held fixed. The robustness arm is what makes the result
+mission-relevant: the margin holds under every preregistered corruption of
+the observation, mask noise costs the advantage only \(\approx\)\(0.001\)
+IoU, and even moderate morphology corruption leaves \(0.118\), far above the
+prespecified margin---the path tolerates a weak or noisy signal, and only
+evidence that contradicts the prior measurably degrades it.
 
-The boundary analyses are as informative as the headline. A wrong family token
+The contract is what remains differentiating at the measured frontier, and
+the boundary analyses are as informative as the headline. A wrong family token
 is worse than no prior at all, which turns fallback routing from an
 engineering convenience into a measured requirement. The adversarial stratum
-shows the advantage is killable rather than tautological: violating the
+shows the advantage can be destroyed rather than being structurally
+guaranteed: violating the
 structural prior while preserving the semantic class destroys a third of the
 effect and produces identifiable tie zones where no axis-aligned part graph
 can win. The side view carries
 nearly all of the 3D information, yet it is unavailable from a pure nadir
-pass: acquiring it requires an oblique pass, an orbit, or a second platform,
-and otherwise the system degrades to the footprint-only mode that already runs
-in production---quantified by the top-only arm, which still beats the generic
-dual-view fit. On external real meshes the margin does not transfer and
+pass; the top-only arm quantifies exactly that nadir regime and still beats
+the generic dual-view fit. On external real meshes the margin does not
+transfer and
 shape-free baselines match or exceed SPPA on raw occupancy; what remains
 differentiating outside the design distribution is the contract---role labels,
 bounded updates, and a telemetry-scale payload---not volumetric leadership.
@@ -1022,30 +1412,61 @@ Visual hull can approach SPPA-MVFit IoU because it is free to materialize
 denser occupancy without an eight-part role-labeled actor contract; the
 part-query task quantifies what that contract buys, since the hull covers but
 cannot select (query F1 \(0.434\) versus \(0.111\)). Finally, the real
-detector stream relocates the bottleneck entirely: under monocular
-low-altitude observation every method is observation-bound, and the family
-prior trades image overlap for 3D structure---so deployment should route
-between footprint-only and dual-view modes rather than treat fitting as
-always-on.
+detector stream exercises the degraded-signal regime end to end: the fit
+stays far inside the stream's latency budget, the family prior trades image
+overlap for 3D structure under real evidence, and token confidence and prior
+fit are measured validation signals for accepting, refining, or rejecting a
+family token. The two exploratory twin studies connect this frontier back to
+the mission: across the oblique views a flight delivers, the proxy stays
+faithful to exact simulator ground truth with separated confidence intervals
+(Section~\ref{sec:e11}), and the same contract can be fed by simulated
+LiDAR-class returns with no camera in the path, recovering the object
+envelope while the degraded arm's detection losses are measured rather than
+assumed (Section~\ref{sec:e14}).
 
 \label{sec:threats}Several threats to validity remain binding. The primary
 comparison is structurally favored by design: the family graphs encode the
 same part topology that the CSG-ID generators instantiate, so preregistration
 quantifies the effect but cannot make it surprising---the load-bearing
-evidence that the advantage is real, killable, and bounded is the boundary
+evidence that the advantage is real, destructible by prior violation, and bounded is the boundary
 map (wrong-family arm, adversarial stratum, external meshes, real stream),
 not H1 alone. The held-out
 set is synthetic and developer-held-out; positive OOD-stratum differences do
 not license claims about real UAV masks, detectors, or metric flight geometry.
 Family tokens are supplied, so the experiment is family-conditioned rather
 than open-set. Silhouettes are clean orthographic projections plus
-prespecified corruptions, not real detector masks. Timing is local CPU
+prespecified corruptions, not real detector masks. The camera is the
+validated sensor: LiDAR interchangeability and night, fog, or smoke operation
+are evaluated only through the prespecified
+synthetic mask corruptions and the simulated-twin arms below, not measured on
+hardware or in degraded weather. The two twin studies are exploratory
+post-hoc analyses, not confirmatory tests: E11 and E14 were run after the
+sealed confirmatory, on simulated twin imagery and simulated LiDAR-class
+raycast returns respectively (hybrid evidence with a real detector and exact
+simulator ground truth in E11), with positions locked to ground truth in
+both. The E14 sensor model is a simplification---UE simple-collision hulls
+stand in for laser returns, and beam divergence, multi-return behavior,
+reflectivity, and motion distortion are not modelled---so E14 demonstrates
+contract feasibility, not hardware LiDAR performance. For thin lattice
+structures, voxel-exact IoU at \(64^3\) sits at a sub-voxel structural
+ceiling (\(\approx\)\(0.08\) in E14) for every method, so small IoU
+differences there should not be read as reconstruction-quality rankings.
+Finally, the E14 degraded arm loses 4 of 11 towers to detection failure and
+its arm means are computed on the 7 survivors, so those means carry survivor
+bias; the paired clean-versus-degraded comparison is the unbiased summary. ``Instant'' is per object
+(\(9.4\)~ms median fit); dense packaged shape updates do not reach 60~FPS
+and remain the declared limiting factor. Timing is local CPU
 wall-clock for the fitter, not flight-laptop Unreal frame time, and the
 packaged replay evidence consists of short synthetic streams, not live
 telemetry or VR readiness. The real-stream study is a single recorded flight
 with one custom detector, monocular low-altitude views, no 3D ground truth,
 and 2D reprojection metrics only; its localization errors reflect the
-observation model, not the fitter, and its tower-anchor subset is small. The same team authored the family graphs and the
+observation model, not the fitter, its tower-anchor subset is small, and its
+localization analysis is retained in the supplement as outside this paper's
+scope. The measured operational signal on that stream is token validation
+(AUC \(0.847\) for \(-\)confidence, \(1.000\) for \(-\)prior-mismatch), and
+the perfect mismatch separation is measured on 217 matched cases of one
+stream, no more. The same team authored the family graphs and the
 generic competitor; the sensitivity variants of
 Section~\ref{sec:generic-sensitivity} bound, but do not eliminate, the
 resulting baseline-design risk. Within these boundaries the supported claim is
@@ -1070,33 +1491,46 @@ the present paper contains no pilot study.
 
 \section{Conclusion}
 
-Family-conditioned SPPA-MVFit shows that a reviewed semantic part graph is a
-measurable occupancy prior for lightweight multiview proxy fitting. Under a
+SPPA-MVFit targets the moment a UAV digital twin must be updated under a weak
+signal: the static Cesium layer is stale, the image link does not suffice,
+and the detections that do arrive must become explicit per-object volumes at
+once. Family-conditioned SPPA-MVFit shows that a reviewed semantic part graph
+is a measurable occupancy prior for that instant per-object reconstruction:
+under a
 preregistered equal-budget comparison, SPPA-MVFit improves clean 3D occupancy
 over Generic-MVFit by \(0.190\) absolute IoU (95\% CI \([0.181,0.199]\)) on
-240 held-out synthetic actors, with positive strata and millisecond-scale
-local cost. Most of the advantage is the family-graph representation rather
+240 held-out synthetic actors, at \(9.4\)~ms median per object, and the
+margin is maintained under every preregistered observation
+corruption---mask noise costs \(\approx\)\(0.001\) IoU and moderate
+morphology corruption leaves \(0.118\), far above the prespecified margin.
+Most of the advantage is the family-graph representation rather
 than the fitter; a wrong family token is worse than no family prior at all;
 and the margin does not transfer unchanged to real meshes whose instances
 mismatch the templates. Adversarial instances that violate the structural
-prior destroy a third of the advantage and expose identifiable tie zones,
-while a real detector stream with exact anchor ground truth relocates the
-field bottleneck in the monocular observation itself. The durable contribution is the
-contract---family-conditioned roles, bounded updates, and a telemetry-scale
-payload---whose part-query value is measured (query F1 \(0.434\) versus
-\(0.111\) for occupancy-only controls), together with a quantified occupancy
-envelope that holds inside the
-design distribution. The next steps are external public data with metric
+prior destroy a third of the advantage and expose identifiable tie zones.
+The durable contribution is the twin-delta update
+contract---family-conditioned roles, bounded in-place updates, a compact
+\(1.45\)~kB update descriptor, measured 25.8--37.4~kB/s JSON update traffic,
+and a measured part-query value (query F1 \(0.434\) versus
+\(0.111\) for occupancy-only controls)---with declared limits:
+camera-validated, LiDAR and night/fog/smoke operation evaluated only through
+prespecified synthetic corruptions and simulated-twin demonstrations (E11,
+E14), not measured on hardware, dense packaged shape updates below 60~FPS,
+and position assumed
+given. The next steps are external public data with metric
 ground truth, detector-derived silhouettes, and, only if claimed, operator
 studies.
 
 \section*{Data Availability}
 
+{\sloppy
 The SPPA-MVFit reproducibility package, protocol amendments, NIST-bound seed
 manifest hashes, and confirmatory summaries are included under
-\texttt{reproducibility/sppa\_mvfit/}. Large Unreal artifacts and historical
+\texttt{reproducibility/\allowbreak sppa\_mvfit/} (reproduction commands in
+the supplement). Large Unreal artifacts and historical
 engineering logs remain supporting material and are not required to recompute
 the primary H1 tables.
+\par}
 
 \section*{Code Availability}
 

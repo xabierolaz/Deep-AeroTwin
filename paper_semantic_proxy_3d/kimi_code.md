@@ -448,3 +448,122 @@ experimentos NUEVOS (agentes Debussy y Ethan), no solo redacción:
 **Pendiente AHORA**: (1) strict gate, (2) acta
 `editorial_audits/20260719/TRIBUNAL_ROUND_07.md`, (3) COMMIT — sigue SIN
 confirmación del usuario, (4) decisión DOI/Zenodo, (5) checks día de envío.
+
+---
+
+## 2026-07-19 (tarde) — OLA DE AMBICIÓN E10/E12/E11 (Kimi Code, goal mode)
+
+**Esta sección es el estado vigente.** Mandato del usuario: "no nos podemos
+rendir, elevar la aportación/novelty de SPPA, máxima ambición con máxima
+honestidad, sin límite". Auditoría previa: 4 limitaciones declaradas que eran
+atacables (routing prescripto sin medir, stream sin GT 3D ni vista oblicua,
+ola neural con mini-turbo, externo n=52). Se atacan las 3 primeras como
+post-hoc exploratorio; sellos y H1 intactos (strict baseline: 0 blockers).
+
+- **E10 routing MEDIDO** (`benchmarks/real_stream_wave/e10_*`, protocolo
+  congelado pre-outcome): **refutado** para IoU 2D en el stream nadir —
+  always-SPPA 0.298, always-OBB 0.446, oracle inalcanzable 0.452 (+0.006);
+  las mejores políticas (confianza, mismatch) colapsan a always-proxy.
+  **Hallazgo positivo**: validación de tokens — −confianza AUC 0.847;
+  mismatch evidencia-prior AUC(−x)=1.000 INVERTIDO: token erróneo = ajuste
+  del prior sospechosamente bueno (vacas/ciclistas alucinados ~1–2 m vs
+  torres reales con altura subestimada ~5 m vs prior 25 m). La prescripción
+  del paper se corrige: routing de modos NO; validación de tokens SÍ.
+- **E12 flagship neural** (`benchmarks/results/sppa_neural_flagship_wave.*`,
+  manifest en `runs/20260719_flagship_wave/`): Hunyuan3D-2 FULL (50 pasos)
+  0.148/0.177; TripoSG 1.5B 0.147/0.002*; 0 crashes 120/120 ambos.
+  (*0.002 = artefacto de paridad documentado: input as-is sin RMBG, como
+  TripoSR/Hunyuan; excluido de rangos con nota inline.) Caveat
+  "mini≠flagship" RETIRADO con datos: 4 generadores medidos, ninguno cierra
+  la brecha con SPPA 0.561. Ola 20260717 intacta.
+- **E11 oblicuo twin** (`benchmarks/oblique_twin_wave/`): geometría exacta de
+  las 11 torres volcada (AABB 8.2×7.4×20.71 m, OBJs LOD0, `gt/`). Commandlet
+  `-run=pythonscript` NO ticka (Cesium no streamea; 7 sesiones, evidencia en
+  `logs/` + `CAPTURE_LOG.md`) → reencaminado a editor vivo vía MCP/remote
+  exec (vía probada del repo). Captura 308 frames + YOLO + análisis dual-view
+  con GT 3D voxel EN CURSO al escribir esto. Protocolo: `PROTOCOL_E11.md`.
+- **Acta R7**: `editorial_audits/20260719/TRIBUNAL_ROUND_07.md` escrita
+  (E7–E12; sección E11 pendiente de actualizar al aterrizar).
+- Integración E10+E12 en main/suplemento + regeneración fig_pareto_neural
+  (4 generadores) EN CURSO (agente). Tras ella: integración E11,
+  recompilación final (borrar PDF antes, nombres canónicos), strict final.
+
+**Pendiente AHORA**: (1) integración E11 + recompilación + strict final,
+(2) actualizar R7 §E11, (3) COMMIT — sigue SIN confirmación del usuario,
+(4) decisión DOI/Zenodo, (5) checks día de envío.
+
+---
+
+## 2026-07-20 — REFRAME a misión (pasada 1 de 2) — COMPLETADO
+
+**Esta sección es el estado vigente.** Mandato: aplicar íntegro el
+`editorial_audits/20260720/REFRAME_PLAN.md` (dos auditorías externas
+convergentes). Título NUEVO: **"Instant Semantic Proxy Reconstruction for
+UAV Digital Twins under Degraded Sensing (SPPA-MVFit)"**.
+
+- Reencuadre a misión: piloto remoto (VR = solo motivación), twin Cesium
+  congelado, SPPA reconstruye el delta al instante y a ancho de banda de
+  telemetría. Abstract, ¶ pregunta de investigación y contribuciones
+  (i)(ii)(iii) reescritos; Discussion ¶1 y Conclusion reordenados
+  misión → robustez → contrato → límites.
+- Robustez prerregistrada elevada a titular §4.2 (figura standalone + tabla
+  sellada movida S.9→main; máscara ~0.001 IoU vs morfología 0.118 ≫ margen;
+  etiqueta "post-hoc analysis of sealed data, conditions preregistered").
+- Elevados al abstract/main: latencia 11.8 ms vs 2–15 Hz, link budget
+  25.8–37.4 kB/s medido vs ≥250 kB/s vídeo modelado (fila nueva en tabla
+  runtime + filas HISM dense scaling que pliegan fig:runtime-scaling).
+- §3.2: ¶ sensor-agnóstico (huella geoproyectada de cualquier sensor entra
+  por el mismo contrato; cámara validada; LiDAR declarado NO medido).
+- §4.10 reencuadrado a señal degradada + latencia + validación de tokens
+  (AUC 0.847/1.000); localización → una cláusula + bloque completo en S.9
+  (tabla full + paneles (b)(d) en `fig_real_stream_localization.png`);
+  narrativa de routing eliminada de main (queda medida solo en S.9/E10).
+- Podados al suplemento: figs pipeline-overview/probes-grid/external-gallery/
+  fitting-sequence/runtime-scaling + Alg. 1; tablas mvfit-secondary/
+  surface-metrics; ¶ OBB; detalle descriptor_id/scheduler; LLM = una
+  cláusula; seeds/NIST = una frase + puntero; open-label solo en S.3.
+- Eliminado: prescripciones de vuelo (órbitas/pasadas) en §4.6/§4.10/Disc,
+  "in production", "observation-bound" en main. Split E7 regenerado vía
+  `benchmarks/real_stream_wave/make_fig_e7_split.py` (original intacto).
+- **NO referenciar `fig_mission_twin_delta`: la figura de misión no existe
+  todavía (otro agente); el hueco de §1 queda sin figura a propósito.**
+- Verificado: main 24 pp / suplemento 15 pp (baseline 24/12), 0 indefinidas
+  en ambos; puerta strict **0 blockers, H1 pass**; `reproducibility/` y
+  números sellados intactos. Overfull: 0 main; 3 menores preexistentes en
+  suplemento (tablas de probes). Acta R7 actualizada (addendum 2026-07-20).
+- **Pendiente pasada 2:** figura de misión en §1, integración E11/E14 al
+  aterrizar, actualizar COVER_LETTER_DRAFT.md (aún cita el título viejo).
+- COMMIT: sigue SIN confirmación del usuario.
+
+---
+
+## BLOQUE 2026-07-20 (tarde) — REFRAME COMPLETO: paper listo para envío
+
+**Nuevo encuadre (título):** "Instant Semantic Proxy Reconstruction for UAV
+Digital Twins under Degraded Sensing (SPPA-MVFit)". Plan:
+`editorial_audits/20260720/REFRAME_PLAN.md`. Actas: addenda en
+`editorial_audits/20260719/TRIBUNAL_ROUND_07.md`.
+
+**Estado final:**
+- Main **28 pp** + suplemento **15 pp**: 0 errores, 0 refs indefinidas,
+  0 overfull nuevos. Puerta strict **0 blockers, H1 pass**.
+- Pasada 1: reestructura al nuevo marco (robustez prerregistrada = titular,
+  link budget 25.8–37.4 kB/s al main, poda de 6 figuras/2 tablas al suplemento,
+  eliminadas prescripciones de vuelo y discusión de localización).
+- Pasada 2: figura de misión en §1 (chip 1.45 kB / 9.4 ms, valores sellados),
+  subsecciones E11 (cross-view, exploratory) y E14 (simulated-LiDAR,
+  exploratory), cláusula en abstract, amenazas, cover letter actualizado.
+- Auditoría figura a figura del set final (15+8): 0 blockers, 4 menores
+  corregidos (cross-ref role-colored, t1 visible en stream map, panel (c) E11
+  con ejes/leyenda, nota de doble corrida en runtime-scaling).
+- Líneas rojas intactas: LiDAR/noche/niebla/humo solo declarados/simulados;
+  VR = motivación; "instant" por objeto; robustez = post-hoc sellado.
+
+**PENDIENTE (decisiones del usuario, NO del agente):**
+1. **Commit** — sigue SIN confirmación expresa. Working tree contiene todo el
+   reframe (tex, figs, cover letter, suplemento).
+2. **DOI/repo** para Data Availability: Zenodo o institucional UPNA.
+3. **Checks del día de envío:** APC CRUE (`biblioteca.revistas@unavarra.es`),
+   JCR Q1 vigente, guía de autor JGSA (anonimato si aplica).
+4. E13 (estilizado Blender, 81/84 frames pendientes): aparcado, no bloquea
+   el envío.

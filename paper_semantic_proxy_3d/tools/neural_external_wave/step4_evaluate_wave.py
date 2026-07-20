@@ -7,7 +7,15 @@ Modes:
   eval       voxelize every output at 64-cubed with the frozen convention and
              write per-condition row files under wave_rows/
   aggregate  join rows with the sealed SPPA/context rows (read-only) and write
-             benchmarks/results/sppa_neural_external_wave.{json,md,tex}
+             benchmarks/results/<output-stem>.{json,md,tex}
+             (default stem sppa_neural_external_wave; the E12 flagship extension
+             uses --output-stem sppa_neural_flagship_wave so the published files
+             are never overwritten)
+
+E12 flagship extension (2026-07-19): events and mesh outputs are resolved across
+RUN_DIRS (newest first for outputs, oldest first for events so newer logs win),
+which lets the flagship run 20260719_flagship_wave extend the wave without
+touching the 20260717_wave artifacts.
 
 Alignment (prespecified, generous): rotate with the frozen frame convention,
 uniform scale s = geometric mean of per-axis GT/mesh bbox extent ratios,
@@ -47,12 +55,29 @@ from wave_common import (  # noqa: E402
 WORLD_SPAN = tuple(WORLD[a][1] - WORLD[a][0] for a in ("x", "y", "z"))
 
 RUN_DIR = WAVE_ROOT / "runs" / "20260717_wave"
+# E12: flagship extension run. Outputs resolved newest-first, events oldest-first.
+RUN_DIRS = [WAVE_ROOT / "runs" / "20260719_flagship_wave", RUN_DIR]
 ROWS_DIR = WAVE_ROOT / "wave_rows"
 CALIB_PATH = WAVE_ROOT / "wave_calibration.json"
 
-METHOD_DIRS = {"triposr": "triposr", "hunyuan3d_2mini_turbo": "hunyuan3d_2mini_turbo"}
-METHOD_EXT = {"triposr": ".obj", "hunyuan3d_2mini_turbo": ".glb"}
-MODEL_TO_METHOD = {"triposr_warm": "triposr", "hunyuan3d_2mini_turbo_shape": "hunyuan3d_2mini_turbo"}
+METHOD_DIRS = {
+    "triposr": "triposr",
+    "hunyuan3d_2mini_turbo": "hunyuan3d_2mini_turbo",
+    "triposg": "triposg",
+    "hunyuan3d_2_full": "hunyuan3d_2_full",
+}
+METHOD_EXT = {
+    "triposr": ".obj",
+    "hunyuan3d_2mini_turbo": ".glb",
+    "triposg": ".glb",
+    "hunyuan3d_2_full": ".glb",
+}
+MODEL_TO_METHOD = {
+    "triposr_warm": "triposr",
+    "hunyuan3d_2mini_turbo_shape": "hunyuan3d_2mini_turbo",
+    "triposg": "triposg",
+    "hunyuan3d_2_full_shape": "hunyuan3d_2_full",
+}
 CONDITIONS = ("oblique", "mask")
 
 EXCLUDED_METHODS = [
@@ -67,14 +92,23 @@ EXCLUDED_METHODS = [
 
 def load_events() -> dict:
     events: dict[str, dict] = {}
-    for log in sorted(RUN_DIR.glob("*_chunk*.stdout.log")):
-        for line in log.read_text(encoding="utf-8", errors="replace").splitlines():
-            if line.startswith("SPPA_BENCH_OBJECT "):
-                payload = json.loads(line[len("SPPA_BENCH_OBJECT "):])
-                method = MODEL_TO_METHOD.get(payload.get("model"))
-                if method:
-                    events[(method, payload["label"])] = payload
+    for run_dir in reversed(RUN_DIRS):  # oldest first: newer run logs win on key collision
+        for log in sorted(run_dir.glob("*_chunk*.stdout.log")):
+            for line in log.read_text(encoding="utf-8", errors="replace").splitlines():
+                if line.startswith("SPPA_BENCH_OBJECT "):
+                    payload = json.loads(line[len("SPPA_BENCH_OBJECT "):])
+                    method = MODEL_TO_METHOD.get(payload.get("model"))
+                    if method:
+                        events[(method, payload["label"])] = payload
     return events
+
+
+def _method_out_dir(method: str) -> Path:
+    for run_dir in RUN_DIRS:  # newest first
+        candidate = run_dir / "outputs" / METHOD_DIRS[method]
+        if candidate.is_dir():
+            return candidate
+    return RUN_DIRS[0] / "outputs" / METHOD_DIRS[method]
 
 
 def load_mesh(path: Path):
@@ -331,7 +365,7 @@ def mode_calibrate(methods: list[str], conditions: list[str], stage: str) -> int
         calibration["choices"] = {}
 
     for method in methods:
-        out_dir = RUN_DIR / "outputs" / METHOD_DIRS[method]
+        out_dir = _method_out_dir(method)
         for condition in conditions:
             base = rotation_oblique() if condition == "oblique" else rotation_mask()
             key = f"{method}/{condition}"
@@ -418,7 +452,7 @@ def mode_eval(methods: list[str], conditions: list[str]) -> int:
     ROWS_DIR.mkdir(parents=True, exist_ok=True)
 
     for method in methods:
-        out_dir = RUN_DIR / "outputs" / METHOD_DIRS[method]
+        out_dir = _method_out_dir(method)
         for condition in conditions:
             key = f"{method}/{condition}"
             choice = calibration["choices"][key]
@@ -492,7 +526,7 @@ def _stats(values: list[float]) -> dict:
     }
 
 
-def mode_aggregate() -> int:
+def mode_aggregate(output_stem: str) -> int:
     subset = load_subset_manifest()
     context = _sppa_context_rows()
     calibration = load_json(CALIB_PATH)
@@ -556,32 +590,57 @@ def mode_aggregate() -> int:
         },
     }
 
+    environment = {
+        "gpu": "NVIDIA GeForce RTX 5090 32 GB (torch cuda; nvidia-smi NVML unavailable this session)",
+        "triposr": {"weights": "stabilityai/TripoSR", "mc_resolution": 128, "chunk_size": 4096, "venv": "_venvs/triposr"},
+        "hunyuan3d_2mini_turbo": {"weights": "tencent/Hunyuan3D-2mini hunyuan3d-dit-v2-mini-turbo", "num_inference_steps": 5, "octree_resolution": 380, "num_chunks": 20000, "flashvdm": "enabled", "seed": 12345, "python": "system 3.12"},
+    }
+    if any(k.startswith("triposg/") for k in aggregates):
+        environment["triposg"] = {
+            "weights": "local VAST-AI/TripoSG 1.5B rectified flow (third_party/sota_3d_generators/TripoSG/pretrained_weights/TripoSG)",
+            "num_inference_steps": 50,
+            "guidance_scale": 7.0,
+            "seed": 12345,
+            "dtype": "float16",
+            "preprocess": "input PNG as-is (RGB); no RMBG-1.4 / bbox crop, parity with the other wave runners; the official TripoSG script would additionally apply RMBG",
+            "python": "system 3.12",
+        }
+    if any(k.startswith("hunyuan3d_2_full/") for k in aggregates):
+        environment["hunyuan3d_2_full"] = {
+            "weights": "tencent/Hunyuan3D-2 hunyuan3d-dit-v2-0 (+ hunyuan3d-vae-v2-0 via flashvdm)",
+            "num_inference_steps": 50,
+            "guidance_scale": 5.0,
+            "octree_resolution": 380,
+            "num_chunks": 20000,
+            "flashvdm": "enabled",
+            "seed": 12345,
+            "python": "system 3.12",
+        }
+
     result = {
         "schema": "sppa-neural-external-wave-v1",
         "amendment": "SPPA_PROTOCOL_AMENDMENT_05_20260717.md",
         "created_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
         "status": "secondary descriptive analysis; does not alter sealed H1 or any sealed artifact",
+        "output_stem": output_stem,
         "run_dir": str(RUN_DIR),
+        "run_dirs": [str(d) for d in RUN_DIRS],
         "code_hashes": {
             p.name: sha256_file(p)
             for p in sorted(Path(__file__).resolve().parent.glob("*.py"))
         },
-        "environment": {
-            "gpu": "NVIDIA GeForce RTX 5090 32 GB (torch cuda; nvidia-smi NVML unavailable this session)",
-            "triposr": {"weights": "stabilityai/TripoSR", "mc_resolution": 128, "chunk_size": 4096, "venv": "_venvs/triposr"},
-            "hunyuan3d_2mini_turbo": {"weights": "tencent/Hunyuan3D-2mini hunyuan3d-dit-v2-mini-turbo", "num_inference_steps": 5, "octree_resolution": 380, "num_chunks": 20000, "flashvdm": "enabled", "seed": 12345, "python": "system 3.12"},
-        },
+        "environment": environment,
         "excluded_methods": EXCLUDED_METHODS,
         "alignment": calibration,
         "sppa_reference_rows_clean": sppa_summary,
         "aggregates": aggregates,
         "rows": {f"{m}/{c}": rows for (m, c), rows in sorted(rows_by_mc.items())},
     }
-    out_json = RESULTS_ROOT / "sppa_neural_external_wave.json"
+    out_json = RESULTS_ROOT / f"{output_stem}.json"
     write_json(out_json, result)
     print(f"wrote {out_json}")
-    _write_md(result)
-    _write_tex(result)
+    _write_md(result, RESULTS_ROOT / f"{output_stem}.md")
+    _write_tex(result, RESULTS_ROOT / f"{output_stem}.tex")
     return 0
 
 
@@ -638,6 +697,10 @@ def _table_rows(result: dict) -> list[dict]:
         ("triposr", "mask"): ("TripoSR (b)", "96x96 top mask"),
         ("hunyuan3d_2mini_turbo", "oblique"): ("Hunyuan3D-2mini-turbo (a)", "clean-crop shaded render"),
         ("hunyuan3d_2mini_turbo", "mask"): ("Hunyuan3D-2mini-turbo (b)", "96x96 top mask"),
+        ("triposg", "oblique"): ("TripoSG (a)", "clean-crop shaded render"),
+        ("triposg", "mask"): ("TripoSG (b)", "96x96 top mask"),
+        ("hunyuan3d_2_full", "oblique"): ("Hunyuan3D-2 full (a)", "clean-crop shaded render"),
+        ("hunyuan3d_2_full", "mask"): ("Hunyuan3D-2 full (b)", "96x96 top mask"),
     }
     for (method, condition), (name, inp) in labels.items():
         agg = result["aggregates"].get(f"{method}/{condition}")
@@ -658,10 +721,13 @@ def _table_rows(result: dict) -> list[dict]:
     return rows
 
 
-def _write_md(result: dict) -> None:
+def _write_md(result: dict, out_path: Path) -> None:
     rows = _table_rows(result)
+    title = "# SPPA external neural wave (Amendment 05) - measured results"
+    if out_path.stem != "sppa_neural_external_wave":
+        title = "# SPPA external neural wave (Amendment 05) - E12 flagship extension - measured results"
     lines = [
-        "# SPPA external neural wave (Amendment 05) - measured results",
+        title,
         "",
         f"Generated: {result['created_utc']} UTC. Secondary descriptive analysis; sealed H1 unchanged.",
         "",
@@ -716,12 +782,12 @@ def _write_md(result: dict) -> None:
         "- SPPA-MVFit rows are the existing sealed clean-condition results on the same 60 cases (read-only).",
         "",
     ]
-    out = RESULTS_ROOT / "sppa_neural_external_wave.md"
+    out = out_path
     out.write_text("\n".join(lines), encoding="utf-8")
     print(f"wrote {out}")
 
 
-def _write_tex(result: dict) -> None:
+def _write_tex(result: dict, out_path: Path) -> None:
     rows = _table_rows(result)
     lines = [
         "% Auto-generated by tools/neural_external_wave/step4_evaluate_wave.py (Amendment 05).",
@@ -741,7 +807,7 @@ def _write_tex(result: dict) -> None:
         if i == 2:
             lines.append("\\midrule")
     lines += ["\\bottomrule", "\\end{tabular}", ""]
-    out = RESULTS_ROOT / "sppa_neural_external_wave.tex"
+    out = out_path
     out.write_text("\n".join(lines), encoding="utf-8")
     print(f"wrote {out}")
 
@@ -752,6 +818,11 @@ def main() -> int:
     parser.add_argument("--methods", default="triposr,hunyuan3d_2mini_turbo")
     parser.add_argument("--conditions", default="oblique,mask")
     parser.add_argument("--stage", default="coarse", choices=["coarse", "fine"])
+    parser.add_argument(
+        "--output-stem",
+        default="sppa_neural_external_wave",
+        help="aggregate output file stem under benchmarks/results (E12 flagship extension: sppa_neural_flagship_wave)",
+    )
     args = parser.parse_args()
     methods = [m for m in args.methods.split(",") if m]
     conditions = [c for c in args.conditions.split(",") if c]
@@ -761,7 +832,7 @@ def main() -> int:
         return mode_calibrate(methods, conditions, args.stage)
     if args.mode == "eval":
         return mode_eval(methods, conditions)
-    return mode_aggregate()
+    return mode_aggregate(args.output_stem)
 
 
 if __name__ == "__main__":

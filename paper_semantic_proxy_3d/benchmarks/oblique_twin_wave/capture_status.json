@@ -1,0 +1,19 @@
+{
+  "phase": "done",
+  "idx": 304,
+  "total": 304,
+  "captured": 304,
+  "failed": 0,
+  "skipped_existing": 4,
+  "retries": 0,
+  "fps_ema": 3.0,
+  "elapsed_s": 4671.5,
+  "last_frame": {
+    "frame_id": "tower13_nadir_az270",
+    "ok": true,
+    "std": 51.89,
+    "cmean": 127.98
+  },
+  "manifest_rows": 308,
+  "note": "done"
+}

@@ -5,6 +5,7 @@
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{array}
+\usepackage{enumitem}
 \usepackage{float}
 \usepackage{xcolor}
 \usepackage{graphicx}
@@ -43,7 +44,13 @@ This supplement records the confirmatory protocol path and reproduction
 commands, the external neural-wave protocol, the open-label probe, the
 real-image probes and replay audits, the role-preservation diagnostic, the
 descriptor and Unreal runtime tests, and the full tables behind the figures
-of the main paper.
+of the main paper. It also retains material moved from the main text during
+the mission reframe: the pipeline-mechanism overview and the end-to-end
+compile algorithm (Section~\ref{sec:supp-design-space}), the real-image probe
+grid (Section~\ref{sec:supp-probes}), the packaged-runtime scaling figure
+(Section~\ref{sec:supp-unreal}), and the secondary, surface-metric, OBB,
+fitting-sequence, external-gallery, and real-stream localization material
+(Section~\ref{sec:supp-posthoc}).
 
 \section*{Primary endpoint (held-out)}
 
@@ -130,7 +137,71 @@ sparse semantic telemetry is available.
 
 Table~\ref{tab:representation-design-space} states the resulting deployment
 policy. It deliberately gives priority to curated assets and mapping geometry
-when those are the correct tools.
+when those are the correct tools. Figure~\ref{fig:pipeline-overview} (moved
+from the main text) records the semantic-label-to-parts mechanism behind that
+policy, and Figure~\ref{alg:pipeline} writes the end-to-end compile chain out
+in exact steps.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{figures/fig_pipeline_overview.png}
+\caption{SPPA semantic-label-to-parts-to-3D mechanism for the truck archetype
+(moved from the main text). A
+language model, ontology tool, or human author may draft candidate part roles
+offline, but runtime execution uses only a reviewed versioned recipe \(z_r\). An
+input label activates an offline draft, the draft is reduced to reviewed part
+roles and bounded update rules, and runtime compiles those roles into primitive
+geometry. The short and long proxy variants illustrate the implemented
+role-specific rule: cargo length changes while cab and wheel priors remain
+bounded, so the object is not represented by root-scaling a single box.}
+\label{fig:pipeline-overview}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\fbox{\begin{minipage}{0.94\linewidth}
+\footnotesize
+\textbf{Algorithm 1 --- SPPA compile: from one detection to a displayed actor.}\\[3pt]
+\textbf{Input:} observation \(x_t\) (track \(i\), label \(\ell\), confidence
+\(c\), bounding box \(b\), mask \(m\), camera/flight geometry, pose estimate
+\(\xi_t\)).\\
+\textbf{Output:} one \texttt{SPPA-DESC-0.2} descriptor per track plus
+per-frame \texttt{SPPA-UPD-0.2} updates.\\[2pt]
+\begin{enumerate}[leftmargin=1.6em,itemsep=0pt,topsep=1pt]
+\item \emph{Normalize}: map \(\ell\) through the reviewed ontology to
+\texttt{exact\_class}, \texttt{keyword\_archetype}, or
+\texttt{fallback\_unknown\_label}.
+\item If fallback: emit the generic uncertainty-aware volume and skip to
+step~8---an unknown label is never hallucinated into a specific object.
+\item Select the frozen family graph \(G_a\): eight slots, each a primitive
+with role, transform, and dimension priors
+(Figure~\ref{main-fig:family-graphs}).
+\item \emph{Evidence} (detector/image path only):
+(4.1)~\textbf{Observe}---store the mask and camera geometry in a
+\texttt{SPPA-OBS-0.1} record;
+(4.2)~\textbf{Project}---project the mask to an oriented ground footprint and
+keep its PCA axial orientation (defined modulo~\(\pi\));
+(4.3)~\textbf{Scale}---turn the footprint into a metric length/width/height
+proposal, only when metric calibration is declared;
+(4.4)~\textbf{Gate}---clamp implausible proportions through the family aspect
+prior and withhold unsafe image-derived pose or yaw.
+\item Parameters: \(\theta=\theta_0\) (tag/text path) or fitted \(\theta^{\ast}\)
+(MVFit, Figure~\ref{main-alg:mvfit}).
+\item \(\mathrm{Build}(g,\theta)\): instantiate the eight role-labeled
+primitives plus connector cylinders between semantically attached parts.
+\item Emit the compact update descriptor once per track
+(\(\approx\)1.45~kB); the renderer builds the actor from it.
+\item Per frame: apply pose/material/uncertainty updates in place; topology is
+regenerated only when the class or archetype changes.
+\end{enumerate}
+\end{minipage}}
+\caption{The end-to-end SPPA pipeline in exact steps (moved from the main
+text). Both input contracts
+(tag/text and detector/image) terminate in the same deterministic builder, so
+their outputs are directly comparable. No language model or neural generator
+runs at runtime; the offline-drafted recipes are reviewed and versioned.}
+\label{alg:pipeline}
+\end{figure}
 
 \begin{table}[H]
 \centering
@@ -162,7 +233,13 @@ morphology-by-stratum cell, lexicographic \texttt{case\_id} order). The measured
 generators were TripoSR~\cite{tochilkin2024triposr}
 (\texttt{stabilityai/TripoSR}) and Hunyuan3D-2mini-turbo~\cite{zhao2025hunyuan3d}
 (\texttt{tencent/Hunyuan3D-2mini}, checkpoint
-\texttt{hunyuan3d-dit-v2-mini-turbo}, octree 380, 5 sampling steps, FlashVDM).
+\texttt{hunyuan3d-dit-v2-mini-turbo}, octree 380, 5 sampling steps, FlashVDM),
+joined in a post-hoc flagship extension (run
+\texttt{20260719\_flagship\_wave}) by TripoSG~\cite{triposg2025} (local
+VAST-AI/TripoSG 1.5B rectified-flow weights, 50 steps, guidance 7.0) and the
+flagship Hunyuan3D-2 full model~\cite{zhao2025hunyuan3d}
+(\texttt{hunyuan3d-dit-v2-0}, 50 steps, guidance 5.0, octree 380, FlashVDM);
+all four run at fixed seed 12345.
 Each neural
 generator received two prespecified inputs: (a) a clean-crop shaded oblique
 render of the source actor, the generator's best input condition, and (b) the
@@ -173,8 +250,9 @@ fitted on twelve calibration cases; any selection bias this introduces can
 only inflate neural IoU, so the direction is conservative for SPPA), uniform
 scale to the ground-truth bounding box, and ground-truth bounding-box center
 and yaw frame; no per-case tuning was allowed. Voxel IoU was measured at \(64^3\) with the
-same voxelizer and WORLD frame. Two hard crashes (2/240 runs, Hunyuan3D
-oblique condition) are reported as exclusions; SF3D (install/build failure
+same voxelizer and WORLD frame. Two hard crashes (2/480 runs, inherited from
+the Hunyuan3D-2mini-turbo oblique condition; the two flagship generators
+completed 120/120 runs without a crash) are reported as exclusions; SF3D (install/build failure
 under the Amendment~05 Python 3.12 stack, after an earlier Python 3.10 attempt
 produced no benchmark event before a 20-minute timeout), SPAR3D (gated
 weights), and TRELLIS.2 (no Windows environment) remain documented
@@ -182,34 +260,33 @@ environment-level exclusions, so no measured quality result exists for them in
 either attempt. SPPA-MVFit, Generic-MVFit, and visual-hull rows
 are the existing confirmatory clean-condition results on the same sixty cases.
 
+\paragraph{Input parity and the TripoSG mask artifact.}
+Every generator received the input PNG as-is, with no background removal or
+bounding-box crop, matching the TripoSR/Hunyuan convention of the first wave.
+TripoSG's official pipeline expects a background-removed RGBA input, so its
+mask-condition score (\(0.002\)) is an input-parity artifact of that choice,
+not a measured property of the model; it is kept in the table for
+completeness and excluded from every range quoted in the main text. The
+parity rule and its consequence are registered in the run manifest
+(\texttt{benchmarks/neural\_external\_wave/runs/20260719\_flagship\_wave/MANIFEST.md}).
+
 \begin{table}[H]
 \centering
 \scriptsize
 \setlength{\tabcolsep}{3pt}
 \renewcommand{\arraystretch}{1.0}
-\caption{Measured external neural wave (Amendment~05, secondary). Mean voxel
-IoU at \(64^3\) on the same sixty held-out cases (Hunyuan3D (a): n=58 after
-the two reported hard crashes), with parenthesized paired \(\Delta\)IoU
-versus SPPA-MVFit. Triangles and payload are mesh-output means; generation
-time is warm per-case wall time on the same RTX 5090; VRAM is uncapped peak
-CUDA allocation. SPPA rows are CPU-only and their payload is the update
-descriptor, not a mesh. Per-case values:
-\texttt{benchmarks/results/sppa\_neural\_external\_wave.json}.}
+\caption{Measured external neural wave (Amendment~05, secondary; extended
+post-hoc with the two flagship generators). Mean voxel
+IoU at \(64^3\) on the same sixty held-out cases (Hunyuan3D-2mini-turbo (a):
+n=58 after the two reported hard crashes), with parenthesized paired
+\(\Delta\)IoU versus SPPA-MVFit. Triangles and payload are mesh-output means;
+generation time is warm per-case wall time on the same RTX 5090; VRAM is
+uncapped peak CUDA allocation. SPPA rows are CPU-only and their payload is
+the update descriptor, not a mesh. TripoSG (b) is the documented input-parity
+artifact above. Per-case values:
+\texttt{benchmarks/results/sppa\_neural\_flagship\_wave.json}.}
 \label{tab:neural-external-wave}
-\begin{tabular}{llrrrrr}
-\toprule
-Method & Input & IoU & Triangles & ms & VRAM (MB) & Payload \\
-\midrule
-SPPA-MVFit (ours) & masks top+side & 0.561 & 536 & 9.2 & -- & 1.45 kB \\
-Generic-MVFit & same masks & 0.364 (-0.197) & 1,280 & 11.4 & -- & 1.43 kB \\
-Visual hull & same masks & 0.516 (-0.045) & 51,432 & 0.2 & -- & 32.8 kB \\
-\midrule
-TripoSR (a) & clean render & 0.128 (-0.433) & 28,145 & 384.1 & 1,869 & 1.47 MB \\
-TripoSR (b) & top mask & 0.231 (-0.331) & 46,053 & 379.4 & 1,870 & 2.45 MB \\
-Hunyuan3D-2m (a) & clean render & 0.157 (-0.403) & 686,733 & 1,350.9 & 4,591 & 10.5 MB \\
-Hunyuan3D-2m (b) & top mask & 0.171 (-0.390) & 3,089,274 & 1,915.5 & 4,747 & 46.5 MB \\
-\bottomrule
-\end{tabular}
+\input{benchmarks/results/sppa_neural_flagship_wave.tex}
 \end{table}
 
 
@@ -274,7 +351,23 @@ the tag-only path, SPPA receives a semantic tag/text input without using the
 image crop. In both cases the semantic text is routed through a SPPA
 normalizer before proxy selection, so the pipeline does not depend on YOLOE
 producing an exact object name. Table~\ref{tab:real-probe-summary} summarizes
-the four probes.
+the four probes, and Figure~\ref{fig:probes-grid} (moved from the main text)
+contrasts the input crop, the detector evidence, the emitted SPPA proxy, and
+the neural baselines for each.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{figures/fig_probes_grid.png}
+\caption{Real-image probes for biker, electrical tower, tractor, and
+tractor-with-trailer (rows), moved from the main text. Columns: input crop,
+YOLOE detector evidence,
+the emitted SPPA proxy, and four reproduced text/image-to-3D baselines
+(Shap-E, Point-E, TripoSR, Hunyuan3D) annotated with generation time,
+triangle count, and VRAM. Detector output is evidence, not ground truth;
+the neural columns receive a single image or crop, an input-modality
+mismatch shown for operating-point context, not a ranking.}
+\label{fig:probes-grid}
+\end{figure}
 
 \begin{table}[H]
 \centering
@@ -476,6 +569,14 @@ richer meshes, at GPU cost and without a track-update contract.
 \section{Descriptor and Unreal Runtime Tests}
 \label{sec:supp-unreal}
 
+\paragraph{Descriptor record contents (moved from the main text).}
+A \texttt{SPPA-DESC-0.2} record stores resolver source, match type, fallback
+reason, scale source, mask footprint evidence, yaw ambiguity, shape confidence,
+material source, part list, primitive counts, and scheduler metadata; a
+\texttt{SPPA-UPD-0.2} record separates create/regenerate payloads from
+pose/no-op/shape updates, and \texttt{descriptor\_id} acts as a topology-cache
+identity so that a pose update never looks like a new mesh descriptor.
+
 In the descriptor/update replay benchmark, exact and keyword labels resolved
 to known finite archetypes and unsupported labels produced unknown fallback
 descriptors. Descriptor build with parts over 81,568 threshold-expanded rows
@@ -594,27 +695,44 @@ appropriate asset exists and loads cheaply; SPPA's intended gap is uncovered or
 mismatched semantic telemetry, not replacement of available high-quality
 assets.
 
+Figure~\ref{fig:runtime-scaling} (moved from the main text) plots the dense
+packaged-runtime scaling series behind the corresponding row of the condensed
+runtime table in the main text.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.55\linewidth]{figures/fig_runtime_scaling.png}
+\caption{Packaged-runtime scaling (HISM backend, dense-update streams), moved
+from the main text:
+frame P95 versus object count for the create, pose-update, and shape-update
+streams. The 33.3~ms line marks a desktop 30~FPS budget; dense shape updates
+exceed it already at 100 objects and dense pose updates between 100 and 250,
+while the sparse 10\% changed-track schedule of the condensed runtime table in
+the main text stays below it at 500 objects. Run note: the plotted series
+comes from the original scaling run \texttt{20260703T033655Z} (CSV logging
+active; 100-object shape frame P95 \(38.7\)~ms), whereas the condensed runtime
+table in the main text and the table above quote the isolated no-CSV rerun
+\texttt{20260703T033840Z} (\(37.126\)~ms). The two runs differ only in
+absolute milliseconds; dense shape updates exceed the 33.3~ms budget from 100
+objects in both, so the conclusion is unchanged.}
+\label{fig:runtime-scaling}
+\end{figure}
+
 
 \section{Sealed and Post-Hoc Analysis Tables}
 \label{sec:supp-posthoc}
 
-Full tables behind the figures of Sections 4.1--4.5 of the main paper.
-Tables~\ref{tab:robustness-conditions} and \ref{tab:mvfit-family-strata}
-belong to the confirmatory run; the rest are post-hoc exploratory analyses on
+Full tables behind the figures of Sections 4.1--4.5 of the main paper, plus
+material moved from the main text during the mission reframe (the secondary
+paired differences, the surface metrics, the OBB baseline detail, the
+fitting-sequence and external-gallery figures, and the real-stream
+localization analysis).
+Table~\ref{tab:mvfit-family-strata}
+belongs to the confirmatory run, as does the prespecified
+observation-condition table, which now appears in the main text
+(Table~\ref{main-tab:robustness-conditions});
+the rest are post-hoc exploratory analyses on
 the released artifacts and change nothing about H1 or its interval.
-
-\begin{table}[!htbp]
-\centering
-\scriptsize
-\caption{Method means and paired differences under the prespecified
-observation conditions, evaluated with the confirmatory run and reported here
-in full (\(n{=}240\) per condition). The
-prespecified \(+0.030\) margin is exceeded under every condition.
-Per-condition means of all eight methods are in
-Table~\ref{tab:supp-robustness-all-methods}.}
-\label{tab:robustness-conditions}
-\input{benchmarks/mvfit_posthoc_analysis/t1_robustness/robustness_conditions_table.tex}
-\end{table}
 
 \begin{table}[!htbp]
 \centering
@@ -627,6 +745,59 @@ Table~\ref{main-tab:mvfit-h1}.}
 \label{tab:mvfit-family-strata}
 \input{benchmarks/results/sppa_mvfit_family_strata.tex}
 \end{table}
+
+\begin{table}[!htbp]
+\centering
+\scriptsize
+\caption{Paired clean-mask mean IoU differences of SPPA-MVFit minus each
+comparator (moved from the main text; stratified actor bootstrap 95\%
+intervals, per-comparison and
+unadjusted across secondary endpoints). Visual hull is a
+high-complexity geometry reference, not a lightweight runtime actor.}
+\label{tab:mvfit-secondary}
+\input{benchmarks/results/sppa_mvfit_secondary_deltas.tex}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\scriptsize
+\caption{Surface metrics on the clean condition
+(\(n{=}240\)), moved from the main text. F-score at a 1.5-voxel threshold
+against ground-truth
+surfaces; paired differences versus SPPA-MVFit with stratified bootstrap
+95\% intervals.}
+\label{tab:surface-metrics}
+\input{benchmarks/mvfit_posthoc_analysis/t3_surface/surface_metrics_table.tex}
+\end{table}
+
+Figure~\ref{fig:fitting-sequence} (moved from the main text) shows one fitted
+example of the confirmatory fitting path, and
+Figure~\ref{fig:external-gallery} (moved from the main text) the two
+representative outcomes of the external sanity check of
+Section~\ref{main-sec:external-sanity}.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.8\linewidth]{figures/fig_fitting_sequence_blender.png}
+\caption{Fitting of SPPA-MVFit on a held-out actor (moved from the main
+text): (a)~the observed
+silhouette pair, (b)~initialization from the observed mask extents,
+(c)~the converged eight-part proxy, and (d)~the ground-truth voxel mesh.}
+\label{fig:fitting-sequence}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_external_gallery.png}
+\caption{External sanity check, qualitative (moved from the main text). Left:
+a ModelNet40 car where
+the family graph helps (SPPA 0.628 vs generic 0.397). Right: an Objaverse
+water tower whose horizontal tank mismatches the vertical tower template
+(SPPA 0.118 vs generic 0.126)---the template--instance mismatch failure
+mode. Panels show observed masks, SPPA actor projections, and ground-truth
+voxel projections.}
+\label{fig:external-gallery}
+\end{figure}
 
 \begin{table}[!htbp]
 \centering
@@ -742,6 +913,19 @@ condition, \(n{=}240\); stratified bootstrap 95\% intervals).}
 \input{benchmarks/mvfit_reviewer_experiments/e1_wrong_family/wrong_family_comparisons.tex}
 \end{table}
 
+\paragraph{Oriented bounding box baseline (moved from the main text).}
+The primitive baselines in the main benchmark are axis-aligned. A
+rotation-aware oriented bounding
+box (top-mask minimum-area rectangle with gap-midpoint refinement, \(z\)
+extent from the side mask) scores \(0.252\), practically identical to the
+axis-aligned box (\(0.248\); paired difference \(-0.004\), CI
+\([-0.005,-0.003]\)): the benchmark actors are presented axis-aligned, so
+orientation freedom adds nothing, and SPPA-MVFit minus OBB is \(+0.306\) (CI
+\([0.297,0.314]\); Table~\ref{tab:supp-obb-baseline}). The box family of
+baselines, oriented or not, does not
+close the representation gap. The wider representation design space is mapped
+in Section~\ref{sec:supp-design-space}.
+
 \begin{table}[!htbp]
 \centering
 \scriptsize
@@ -789,6 +973,46 @@ is exact in \(70\%\) of actors versus \(0\%\) for the hull.}
 \input{benchmarks/mvfit_reviewer_experiments/e9_role_query/role_query_table.tex}
 \end{table}
 
+\paragraph{Real-stream localization analysis (moved from the main text).}
+Localization on this stream is observation-bound, not fitter-bound: all
+methods sit at \(\approx\)\(33\)~m median 3D error, exactly on the identity
+line of footprint-center error versus anchor error, because the low-altitude
+stream (AGL 10--23~m) compresses monocular range; footprint IoU against a
+\(5{\times}5\)~m base is degenerate for every method.
+Table~\ref{tab:supp-real-stream-full} reports the full per-method table
+including the localization and footprint columns, and
+Figure~\ref{fig:real-stream-localization} the plan-view and error-identity
+panels behind them. Localization is outside the main paper's scope (position
+assumed given); it is retained here for completeness.
+
+\begin{table}[!htbp]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\caption{Real detector stream case study, full table including the
+localization columns (exploratory post-hoc, not sealed):
+1{,}902 detections from a 1{,}394-frame flight over the georeferenced twin
+with a real custom detector, real telemetry, and exact tower-anchor ground
+truth. Localization and footprint columns: GT-matched subset (\(n{=}217\);
+wrong detector tokens kept as a natural condition); reprojection and
+latency: all cases. All methods are observation-bound at \(\approx\)\(33\)~m;
+SPPA-MVFit trades 2D image overlap for 3D part structure (the stream has no
+3D ground truth).}
+\label{tab:supp-real-stream-full}
+\input{benchmarks/real_stream_wave/real_stream_main_table.tex}
+\end{table}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_real_stream_localization.png}
+\caption{Real-stream localization panels (moved from the main text).
+(a)~Plan view of a tower case: the observed footprint (dashed) and all
+fitted proxies sit \(\approx\)\(35\)~m from the exact
+anchor---observation-bound. (b)~Fitted-centroid error versus observation
+error: the identity line holds for all methods.}
+\label{fig:real-stream-localization}
+\end{figure}
+
 \begin{table}[!htbp]
 \centering
 \scriptsize
@@ -800,6 +1024,59 @@ misleading evidence that triggered the wrong label.}
 \label{tab:supp-real-stream-token}
 \input{benchmarks/real_stream_wave/real_stream_token_arm_table.tex}
 \end{table}
+
+\paragraph{E10: measured mode routing and token validation (exploratory post-hoc).}
+A candidate deployment prescription---route each detection between
+the footprint-only SPPA mode and a box-proxy mode using detector-token
+confidence or prior mismatch---was frozen as a protocol
+(\texttt{benchmarks/real\_stream\_wave/e10\_protocol.md}) on 2026-07-19
+\emph{before} any routing outcome was computed, then measured on the 1,902
+real-stream cases with the 2D reprojection IoU of the routed method as
+outcome (case-level paired bootstrap, 10,000 resamples, seed 20260719).
+Table~\ref{tab:supp-e10-routing} and Figure~\ref{fig:supp-e10-routing} report
+both halves. Routing is refuted on this outcome: every threshold policy
+collapses to always-proxy, the paired best-minus-always-proxy median
+difference is \(0.0\) [\(0,0\)], and the unreachable per-case oracle gains
+only \(+0.006\) over always-proxy while picking SPPA in \(17.1\%\) of cases.
+The token-validation arm returns a usable signal instead: on the 217
+GT-matched cases (138 wrong token, 79 correct), \(-\)confidence detects wrong
+tokens with AUC \(0.847\), while the declared-direction mismatch score points
+the other way (AUC \(0.000\))---wrong tokens show \emph{lower} prior
+mismatch, so \(-\)mismatch separates perfectly (AUC \(1.000\), as does the
+secondary raw-height score). The mechanism is monocular: hallucinated
+cows/bikers receive small observed heights (\(\approx\)\(1\)--\(2\)~m) that
+fit their wrong family priors suspiciously well, whereas true towers suffer
+severe monocular height underestimation (\(\approx\)\(5\)~m observed against
+the \(25\)~m prior, mismatch \(\approx\)\(1.6\)). The derived family heights
+behind the signal were frozen in the protocol (lattice\_tower \(25.0\)~m,
+quadruped \(1.5\)~m, rider\_cycle \(1.8\)~m). The perfect separation is
+measured on 217 matched cases of a single stream and is not claimed beyond
+it.
+
+\begin{table}[!htbp]
+\centering
+\scriptsize
+\caption{E10 measured mode routing (exploratory post-hoc; protocol frozen
+pre-outcome). 1,902 real-stream cases; outcome: 2D reprojection IoU of the
+routed method; case-level paired bootstrap, 10,000 resamples, seed 20260719.
+The oracle is an unreachable upper bound. Full policy grid:
+\texttt{benchmarks/real\_stream\_wave/e10\_routing.json}.}
+\label{tab:supp-e10-routing}
+\input{benchmarks/real_stream_wave/e10_routing_table.tex}
+\end{table}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{benchmarks/real_stream_wave/fig_e10_routing.png}
+\caption{E10 measured mode routing and token validation. (a)~Median 2D
+reprojection IoU against the routing threshold for both candidate signals,
+with always-SPPA, always-proxy, and oracle reference lines: both curves
+collapse to the always-proxy endpoint. (b)~Wrong-token separation on the 217
+GT-matched cases: \(-\)confidence reaches AUC \(0.847\); the declared-direction
+prior-mismatch curve collapses to AUC \(0.000\)---the signal points opposite
+to intuition, so \(-\)mismatch separates perfectly (AUC \(1.000\)).}
+\label{fig:supp-e10-routing}
+\end{figure}
 
 
 {\small

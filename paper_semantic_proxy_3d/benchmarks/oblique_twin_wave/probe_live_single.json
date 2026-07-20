@@ -1,0 +1,29 @@
+{
+  "disarmed": "no _CAPTURE global (namespace not shared?)",
+  "throttle": {
+    "use_less_cpu_in_the_background": "n/a: EditorPerProjectUserSettings: Failed to find property 'use_less_cpu_in_the_background' for attribute",
+    "bUseLessCPUinTheBackground": "n/a: EditorPerProjectUserSettings: Failed to find property 'bUseLessCPUinTheBackground' for attribute 'bU",
+    "cmd:Slate.BackgroundThrottle 0": "sent",
+    "cmd:t.SetFPS 60": "sent"
+  },
+  "ticks": {
+    "fired": 120
+  },
+  "pose": {
+    "cam": [
+      8626.605247045669,
+      10682.67242780422,
+      1551.271306543826
+    ],
+    "tower_h_m": 20.71029282339599,
+    "radius_m": 35.0
+  },
+  "viewport_moved": true,
+  "fps_ema": 8.0,
+  "load_progress": 0.0,
+  "stats": {
+    "mean": 48.64,
+    "std": 86.66,
+    "center_mean": 2.53
+  }
+}

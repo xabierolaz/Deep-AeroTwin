@@ -1,5 +1,12 @@
 \begin{thebibliography}{1}
 
+\bibitem{triposg2025}
+Yangguang Li, Zi-Xin Zou, Zexiang Liu, Dehu Wang, Yuan Liang, Zhipeng Yu,
+  Xingchao Liu, Yuan-Chen Guo, Ding Liang, Wanli Ouyang, and Yan-Pei Cao.
+\newblock Triposg: High-fidelity 3d shape synthesis using large-scale rectified
+  flow models.
+\newblock {\em arXiv preprint arXiv:2502.06608}, 2025.
+
 \bibitem{tochilkin2024triposr}
 Dmitry Tochilkin, David Pankratz, Zexiang Liu, Zixuan Huang, Adam Letts,
   Yangguang Li, Ding Liang, Christian Laforte, Varun Jampani, and Yan-Pei Cao.

@@ -4,7 +4,7 @@
 
 Please consider our manuscript for *Journal of Geovisualization and Spatial Analysis*:
 
-**Family-Conditioned Multiview Fitting for Semantic Primitive Proxy Actors in UAV Digital Twins (SPPA-MVFit)**
+**Instant Semantic Proxy Reconstruction for UAV Digital Twins under Degraded Sensing (SPPA-MVFit)**
 
 ## Why JGSA
 
@@ -20,7 +20,7 @@ Under an **input-matched, equal-budget** multiview fit, a **frozen semantic-fami
 
 ## Primary result
 
-Mean paired voxel-IoU gain **0.190** (95% CI **[0.181, 0.199]**), *n*=240, margin +0.030 → **H1 PASS**. All 12 family×stratum cells positive; OOD stratum +0.172. Synthetic developer-held-out only.
+Mean paired voxel-IoU gain **0.190** (95% CI **[0.181, 0.199]**), *n*=240, margin +0.030 → **H1 PASS**. All 12 family×stratum cells positive; OOD stratum +0.172. Synthetic developer-held-out only. Two exploratory post-hoc twin studies (E11 cross-view fidelity, E14 camera-less simulated LiDAR) support the mission reading and are labeled exploratory/simulated, with positions locked to ground truth.
 
 ## Package
 
