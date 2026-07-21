@@ -1,0 +1,239 @@
+{"frame": 0, "detections": []}
+{"frame": 1, "detections": []}
+{"frame": 2, "detections": []}
+{"frame": 3, "detections": [{"class_id": 2, "class_name": "utility pole", "confidence": 0.12493050843477249, "xyxy": [0.09217453002929688, 184.95672607421875, 77.11241912841797, 503.823974609375]}]}
+{"frame": 4, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.11183007061481476, "xyxy": [0.42980194091796875, 176.83447265625, 121.66942596435547, 495.3694763183594]}]}
+{"frame": 5, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.12450762838125229, "xyxy": [48.944068908691406, 177.68678283691406, 156.2830047607422, 489.4556884765625]}]}
+{"frame": 6, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.09794535487890244, "xyxy": [95.49134826660156, 172.20260620117188, 218.43455505371094, 487.1064453125]}]}
+{"frame": 7, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.098203144967556, "xyxy": [140.6568145751953, 171.63621520996094, 265.1160583496094, 487.19775390625]}]}
+{"frame": 8, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.10699273645877838, "xyxy": [186.87203979492188, 175.13670349121094, 312.8753356933594, 489.201904296875]}]}
+{"frame": 9, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.2579115927219391, "xyxy": [222.85386657714844, 174.74740600585938, 347.06170654296875, 489.7840270996094]}]}
+{"frame": 10, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.13397057354450226, "xyxy": [272.54150390625, 181.85775756835938, 394.09149169921875, 496.4822998046875]}]}
+{"frame": 11, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.3000877797603607, "xyxy": [311.16064453125, 178.03680419921875, 448.7838134765625, 492.67205810546875]}]}
+{"frame": 12, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.32836979627609253, "xyxy": [350.5429992675781, 184.03074645996094, 487.05926513671875, 499.405517578125]}]}
+{"frame": 13, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.24946583807468414, "xyxy": [383.77099609375, 182.37420654296875, 507.0910339355469, 497.537353515625]}, {"class_id": 12, "class_name": "car", "confidence": 0.06179444119334221, "xyxy": [1256.6253662109375, 52.832088470458984, 1279.9677734375, 78.97254180908203]}]}
+{"frame": 14, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.24681209027767181, "xyxy": [422.6651611328125, 190.45452880859375, 541.9523315429688, 501.0464172363281]}]}
+{"frame": 15, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.2683461606502533, "xyxy": [463.8943176269531, 186.66578674316406, 584.1248168945312, 500.61181640625]}]}
+{"frame": 16, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.2054927796125412, "xyxy": [497.84130859375, 184.28225708007812, 615.2448120117188, 498.49542236328125]}]}
+{"frame": 17, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.17413675785064697, "xyxy": [531.9285888671875, 184.3564910888672, 651.7929077148438, 499.8232421875]}]}
+{"frame": 18, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.4947437644004822, "xyxy": [553.156005859375, 173.48776245117188, 673.828369140625, 489.88592529296875]}]}
+{"frame": 19, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.39888519048690796, "xyxy": [582.2855224609375, 177.0814208984375, 705.0350341796875, 495.0831298828125]}]}
+{"frame": 20, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.21007055044174194, "xyxy": [600.1461791992188, 161.9975128173828, 726.836669921875, 482.0311279296875]}]}
+{"frame": 21, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.19904924929141998, "xyxy": [622.3470458984375, 156.73248291015625, 745.3450927734375, 479.995361328125]}]}
+{"frame": 22, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3465268313884735, "xyxy": [640.687744140625, 151.4033203125, 764.894287109375, 474.41217041015625]}]}
+{"frame": 23, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.2719688415527344, "xyxy": [647.2774047851562, 145.75271606445312, 772.9937744140625, 472.3606262207031]}]}
+{"frame": 24, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.3949586749076843, "xyxy": [658.9752807617188, 151.1212158203125, 811.4908447265625, 478.8663024902344]}]}
+{"frame": 25, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.24427759647369385, "xyxy": [663.3925170898438, 152.37298583984375, 800.0183715820312, 481.8345947265625]}]}
+{"frame": 26, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.40597161650657654, "xyxy": [673.3651733398438, 173.754638671875, 802.50390625, 501.10150146484375]}]}
+{"frame": 27, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.5678486227989197, "xyxy": [677.4507446289062, 178.9818572998047, 824.3447875976562, 510.0337829589844]}]}
+{"frame": 28, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.4369950592517853, "xyxy": [680.453369140625, 193.44036865234375, 831.305908203125, 526.6860961914062]}]}
+{"frame": 29, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.30249813199043274, "xyxy": [704.0722045898438, 206.25921630859375, 830.9239501953125, 538.31201171875]}]}
+{"frame": 30, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.45244523882865906, "xyxy": [686.956298828125, 206.85768127441406, 844.02099609375, 540.8126831054688]}]}
+{"frame": 31, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.2605739235877991, "xyxy": [694.2705688476562, 218.76016235351562, 849.0254516601562, 551.4989624023438]}]}
+{"frame": 32, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.5771965384483337, "xyxy": [715.0445556640625, 244.98703002929688, 861.95068359375, 576.793701171875]}]}
+{"frame": 33, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.5742884278297424, "xyxy": [710.7117309570312, 264.12322998046875, 870.87060546875, 601.7471313476562]}]}
+{"frame": 34, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.186556875705719, "xyxy": [737.8662719726562, 291.62786865234375, 864.7987060546875, 627.146240234375]}]}
+{"frame": 35, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.20794087648391724, "xyxy": [750.6731567382812, 317.269287109375, 870.8551635742188, 651.3649291992188]}]}
+{"frame": 36, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.2846859097480774, "xyxy": [765.1101684570312, 348.78509521484375, 895.5684204101562, 687.369140625]}]}
+{"frame": 37, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.15655532479286194, "xyxy": [788.9432983398438, 400.31671142578125, 928.5361328125, 738.7639770507812]}]}
+{"frame": 38, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.4064496159553528, "xyxy": [790.7317504882812, 414.67620849609375, 947.1192626953125, 761.9038696289062]}]}
+{"frame": 39, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.29551631212234497, "xyxy": [818.6241455078125, 448.2368469238281, 951.9100952148438, 798.87109375]}]}
+{"frame": 40, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.32272106409072876, "xyxy": [817.6033935546875, 481.0406494140625, 963.379150390625, 834.4141235351562]}, {"class_id": 7, "class_name": "person", "confidence": 0.07197602093219757, "xyxy": [909.3419189453125, 476.8332824707031, 953.5616455078125, 552.5526733398438]}]}
+{"frame": 41, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.21851886808872223, "xyxy": [841.7625732421875, 497.9440612792969, 998.9231567382812, 854.540283203125]}, {"class_id": 7, "class_name": "person", "confidence": 0.10895680636167526, "xyxy": [918.2315063476562, 492.86126708984375, 960.0430908203125, 567.8116455078125]}]}
+{"frame": 42, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.22740516066551208, "xyxy": [860.19384765625, 527.2203369140625, 996.470703125, 890.060791015625]}]}
+{"frame": 43, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.26739153265953064, "xyxy": [861.1571044921875, 541.364013671875, 996.2756958007812, 894.380615234375]}]}
+{"frame": 44, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.1672254353761673, "xyxy": [881.14306640625, 557.3345336914062, 1038.175537109375, 923.6646118164062]}]}
+{"frame": 45, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.17853952944278717, "xyxy": [886.1309204101562, 561.859375, 1029.9051513671875, 931.0059204101562]}]}
+{"frame": 46, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.18383760750293732, "xyxy": [891.258056640625, 570.31689453125, 1049.8917236328125, 943.1935424804688]}]}
+{"frame": 47, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.18192027509212494, "xyxy": [911.0999145507812, 594.5137939453125, 1086.4697265625, 959.9283447265625]}, {"class_id": 9, "class_name": "bicycle", "confidence": 0.08812250196933746, "xyxy": [897.2756958007812, 557.8177490234375, 1087.66845703125, 960.0]}]}
+{"frame": 48, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.11384660005569458, "xyxy": [913.0341796875, 592.4943237304688, 1065.2808837890625, 960.0]}, {"class_id": 9, "class_name": "bicycle", "confidence": 0.060242172330617905, "xyxy": [920.4017944335938, 590.5459594726562, 1097.3475341796875, 960.0]}]}
+{"frame": 49, "detections": [{"class_id": 0, "class_name": "power transmission tower", "confidence": 0.16466045379638672, "xyxy": [926.5316162109375, 618.5252075195312, 1077.6605224609375, 960.0]}]}
+{"frame": 50, "detections": [{"class_id": 0, "class_name": "power transmission tower", "confidence": 0.19087304174900055, "xyxy": [931.9344482421875, 612.8201904296875, 1080.7623291015625, 960.0]}]}
+{"frame": 51, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.12187608331441879, "xyxy": [938.9065551757812, 618.2506713867188, 1137.9027099609375, 960.0]}]}
+{"frame": 52, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.10486895591020584, "xyxy": [969.6627197265625, 628.0697021484375, 1118.1961669921875, 959.8063354492188]}, {"class_id": 9, "class_name": "bicycle", "confidence": 0.051449358463287354, "xyxy": [940.3123779296875, 534.0917358398438, 1157.47216796875, 960.0]}]}
+{"frame": 53, "detections": [{"class_id": 0, "class_name": "power transmission tower", "confidence": 0.15505410730838776, "xyxy": [979.82177734375, 628.8922729492188, 1126.08740234375, 960.0]}]}
+{"frame": 54, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.13407860696315765, "xyxy": [986.0432739257812, 624.3875732421875, 1177.57568359375, 960.0]}]}
+{"frame": 55, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.17446644604206085, "xyxy": [1012.5191040039062, 651.3063354492188, 1178.3597412109375, 959.468505859375]}]}
+{"frame": 56, "detections": [{"class_id": 0, "class_name": "power transmission tower", "confidence": 0.05942598357796669, "xyxy": [1046.4783935546875, 687.796875, 1202.309814453125, 960.0]}]}
+{"frame": 57, "detections": [{"class_id": 3, "class_name": "antenna tower", "confidence": 0.08592962473630905, "xyxy": [1052.7022705078125, 695.6243286132812, 1199.8814697265625, 959.879638671875]}, {"class_id": 0, "class_name": "power transmission tower", "confidence": 0.0695316269993782, "xyxy": [1064.0491943359375, 695.6524658203125, 1199.8101806640625, 960.0]}]}
+{"frame": 58, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.12056080251932144, "xyxy": [1041.9696044921875, 697.56005859375, 1216.236328125, 960.0]}]}
+{"frame": 59, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.2808559238910675, "xyxy": [1075.0946044921875, 720.382080078125, 1251.6783447265625, 959.9852294921875]}]}
+{"frame": 60, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.48185211420059204, "xyxy": [1084.686767578125, 708.3209228515625, 1256.8680419921875, 959.96337890625]}]}
+{"frame": 61, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.3400189280509949, "xyxy": [1098.740478515625, 727.722900390625, 1278.874267578125, 959.7266845703125]}, {"class_id": 9, "class_name": "bicycle", "confidence": 0.11689399927854538, "xyxy": [1099.271484375, 726.8340454101562, 1279.2154541015625, 959.87158203125]}]}
+{"frame": 62, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.206222265958786, "xyxy": [1119.202880859375, 758.1788330078125, 1279.7728271484375, 959.8360595703125]}, {"class_id": 9, "class_name": "bicycle", "confidence": 0.1583908647298813, "xyxy": [1157.690673828125, 762.8895874023438, 1279.6856689453125, 959.7434692382812]}, {"class_id": 9, "class_name": "bicycle", "confidence": 0.06951329857110977, "xyxy": [1148.576171875, 714.7337646484375, 1279.934814453125, 959.3168334960938]}]}
+{"frame": 63, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.3720293939113617, "xyxy": [1138.128173828125, 759.1201171875, 1280.0, 959.9785766601562]}]}
+{"frame": 64, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.29218506813049316, "xyxy": [1169.38623046875, 811.3112182617188, 1280.0, 959.918701171875]}]}
+{"frame": 65, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.17908090353012085, "xyxy": [1188.527587890625, 829.1116333007812, 1279.962158203125, 959.936767578125]}]}
+{"frame": 66, "detections": []}
+{"frame": 67, "detections": []}
+{"frame": 68, "detections": []}
+{"frame": 69, "detections": []}
+{"frame": 70, "detections": []}
+{"frame": 71, "detections": []}
+{"frame": 72, "detections": []}
+{"frame": 73, "detections": []}
+{"frame": 74, "detections": []}
+{"frame": 75, "detections": []}
+{"frame": 76, "detections": []}
+{"frame": 77, "detections": []}
+{"frame": 78, "detections": []}
+{"frame": 79, "detections": []}
+{"frame": 80, "detections": []}
+{"frame": 81, "detections": []}
+{"frame": 82, "detections": []}
+{"frame": 83, "detections": []}
+{"frame": 84, "detections": []}
+{"frame": 85, "detections": []}
+{"frame": 86, "detections": []}
+{"frame": 87, "detections": []}
+{"frame": 88, "detections": []}
+{"frame": 89, "detections": []}
+{"frame": 90, "detections": []}
+{"frame": 91, "detections": []}
+{"frame": 92, "detections": []}
+{"frame": 93, "detections": []}
+{"frame": 94, "detections": []}
+{"frame": 95, "detections": []}
+{"frame": 96, "detections": []}
+{"frame": 97, "detections": []}
+{"frame": 98, "detections": []}
+{"frame": 99, "detections": []}
+{"frame": 100, "detections": []}
+{"frame": 101, "detections": []}
+{"frame": 102, "detections": []}
+{"frame": 103, "detections": []}
+{"frame": 104, "detections": []}
+{"frame": 105, "detections": []}
+{"frame": 106, "detections": []}
+{"frame": 107, "detections": []}
+{"frame": 108, "detections": []}
+{"frame": 109, "detections": []}
+{"frame": 110, "detections": []}
+{"frame": 111, "detections": []}
+{"frame": 112, "detections": []}
+{"frame": 113, "detections": []}
+{"frame": 114, "detections": []}
+{"frame": 115, "detections": []}
+{"frame": 116, "detections": []}
+{"frame": 117, "detections": []}
+{"frame": 118, "detections": []}
+{"frame": 119, "detections": []}
+{"frame": 120, "detections": []}
+{"frame": 121, "detections": []}
+{"frame": 122, "detections": []}
+{"frame": 123, "detections": []}
+{"frame": 124, "detections": []}
+{"frame": 125, "detections": []}
+{"frame": 126, "detections": []}
+{"frame": 127, "detections": []}
+{"frame": 128, "detections": []}
+{"frame": 129, "detections": []}
+{"frame": 130, "detections": []}
+{"frame": 131, "detections": [{"class_id": 7, "class_name": "person", "confidence": 0.09709879755973816, "xyxy": [239.46597290039062, 0.05739784240722656, 258.87884521484375, 22.56326675415039]}]}
+{"frame": 132, "detections": []}
+{"frame": 133, "detections": []}
+{"frame": 134, "detections": []}
+{"frame": 135, "detections": []}
+{"frame": 136, "detections": []}
+{"frame": 137, "detections": []}
+{"frame": 138, "detections": []}
+{"frame": 139, "detections": []}
+{"frame": 140, "detections": []}
+{"frame": 141, "detections": []}
+{"frame": 142, "detections": []}
+{"frame": 143, "detections": []}
+{"frame": 144, "detections": []}
+{"frame": 145, "detections": []}
+{"frame": 146, "detections": []}
+{"frame": 147, "detections": []}
+{"frame": 148, "detections": []}
+{"frame": 149, "detections": []}
+{"frame": 150, "detections": []}
+{"frame": 151, "detections": []}
+{"frame": 152, "detections": []}
+{"frame": 153, "detections": []}
+{"frame": 154, "detections": []}
+{"frame": 155, "detections": []}
+{"frame": 156, "detections": []}
+{"frame": 157, "detections": []}
+{"frame": 158, "detections": []}
+{"frame": 159, "detections": []}
+{"frame": 160, "detections": []}
+{"frame": 161, "detections": []}
+{"frame": 162, "detections": []}
+{"frame": 163, "detections": []}
+{"frame": 164, "detections": []}
+{"frame": 165, "detections": []}
+{"frame": 166, "detections": [{"class_id": 0, "class_name": "power transmission tower", "confidence": 0.14332875609397888, "xyxy": [372.89691162109375, 0.0, 445.52862548828125, 219.5800018310547]}]}
+{"frame": 167, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.2953166365623474, "xyxy": [380.7647705078125, 3.4515533447265625, 462.42120361328125, 235.6548309326172]}]}
+{"frame": 168, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.44847816228866577, "xyxy": [386.7940368652344, 15.3082275390625, 469.3014831542969, 249.12493896484375]}]}
+{"frame": 169, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.334149032831192, "xyxy": [390.8165283203125, 21.761611938476562, 472.94061279296875, 256.24786376953125]}]}
+{"frame": 170, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3739340603351593, "xyxy": [395.713134765625, 19.407882690429688, 478.31689453125, 257.19842529296875]}]}
+{"frame": 171, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.42994752526283264, "xyxy": [399.7647705078125, 21.334487915039062, 483.74566650390625, 262.60943603515625]}]}
+{"frame": 172, "detections": [{"class_id": 0, "class_name": "power transmission tower", "confidence": 0.35230863094329834, "xyxy": [404.8866882324219, 20.897850036621094, 489.074951171875, 263.3481140136719]}]}
+{"frame": 173, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.2815205752849579, "xyxy": [411.6472473144531, 30.317733764648438, 494.9618835449219, 268.9991149902344]}]}
+{"frame": 174, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.31454917788505554, "xyxy": [418.2139587402344, 36.748779296875, 504.462890625, 278.9721374511719]}]}
+{"frame": 175, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.42037397623062134, "xyxy": [423.4750061035156, 48.18815612792969, 510.7237854003906, 289.8363952636719]}]}
+{"frame": 176, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.40187278389930725, "xyxy": [432.85406494140625, 63.322357177734375, 520.7432861328125, 307.9613037109375]}]}
+{"frame": 177, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.2900110185146332, "xyxy": [439.8382263183594, 67.32252502441406, 527.6212768554688, 311.63134765625]}]}
+{"frame": 178, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.25925418734550476, "xyxy": [447.0859375, 78.25203704833984, 533.1986694335938, 322.6258850097656]}]}
+{"frame": 179, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3100827932357788, "xyxy": [448.58612060546875, 83.56196594238281, 537.1630859375, 330.4694519042969]}]}
+{"frame": 180, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.33734655380249023, "xyxy": [452.8514709472656, 80.18991088867188, 540.9833374023438, 324.7509765625]}]}
+{"frame": 181, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.432413250207901, "xyxy": [456.7525329589844, 86.00897979736328, 547.7291870117188, 332.6793212890625]}]}
+{"frame": 182, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.5760296583175659, "xyxy": [460.4122314453125, 87.36536407470703, 551.3094482421875, 337.4017639160156]}]}
+{"frame": 183, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.23169010877609253, "xyxy": [476.67626953125, 99.39663696289062, 564.7015380859375, 349.0528259277344]}]}
+{"frame": 184, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.32832497358322144, "xyxy": [481.76434326171875, 108.46397399902344, 569.9110107421875, 360.72540283203125]}]}
+{"frame": 185, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3184042274951935, "xyxy": [489.8052978515625, 108.54869079589844, 578.5228271484375, 361.9591369628906]}]}
+{"frame": 186, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.46536922454833984, "xyxy": [496.1732482910156, 104.56282806396484, 584.8225708007812, 361.48834228515625]}]}
+{"frame": 187, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.2495938539505005, "xyxy": [510.55230712890625, 113.60309600830078, 601.1246948242188, 372.58807373046875]}]}
+{"frame": 188, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.36181408166885376, "xyxy": [514.1029052734375, 110.35263061523438, 606.4388427734375, 371.21075439453125]}]}
+{"frame": 189, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.35396644473075867, "xyxy": [525.5147094726562, 130.06674194335938, 617.5784912109375, 392.7186279296875]}]}
+{"frame": 190, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.45271363854408264, "xyxy": [529.0247802734375, 131.3130340576172, 620.6600341796875, 394.9831237792969]}]}
+{"frame": 191, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3018236756324768, "xyxy": [533.525634765625, 145.55368041992188, 625.9445190429688, 411.26922607421875]}]}
+{"frame": 192, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.31129884719848633, "xyxy": [544.39599609375, 162.40606689453125, 636.763427734375, 432.1515197753906]}]}
+{"frame": 193, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.4093741178512573, "xyxy": [546.8881225585938, 167.45535278320312, 639.8543090820312, 435.90850830078125]}]}
+{"frame": 194, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.4050637185573578, "xyxy": [556.9469604492188, 195.06227111816406, 648.9598388671875, 462.26934814453125]}]}
+{"frame": 195, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.39027905464172363, "xyxy": [562.0599975585938, 206.8563995361328, 653.2760620117188, 474.2483215332031]}]}
+{"frame": 196, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3554619550704956, "xyxy": [565.3480224609375, 217.29754638671875, 659.0065307617188, 487.5853271484375]}]}
+{"frame": 197, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.37689855694770813, "xyxy": [573.6172485351562, 236.86033630371094, 667.9732666015625, 509.1229248046875]}]}
+{"frame": 198, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3284360468387604, "xyxy": [580.2542724609375, 242.57562255859375, 676.27783203125, 514.2725830078125]}]}
+{"frame": 199, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.4141174852848053, "xyxy": [580.0914306640625, 254.8292694091797, 679.5668334960938, 528.6875]}]}
+{"frame": 200, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3786556124687195, "xyxy": [583.1633911132812, 250.0206298828125, 683.5113525390625, 525.472900390625]}]}
+{"frame": 201, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.39765051007270813, "xyxy": [594.3091430664062, 262.70013427734375, 691.063720703125, 539.4826049804688]}]}
+{"frame": 202, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3343406319618225, "xyxy": [593.797607421875, 252.5436248779297, 692.539794921875, 529.5136108398438]}]}
+{"frame": 203, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.30612578988075256, "xyxy": [603.906982421875, 267.3890686035156, 703.2431640625, 548.5135498046875]}]}
+{"frame": 204, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.34836453199386597, "xyxy": [604.8480224609375, 270.0225830078125, 703.4323120117188, 550.94140625]}]}
+{"frame": 205, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.41480696201324463, "xyxy": [609.5049438476562, 281.55010986328125, 711.500244140625, 563.4857177734375]}]}
+{"frame": 206, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.34274017810821533, "xyxy": [621.426025390625, 289.3202819824219, 725.486328125, 572.7830810546875]}]}
+{"frame": 207, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3480476438999176, "xyxy": [636.9286499023438, 292.3489990234375, 736.9329833984375, 577.2350463867188]}]}
+{"frame": 208, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.4670361876487732, "xyxy": [647.5343017578125, 286.99658203125, 750.254638671875, 582.3822021484375]}]}
+{"frame": 209, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.33141276240348816, "xyxy": [657.0762329101562, 306.3115234375, 763.00244140625, 594.099853515625]}]}
+{"frame": 210, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.22215335071086884, "xyxy": [662.681884765625, 310.67608642578125, 769.7985229492188, 599.7369995117188]}]}
+{"frame": 211, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3262512981891632, "xyxy": [681.190673828125, 328.5525207519531, 785.7249755859375, 621.47802734375]}]}
+{"frame": 212, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3664039671421051, "xyxy": [690.0509643554688, 327.4195556640625, 796.1126708984375, 624.1295166015625]}]}
+{"frame": 213, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3860109746456146, "xyxy": [707.0399169921875, 349.369384765625, 812.0083618164062, 644.3480224609375]}]}
+{"frame": 214, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.41920971870422363, "xyxy": [705.2987060546875, 354.2733154296875, 823.474853515625, 647.9954223632812]}]}
+{"frame": 215, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.2754674553871155, "xyxy": [727.8533935546875, 366.95556640625, 833.0576171875, 661.0865478515625]}]}
+{"frame": 216, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.18324796855449677, "xyxy": [739.912353515625, 377.62677001953125, 848.9052734375, 675.1551513671875]}]}
+{"frame": 217, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.2757052481174469, "xyxy": [757.0828857421875, 396.810791015625, 866.0103759765625, 695.6716918945312]}]}
+{"frame": 218, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.2643813490867615, "xyxy": [767.5692749023438, 412.7928466796875, 880.6834106445312, 714.5745239257812]}]}
+{"frame": 219, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3535001277923584, "xyxy": [778.1148681640625, 419.36444091796875, 896.3644409179688, 724.2056884765625]}]}
+{"frame": 220, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.23217478394508362, "xyxy": [789.5479125976562, 439.6949157714844, 910.4633178710938, 744.332763671875]}]}
+{"frame": 221, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.2510935068130493, "xyxy": [800.1128540039062, 447.710205078125, 924.0482788085938, 751.634521484375]}]}
+{"frame": 222, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.252120703458786, "xyxy": [830.2835083007812, 469.15191650390625, 942.7456665039062, 779.42822265625]}]}
+{"frame": 223, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.19717846810817719, "xyxy": [824.5471801757812, 473.5832214355469, 953.5736694335938, 784.5881958007812]}]}
+{"frame": 224, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3359905779361725, "xyxy": [863.4878540039062, 496.9605407714844, 975.287353515625, 812.6511840820312]}]}
+{"frame": 225, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3831266164779663, "xyxy": [867.2333374023438, 506.8820495605469, 986.763671875, 824.056640625]}]}
+{"frame": 226, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.5383829474449158, "xyxy": [878.3558959960938, 512.3606567382812, 993.3789672851562, 829.53173828125]}]}
+{"frame": 227, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3730483949184418, "xyxy": [898.296142578125, 532.6594848632812, 1013.8571166992188, 854.585205078125]}]}
+{"frame": 228, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.4364534020423889, "xyxy": [905.9431762695312, 536.7450561523438, 1021.7594604492188, 855.8104248046875]}]}
+{"frame": 229, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.33963102102279663, "xyxy": [914.34130859375, 550.262451171875, 1032.1712646484375, 875.146484375]}]}
+{"frame": 230, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.30760881304740906, "xyxy": [925.2171630859375, 565.1932373046875, 1050.00390625, 894.6206665039062]}]}
+{"frame": 231, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.40278181433677673, "xyxy": [933.73193359375, 576.16162109375, 1059.603515625, 909.443359375]}]}
+{"frame": 232, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.26055091619491577, "xyxy": [949.4130249023438, 620.659423828125, 1077.9521484375, 948.8770751953125]}]}
+{"frame": 233, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3337419629096985, "xyxy": [950.2261352539062, 612.0494995117188, 1083.4173583984375, 941.6441650390625]}]}
+{"frame": 234, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3762721121311188, "xyxy": [948.9817504882812, 644.2160034179688, 1106.32080078125, 959.6218872070312]}]}
+{"frame": 235, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.3204106092453003, "xyxy": [962.164794921875, 649.9325561523438, 1118.5264892578125, 960.0]}]}
+{"frame": 236, "detections": [{"class_id": 1, "class_name": "electric pylon", "confidence": 0.255228728055954, "xyxy": [992.6537475585938, 686.3265380859375, 1136.712646484375, 960.0]}]}
+{"frame": 237, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.18840081989765167, "xyxy": [1051.984619140625, 746.9632568359375, 1180.98779296875, 960.0]}]}
+{"frame": 238, "detections": [{"class_id": 9, "class_name": "bicycle", "confidence": 0.12019666284322739, "xyxy": [1066.227294921875, 765.8880615234375, 1196.8616943359375, 960.0]}]}

@@ -194,6 +194,37 @@ short/long de la figura del camión apenas se distinguían.
   fotos reales de vuelo y fallo neural en vistas aéreas; límites compactos
   al final).
 
+## Cambios 2026-07-21 (4ª pasada: video_final + empaquetado de envío)
+
+- **Empaquetado**: sección Declarations (Funding, Competing interests,
+  Ethics, Author contributions) añadida; Data Availability con DOI Zenodo
+  placeholder (pendiente de mint); Code Availability apunta al mismo snapshot.
+- **Recortes**: Fig. 12 (mapa del vuelo) → RP; tabla E14 completa → RP
+  (queda Fig. 15 + números en texto). Main 32 → 31 pp netas tras las adiciones.
+- **video_final.mp4** (1280×960 @10 fps, 239 frames, corte del usuario de
+  M_20_1RR): sincronizado por template matching — frame 0 = frame 752 del
+  original (+12.856 s, ventana 09:39:01.109–09:39:24.909 Z);
+  `rea_flight_data/video_final.json` (sync) y
+  `tools/real_flight_replay/out/trajectory_video_final.csv` (239 poses reales
+  interpoladas del log ArduPilot, hueco máx GPS 0.22 s).
+- **Detección**: YOLOE-26s en los 239 frames → 147 detecciones;
+  tower-class en 99/239 frames (100 dets, conf mediana 0.31, mejor 0.576
+  en f182). Artefactos: `experiments/sppa_detection_reference/20260721_video_final_yoloe26s/`.
+- **GT y métrica**: apoyos P1–P4 georreferenciados PNOA (~1–2 m) en
+  `tools/real_flight_replay/out/tower_ground_truth.csv` (OSM comprobado vacío
+  en la zona). La proyección métrica queda DIFERIDA: mount aproximado del
+  toolkit (rms 277 px) proyecta sesgo sistemático 40–80 m; grid de re-ajuste
+  yaw/pitch/roll no baja de ~42 m en el límite del modelo. Falta calibración
+  de montura de cámara (ventana de recorte medida: (0,1200)-(2160,2820) del
+  frame original → fx=fy=1421 px en video_final).
+- **Fig. 12 nueva** (`fig:real-video-pass`, §4.10): (a) frame 182 con la
+  detección, (b) altitud real ArduPilot, (c) detecciones tower-class
+  99/239, (d) crecimiento del bbox en las dos pasadas. Script de análisis:
+  `tools/real_flight_replay/{run_yoloe_video_final,analyze_video_final_gt}.py`;
+  figura compuesta en `experiments/sppa_real_stream_wave/20260721_video_final_gt_study/`.
+- **Pendiente declarado en el paper**: evaluación métrica de huellas contra
+  los 4 apoyos PNOA tras calibrar la montura.
+
 ## Cambios 2026-07-21 (3ª pasada: fotos reales de vuelo en §4.9)
 
 El usuario aportó dos fotos reales de vuelo (`rea_flight_data/real_photos/tower.png`,

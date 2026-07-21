@@ -1,0 +1,37 @@
+{
+  "video": "rea_flight_data/video_final.mp4 (1280x960 @10 fps, 239 frames, user cut of M_20_1RR)",
+  "sync": {
+    "orig_frame_of_vf0": 752,
+    "offset_s": 12.856,
+    "window_unix": [
+      1783330741.109,
+      1783330764.909
+    ],
+    "method": "template matching vs original video (rate 5.8493 orig frames per vf frame)"
+  },
+  "telemetry": {
+    "rows": 239,
+    "source": "ArduPilot 2026-07-06 09-43-41.bin (max GPS gap 0.22 s)"
+  },
+  "detection": {
+    "model": "YOLOE-26s (yoloe-26s-seg.pt)",
+    "frames": 239,
+    "detections_total": 147,
+    "frames_with_tower_class": 99,
+    "tower_detections": 100,
+    "conf_median": 0.3105,
+    "best": {
+      "frame": 182,
+      "cls": "electric pylon",
+      "conf": 0.576
+    }
+  },
+  "ground_truth": {
+    "poles": "P1-P4 PNOA orthophoto (~1-2 m), tools/real_flight_replay/out/tower_ground_truth.csv"
+  },
+  "metric_projection": {
+    "status": "NOT CALIBRATED",
+    "note": "Approximate mount (toolkit fit, rms 277 px) projects with a systematic 40-80 m bias; grid refit on yaw/pitch/roll reaches ~42 m at model limits. Camera mount requires proper calibration before metric claims."
+  },
+  "claim_boundary": "Exploratory real-video detection study; metric evaluation deferred pending camera-mount calibration."
+}

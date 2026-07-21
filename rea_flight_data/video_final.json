@@ -1,0 +1,6 @@
+{
+  "output_file": "rea_flight_data/video_final.mp4",
+  "video_start_unix_ms": 1783330741109,
+  "video_start_iso_local": "2026-07-06T09:39:01.109+00:00",
+  "note": "Recortado por el usuario del M_20_1RR (frame0 = frame 752 del original, +12.856 s, medido por template matching); 1280x960 @10 fps, 239 frames."
+}

@@ -1110,23 +1110,8 @@ static tower anchors. Detections with locked telemetry yield 1{,}902 cases
 identical observation---an oriented ground footprint geo-projected from the
 detection box plus a monocular height estimate---so the comparison carries
 no input advantage, and wrong detector tokens are kept as a natural
-condition. Figure~\ref{fig:stream-map} maps the flight and its detections
-against the simulator ground-truth anchors.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.85\linewidth]{figures/fig_stream_map.png}
-\caption{The recorded flight in georeferenced coordinates (twin-local ENU,
-meters). The UAV trajectory (MAVLink telemetry) and the raw detector outputs
-with geo-reference are plotted against the exact simulator anchors; only
-towers \texttt{t0}--\texttt{t1} fall inside the observed corridor, so the
-GT-matched analyses (RP) concentrate on them. The
-plotted detections are the raw stream events; the 1{,}902 cases of the case
-study are the telemetry-locked subset. Cow and biker detections are real
-detector outputs---many are hallucinations on terrain texture, kept
-deliberately as the natural wrong-token condition.}
-\label{fig:stream-map}
-\end{figure}
+condition (the flight and its detections are mapped against the simulator
+ground-truth anchors in RP).
 
 Three findings characterize the degraded-signal operating point
 (Table~\ref{tab:real-stream}; Figure~\ref{fig:real-stream}). First, the
@@ -1180,6 +1165,34 @@ act on when deciding whether to accept a family token, refine it to a
 conservative family, or fall back safely. The top-only arm of
 Section~\ref{sec:view-ablation} quantifies the nadir regime this stream
 represents.
+
+\paragraph{A first real-video pass (exploratory post-hoc).}
+A 23.9-s segment of real onboard flight video (239 frames at 10~Hz,
+\(1280{\times}960\), cut by the operator from the M\_20\_1RR sortie of
+2026-07-06 and resynchronized to frame 752 of the original recording by
+template matching, 09:39:01--09:39:25~Z) was processed with synchronized
+ArduPilot telemetry (239 interpolated poses from the dataflash log, maximum
+GPS gap 0.22~s). The YOLOE-26s detector reports 147 detections; tower-class
+hypotheses appear in 99/239 frames (median confidence 0.31, best 0.58 at
+frame 182), and the pylon's bounding box grows coherently as the drone
+closes in (Figure~\ref{fig:real-video-pass}). Four lattice poles in the
+area are georeferenced from PNOA orthophotos (\(\approx\)1--2~m accuracy)
+as ground truth. Metric evaluation of the geo-projected footprints against
+those poles is deferred: the camera mount is not calibrated (an approximate
+mount projects a systematic bias), so this arm reports real detection
+evidence only, not metric accuracy.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_real_video_pass.png}
+\caption{First real-video pass (exploratory post-hoc, no metric claim).
+(a)~Frame 182 of the real flight video with the measured YOLOE-26s
+detection (\texttt{electric pylon}, 0.58). (b)~Real ArduPilot relative
+altitude over the segment. (c)~Tower-class detections: 99 of 239 frames,
+median confidence 0.31. (d)~The pylon bounding-box height over the pass;
+the two arcs are the two approaches of the sortie.}
+\label{fig:real-video-pass}
+\end{figure}
 
 \begin{table}[H]
 \centering
@@ -1331,7 +1344,8 @@ only an oriented footprint, yaw, and height; the sealed SPPA-MVFit
 production mode and the nonsemantic baselines of the real-stream study
 (Section~\ref{sec:real-stream}) consume exactly that.
 
-Table~\ref{tab:e14} and Figure~\ref{fig:e14-lidar} give the outcome, and the
+Figure~\ref{fig:e14-lidar} gives the outcome (full per-method table in RP),
+and the
 reading is threefold. First, the camera-less contract works at the
 envelope level: the recovered footprint is \(7.9{\times}4.0\)~m against a
 ground-truth \(7.42{\times}3.43\)~m across all 11 towers, yaw is within
@@ -1364,25 +1378,6 @@ laser returns, and beam divergence, multi-return behavior, reflectivity, and
 motion distortion are not modelled. E14 therefore supports the sensor-agnostic
 contract of Section~\ref{sec:pipeline} as a simulated demonstration only; it
 is not evidence of hardware LiDAR performance.
-
-\begin{table}[H]
-\centering
-\scriptsize
-\setlength{\tabcolsep}{4pt}
-\caption{E14 LiDAR twin wave (exploratory post-hoc; SIMULATED LiDAR-class
-returns from UE raycasts, no camera in the path; positions locked to ground
-truth). Mean 3D voxel IoU against the welded tower mesh at \(64^3\), clean
-versus degraded (heavy-fog) arms, with tower-cluster bootstrap 95\% CIs
-(resampling unit: tower; clean \(n{=}11\) towers with 0 detection failures;
-degraded \(n{=}7\) fitted towers after 4/11 detection failures---\texttt{t1},
-\texttt{t2}, \texttt{t10}, \texttt{tower13}, failed for all six methods;
-10{,}000 resamples with replacement, seed 77157). The degraded-arm means are
-computed on the 7 survivors and carry survivor bias; the paired
-clean-versus-degraded delta for SPPA-MVFit is \(+0.002\)
-\([-0.002,+0.006]\), \(n{=}7\).}
-\label{tab:e14}
-\input{benchmarks/lidar_twin_wave/e14_table_full.tex}
-\end{table}
 
 \begin{figure}[H]
 \centering
@@ -1556,7 +1551,9 @@ amendment log (Amendments 01--05), NIST-beacon seed manifest, SHA-256 freeze
 records, full per-family and secondary tables, and reproduction commands
 (\texttt{test\_contract.py}; \texttt{verify\_package.py -{}-development};
 \texttt{reproduce\_sppa\_mvfit\_paper.py -{}-strict} \(\to\) 0 blockers) are
-included in the package. Large Unreal artifacts and historical
+included in the package. A public snapshot of the package is archived at
+Zenodo (DOI: \texttt{10.5281/zenodo.XXXXXXX}, pending mint at submission).
+Large Unreal artifacts and historical
 engineering logs remain supporting material and are not required to recompute
 the primary H1 tables.
 \par}
@@ -1564,8 +1561,21 @@ the primary H1 tables.
 \section*{Code Availability}
 
 The fitting, evaluation, and table-export code used to produce the reported
-results is part of RP above and will be released in a
-public repository upon publication.
+results is part of RP above and is released in the same public snapshot
+(DOI above).
+
+\section*{Declarations}
+
+\paragraph{Funding.} The authors received no specific funding for this work.
+
+\paragraph{Competing interests.} The authors declare no competing interests.
+
+\paragraph{Ethics approval and consent to participate.} Not applicable. The
+study uses synthetic benchmarks, simulator data, and field imagery collected
+by the authors; no human participants or animals were involved.
+
+\paragraph{Author contributions.} Omitted for double-anonymous review; a
+contribution statement will be added in the camera-ready version.
 
 {\footnotesize
 \bibliographystyle{plain}
