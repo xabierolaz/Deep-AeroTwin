@@ -1,0 +1,2 @@
+label,prompt,image,case_id,input_source,source_note
+tower,electrical transmission lattice tower in a harvested field,experiments/sppa_sota_benchmark/inputs/tower_real_flight_tight_512.png,tower_real_flight_tight,user_supplied_flight_photo,Retry 20 steps.

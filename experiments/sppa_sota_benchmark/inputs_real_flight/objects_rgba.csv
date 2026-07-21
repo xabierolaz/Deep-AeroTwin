@@ -1,0 +1,3 @@
+label,prompt,image,case_id,input_source,source_note
+tower,electrical transmission lattice tower in a harvested field,experiments/sppa_sota_benchmark/inputs/tower_real_flight_crop_512.png,tower_real_flight,user_supplied_flight_photo,Real flight photo crop 2026-07-21 used to stress image-to-3D methods.
+tractor,tractor on a rural road between fields,experiments/sppa_sota_benchmark/inputs/tractor_real_flight_crop_512.png,tractor_real_flight,user_supplied_flight_photo,Real flight photo crop 2026-07-21 used to stress image-to-3D methods.

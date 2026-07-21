@@ -1,0 +1,4 @@
+label,prompt,image,case_id,input_source,source_note
+tower,electrical transmission tower in a mountain valley,experiments/sppa_sota_benchmark/inputs/tower_real_mountain_crop_512.png,tower_mountain_control,user_supplied_mountain_crop,Control: 20260703 input known to work.
+tower,electrical transmission lattice tower in a harvested field,experiments/sppa_sota_benchmark/inputs/tower_real_flight_tight_512.png,tower_real_flight_tight,user_supplied_flight_photo,Tight crop.
+tractor,tractor on a rural road between fields,experiments/sppa_sota_benchmark/inputs/tractor_real_flight_tight_512.png,tractor_real_flight_tight,user_supplied_flight_photo,Tight crop.
