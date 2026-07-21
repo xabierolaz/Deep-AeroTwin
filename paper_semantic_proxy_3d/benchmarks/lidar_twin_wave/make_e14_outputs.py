@@ -147,7 +147,7 @@ def make_figure(analysis: dict) -> None:
     ax = axes[0]
     sc = ax.scatter(raw[:, 0], raw[:, 1], c=raw[:, 2], s=1.5, cmap="viridis")
     ax.set_title(f"(a) Simulated LiDAR returns — {FIG_TOWER}, {FIG_ARM} arm\n"
-                 f"(actor frame, merged 5 scans, n={len(raw)} cluster pts)")
+                 f"(merged 5 scans, n={len(raw)} pts)", fontsize=10)
     ax.set_xlabel("x (m)"); ax.set_ylabel("y (m)")
     ax.set_aspect("equal"); ax.grid(alpha=0.3)
     cb = fig.colorbar(sc, ax=ax, shrink=0.8); cb.set_label("z (m)")
@@ -194,10 +194,10 @@ def make_figure(analysis: dict) -> None:
     ax.set_title("(c) Method x arm — mean IoU$_{3D}$ [95% CI]\n(degraded: 4/11 towers lost to detection failure)")
     ax.legend(); ax.grid(axis="y", alpha=0.3)
 
-    fig.suptitle("E14 — camera-less reconstruction from SIMULATED LiDAR-class returns "
-                 "(UE raycasts; positions locked to GT; exploratory post-hoc)", fontsize=11)
-    fig.tight_layout(rect=[0, 0, 1, 0.94])
-    fig.savefig(FIG_PNG, dpi=160)
+    # suptitle removed 2026-07-21 (same readability pass as E11): it duplicated
+    # the LaTeX caption and cost a line of figure height at text width.
+    fig.tight_layout()
+    fig.savefig(FIG_PNG, dpi=160, bbox_inches="tight")
     plt.close(fig)
 
 

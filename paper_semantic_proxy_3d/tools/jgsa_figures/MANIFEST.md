@@ -160,6 +160,17 @@ short/long de la figura del camión apenas se distinguían.
 - Resultado: main 29 → 30 pp, compilación limpia (0 overfull, 0 refs
   indefinidas).
 
+### Últimos remanentes de la auditoría (misma fecha, commit aparte)
+
+- `fig_e14_lidar.png` (Fig. 15): supertítulo eliminado (duplicaba el caption;
+  `tight_layout` sin `rect`) y título del panel (a) acortado para que no
+  colisione con la colorbar. Script: `benchmarks/lidar_twin_wave/make_e14_outputs.py`
+  (escribe en `benchmarks/lidar_twin_wave/`; se copia a `figures/`).
+- `fig_real_stream_main.png` (Fig. 13a): etiquetas del detector con chip
+  blanco de fondo (PIL `textbbox` + rect RGBA) para que el texto naranja se
+  lea sobre terreno claro. Script: `benchmarks/real_stream_wave/make_fig_e7.py`
+  (`panel_frame`), regenerado con `make_fig_e7_split.py`.
+
 ## Cambios 2026-07-21 (3ª pasada: fotos reales de vuelo en §4.9)
 
 El usuario aportó dos fotos reales de vuelo (`rea_flight_data/real_photos/tower.png`,

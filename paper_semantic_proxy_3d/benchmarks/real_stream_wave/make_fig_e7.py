@@ -68,11 +68,16 @@ def panel_frame(ax) -> None:
     tel_small = {k: float(tel[k]) for k in ("yaw", "pitch", "roll")}
     drone_n, drone_e = llh_to_ne_m(float(tel["lat"]), float(tel["lon"]))
     img = Image.open(FRAMES_DIR / f"yolo_{FIG_FRAME:06d}.jpg").convert("RGB")
-    draw = ImageDraw.Draw(img)
+    draw = ImageDraw.Draw(img, "RGBA")
     for det in event["detections"]:
         b = det["bbox"]
         draw.rectangle([b["x1"], b["y1"], b["x2"], b["y2"]], outline=OI["vermillion"], width=2)
-        draw.text((b["x1"], max(0, b["y1"] - 11)), f"{det['type']} {det['confidence']:.2f}", fill=OI["vermillion"])
+        # white backing chip so the label stays readable over bright terrain
+        label = f"{det['type']} {det['confidence']:.2f}"
+        tx, ty = b["x1"], max(0, b["y1"] - 13)
+        lb = draw.textbbox((tx, ty), label)
+        draw.rectangle([lb[0] - 1, lb[1] - 1, lb[2] + 2, lb[3] + 2], fill=(255, 255, 255, 200))
+        draw.text((tx, ty), label, fill=OI["vermillion"])
     for a in gt:
         dn, de = a["north_m"] - drone_n, a["east_m"] - drone_e
         if math.hypot(dn, de) > 300:
