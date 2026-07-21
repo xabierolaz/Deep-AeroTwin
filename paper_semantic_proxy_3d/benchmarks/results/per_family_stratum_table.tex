@@ -1,0 +1,20 @@
+% Family x stratum table (preregistration section 6 obligation) - RESTORED
+% Point estimates: SEALED confirmatory_summary.json (sppa_mvfit - generic_mvfit,
+% clean 64^3 voxel IoU, paired per actor, n=20 actors per cell).
+% Cell CIs: NEW post-hoc bootstrap over the 20 actors within each cell
+% (10,000 resamples, seed 77157, percentile) - the sealed package stores no cell CIs.
+\begin{tabular}{lcc}
+\toprule
+Family & CSG-ID $\Delta$IoU [95\% CI] & implicit-OOD $\Delta$IoU [95\% CI] \\
+\midrule
+articulated\_vehicle & +0.113 [0.100, 0.127] & +0.125 [0.107, 0.144] \\
+branching\_vertical & +0.200 [0.151, 0.247] & +0.210 [0.175, 0.246] \\
+compact\_vehicle & +0.101 [0.064, 0.137] & +0.043 [0.028, 0.057] \\
+lattice\_tower & +0.175 [0.136, 0.215] & +0.163 [0.140, 0.186] \\
+quadruped & +0.205 [0.174, 0.234] & +0.189 [0.169, 0.208] \\
+rider\_cycle & +0.458 [0.402, 0.508] & +0.299 [0.282, 0.315] \\
+\midrule
+\textbf{Aggregate (sealed)} & \multicolumn{2}{c}{+0.190 [0.181, 0.199] \; ($n{}={}240$, sealed stratified bootstrap)} \\
+Drop-one-family range (post-hoc) & \multicolumn{2}{c}{0.152--0.214 \; (exploratory artifact t5\_drop\_one\_family)} \\
+\bottomrule
+\end{tabular}

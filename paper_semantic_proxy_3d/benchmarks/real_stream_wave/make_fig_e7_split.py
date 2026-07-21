@@ -38,7 +38,7 @@ def main() -> int:
     # --- main-text figure: degraded-signal panels (frame + reprojection) ---
     fig, axes = plt.subplots(1, 2, figsize=(9.2, 3.9))
     e7.panel_frame(axes[0])
-    axes[0].set_title("(a) Real frame f478: detector bboxes (red) vs exact GT anchors (green/blue)",
+    axes[0].set_title("(a) Real frame f642: detector bboxes (red) vs exact GT anchors (green/blue)",
                       fontsize=8)
     e7.panel_bars(axes[1], analysis)
     axes[1].set_title("(b) Fit to the real image evidence, by detector class", fontsize=8)

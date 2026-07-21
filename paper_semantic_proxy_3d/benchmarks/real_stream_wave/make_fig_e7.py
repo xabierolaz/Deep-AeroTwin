@@ -45,7 +45,10 @@ METHOD_COLORS = {
 }
 METHOD_LABELS = {"sppa_mvfit": "SPPA-MVFit", "generic_mvfit": "Generic-MVFit", "obb": "OBB",
                  "aabb": "AABB", "visual_hull": "Visual hull", "capsule": "Capsule"}
-FIG_FRAME = 478
+FIG_FRAME = 642  # 2026-07-21: was 478; f478 had Cesium terrain tiles not yet
+# loaded (blurry low-LOD ground). f642 shows the same stream with terrain
+# fully loaded, a central tower detection (conf 0.44, 74-px bbox), cow/biker
+# co-detections, and the t0 GT anchor reprojecting 9 px from the tower bbox.
 
 # ---------------------------------------------------------------------------
 # Panel (a): frame overlay
@@ -85,7 +88,7 @@ def panel_frame(ax) -> None:
                          outline=OI["bluish_green"], width=2)
             draw.text((p_base[0] + 5, p_base[1] - 5), a["label"], fill=OI["bluish_green"])
     ax.imshow(np.asarray(img))
-    ax.set_title("(a) Real frame f478: detector bboxes (red) vs exact GT anchors (green/blue)",
+    ax.set_title("(a) Real frame f642: detector bboxes (red) vs exact GT anchors (green/blue)",
                  fontsize=8)
     ax.axis("off")
 

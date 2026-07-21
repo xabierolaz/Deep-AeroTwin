@@ -3,6 +3,21 @@
 Outputs: figures/fig_worked_example.png, figures/fig_stream_map.png
 All inputs are measured artifacts (stream events, results.jsonl, spawn GT,
 graphs.json proxy render, E11 twin frame). No synthetic embellishment.
+
+2026-07-21 rework (figure readability pass):
+- Worked-example frame changed 916 -> 1584 (same recorded stream): the old
+  frame had the tower at the extreme left border (bbox x1=4, 93 px tall);
+  frame 1584 keeps the tower fully inside the frame (bbox 29x84 px at
+  x 83..112), on loaded Cesium terrain (mean-abs-gradient 9.44 vs 6.83),
+  GT-matched to anchor t0 (token_correct=true, loc err 17.8 m, obs
+  18.03x4.17 m; source benchmarks/real_stream_wave/results.jsonl
+  case f01584_d0, method sppa_mvfit).
+- Layout changed from one cramped 5-panel row to a 2-row grid with larger
+  fonts; the real tower crop (b) sits directly above the compiled proxy
+  render (d) so the silhouette-to-parts mapping reads at a glance.
+- Panel (d) now uses the role-colored Blender render of the sealed
+  lattice_tower graph (tools/jgsa_figures/assets/render_fam_lattice_tower.png)
+  instead of the pale 640x640 preview.
 """
 import json, math
 from pathlib import Path
@@ -14,11 +29,14 @@ import matplotlib.patches as mpatches
 from matplotlib.patches import Rectangle, Polygon
 from PIL import Image
 
-ROOT = Path(r"D:\AYTE DOCTOR\SPPA_semantic_proxy_3d")
+ROOT = Path(r"D:\Deep-AeroTwin-UE57-Test\paper_semantic_proxy_3d")
 STREAM = Path(r"D:\Deep-AeroTwin-UE57-Test\pipeline\logs\zero_trust\20260620_084932\vision")
 ORIGIN = {"lat": 42.229695, "lon": -1.235085}
 R_EARTH = 6371000.0
 CLS_COLOR = {"tower": "#d62728", "cow": "#8c564b", "biker": "#1f77b4"}
+ROLE_COLOR = {"spine / mast (primary)": "#0072B2",
+              "legs (4)": "#009E73",
+              "platforms (3)": "#CC79A7"}
 
 def to_local(lat, lon):
     x = math.radians(lon - ORIGIN["lon"]) * math.cos(math.radians(ORIGIN["lat"])) * R_EARTH
@@ -38,70 +56,81 @@ for a in spawn["actors"]:
         anchors.append((lab, cls, x, y))
 
 # ---------------------------------------------------------------- figure 1: worked example
-FRAME_ID = 916
+FRAME_ID = 1584
 ev = frames[FRAME_ID]
 det_tower = [d for d in ev["detections"] if d["type"] == "tower"][0]
 row = [json.loads(l) for l in (ROOT / "benchmarks/real_stream_wave/results.jsonl").open(encoding="utf-8")
-       if json.loads(l)["case_id"] == "f00916_d0" and json.loads(l)["method"] == "sppa_mvfit"][0]
+       if json.loads(l)["case_id"] == f"f{FRAME_ID:05d}_d0" and json.loads(l)["method"] == "sppa_mvfit"][0]
 t0 = [a for a in anchors if a[0] == "t0"][0]
 
 img = Image.open(STREAM / "frames" / f"yolo_{FRAME_ID:06d}.jpg")
 W, H = img.size
 
-fig = plt.figure(figsize=(13.2, 3.4), dpi=300)
-gs = fig.add_gridspec(1, 5, width_ratios=[1.35, 0.8, 1.15, 0.85, 1.0], wspace=0.08)
+fig = plt.figure(figsize=(13.2, 7.2), dpi=300)
+gs = fig.add_gridspec(2, 3, height_ratios=[1.0, 1.0],
+                      width_ratios=[1.25, 0.85, 1.1], hspace=0.16, wspace=0.10)
 
 # (a) full frame + boxes
-ax = fig.add_subplot(gs[0]); ax.imshow(img)
+ax = fig.add_subplot(gs[0, 0]); ax.imshow(img)
 for d in ev["detections"]:
     b = d["bbox"]
     ax.add_patch(Rectangle((b["x1"], b["y1"]), b["x2"]-b["x1"], b["y2"]-b["y1"],
-                           fill=False, ec=CLS_COLOR[d["type"]], lw=1.4))
-    ax.text(b["x1"], b["y1"]-3, f'{d["type"]} {d["confidence"]:.2f}', color=CLS_COLOR[d["type"]],
-            fontsize=5.5, weight="bold")
-ax.set_title("(a) stream frame 916 + detector", fontsize=8); ax.axis("off")
+                           fill=False, ec=CLS_COLOR[d["type"]], lw=2.0))
+    ax.text(b["x1"], b["y1"]-6, f'{d["type"]} {d["confidence"]:.2f}', color=CLS_COLOR[d["type"]],
+            fontsize=9, weight="bold",
+            bbox=dict(facecolor="white", alpha=0.75, edgecolor="none", pad=1.2))
+ax.set_title(f"(a) stream frame {FRAME_ID} + detector", fontsize=10); ax.axis("off")
 
 # (b) tower crop
 b = det_tower["bbox"]
-mx, my = 26, 30
+mx, my = 34, 40
 crop = img.crop((max(b["x1"]-mx, 0), max(b["y1"]-my, 0), min(b["x2"]+mx, W), min(b["y2"]+my, H)))
-ax = fig.add_subplot(gs[1]); ax.imshow(crop.resize((crop.width*3, crop.height*3), Image.LANCZOS))
-ax.add_patch(Rectangle(( (b["x1"]-max(b["x1"]-mx,0))*3, (b["y1"]-max(b["y1"]-my,0))*3),
-                       (b["x2"]-b["x1"])*3, (b["y2"]-b["y1"])*3, fill=False, ec="#d62728", lw=1.2))
-ax.set_title("(b) detection evidence", fontsize=8); ax.axis("off")
+ax = fig.add_subplot(gs[0, 1]); ax.imshow(crop.resize((crop.width*4, crop.height*4), Image.LANCZOS))
+ax.add_patch(Rectangle(( (b["x1"]-max(b["x1"]-mx,0))*4, (b["y1"]-max(b["y1"]-my,0))*4),
+                       (b["x2"]-b["x1"])*4, (b["y2"]-b["y1"])*4, fill=False, ec="#d62728", lw=1.6))
+ax.set_title(f'(b) detection evidence: {b["x2"]-b["x1"]}x{b["y2"]-b["y1"]}-px bbox', fontsize=10)
+ax.axis("off")
 
 # (c) plan view
-ax = fig.add_subplot(gs[2])
+ax = fig.add_subplot(gs[0, 2])
 dx, dy = ev["telemetry"]["drone_x_m"], ev["telemetry"]["drone_y_m"]
 px, py = det_tower["x_m"], det_tower["y_m"]
-ax.plot(dx, dy, "k^", ms=7, label="UAV (telemetry)")
+ax.plot(dx, dy, "k^", ms=9, label="UAV (telemetry)")
 yaw = math.radians(ev["telemetry"]["yaw"])
 ax.annotate("", xy=(dx+9*math.sin(yaw), dy+9*math.cos(yaw)), xytext=(dx, dy),
-            arrowprops=dict(arrowstyle="->", color="k", lw=1.0))
-ax.plot(px, py, "x", color="#d62728", ms=8, mew=2, label="observed footprint")
+            arrowprops=dict(arrowstyle="->", color="k", lw=1.4))
+ax.plot(px, py, "x", color="#d62728", ms=10, mew=2.4, label="observed footprint")
 ang = math.atan2(py-dy, px-dx)
 L, Wd = row["obs_length_m"], row["obs_width_m"]
 ca, sa = math.cos(ang), math.sin(ang)
 corn = [(px + ca*s - sa*w, py + sa*s + ca*w) for s, w in
         (( L/2, -Wd/2), ( L/2, Wd/2), (-L/2, Wd/2), (-L/2, -Wd/2))]
-ax.add_patch(Polygon(corn, closed=True, fill=False, ec="#d62728", ls="--", lw=1.2))
-ax.add_patch(Rectangle((t0[2]-2.5, t0[3]-2.5), 5, 5, fill=False, ec="green", lw=1.6, label="GT anchor (t0, 5×5 m)"))
-ax.plot([px, t0[2]], [py, t0[3]], ":", color="gray", lw=1.0)
-ax.text((px+t0[2])/2+2, (py+t0[3])/2, f'{row["loc_err_horiz_m"]:.1f} m', fontsize=6, color="gray")
-ax.set_title("(c) geo-projected footprint vs GT", fontsize=8)
-ax.set_xlabel("E (m)"); ax.set_ylabel("N (m)")
-ax.tick_params(labelsize=6); ax.legend(fontsize=5.2, loc="upper left", framealpha=0.9)
-ax.set_aspect("equal"); ax.grid(alpha=0.25, lw=0.4)
+ax.add_patch(Polygon(corn, closed=True, fill=False, ec="#d62728", ls="--", lw=1.6))
+ax.add_patch(Rectangle((t0[2]-2.5, t0[3]-2.5), 5, 5, fill=False, ec="green", lw=2.0, label="GT anchor (t0, 5x5 m)"))
+ax.plot([px, t0[2]], [py, t0[3]], ":", color="gray", lw=1.4)
+ax.text((px+t0[2])/2+2, (py+t0[3])/2, f'{row["loc_err_horiz_m"]:.1f} m', fontsize=9, color="gray")
+ax.set_title("(c) geo-projected footprint vs GT", fontsize=10)
+ax.set_xlabel("E (m)", fontsize=9); ax.set_ylabel("N (m)", fontsize=9)
+ax.tick_params(labelsize=8)
+ax.legend(fontsize=8, loc="upper center", bbox_to_anchor=(0.5, -0.14), framealpha=0.95)
+ax.set_aspect("equal"); ax.grid(alpha=0.25, lw=0.5)
+# keep every element inside the view with a margin (legend must not cover t0)
+xs_all = [dx, px, t0[2]]; ys_all = [dy, py, t0[3]]
+x0c, x1c = min(xs_all), max(xs_all); y0c, y1c = min(ys_all), max(ys_all)
+ax.set_xlim(x0c - 6, x1c + 6); ax.set_ylim(y0c - 6, y1c + 6)
 
-# (d) compiled proxy
-ax = fig.add_subplot(gs[3])
-ax.imshow(Image.open(ROOT / "figures/assets/proxy_lattice_tower.png"))
-ax.set_title("(d) compiled SPPA proxy (roles)", fontsize=8); ax.axis("off")
+# (d) compiled proxy (role-colored render of the sealed lattice_tower graph),
+# placed directly below the real tower crop (b) for the silhouette comparison
+ax = fig.add_subplot(gs[1, 1])
+ax.imshow(Image.open(ROOT / "tools/jgsa_figures/assets/render_fam_lattice_tower.png"))
+ax.set_title("(d) compiled SPPA proxy (8 parts, roles)", fontsize=10); ax.axis("off")
+handles = [mpatches.Patch(color=c, label=l) for l, c in ROLE_COLOR.items()]
+ax.legend(handles=handles, fontsize=8, loc="lower right", framealpha=0.95)
 
 # (e) twin layer
-ax = fig.add_subplot(gs[4])
+ax = fig.add_subplot(gs[1, 0])
 ax.imshow(Image.open(ROOT / "benchmarks/oblique_twin_wave/frames/t0_oblique30_az060.png"))
-ax.set_title("(e) twin display layer (Unreal/Cesium)", fontsize=8); ax.axis("off")
+ax.set_title("(e) twin display layer (Unreal/Cesium)", fontsize=10); ax.axis("off")
 
 fig.savefig(ROOT / "figures/fig_worked_example.png", bbox_inches="tight")
 plt.close(fig)

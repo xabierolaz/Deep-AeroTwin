@@ -1,0 +1,76 @@
+{
+ "label": "editorial re-analysis (post-hoc); AUC confidence intervals",
+ "experiment": "E10 wrong-token arm (token validation)",
+ "data_source": "results.jsonl (arm A = sppa_mvfit, GT-matched cases), READ-ONLY",
+ "resampling_unit": "matched case (217 cases)",
+ "n_boot": 10000,
+ "seed": 77157,
+ "ci_method": "percentile 2.5/97.5 over case-bootstrap replicates",
+ "auc_estimator": "Mann-Whitney with 0.5 tie correction (as run_e10_routing.py)",
+ "n_matched": 217,
+ "n_wrong": 138,
+ "n_correct": 79,
+ "results": {
+  "auc_neg_confidence": {
+   "point": 0.8470922766464869,
+   "ci95": [
+    0.7917427980648132,
+    0.8979671617155748
+   ],
+   "note": "declared direction: LOW confidence -> wrong token"
+  },
+  "auc_neg_mismatch": {
+   "point": 1.0,
+   "ci95": [
+    1.0,
+    1.0
+   ],
+   "note": "editor-reported direction AUC(-mismatch); equals 1 - AUC(+mismatch). AUC(+mismatch) point = 0.0"
+  },
+  "auc_pos_mismatch_raw": {
+   "point": 0.0,
+   "note": "as stored in e10_routing.json (auc_prior_mismatch = 0.0)"
+  },
+  "auc_neg_obs_height_secondary": {
+   "point": 1.0,
+   "ci95": [
+    1.0,
+    1.0
+   ],
+   "note": "secondary raw signal reported by e10_routing.json"
+  }
+ },
+ "n_degenerate_resamples": 0,
+ "verification_vs_e10_routing": {
+  "n_matched": {
+   "new": 217,
+   "e10": 217,
+   "match": true
+  },
+  "n_wrong": {
+   "new": 138,
+   "e10": 138,
+   "match": true
+  },
+  "n_correct": {
+   "new": 79,
+   "e10": 79,
+   "match": true
+  },
+  "auc_neg_confidence": {
+   "new": 0.8470922766464869,
+   "e10": 0.8470922766464869,
+   "match": true
+  },
+  "auc_prior_mismatch": {
+   "new": 0.0,
+   "e10": 0.0,
+   "match": true
+  },
+  "auc_neg_obs_height_m_secondary": {
+   "new": 1.0,
+   "e10": 1.0,
+   "match": true
+  }
+ }
+}

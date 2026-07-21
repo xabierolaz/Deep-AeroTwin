@@ -338,7 +338,7 @@ def make_figure(rows, dets, manifest, gt_actors, analysis) -> None:
 
     from e11_common import quat_to_R
 
-    fig = plt.figure(figsize=(16, 10))
+    fig = plt.figure(figsize=(11, 7))  # 2026-07-21 readability: was (16,10); at text width the fonts rendered sub-4pt
     colors = {"tower": "lime", "biker": "red", "cow": "yellow"}
     det_by_frame: dict[str, list[dict]] = {}
     for d in dets:
@@ -353,8 +353,8 @@ def make_figure(rows, dets, manifest, gt_actors, analysis) -> None:
             ax.add_patch(patches.Rectangle((b["x1"], b["y1"]), b["x2"] - b["x1"], b["y2"] - b["y1"],
                                            fill=False, edgecolor=colors[d["class"]], lw=1.4))
             ax.text(b["x1"], b["y1"] - 2, f'{d["class"][:4]} {d["confidence"]:.2f}',
-                    color=colors[d["class"]], fontsize=6)
-        ax.set_title(f"(a) detections: {fid}", fontsize=8)
+                    color=colors[d["class"]], fontsize=9)
+        ax.set_title(f"(a) detections: {fid}", fontsize=11)
         ax.axis("off")
 
     # (b) 3D IoU by ring
@@ -371,10 +371,10 @@ def make_figure(rows, dets, manifest, gt_actors, analysis) -> None:
         ax.bar(x + (j - 0.5) * width, means, width, yerr=[los, his], capsize=2,
                label=ring, alpha=0.85)
     ax.set_xticks(x)
-    ax.set_xticklabels([m.replace("_", "\n") for m in METHODS], fontsize=7)
+    ax.set_xticklabels([m.replace("_", "\n") for m in METHODS], fontsize=9)
     ax.set_ylabel("3D voxel IoU vs exact GT")
-    ax.set_title("(b) reconstruction fidelity by ring (mean, 95% CI)", fontsize=9)
-    ax.legend(fontsize=8)
+    ax.set_title("(b) reconstruction fidelity by ring (mean, 95% CI)", fontsize=11)
+    ax.legend(fontsize=9)
     ax.grid(axis="y", alpha=0.3)
 
     # (c) cross-view consistency per tower
@@ -395,10 +395,10 @@ def make_figure(rows, dets, manifest, gt_actors, analysis) -> None:
         ax.scatter(np.arange(len(towers)) + (k - 0.5) * 0.25, vals,
                    label=series_labels[method], marker="os"[k], s=28)
     ax.set_xticks(np.arange(len(towers)))
-    ax.set_xticklabels(towers, rotation=45, fontsize=7)
-    ax.set_ylabel("mean pairwise 3D IoU between proxies\nfitted from different views", fontsize=8)
-    ax.set_title("(c) cross-view consistency per tower (within oblique rings)", fontsize=9)
-    ax.legend(fontsize=8, loc="center left")
+    ax.set_xticklabels(towers, rotation=45, fontsize=9)
+    ax.set_ylabel("mean pairwise 3D IoU between proxies\nfitted from different views", fontsize=10)
+    ax.set_title("(c) cross-view consistency per tower (within oblique rings)", fontsize=11)
+    ax.legend(fontsize=9, loc="center left")
     ax.grid(axis="y", alpha=0.3)
     # panel (d) spans grid cells (5,8) and is created after this one, so its
     # image would otherwise paint over this panel's y-label/legend; draw this
@@ -453,13 +453,13 @@ def make_figure(rows, dets, manifest, gt_actors, analysis) -> None:
         bb = det["bbox"]
         ax.add_patch(patches.Rectangle((bb["x1"], bb["y1"]), bb["x2"] - bb["x1"], bb["y2"] - bb["y1"],
                                        fill=False, edgecolor="lime", lw=1.4))
-    ax.set_title(f"(d) {best_row['frame_id']} proxy reprojection (IoU3D={best_row['iou_3d']:.3f})", fontsize=8)
+    ax.set_title(f"(d) {best_row['frame_id']} proxy reprojection (IoU3D={best_row['iou_3d']:.3f})", fontsize=11)
     ax.axis("off")
 
-    fig.suptitle("E11 Oblique Twin Wave - reconstruction fidelity across view angles "
-                 "(positions locked to GT; exploratory post-hoc)", fontsize=10)
+    # suptitle removed 2026-07-21: it duplicated the LaTeX caption and cost a
+    # line of figure height at text width.
     fig.tight_layout()
-    fig.savefig(OUT_FIG, dpi=140)
+    fig.savefig(OUT_FIG, dpi=140, bbox_inches="tight")
     print(f"wrote {OUT_FIG}")
 
 

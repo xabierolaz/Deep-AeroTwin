@@ -1,3 +1,4 @@
+% ARCHIVED 2026-07-20: supplement eliminated from the JGSA submission; content absorbed into the main text or the reproducibility package.
 \documentclass[10pt]{article}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -45,7 +46,7 @@ commands, the external neural-wave protocol, the open-label probe, the
 real-image probes and replay audits, the role-preservation diagnostic, the
 descriptor and Unreal runtime tests, and the full tables behind the figures
 of the main paper. It also retains material moved from the main text during
-the mission reframe: the pipeline-mechanism overview and the end-to-end
+the mission reframe: the end-to-end
 compile algorithm (Section~\ref{sec:supp-design-space}), the real-image probe
 grid (Section~\ref{sec:supp-probes}), the packaged-runtime scaling figure
 (Section~\ref{sec:supp-unreal}), and the secondary, surface-metric, OBB,
@@ -137,25 +138,11 @@ sparse semantic telemetry is available.
 
 Table~\ref{tab:representation-design-space} states the resulting deployment
 policy. It deliberately gives priority to curated assets and mapping geometry
-when those are the correct tools. Figure~\ref{fig:pipeline-overview} (moved
-from the main text) records the semantic-label-to-parts mechanism behind that
-policy, and Figure~\ref{alg:pipeline} writes the end-to-end compile chain out
-in exact steps.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\linewidth]{figures/fig_pipeline_overview.png}
-\caption{SPPA semantic-label-to-parts-to-3D mechanism for the truck archetype
-(moved from the main text). A
-language model, ontology tool, or human author may draft candidate part roles
-offline, but runtime execution uses only a reviewed versioned recipe \(z_r\). An
-input label activates an offline draft, the draft is reduced to reviewed part
-roles and bounded update rules, and runtime compiles those roles into primitive
-geometry. The short and long proxy variants illustrate the implemented
-role-specific rule: cargo length changes while cab and wheel priors remain
-bounded, so the object is not represented by root-scaling a single box.}
-\label{fig:pipeline-overview}
-\end{figure}
+when those are the correct tools. The semantic-label-to-parts mechanism behind
+that policy is Figure~\ref{main-fig:sppa-flow} of the main text (restored
+there in the 2026-07-21 readability pass; an identical copy of that graphic
+was kept here until then), and Figure~\ref{alg:pipeline} writes the end-to-end
+compile chain out in exact steps.
 
 \begin{figure}[H]
 \centering

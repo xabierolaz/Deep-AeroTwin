@@ -74,3 +74,59 @@ sellado o de benchmark; ningún valor se tecleó a mano en los scripts
 Las 14 figuras referenciadas por el paper contienen render/datos reales;
 no queda ningún placeholder. Verificación 2026-07-18: existencia, integridad
 PIL (`Image.verify()`), dimensiones y fuentes de datos — todo OK.
+
+## Cambios 2026-07-21 (pasada de legibilidad de figuras)
+
+Motivo: figuras diminutas e ilegibles, torre poco reconocible en las figs. 2 y
+3, suelo de Cesium sin cargar en la fig. 11a, y dos pérdidas respecto a
+versiones anteriores (figura del camión paramétrico y tabla medida vs
+generadores texto/imagen). Cambios:
+
+- `fig_worked_example.png` (era Fig. 3, ahora Fig. 4): frame del worked
+  example 916 → **1584** (mismo stream grabado 20260620_084932). El frame 916
+  tenía la torre en el borde izquierdo (bbox x1=4, 93 px); f1584 la tiene
+  dentro de cuadro (bbox 29×84 px, x 83..112), terreno Cesium cargado
+  (gradiente medio 9.44 vs 6.83), caso GT-matched `f01584_d0` (anchor t0,
+  loc err 17.8 m, obs 18.03×4.17 m — `benchmarks/real_stream_wave/results.jsonl`).
+  Layout de 1 fila de 5 paneles → 2 filas; (b) recorte real queda
+  directamente sobre (d) proxy compilado para la comparación de siluetas;
+  (d) ahora usa `tools/jgsa_figures/assets/render_fam_lattice_tower.png`
+  (render Blender por roles del grafo sellado) en vez del preview pálido de
+  `figures/assets/proxy_lattice_tower.png`. Fuentes subidas a 8–10 pt.
+  Script: `tools/jgsa_figures/fig_worked_example.py` (ROOT ahora apunta al
+  repo, no a AYTE DOCTOR).
+- `fig_family_graphs_blender.png` (Fig. 2): rejilla 2×3 → **3×2** (cada
+  panel pasa de ~1/3 a ~1/2 del ancho de texto); leyenda de roles partida en
+  dos filas. Mismos renders sellados (`assets/render_fam_*.png`), sin tocar
+  geometría. Script: `tools/jgsa_figures/compose_family_graphs.py`.
+- `fig_real_stream_main.png` / `fig_real_stream_localization.png` (Fig. 12):
+  `FIG_FRAME` 478 → **642** en `benchmarks/real_stream_wave/make_fig_e7.py`.
+  f478 tenía las teselas de Cesium sin cargar (suelo borroso); f642 tiene
+  terreno cargado, torre centrada (bbox 74 px, conf 0.44) y el anchor GT t0
+  reproyectado a 9 px del bbox (verificado con `sanity_geometry.ned_to_px`).
+  Candidatos f650/f1778 descartados: el anchor t0 reproyectaba fuera de
+  cuadro o a >200 px del bbox.
+- `fig_e11_oblique.png` (Fig. 13): figsize (16,10) → (11,7), fuentes 6–9 →
+  9–11 pt, supertítulo eliminado (duplicaba el caption), `bbox_inches=tight`.
+  Script: `benchmarks/oblique_twin_wave/run_e11_aggregate.py` (escribe en
+  `benchmarks/oblique_twin_wave/`; se copia a `figures/`).
+- **Figura camión restaurada al main text** (Fig. 3, `fig:sppa-flow`):
+  `figures/fig_pipeline_overview.png` (copia byte a byte de
+  `sppa_language_to_parts_to_3d_v17.png`, ya documentada arriba) insertada en
+  §3.1 tras el párrafo "Vehicle adaptation". El suplemento (archivado) ya no
+  duplica la figura: cita `\ref{main-fig:sppa-flow}`.
+- **Tabla de generadores restaurada al main text** (Tabla 7,
+  `tab:neural-external-wave`, §4.8): `\input` del mismo fragmento autogenerado
+  `benchmarks/results/sppa_neural_flagship_wave.tex` que usa el suplemento
+  (valores sellados de `benchmarks/results/sppa_neural_flagship_wave.json`;
+  envuelto en `\resizebox{\linewidth}{!}{...}`, overfull 39 pt → 0).
+- Tamaños en el tex: `fig_h1_by_family`/`fig_robustness_conditions`/
+  `fig_pareto_neural` 0.6 → 0.9\linewidth; `fig_stream_map` 0.52 → 0.75;
+  `fig_family_graphs_blender` 0.8 → 0.82\linewidth + límite de altura
+  0.74\textheight (rejilla 3×2 apaisada-alta).
+- Captions actualizados con los valores medidos del nuevo frame
+  (`fig:worked-example`: 0.41, 29×84 px, 18.0×4.2 m; `fig:real-stream`:
+  Frame 642). Ningún número tecleado a mano: todos salen de
+  `results.jsonl`/`events.jsonl` del stream.
+- Resultado: main 27 → 29 pp, suplemento 15 pp, compilación limpia (0
+  overfull, 0 refs indefinidas).

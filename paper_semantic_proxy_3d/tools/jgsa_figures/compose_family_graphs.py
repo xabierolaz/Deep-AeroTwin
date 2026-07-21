@@ -1,12 +1,16 @@
 """Compose figures/fig_family_graphs_blender.png.
 
-2x3 grid of the six default family graphs rendered in Blender
+3x2 grid of the six default family graphs rendered in Blender
 (assets/render_fam_*.png, produced by blender/render_family_graphs.py),
 with a per-panel family label and a bottom legend mapping the six role
 categories to the Okabe-Ito palette used in the renders.
 
-Layout: row 1 = compact vehicle, articulated vehicle, quadruped;
-        row 2 = branching vertical, lattice tower, rider cycle.
+Layout (2026-07-21 readability pass, was 2x3): 3 rows x 2 cols so each
+panel spans half the text width in the paper (was one third at
+0.8\\linewidth); the lattice tower tile in particular was unreadable.
+Row 1 = compact vehicle, articulated vehicle;
+row 2 = quadruped, branching vertical;
+row 3 = lattice tower, rider cycle.
 
 Run: python compose_family_graphs.py
 """
@@ -18,7 +22,7 @@ from pathlib import Path
 import matplotlib.font_manager as fm
 from PIL import Image, ImageDraw, ImageFont
 
-REPO = Path(r"D:\AYTE DOCTOR\SPPA_semantic_proxy_3d")
+REPO = Path(r"D:\Deep-AeroTwin-UE57-Test\paper_semantic_proxy_3d")
 ASSETS = REPO / "tools" / "jgsa_figures" / "assets"
 OUT = REPO / "figures" / "fig_family_graphs_blender.png"
 
@@ -30,13 +34,14 @@ ORDER = [
     ("lattice_tower", "(e) lattice tower"),
     ("rider_cycle", "(f) rider cycle"),
 ]
+COLS = 2
 
 PANEL_W, PANEL_H = 1000, 750
 LABEL_H = 54
 GAP_X, GAP_Y = 24, 30
 MARGIN = 40
 LEGEND_GAP_TOP = 30
-LEGEND_H = 92
+LEGEND_H = 130
 BORDER = "#C9CDD2"
 
 
@@ -48,8 +53,9 @@ def main() -> None:
     assets = json.loads((ASSETS / "blender_assets.json").read_text(encoding="utf-8"))
     legend = list(assets["role_categories"].items())  # category -> color (frozen order)
 
-    canvas_w = 2 * MARGIN + 3 * PANEL_W + 2 * GAP_X
-    canvas_h = (MARGIN + 2 * (LABEL_H + PANEL_H) + GAP_Y
+    canvas_w = 2 * MARGIN + COLS * PANEL_W + (COLS - 1) * GAP_X
+    rows = (len(ORDER) + COLS - 1) // COLS
+    canvas_h = (MARGIN + rows * (LABEL_H + PANEL_H) + (rows - 1) * GAP_Y
                 + LEGEND_GAP_TOP + LEGEND_H + MARGIN)
     canvas = Image.new("RGB", (canvas_w, canvas_h), "#FFFFFF")
     draw = ImageDraw.Draw(canvas)
@@ -57,7 +63,7 @@ def main() -> None:
     legend_font = get_font(34)
 
     for i, (fam, label) in enumerate(ORDER):
-        row, col = divmod(i, 3)
+        row, col = divmod(i, COLS)
         x = MARGIN + col * (PANEL_W + GAP_X)
         y = MARGIN + row * (LABEL_H + PANEL_H + GAP_Y)
         # family label centered above the panel
@@ -70,21 +76,27 @@ def main() -> None:
         canvas.paste(panel, (x, py))
         draw.rectangle([x, py, x + PANEL_W - 1, py + PANEL_H - 1], outline=BORDER, width=2)
 
-    # legend strip: role category swatches
-    ly = MARGIN + 2 * (LABEL_H + PANEL_H) + GAP_Y + LEGEND_GAP_TOP
+    # legend strip: role category swatches (wrapped, max 3 per row)
+    ly = MARGIN + rows * (LABEL_H + PANEL_H) + (rows - 1) * GAP_Y + LEGEND_GAP_TOP
     swatch = 34
     item_gap = 46
+    row_gap = 12
+    per_row = 3
     widths = []
     for cat, _ in legend:
         widths.append(swatch + 12 + draw.textlength(cat, font=legend_font))
-    total = sum(widths) + item_gap * (len(legend) - 1)
-    lx = (canvas_w - total) / 2
-    for (cat, color), w in zip(legend, widths):
-        cy = ly + (LEGEND_H - swatch) / 2
-        draw.rectangle([lx, cy, lx + swatch, cy + swatch], fill=color, outline="#666666")
-        draw.text((lx + swatch + 12, ly + (LEGEND_H - 34) / 2 - 4), cat,
-                  fill="#1A1A1A", font=legend_font)
-        lx += w + item_gap
+    for rstart in range(0, len(legend), per_row):
+        chunk = legend[rstart:rstart + per_row]
+        cwid = widths[rstart:rstart + per_row]
+        total = sum(cwid) + item_gap * (len(chunk) - 1)
+        lx = (canvas_w - total) / 2
+        lyy = ly + (rstart // per_row) * (LEGEND_H // 2 + row_gap)
+        for (cat, color), w in zip(chunk, cwid):
+            cy = lyy + (LEGEND_H // 2 - swatch) / 2
+            draw.rectangle([lx, cy, lx + swatch, cy + swatch], fill=color, outline="#666666")
+            draw.text((lx + swatch + 12, cy - 4), cat,
+                      fill="#1A1A1A", font=legend_font)
+            lx += w + item_gap
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(OUT)
