@@ -70,29 +70,33 @@ fig = plt.figure(figsize=(13.2, 7.2), dpi=300)
 gs = fig.add_gridspec(2, 3, height_ratios=[1.0, 1.0],
                       width_ratios=[1.25, 0.85, 1.1], hspace=0.16, wspace=0.10)
 
-# (a) full frame + boxes
-ax = fig.add_subplot(gs[0, 0]); ax.imshow(img)
+# (a) frame crop around the tower + boxes (spans two columns; the full frame
+# leaves the tower at 29 px of 640, unreadable at print size -- the crop keeps
+# the tower, its field context and the nearby cow evidence)
+CROP_A = (0, 180, 400, 460)  # x0, y0, x1, y1 in source frame pixels
+img_a = img.crop(CROP_A)
+ax = fig.add_subplot(gs[0, 0:2]); ax.imshow(img_a)
 for d in ev["detections"]:
     b = d["bbox"]
-    ax.add_patch(Rectangle((b["x1"], b["y1"]), b["x2"]-b["x1"], b["y2"]-b["y1"],
+    ax.add_patch(Rectangle((b["x1"]-CROP_A[0], b["y1"]-CROP_A[1]), b["x2"]-b["x1"], b["y2"]-b["y1"],
                            fill=False, ec=CLS_COLOR[d["type"]], lw=2.0))
-    ax.text(b["x1"], b["y1"]-6, f'{d["type"]} {d["confidence"]:.2f}', color=CLS_COLOR[d["type"]],
+    ax.text(b["x1"]-CROP_A[0], b["y1"]-CROP_A[1]-6, f'{d["type"]} {d["confidence"]:.2f}', color=CLS_COLOR[d["type"]],
             fontsize=9, weight="bold",
             bbox=dict(facecolor="white", alpha=0.75, edgecolor="none", pad=1.2))
-ax.set_title(f"(a) stream frame {FRAME_ID} + detector", fontsize=10); ax.axis("off")
+ax.set_title(f"(a) stream frame {FRAME_ID}, left-center crop + detector", fontsize=10); ax.axis("off")
 
 # (b) tower crop
 b = det_tower["bbox"]
 mx, my = 34, 40
 crop = img.crop((max(b["x1"]-mx, 0), max(b["y1"]-my, 0), min(b["x2"]+mx, W), min(b["y2"]+my, H)))
-ax = fig.add_subplot(gs[0, 1]); ax.imshow(crop.resize((crop.width*4, crop.height*4), Image.LANCZOS))
+ax = fig.add_subplot(gs[0, 2]); ax.imshow(crop.resize((crop.width*4, crop.height*4), Image.LANCZOS))
 ax.add_patch(Rectangle(( (b["x1"]-max(b["x1"]-mx,0))*4, (b["y1"]-max(b["y1"]-my,0))*4),
                        (b["x2"]-b["x1"])*4, (b["y2"]-b["y1"])*4, fill=False, ec="#d62728", lw=1.6))
 ax.set_title(f'(b) detection evidence: {b["x2"]-b["x1"]}x{b["y2"]-b["y1"]}-px bbox', fontsize=10)
 ax.axis("off")
 
 # (c) plan view
-ax = fig.add_subplot(gs[0, 2])
+ax = fig.add_subplot(gs[1, 0])
 dx, dy = ev["telemetry"]["drone_x_m"], ev["telemetry"]["drone_y_m"]
 px, py = det_tower["x_m"], det_tower["y_m"]
 ax.plot(dx, dy, "k^", ms=9, label="UAV (telemetry)")
@@ -121,14 +125,14 @@ ax.set_xlim(x0c - 6, x1c + 6); ax.set_ylim(y0c - 6, y1c + 6)
 
 # (d) compiled proxy (role-colored render of the sealed lattice_tower graph),
 # placed directly below the real tower crop (b) for the silhouette comparison
-ax = fig.add_subplot(gs[1, 1])
+ax = fig.add_subplot(gs[1, 2])
 ax.imshow(Image.open(ROOT / "tools/jgsa_figures/assets/render_fam_lattice_tower.png"))
 ax.set_title("(d) compiled SPPA proxy (8 parts, roles)", fontsize=10); ax.axis("off")
 handles = [mpatches.Patch(color=c, label=l) for l, c in ROLE_COLOR.items()]
 ax.legend(handles=handles, fontsize=8, loc="lower right", framealpha=0.95)
 
 # (e) twin layer
-ax = fig.add_subplot(gs[1, 0])
+ax = fig.add_subplot(gs[1, 1])
 ax.imshow(Image.open(ROOT / "benchmarks/oblique_twin_wave/frames/t0_oblique30_az060.png"))
 ax.set_title("(e) twin display layer (Unreal/Cesium)", fontsize=10); ax.axis("off")
 

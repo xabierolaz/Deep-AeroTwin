@@ -309,7 +309,7 @@ implementation uses boxes, cylinders, ellipsoids, cones, and tori
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.82\linewidth,height=0.74\textheight,keepaspectratio]{figures/fig_family_graphs_blender.png}
+\includegraphics[width=0.9\linewidth,height=0.82\textheight,keepaspectratio]{figures/fig_family_graphs_blender.png}
 \caption{The six benchmark family part graphs used by SPPA-MVFit
 (\texttt{compact\_vehicle}, \texttt{articulated\_vehicle}, \texttt{quadruped},
 \texttt{branching\_vertical}, \texttt{lattice\_tower}, \texttt{rider\_cycle}):
@@ -601,7 +601,7 @@ if the stratified bootstrap 95\% lower bound exceeds \(+0.030\).}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.9\linewidth]{figures/fig_h1_by_family.png}
+\includegraphics[width=\linewidth]{figures/fig_h1_by_family.png}
 \caption{Paired clean-mask mean IoU difference of SPPA-MVFit minus
 Generic-MVFit by morphology family and source stratum (\(n{=}240\)). All
 twelve cells are positive; the equal-stratum aggregate is the primary
@@ -713,7 +713,7 @@ all eight methods are in RP.}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.9\linewidth]{figures/fig_robustness_conditions.png}
+\includegraphics[width=\linewidth]{figures/fig_robustness_conditions.png}
 \caption{Paired SPPA-MVFit minus Generic-MVFit mean IoU difference with 95\%
 bootstrap intervals under the five prespecified observation conditions
 (\(n{=}240\) per condition). The dashed line marks the prespecified
@@ -772,9 +772,7 @@ generic graph rather than commit to a mismatched family.
 
 \begin{figure}[H]
 \centering
-\begin{minipage}{0.52\linewidth}
-\centering
-\includegraphics[width=\linewidth]{figures/fig_wrong_family_matrix.png}
+\includegraphics[width=0.85\linewidth]{figures/fig_wrong_family_matrix.png}
 \caption{Wrong-family analysis (clean condition, \(n{=}240\), mean voxel IoU).
 Rows: true family; columns: family token supplied to the fitter. The diagonal
 is the correct token. Off-diagonal cells fall below the diagonal and, with
@@ -782,15 +780,14 @@ few exceptions, also below the generic-graph mean of \(0.367\); the
 exceptions cluster on the morphologically close vehicle families
 (compact/articulated) and on the quadruped token applied to vehicle rows.}
 \label{fig:wrong-family-matrix}
-\end{minipage}\hfill
-\begin{minipage}{0.44\linewidth}
+\end{figure}
+\begin{figure}[H]
 \centering
-\includegraphics[width=\linewidth]{figures/fig_view_ablation.png}
+\includegraphics[width=0.72\linewidth]{figures/fig_view_ablation.png}
 \caption{View ablation of SPPA-MVFit (clean condition, \(n{=}240\), correct
 family token): dual-view, top-only, and side-only mean voxel IoU with 95\%
 bootstrap intervals.}
 \label{fig:view-ablation}
-\end{minipage}
 \end{figure}
 
 \subsection{Adversarial family instances}
@@ -980,7 +977,7 @@ wave protocol (registered in RP). Per-case values:
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.9\linewidth]{figures/fig_pareto_neural.png}
+\includegraphics[width=\linewidth]{figures/fig_pareto_neural.png}
 \caption{Operating-point comparison on sixty held-out cases: mean voxel IoU
 against per-object payload in bytes (log scale) for SPPA-MVFit, Generic-MVFit,
 visual hull, and the four measured neural generators under both input
@@ -1068,7 +1065,7 @@ against the simulator ground-truth anchors.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.75\linewidth]{figures/fig_stream_map.png}
+\includegraphics[width=0.85\linewidth]{figures/fig_stream_map.png}
 \caption{The recorded flight in georeferenced coordinates (twin-local ENU,
 meters). The UAV trajectory (MAVLink telemetry) and the raw detector outputs
 with geo-reference are plotted against the exact simulator anchors; only

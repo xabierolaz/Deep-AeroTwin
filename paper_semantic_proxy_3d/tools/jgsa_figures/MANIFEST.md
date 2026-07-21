@@ -130,3 +130,32 @@ generadores texto/imagen). Cambios:
   `results.jsonl`/`events.jsonl` del stream.
 - Resultado: main 27 → 29 pp, suplemento 15 pp, compilación limpia (0
   overfull, 0 refs indefinidas).
+
+## Cambios 2026-07-21 (2ª pasada de legibilidad: ancho completo y fig. 3)
+
+Motivo: las figuras seguían sin aprovechar el ancho de página y las variantes
+short/long de la figura del camión apenas se distinguían.
+
+- `fig_pipeline_overview.png` (Fig. 3, `fig:sppa-flow`): la fila "Visual
+  consequence" se redibuja con proporciones SELLADAS del chequeo de
+  invarianza paramétrica
+  (`experiments/sppa_scale_variants/20260703_parametric_part_invariance_after_scheduler_policy.json`):
+  short truck 5.2×2.3×2.7 m, cargo 2.263 m, 6 neumáticos; long truck
+  8.2×2.3×2.7 m (mismo W×H), cargo 5.188 m (+2.925), 8 neumáticos; cabina y
+  escala de neumático Δ = 0.0. Flechas de cota sobre el cargo y chips con los
+  deltas sellados. Script: `tools/sppa_sota_benchmark/render_sppa_language_to_parts_to_3d_v17.py`
+  (regenera también `sppa_language_to_parts_to_3d_v17.png`, que se copia a
+  `fig_pipeline_overview.png`, misma convención de copia byte a byte).
+- `fig_worked_example.png` (Fig. 4): (a) pasa del frame completo a un
+  **recorte left-center** del frame 1584 (píxeles fuente (0,180)-(400,460))
+  que abarca dos columnas — el frame completo dejaba la torre a 29 px de 640,
+  ilegible en papel; el título del panel declara el recorte. Rejilla 2×3:
+  fila 1 = (a) crop + (b) evidencia; fila 2 = (c) planta, (e) twin, (d) proxy
+  (d queda bajo b, manteniendo la yuxtaposición silueta↔proxy).
+- Figs. 8/9 (`fig_wrong_family_matrix`, `fig_view_ablation`): de minipages
+  0.52/0.44 lado a lado → apiladas a 0.85/0.72\linewidth.
+- Tamaños tex: `fig_h1_by_family`, `fig_robustness_conditions`,
+  `fig_pareto_neural` 0.9 → \linewidth; `fig_stream_map` 0.75 → 0.85;
+  `fig_family_graphs_blender` 0.9\linewidth con límite 0.82\textheight.
+- Resultado: main 29 → 30 pp, compilación limpia (0 overfull, 0 refs
+  indefinidas).
