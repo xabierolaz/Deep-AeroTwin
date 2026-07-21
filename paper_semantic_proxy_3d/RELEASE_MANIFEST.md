@@ -3,15 +3,22 @@
 Release snapshot date: 2026-07-16  
 Primary claim: family-conditioned SPPA-MVFit H1 on synthetic held-out occupancy.
 
+**Update 2026-07-21:** the JGSA submission is **main paper + reproducibility
+package only**. The short submission supplement was eliminated from the
+submission on 2026-07-20 (its own header records the decision; its content
+was absorbed into the main text or RP) and is kept in the repo as archived
+historical material only — it is not a submission artifact and its compiled
+PDF is no longer tracked.
+
 ## Submission shape
 
 | Include | Path |
 |---|---|
 | Main paper TeX/PDF | `semantic_proxy_3d_paper.tex`, `semantic_proxy_3d_paper.pdf` |
 | Bibliography | `semantic_proxy_3d_references.bib` |
-| Short supplement | `semantic_proxy_3d_submission_supplement.tex`, `.pdf` |
 | Cover letter draft | `COVER_LETTER_DRAFT.md` |
 | Status | `SPPA_SUBMISSION_STATUS_20260716.md` |
+| **Exclude** | `semantic_proxy_3d_submission_supplement.*` (archived 2026-07-20, not submitted) |
 | **Exclude** | `semantic_proxy_3d_technical_supplement.*` (38-page diary) |
 
 ## Primary tables → source

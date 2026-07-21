@@ -168,3 +168,6 @@ figuras_paper_unreal_generadas/yolo_crossing_precheck/yolo_crossing_precheck.mp4
 
 # Allow SPPA sealed prediction binaries (tracked via LFS)
 !paper_semantic_proxy_3d/reproducibility/sppa_mvfit/**/*.bin
+
+# SPPA: archived supplement (eliminated from JGSA submission 2026-07-20); compiled PDF stays out of the repo
+paper_semantic_proxy_3d/semantic_proxy_3d_submission_supplement.pdf

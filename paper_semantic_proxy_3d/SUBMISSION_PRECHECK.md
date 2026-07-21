@@ -2,12 +2,18 @@
 
 Updated: 2026-07-16 after sealed SPPA-MVFit confirmatory run and manuscript rewrite.
 
+**Update 2026-07-21:** the short supplement was eliminated from the JGSA
+submission on 2026-07-20 (recorded in its own header). Submission = main
+paper + reproducibility package only; the supplement file remains in the
+repo as archived material, not as a submission artifact, and its compiled
+PDF is no longer tracked.
+
 ## Verdict
 
 | Gate | Status |
 |---|---|
 | Main PDF builds | **True** (~34 pages) |
-| Short submission supplement ready | **True** (2 pages) |
+| Short submission supplement | **Excluded** — archived 2026-07-20, not submitted |
 | Long technical supplement formal-ready | **False** — do not submit (artifact diary) |
 | Primary H1 sealed confirmatory result | **PASS** (mean Δ 0.190, CI [0.181, 0.199]) |
 | Protocol audit PASS (Amendment 03 triple-role) | **True** |
@@ -15,7 +21,7 @@ Updated: 2026-07-16 after sealed SPPA-MVFit confirmatory run and manuscript rewr
 | Full experimental paper (real UAV 3D GT / operators) | **False** — out of scope |
 | Human journal portal / APC / authors | **Pending human** |
 
-**Recommended submission shape:** main paper + short supplement + reproducibility package.  
+**Recommended submission shape:** main paper + reproducibility package (no supplement).  
 **Provisional target:** Journal of Geovisualization and Spatial Analysis.
 
 ## Primary evidence
