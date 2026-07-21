@@ -557,9 +557,11 @@ difference between \(0.152\) and \(0.214\), always above the \(+0.030\)
 margin. As an external case study outside the design distribution, the same
 methods were run on \(n{=}52\) real third-party meshes (Objaverse LVIS subset
 and ModelNet40) under a class-to-family mapping frozen in writing before any
-evaluation (Section~\ref{sec:external-sanity}). Four real-image probes (a road
-cyclist, a mountain electrical tower, a mountain tractor, and a tractor with
-trailer) exercise the dual-input contract of Section~\ref{sec:pipeline} with a
+evaluation (Section~\ref{sec:external-sanity}). Real-image probes (a road
+cyclist, a mountain electrical tower, a mountain tractor, a tractor with
+trailer, and two real flight photos of a tower and a tractor recorded for
+this paper on 2026-07-21) exercise the dual-input contract of
+Section~\ref{sec:pipeline} with a
 YOLOE-26s open-vocabulary detector (checkpoint \texttt{yoloe-26s-seg.pt}) as
 approximate semantic evidence (Section~\ref{sec:deployment-summary}).
 
@@ -992,20 +994,52 @@ operating-point context, not a leaderboard.}
 \subsection{Real-image probes and deployment runtime}
 \label{sec:deployment-summary}
 
-Four real-image probes exercise the dual-input contract of
+Real-image probes exercise the dual-input contract of
 Section~\ref{sec:pipeline}: a YOLOE-26s
 open-vocabulary detector supplies approximate semantic evidence on the image
 path, while the tag path uses reviewed text only. Detector evidence is not
 treated as ground truth: weak labels are refined only to conservative
 families (the tractor-trailer worked example of
 Section~\ref{sec:pipeline}), implausible footprint aspect ratios are clamped by family priors, and
-unsafe image-derived pose is withheld from the runtime descriptor. A
+unsafe image-derived pose is withheld from the runtime descriptor.
+Figure~\ref{fig:real-flight-probes} runs the full chain end to end on two
+real flight photos recorded for this paper (2026-07-21). The tower photo
+receives \texttt{electric pylon} (confidence \(0.49\), 38-point native mask)
+and enters the \texttt{power\_tower} family: the geo-projected mask footprint
+(\(39.9\times17.5\)~m, cables included) is implausible for a tower, so the
+gate clamps it through the vertical-structure aspect prior to
+\(5.60\times5.60\times28.00\)~m and the builder emits a 396-triangle lattice
+proxy. The tractor photo is mislabeled by the detector as
+\texttt{two-wheeled vehicle} (\(0.48\)), so it is routed to the conservative
+\texttt{generic\_vehicle} family rather than a committed wrong token; the
+\(7.1\times6.0\)~m footprint is fused to \(4.75\times2.50\times2.60\)~m and a
+576-triangle proxy. Telemetry for these replays is declared assumed flight
+(\(45\)/\(35\)~m AGL, nadir camera), not measured; no 3D ground truth
+exists for the photos. The four earlier archived probes (biker, mountain
+tower, mountain tractor, tractor-trailer), the probe grid, per-probe
+evidence, replay audits, and input-mode ablations are retained in RP.
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_real_flight_probes.png}
+\caption{Real flight-photo probes end to end (exploratory, no 3D ground
+truth; declared assumed-flight telemetry). Rows: tower and tractor photos
+recorded for this paper. (a)~YOLOE-26s evidence (bbox, native mask,
+confidence). (b)~Geo-projected mask footprint (dashed red) against the
+gated metric dims (blue): the tower's \(39.9\times17.5\)~m footprint is
+clamped to \(5.60\times5.60\times28.00\)~m by the family aspect prior; the
+tractor's \(7.1\times6.0\)~m is fused to \(4.75\times2.50\times2.60\)~m.
+(c)~The compiled runtime proxies (396 and 576 triangles): the detector
+mislabels the tractor as \texttt{two-wheeled vehicle}, which exercises the
+conservative \texttt{generic\_vehicle} routing instead of a committed wrong
+token.}
+\label{fig:real-flight-probes}
+\end{figure}
+A
 verifier-gated open-label probe of 20 awkward labels verified \(8/20\)
 recipes with zero critical mismatches, and a role-preservation diagnostic
+recipes with zero critical mismatches, and a role-preservation diagnostic
 keeps cab and wheel priors fixed while cargo
-length changes; the probe grid, per-probe evidence, replay
-audits, and input-mode ablations are in RP
-(\texttt{reproducibility/sppa\_mvfit/}). No 3D
+length changes. No 3D
 ground truth exists for these images, so no IoU is reported for them.
 
 The deployment layer is the descriptor/update contract consumed by the

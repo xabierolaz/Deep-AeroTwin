@@ -159,3 +159,37 @@ short/long de la figura del camión apenas se distinguían.
   `fig_family_graphs_blender` 0.9\linewidth con límite 0.82\textheight.
 - Resultado: main 29 → 30 pp, compilación limpia (0 overfull, 0 refs
   indefinidas).
+
+## Cambios 2026-07-21 (3ª pasada: fotos reales de vuelo en §4.9)
+
+El usuario aportó dos fotos reales de vuelo (`rea_flight_data/real_photos/tower.png`,
+`rea_flight_data/real_photos/tractor.png`, 640×480) para sustituir las
+imágenes de mala calidad de los probes anteriores. Pipeline completo
+ejecutado con ellas:
+
+1. **Detección** (YOLOE-26s, checkpoint `yoloe-26s-seg.pt`, config universal,
+  CPU): `experiments/sppa_detection_reference/20260721_real_flight_photos_yoloe26s_cpu/`
+  via `tools/sppa_sota_benchmark/run_sppa_open_vocab_detector.py`.
+  Torre: `electric pylon` conf 0.490, máscara nativa de 75 puntos. Tractor:
+  `two-wheeled vehicle` conf 0.479 (wrong token real) + `bush` 0.069.
+2. **Anotaciones revisadas**:
+  `experiments/sppa_detection_reference/20260721_real_flight_photos_annotations/real_input_2d_annotations.json`
+  (mismo esquema que la referencia 20260703; reviewed tags tower/tractor).
+3. **Replay SPPA** (misma `build_real_image_assumed_flight_replay.py` y
+  supuestos declarados de vuelo que la referencia: torre 45 m AGL yaw 12°,
+  tractor 35 m AGL yaw 68°, cámara nadir vfov 70°):
+  `experiments/sppa_geometric_projection/20260721_real_flight_photos_replay/`,
+  copia del JSON en `benchmarks/results/real_flight_photos_replay.json`.
+  Torre: huella de máscara 39.9×17.5 m → gate a 5.60×5.60×28.00 m
+  (`constraint_fused_vertical_height`). Tractor: 7.1×6.0 m →
+  4.75×2.50×2.60 m (`constraint_fused_vehicle_observation`); etiqueta
+  detector `two-wheeled vehicle` → `generic_vehicle` conservador,
+  `reviewed_semantic_tag=tractor` en el arquetipo runtime.
+4. **Proxies** con el builder paramétrico congelado
+  (`XYT-xabi-yolo-telemetry/xyt_generate_3d.py`, `build_label_observed`) a
+  las dims gateadas: torre 150 caras / 396 tris (pilar lattice cónico con
+  crucetas), tractor 228 caras / 576 tris. Render software propio (OBJ+MTL,
+  painter's algorithm) en `tools/jgsa_figures/render_real_flight_proxies.py`
+  → `figures/assets/real_flight/` y `figures/fig_real_flight_probes.png`
+  (Fig. 11, §4.9). Texto §3.5 y §4.9 actualizado con los valores medidos;
+  los cuatro probes archivados de 2026-07-03/04 quedan retenidos en RP.

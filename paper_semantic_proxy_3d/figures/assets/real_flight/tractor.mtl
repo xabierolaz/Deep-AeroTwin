@@ -1,0 +1,407 @@
+# SPPA material descriptor schema: SPPA-MAT-0.1
+# Materials are procedural semantic priors or explicit unknown fallbacks, not observed texture evidence.
+newmtl brown
+# sppa_material_role generic_brown_prior
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.450 0.250 0.100
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl dark_brown
+# sppa_material_role generic_dark_brown_prior
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.200 0.100 0.040
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl cream
+# sppa_material_role generic_skin_or_horn_prior
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.850 0.750 0.550
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl black
+# sppa_material_role generic_dark_part_prior
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.020 0.020 0.020
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl white
+# sppa_material_role generic_light_part_prior
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.920 0.920 0.860
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl green
+# sppa_material_role generic_green_prior
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.100 0.550 0.160
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl dark_green
+# sppa_material_role generic_dark_green_prior
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.030 0.350 0.090
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl red
+# sppa_material_role generic_red_prior
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.700 0.050 0.040
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl blue
+# sppa_material_role generic_blue_prior
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.050 0.180 0.750
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl gray
+# sppa_material_role generic_gray_prior
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.450 0.450 0.450
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl metal
+# sppa_material_role generic_metal_prior
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.620 0.620 0.600
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl glass
+# sppa_material_role generic_window_prior
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.350 0.700 0.950
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl yellow
+# sppa_material_role generic_yellow_prior
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.950 0.720 0.060
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl animal_body_prior
+# sppa_material_role animal_body
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.920 0.920 0.860
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl animal_marking_prior
+# sppa_material_role animal_marking
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.020 0.020 0.020
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl animal_skin_prior
+# sppa_material_role animal_skin_or_horn
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.850 0.750 0.550
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl animal_limb_prior
+# sppa_material_role animal_limb
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.200 0.100 0.040
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl vegetation_trunk_prior
+# sppa_material_role vegetation_trunk
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.450 0.250 0.100
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl vegetation_canopy_dark_prior
+# sppa_material_role vegetation_canopy
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.030 0.350 0.090
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl vegetation_canopy_light_prior
+# sppa_material_role vegetation_canopy
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.100 0.550 0.160
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl vehicle_body_prior
+# sppa_material_role vehicle_body
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.700 0.050 0.040
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl vehicle_cab_prior
+# sppa_material_role vehicle_cab
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.050 0.180 0.750
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl vehicle_neutral_body_prior
+# sppa_material_role vehicle_body
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.450 0.450 0.450
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl vehicle_farm_body_prior
+# sppa_material_role vehicle_body
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.100 0.550 0.160
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl vehicle_attachment_prior
+# sppa_material_role vehicle_attachment
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.950 0.720 0.060
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl vehicle_window_prior
+# sppa_material_role vehicle_window
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.350 0.700 0.950
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl vehicle_tire_prior
+# sppa_material_role vehicle_tire
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.020 0.020 0.020
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl vehicle_metal_prior
+# sppa_material_role vehicle_metal_or_hub
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.620 0.620 0.600
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl bike_frame_prior
+# sppa_material_role bike_frame
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.950 0.720 0.060
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl rider_clothing_prior
+# sppa_material_role rider_clothing
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.050 0.180 0.750
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl rider_skin_prior
+# sppa_material_role rider_skin
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.850 0.750 0.550
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl structure_metal_prior
+# sppa_material_role vertical_structure_metal
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.620 0.620 0.600
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl built_structure_body_prior
+# sppa_material_role built_structure_body
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.620 0.580 0.520
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl built_structure_roof_prior
+# sppa_material_role built_structure_roof
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.320 0.200 0.160
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl built_structure_window_prior
+# sppa_material_role built_structure_window
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.350 0.700 0.950
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl container_body_prior
+# sppa_material_role container_body
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.480 0.500 0.500
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl container_detail_prior
+# sppa_material_role container_detail
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.260 0.280 0.300
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl safety_marker_prior
+# sppa_material_role safety_marker
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.950 0.420 0.040
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl aircraft_body_prior
+# sppa_material_role aircraft_body
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.360 0.380 0.400
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl aircraft_rotor_prior
+# sppa_material_role aircraft_rotor
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.050 0.050 0.050
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl agricultural_bale_prior
+# sppa_material_role agricultural_bale
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.780 0.620 0.260
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl agricultural_binding_prior
+# sppa_material_role agricultural_binding
+# sppa_evidence_source semantic_prior
+# sppa_uncertainty_visual_style none
+Kd 0.280 0.200 0.120
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 1.000
+
+newmtl unknown_volume_fallback
+# sppa_material_role unknown_conservative_volume
+# sppa_evidence_source fallback_unknown
+# sppa_uncertainty_visual_style desaturated_unknown
+Kd 0.550 0.550 0.580
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 0.720
+
+newmtl unknown_footprint_fallback
+# sppa_material_role unknown_footprint
+# sppa_evidence_source fallback_unknown
+# sppa_uncertainty_visual_style desaturated_unknown
+Kd 0.380 0.380 0.400
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 0.650
+
+newmtl uncertainty_marker_fallback
+# sppa_material_role uncertainty_marker
+# sppa_evidence_source fallback_unknown
+# sppa_uncertainty_visual_style warning_marker
+Kd 0.950 0.720 0.060
+Ka 0.050 0.050 0.050
+Ks 0.120 0.120 0.120
+d 0.850
+

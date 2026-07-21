@@ -1,0 +1,1919 @@
+{
+  "annotations_json": "experiments/sppa_detection_reference/20260721_real_flight_photos_annotations/real_input_2d_annotations.json",
+  "case_count": 2,
+  "claim_boundary": "Real user images and real YOLOE detector outputs are used. Flight pose, AGL, and camera mount geometry plus family height priors are declared replay assumptions, not measured telemetry. Metric SPPA pose/scale is therefore scenario-relative and must not be described as real measured flight localization.",
+  "claim_posture": "real_image_detector_evidence_with_declared_assumed_flight_replay",
+  "created_utc": "2026-07-03T00:00:00Z",
+  "detector_is_real": true,
+  "detector_json": "experiments/sppa_detection_reference/20260721_real_flight_photos_yoloe26s_cpu/sppa_open_vocab_detector_probe.json",
+  "failed_count": 0,
+  "image_is_real": true,
+  "metric_ground_truth": false,
+  "passed_count": 2,
+  "rows": [
+    {
+      "bbox_only_footprint_m": {
+        "bbox_px": {
+          "x1": 134.66903686523438,
+          "x2": 276.2799072265625,
+          "y1": 86.03890991210938,
+          "y2": 394.88421630859375
+        },
+        "center_east_m": -14.719959988627261,
+        "center_north_m": 3.0668721658414175,
+        "length_m": 40.547964689907346,
+        "orientation_deg_axial": 12.0,
+        "orientation_modulo": "pi",
+        "orientation_rad_axial": 0.20943951023931956,
+        "point_count": 8,
+        "points_ned_m": [
+          {
+            "distance_m": 31.63261445146187,
+            "east_m": -19.59759146989867,
+            "north_m": 24.83055991341696
+          },
+          {
+            "distance_m": 21.01256963216172,
+            "east_m": -1.4119326094584168,
+            "north_m": 20.96507879433781
+          },
+          {
+            "distance_m": 21.129182268703296,
+            "east_m": -9.842328507355855,
+            "north_m": -18.696815581734125
+          },
+          {
+            "distance_m": 31.71019643320545,
+            "east_m": -28.02798736779611,
+            "north_m": -14.831334462654976
+          },
+          {
+            "distance_m": 25.192462298732796,
+            "east_m": -10.504762039678546,
+            "north_m": 22.897819353877388
+          },
+          {
+            "distance_m": 25.289808569277742,
+            "east_m": -18.935157937575983,
+            "north_m": -16.76407502219455
+          },
+          {
+            "distance_m": 24.331976231086575,
+            "east_m": -23.812789418847395,
+            "north_m": 4.999612725380993
+          },
+          {
+            "distance_m": 5.740283339851109,
+            "east_m": -5.627130558407136,
+            "north_m": 1.1341316063018398
+          }
+        ],
+        "source": "bbox_ground_projected_quad",
+        "width_m": 18.591937297394985,
+        "yaw_ambiguous": true
+      },
+      "bbox_only_metric_dims_m": {
+        "height": 28.0,
+        "length": 40.547964689907346,
+        "width": 18.591937297394985
+      },
+      "bbox_source": "detector_single_box",
+      "bbox_xyxy": [
+        134.66903686523438,
+        86.03890991210938,
+        276.2799072265625,
+        394.88421630859375
+      ],
+      "case_id": "tower",
+      "claim_boundary": "The image and YOLOE detector evidence are real local inputs. The flight pose, AGL, and camera geometry are declared replay parameters, not measured flight telemetry; therefore metric position/scale are scenario-relative and not ground truth.",
+      "claim_status": "specific_family",
+      "conservative": false,
+      "declared_height_prior_m": 28.0,
+      "detector_confidence": 0.490281879901886,
+      "detector_is_real": true,
+      "detector_label": "electric pylon",
+      "detector_mask_area_px": 16315.0,
+      "detector_model": "yoloe-26s-seg.pt",
+      "detector_runtime_archetype_id": "vertical_structure",
+      "detector_source": "yoloe26s_universal_prompt_probe",
+      "failures": [],
+      "flight_replay": {
+        "alt_agl_m": 45.0,
+        "camera_vfov_deg": 70.0,
+        "drone_pitch_deg": 0.0,
+        "drone_roll_deg": 0.0,
+        "drone_yaw_deg": 12.0,
+        "max_range_m": 250.0,
+        "mount_pitch_deg": -90.0,
+        "mount_roll_deg": 0.0,
+        "mount_yaw_deg": 0.0,
+        "telemetry_is_measured": false,
+        "telemetry_source": "declared_assumed_replay_not_measured"
+      },
+      "height_prior_source": "declared_family_replay_prior_not_measured",
+      "image": "rea_flight_data/real_photos/tower.png",
+      "image_is_real": true,
+      "image_source": "real_user_supplied_image",
+      "mask_path_used": "native_yoloe_detector_mask",
+      "metric_ground_truth": false,
+      "native_detector_mask": {
+        "area_px2": 16857.0,
+        "claim_boundary": "Native YOLOE/Ultralytics mask polygon from real image inference. It is detector evidence, not ground-truth segmentation.",
+        "component_count": 1,
+        "method": "ultralytics_result_masks_xy_single_contour",
+        "polygon": [
+          [
+            241.0,
+            86.0
+          ],
+          [
+            232.0,
+            102.0
+          ],
+          [
+            210.0,
+            117.0
+          ],
+          [
+            191.0,
+            121.0
+          ],
+          [
+            176.0,
+            125.0
+          ],
+          [
+            148.0,
+            110.0
+          ],
+          [
+            139.0,
+            110.0
+          ],
+          [
+            143.0,
+            123.0
+          ],
+          [
+            147.0,
+            137.0
+          ],
+          [
+            151.0,
+            149.0
+          ],
+          [
+            155.0,
+            160.0
+          ],
+          [
+            159.0,
+            173.0
+          ],
+          [
+            163.0,
+            181.0
+          ],
+          [
+            167.0,
+            192.0
+          ],
+          [
+            171.0,
+            202.0
+          ],
+          [
+            175.0,
+            216.0
+          ],
+          [
+            179.0,
+            230.0
+          ],
+          [
+            179.0,
+            322.0
+          ],
+          [
+            184.0,
+            383.0
+          ],
+          [
+            197.0,
+            393.0
+          ],
+          [
+            203.0,
+            373.0
+          ],
+          [
+            211.0,
+            362.0
+          ],
+          [
+            219.0,
+            366.0
+          ],
+          [
+            229.0,
+            372.0
+          ],
+          [
+            242.0,
+            375.0
+          ],
+          [
+            239.0,
+            353.0
+          ],
+          [
+            235.0,
+            325.0
+          ],
+          [
+            231.0,
+            299.0
+          ],
+          [
+            227.0,
+            259.0
+          ],
+          [
+            227.0,
+            221.0
+          ],
+          [
+            229.0,
+            195.0
+          ],
+          [
+            233.0,
+            182.0
+          ],
+          [
+            237.0,
+            162.0
+          ],
+          [
+            241.0,
+            138.0
+          ],
+          [
+            253.0,
+            127.0
+          ],
+          [
+            273.0,
+            123.0
+          ],
+          [
+            267.0,
+            118.0
+          ],
+          [
+            248.0,
+            113.0
+          ]
+        ],
+        "quality_score": 0.490281879901886,
+        "source": "real_detector_mask_yoloe_native_polygon_not_ground_truth",
+        "status": "native_detector_mask_available"
+      },
+      "native_detector_mask_available": true,
+      "native_detector_mask_point_count": 38,
+      "normalization_rule": "specific_power_infrastructure_label",
+      "publication_label": "real image + real YOLOE detector evidence + declared assumed-flight telemetry replay",
+      "reviewed_semantic_tag": "tower",
+      "runtime_archetype_id": "tower",
+      "semantic_text_source": "reviewed_semantic_tag_plus_detector_evidence",
+      "silhouette_proxy": {
+        "area_px2": 14555.0,
+        "area_ratio_to_expected": 0.892124,
+        "bbox_area_px2": 43735.852646,
+        "bbox_xyxy": {
+          "h": 308.8453063964844,
+          "w": 141.61087036132812,
+          "x1": 134.66903686523438,
+          "x2": 276.2799072265625,
+          "y1": 86.03890991210938,
+          "y2": 394.88421630859375
+        },
+        "claim_boundary": "This is an image-derived silhouette proxy inside a detector/review bbox, not a ground-truth mask and not necessarily the native detector segmentation.",
+        "expected_mask_area_px": 16315.0,
+        "hull_area_px2": 20681.5,
+        "method": "grabcut_rect",
+        "point_count": 5,
+        "polygon": [
+          [
+            137.0,
+            101.0
+          ],
+          [
+            246.0,
+            126.0
+          ],
+          [
+            236.0,
+            373.0
+          ],
+          [
+            195.0,
+            372.0
+          ],
+          [
+            180.0,
+            356.0
+          ]
+        ],
+        "quality_score": 0.778254,
+        "schema": "SPPA-SILHOUETTE-0.1",
+        "source": "image_derived_silhouette_proxy",
+        "status": "ok"
+      },
+      "sppa_descriptor_error": null,
+      "sppa_descriptor_has_mask_polygon": true,
+      "sppa_descriptor_id": "sppa-b7c01fe5b0cb695a",
+      "sppa_descriptor_mask_hash": "febe2d2de23c05c6",
+      "sppa_descriptor_mask_point_count": 38,
+      "sppa_footprint_m": {
+        "center_east_m": -14.163804838113816,
+        "center_north_m": 6.631071116690471,
+        "length_m": 39.914719687447885,
+        "orientation_deg_axial": 8.759581353478723,
+        "orientation_modulo": "pi",
+        "orientation_rad_axial": 0.15288353571450497,
+        "point_count": 38,
+        "points_ned_m": [
+          {
+            "distance_m": 22.723604073245333,
+            "east_m": -5.941513921140052,
+            "north_m": 21.933093589425795
+          },
+          {
+            "distance_m": 21.488109039799692,
+            "east_m": -7.5340373416501105,
+            "north_m": 20.124043118641517
+          },
+          {
+            "distance_m": 21.66426203568293,
+            "east_m": -10.768723425755732,
+            "north_m": 18.798267083173183
+          },
+          {
+            "distance_m": 23.0418588692703,
+            "east_m": -13.317888203174274,
+            "north_m": 18.803220840034875
+          },
+          {
+            "distance_m": 24.194591220659337,
+            "east_m": -15.35337323795616,
+            "north_m": 18.698988597002177
+          },
+          {
+            "distance_m": 28.30608459440805,
+            "east_m": -18.539683936808842,
+            "north_m": 21.389589631150404
+          },
+          {
+            "distance_m": 29.257403700044183,
+            "east_m": -19.69546335774133,
+            "north_m": 21.63525813091278
+          },
+          {
+            "distance_m": 27.856153850921746,
+            "east_m": -19.536638114761438,
+            "north_m": 19.856612967449234
+          },
+          {
+            "distance_m": 26.433776468887768,
+            "east_m": -19.405109371755145,
+            "north_m": 17.949547868326523
+          },
+          {
+            "distance_m": 25.199948492325703,
+            "east_m": -19.21898762880165,
+            "north_m": 16.29932264052214
+          },
+          {
+            "distance_m": 24.074606677220576,
+            "east_m": -19.00556938587457,
+            "north_m": 14.777517348376922
+          },
+          {
+            "distance_m": 22.894768897445744,
+            "east_m": -18.846744142894668,
+            "north_m": 12.998872184913369
+          },
+          {
+            "distance_m": 22.01977718407885,
+            "east_m": -18.551436400046793,
+            "north_m": 11.86232669974565
+          },
+          {
+            "distance_m": 21.052536495916463,
+            "east_m": -18.338018157119702,
+            "north_m": 10.340521407600432
+          },
+          {
+            "distance_m": 20.188205328444976,
+            "east_m": -18.09730341421902,
+            "north_m": 8.947136051114382
+          },
+          {
+            "distance_m": 19.295897453755956,
+            "east_m": -17.965774671212724,
+            "north_m": 7.040070951991667
+          },
+          {
+            "distance_m": 18.55823474669222,
+            "east_m": -17.83424592820643,
+            "north_m": 5.133005852868951
+          },
+          {
+            "distance_m": 21.414586140959443,
+            "east_m": -20.345523925777425,
+            "north_m": -6.68162822777432
+          },
+          {
+            "distance_m": 25.90919431016337,
+            "east_m": -21.368510745871056,
+            "north_m": -14.651726802851437
+          },
+          {
+            "distance_m": 25.77345496506237,
+            "east_m": -19.972016582037877,
+            "north_m": -16.290780659099866
+          },
+          {
+            "distance_m": 23.256303333329345,
+            "east_m": -18.655566968610927,
+            "north_m": -13.886160945758135
+          },
+          {
+            "distance_m": 21.478882284566257,
+            "east_m": -17.32794598362802,
+            "north_m": -12.69191365329609
+          },
+          {
+            "distance_m": 21.201025456091067,
+            "east_m": -16.409772498249087,
+            "north_m": -13.42396539572154
+          },
+          {
+            "distance_m": 21.049261238381042,
+            "east_m": -15.289352141499014,
+            "north_m": -14.467450009412513
+          },
+          {
+            "distance_m": 20.46970579898584,
+            "east_m": -13.701782477850648,
+            "north_m": -15.207564316046781
+          },
+          {
+            "distance_m": 18.253408830242243,
+            "east_m": -13.486519285408997,
+            "north_m": -12.300436231624337
+          },
+          {
+            "distance_m": 15.781997764879524,
+            "east_m": -13.235897028784922,
+            "north_m": -8.595492033273297
+          },
+          {
+            "distance_m": 14.0190496008973,
+            "east_m": -13.039867772108044,
+            "north_m": -5.14738770624059
+          },
+          {
+            "distance_m": 12.462077549809727,
+            "east_m": -12.46168751580079,
+            "north_m": 0.09859572002044281
+          },
+          {
+            "distance_m": 12.462077549809731,
+            "east_m": -11.424420516804076,
+            "north_m": 4.978553275068751
+          },
+          {
+            "distance_m": 13.328249778703,
+            "east_m": -10.457871646172205,
+            "north_m": 8.262878602259871
+          },
+          {
+            "distance_m": 13.727698367243258,
+            "east_m": -9.589337403878767,
+            "north_m": 9.82315176593464
+          },
+          {
+            "distance_m": 14.953686207235314,
+            "east_m": -8.52972766177015,
+            "north_m": 12.282364479223569
+          },
+          {
+            "distance_m": 16.93830519517414,
+            "east_m": -7.360931919767139,
+            "north_m": 15.255256935149163
+          },
+          {
+            "distance_m": 17.247386128929303,
+            "east_m": -5.51963119214757,
+            "north_m": 16.340318227716818
+          },
+          {
+            "distance_m": 16.55386085274626,
+            "east_m": -2.842046479069859,
+            "north_m": 16.308067970881524
+          },
+          {
+            "distance_m": 17.4633996418819,
+            "east_m": -3.476083593156866,
+            "north_m": 17.11394664901894
+          },
+          {
+            "distance_m": 19.166832452328627,
+            "east_m": -5.7795798708130315,
+            "north_m": 18.274679826813127
+          }
+        ],
+        "source": "real_mask_ground_projected_oriented_footprint",
+        "width_m": 17.46811026776322,
+        "yaw_ambiguous": true
+      },
+      "sppa_metric_dims_m": {
+        "height": 28.0,
+        "length": 5.6000000000000005,
+        "width": 5.6000000000000005
+      },
+      "sppa_observation_id": "sppa-obs-cffd6078bbd4963f",
+      "sppa_observation_metric_evidence_source": "real_mask_ground_projected_oriented_footprint",
+      "sppa_observation_status": "metric_observation_ready",
+      "sppa_scale_source": "constraint_fused_vertical_height",
+      "sppa_shape_policy": "semantic_part_layout_from_metric_dims",
+      "sppa_tag": "power_tower",
+      "sppa_uncertainty": {
+        "confidence": 0.490281879901886,
+        "covariance_local_enu_m2": [
+          [
+            0.5471986311658033,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.5471986311658033,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            28.034517071252345
+          ]
+        ],
+        "fallback_inflation_m": 6.774221,
+        "fallback_unknown": false,
+        "material_from_observation": false,
+        "material_from_prior": true,
+        "material_source": "semantic_prior",
+        "material_uses_role_priors": true,
+        "observation_schema": "SPPA-UNCERTAINTY-0.1",
+        "position_sigma_m": 0.739729,
+        "quality_flags": {
+          "height_from_prior": true,
+          "mask_quality_score": 0.490281879901886,
+          "mask_source": "real_detector_mask_yoloe_native_polygon_not_ground_truth",
+          "telemetry_measured": false,
+          "used_bbox": true,
+          "used_mask": true,
+          "used_metric_footprint": true,
+          "used_world_projection": true
+        },
+        "scale_from_bbox": false,
+        "scale_from_calibrated_footprint": false,
+        "scale_from_dims": true,
+        "scale_from_mask": false,
+        "scale_from_semantic_prior": false,
+        "scale_sigma_m": 5.294763,
+        "shape_low_confidence": true,
+        "shape_source": "constraint_fused_vertical_height",
+        "telemetry_measured": false,
+        "texture_from_observation": false,
+        "visual_metric_yaw_agreement": null,
+        "visual_policy": "covariance_envelope_from_metric_observation",
+        "yaw_ambiguous": false,
+        "yaw_sigma_deg": 13.558309
+      },
+      "status": "passed",
+      "telemetry_is_measured": false,
+      "telemetry_source": "declared_assumed_replay_not_measured",
+      "used_detections": [
+        {
+          "class_id": 20,
+          "class_name": "electric pylon",
+          "confidence": 0.490281879901886,
+          "mask_area_px": 16315,
+          "mask_polygon_area_px2": 16857.0,
+          "mask_polygon_point_count": 75,
+          "mask_polygon_px": [
+            [
+              241.0,
+              86.0
+            ],
+            [
+              237.0,
+              95.0
+            ],
+            [
+              232.0,
+              102.0
+            ],
+            [
+              219.0,
+              115.0
+            ],
+            [
+              210.0,
+              117.0
+            ],
+            [
+              196.0,
+              119.0
+            ],
+            [
+              191.0,
+              121.0
+            ],
+            [
+              183.0,
+              123.0
+            ],
+            [
+              176.0,
+              125.0
+            ],
+            [
+              163.0,
+              123.0
+            ],
+            [
+              148.0,
+              110.0
+            ],
+            [
+              139.0,
+              101.0
+            ],
+            [
+              139.0,
+              110.0
+            ],
+            [
+              141.0,
+              117.0
+            ],
+            [
+              143.0,
+              123.0
+            ],
+            [
+              145.0,
+              130.0
+            ],
+            [
+              147.0,
+              137.0
+            ],
+            [
+              149.0,
+              143.0
+            ],
+            [
+              151.0,
+              149.0
+            ],
+            [
+              153.0,
+              155.0
+            ],
+            [
+              155.0,
+              160.0
+            ],
+            [
+              157.0,
+              167.0
+            ],
+            [
+              159.0,
+              173.0
+            ],
+            [
+              161.0,
+              177.0
+            ],
+            [
+              163.0,
+              181.0
+            ],
+            [
+              165.0,
+              187.0
+            ],
+            [
+              167.0,
+              192.0
+            ],
+            [
+              169.0,
+              197.0
+            ],
+            [
+              171.0,
+              202.0
+            ],
+            [
+              173.0,
+              208.0
+            ],
+            [
+              175.0,
+              216.0
+            ],
+            [
+              177.0,
+              224.0
+            ],
+            [
+              179.0,
+              230.0
+            ],
+            [
+              179.0,
+              261.0
+            ],
+            [
+              179.0,
+              322.0
+            ],
+            [
+              179.0,
+              379.0
+            ],
+            [
+              184.0,
+              383.0
+            ],
+            [
+              192.0,
+              386.0
+            ],
+            [
+              197.0,
+              393.0
+            ],
+            [
+              203.0,
+              390.0
+            ],
+            [
+              203.0,
+              373.0
+            ],
+            [
+              206.0,
+              368.0
+            ],
+            [
+              211.0,
+              362.0
+            ],
+            [
+              217.0,
+              362.0
+            ],
+            [
+              219.0,
+              366.0
+            ],
+            [
+              225.0,
+              370.0
+            ],
+            [
+              229.0,
+              372.0
+            ],
+            [
+              235.0,
+              375.0
+            ],
+            [
+              242.0,
+              375.0
+            ],
+            [
+              241.0,
+              369.0
+            ],
+            [
+              239.0,
+              353.0
+            ],
+            [
+              237.0,
+              333.0
+            ],
+            [
+              235.0,
+              325.0
+            ],
+            [
+              233.0,
+              313.0
+            ],
+            [
+              231.0,
+              299.0
+            ],
+            [
+              229.0,
+              273.0
+            ],
+            [
+              227.0,
+              259.0
+            ],
+            [
+              225.0,
+              244.0
+            ],
+            [
+              227.0,
+              221.0
+            ],
+            [
+              227.0,
+              206.0
+            ],
+            [
+              229.0,
+              195.0
+            ],
+            [
+              231.0,
+              190.0
+            ],
+            [
+              233.0,
+              182.0
+            ],
+            [
+              235.0,
+              173.0
+            ],
+            [
+              237.0,
+              162.0
+            ],
+            [
+              239.0,
+              151.0
+            ],
+            [
+              241.0,
+              138.0
+            ],
+            [
+              246.0,
+              129.0
+            ],
+            [
+              253.0,
+              127.0
+            ],
+            [
+              267.0,
+              125.0
+            ],
+            [
+              273.0,
+              123.0
+            ],
+            [
+              272.0,
+              120.0
+            ],
+            [
+              267.0,
+              118.0
+            ],
+            [
+              259.0,
+              116.0
+            ],
+            [
+              248.0,
+              113.0
+            ]
+          ],
+          "mask_source": "ultralytics_result_masks_xy",
+          "xyxy": [
+            134.66903686523438,
+            86.03890991210938,
+            276.2799072265625,
+            394.88421630859375
+          ]
+        }
+      ],
+      "world_m": {
+        "distance": 15.639196643267294,
+        "east": -14.163804838113817,
+        "north": 6.631071116690473,
+        "up": 0.0
+      },
+      "yaw_ambiguous": true,
+      "yaw_deg": 8.759581353478723
+    },
+    {
+      "bbox_only_footprint_m": {
+        "bbox_px": {
+          "x1": 225.7920684814453,
+          "x2": 291.5368957519531,
+          "y1": 223.27322387695312,
+          "y2": 278.1585693359375
+        },
+        "center_east_m": -3.3607929789860886,
+        "center_north_m": 5.397220048295688,
+        "length_m": 6.713440949411127,
+        "orientation_deg_axial": 157.99999999999997,
+        "orientation_modulo": "pi",
+        "orientation_rad_axial": 2.75762021815104,
+        "point_count": 8,
+        "points_ned_m": [
+          {
+            "distance_m": 9.770366322886154,
+            "east_m": -2.020023019863514,
+            "north_m": 9.55926592802028
+          },
+          {
+            "distance_m": 3.371192513864469,
+            "east_m": 0.49487622429427264,
+            "north_m": 3.3346718711387604
+          },
+          {
+            "distance_m": 4.861105768001996,
+            "east_m": -4.701562938108663,
+            "north_m": 1.2351741685710993
+          },
+          {
+            "distance_m": 10.379088033423475,
+            "east_m": -7.216462182266451,
+            "north_m": 7.459768225452619
+          },
+          {
+            "distance_m": 6.491912366872671,
+            "east_m": -0.7625733977846204,
+            "north_m": 6.4469688995795185
+          },
+          {
+            "distance_m": 7.376336251915363,
+            "east_m": -5.959012560187557,
+            "north_m": 4.347471197011858
+          },
+          {
+            "distance_m": 9.681944308947486,
+            "east_m": -4.61824260106498,
+            "north_m": 8.509517076736445
+          },
+          {
+            "distance_m": 3.105628194698876,
+            "east_m": -2.103343356907195,
+            "north_m": 2.2849230198549297
+          }
+        ],
+        "source": "bbox_ground_projected_quad",
+        "width_m": 5.60454017486197,
+        "yaw_ambiguous": true
+      },
+      "bbox_only_metric_dims_m": {
+        "height": 2.6,
+        "length": 6.713440949411127,
+        "width": 5.60454017486197
+      },
+      "bbox_source": "detector_single_box",
+      "bbox_xyxy": [
+        225.7920684814453,
+        223.27322387695312,
+        291.5368957519531,
+        278.1585693359375
+      ],
+      "case_id": "tractor",
+      "claim_boundary": "The image and YOLOE detector evidence are real local inputs. The flight pose, AGL, and camera geometry are declared replay parameters, not measured flight telemetry; therefore metric position/scale are scenario-relative and not ground truth.",
+      "claim_status": "generic_family",
+      "conservative": true,
+      "declared_height_prior_m": 2.6,
+      "detector_confidence": 0.47855642437934875,
+      "detector_is_real": true,
+      "detector_label": "two-wheeled vehicle",
+      "detector_mask_area_px": 2540.0,
+      "detector_model": "yoloe-26s-seg.pt",
+      "detector_runtime_archetype_id": "heavy_vehicle",
+      "detector_source": "yoloe26s_universal_prompt_probe",
+      "failures": [],
+      "flight_replay": {
+        "alt_agl_m": 35.0,
+        "camera_vfov_deg": 70.0,
+        "drone_pitch_deg": 0.0,
+        "drone_roll_deg": 0.0,
+        "drone_yaw_deg": 68.0,
+        "max_range_m": 250.0,
+        "mount_pitch_deg": -90.0,
+        "mount_roll_deg": 0.0,
+        "mount_yaw_deg": 0.0,
+        "telemetry_is_measured": false,
+        "telemetry_source": "declared_assumed_replay_not_measured"
+      },
+      "height_prior_source": "declared_family_replay_prior_not_measured",
+      "image": "rea_flight_data/real_photos/tractor.png",
+      "image_is_real": true,
+      "image_source": "real_user_supplied_image",
+      "mask_path_used": "native_yoloe_detector_mask",
+      "metric_ground_truth": false,
+      "native_detector_mask": {
+        "area_px2": 2442.0,
+        "claim_boundary": "Native YOLOE/Ultralytics mask polygon from real image inference. It is detector evidence, not ground-truth segmentation.",
+        "component_count": 1,
+        "method": "ultralytics_result_masks_xy_single_contour",
+        "polygon": [
+          [
+            245.0,
+            222.0
+          ],
+          [
+            242.0,
+            228.0
+          ],
+          [
+            240.0,
+            229.0
+          ],
+          [
+            239.0,
+            231.0
+          ],
+          [
+            238.0,
+            233.0
+          ],
+          [
+            237.0,
+            236.0
+          ],
+          [
+            235.0,
+            240.0
+          ],
+          [
+            231.0,
+            245.0
+          ],
+          [
+            229.0,
+            246.0
+          ],
+          [
+            226.0,
+            265.0
+          ],
+          [
+            230.0,
+            266.0
+          ],
+          [
+            232.0,
+            267.0
+          ],
+          [
+            235.0,
+            268.0
+          ],
+          [
+            237.0,
+            269.0
+          ],
+          [
+            239.0,
+            270.0
+          ],
+          [
+            241.0,
+            271.0
+          ],
+          [
+            244.0,
+            272.0
+          ],
+          [
+            246.0,
+            273.0
+          ],
+          [
+            249.0,
+            274.0
+          ],
+          [
+            252.0,
+            275.0
+          ],
+          [
+            256.0,
+            278.0
+          ],
+          [
+            258.0,
+            281.0
+          ],
+          [
+            259.0,
+            276.0
+          ],
+          [
+            261.0,
+            275.0
+          ],
+          [
+            267.0,
+            270.0
+          ],
+          [
+            268.0,
+            267.0
+          ],
+          [
+            269.0,
+            265.0
+          ],
+          [
+            270.0,
+            263.0
+          ],
+          [
+            279.0,
+            262.0
+          ],
+          [
+            284.0,
+            260.0
+          ],
+          [
+            287.0,
+            258.0
+          ],
+          [
+            289.0,
+            255.0
+          ],
+          [
+            293.0,
+            244.0
+          ],
+          [
+            287.0,
+            242.0
+          ],
+          [
+            284.0,
+            238.0
+          ],
+          [
+            283.0,
+            236.0
+          ],
+          [
+            282.0,
+            233.0
+          ],
+          [
+            278.0,
+            228.0
+          ],
+          [
+            269.0,
+            227.0
+          ],
+          [
+            265.0,
+            225.0
+          ]
+        ],
+        "quality_score": 0.47855642437934875,
+        "source": "real_detector_mask_yoloe_native_polygon_not_ground_truth",
+        "status": "native_detector_mask_available"
+      },
+      "native_detector_mask_available": true,
+      "native_detector_mask_point_count": 40,
+      "normalization_rule": "compound_vehicle_conservative_proxy",
+      "publication_label": "real image + real YOLOE detector evidence + declared assumed-flight telemetry replay",
+      "reviewed_semantic_tag": "tractor",
+      "runtime_archetype_id": "tractor",
+      "semantic_text_source": "reviewed_semantic_tag_plus_detector_evidence",
+      "silhouette_proxy": {
+        "area_px2": 2248.0,
+        "area_ratio_to_expected": 0.885039,
+        "bbox_area_px2": 3608.427557,
+        "bbox_xyxy": {
+          "h": 54.885345458984375,
+          "w": 65.74482727050781,
+          "x1": 225.7920684814453,
+          "x2": 291.5368957519531,
+          "y1": 223.27322387695312,
+          "y2": 278.1585693359375
+        },
+        "claim_boundary": "This is an image-derived silhouette proxy inside a detector/review bbox, not a ground-truth mask and not necessarily the native detector segmentation.",
+        "expected_mask_area_px": 2540.0,
+        "hull_area_px2": 2384.5,
+        "method": "grabcut_rect",
+        "point_count": 10,
+        "polygon": [
+          [
+            291.0,
+            245.0
+          ],
+          [
+            291.0,
+            253.0
+          ],
+          [
+            285.0,
+            261.0
+          ],
+          [
+            261.0,
+            273.0
+          ],
+          [
+            231.0,
+            268.0
+          ],
+          [
+            225.0,
+            262.0
+          ],
+          [
+            225.0,
+            253.0
+          ],
+          [
+            239.0,
+            230.0
+          ],
+          [
+            250.0,
+            223.0
+          ],
+          [
+            279.0,
+            229.0
+          ]
+        ],
+        "quality_score": 0.928209,
+        "schema": "SPPA-SILHOUETTE-0.1",
+        "source": "image_derived_silhouette_proxy",
+        "status": "ok"
+      },
+      "sppa_descriptor_error": null,
+      "sppa_descriptor_has_mask_polygon": true,
+      "sppa_descriptor_id": "sppa-e957382fd2b67d30",
+      "sppa_descriptor_mask_hash": "67fe18688b1b9d97",
+      "sppa_descriptor_mask_point_count": 40,
+      "sppa_footprint_m": {
+        "center_east_m": -3.7664046897758903,
+        "center_north_m": 5.485489961418532,
+        "length_m": 7.107295946061155,
+        "orientation_deg_axial": 133.0262761406728,
+        "orientation_modulo": "pi",
+        "orientation_rad_axial": 2.321746510321916,
+        "point_count": 40,
+        "points_ned_m": [
+          {
+            "distance_m": 7.875997489447001,
+            "east_m": -1.1647266175466382,
+            "north_m": 7.7893997432506845
+          },
+          {
+            "distance_m": 8.05856821484074,
+            "east_m": -1.8475523840370234,
+            "north_m": 7.843919419619287
+          },
+          {
+            "distance_m": 8.245949764159317,
+            "east_m": -2.018735319827405,
+            "north_m": 7.995023153282324
+          },
+          {
+            "distance_m": 8.322101727339739,
+            "east_m": -2.2463439086575336,
+            "north_m": 8.013196378738527
+          },
+          {
+            "distance_m": 8.403769313766796,
+            "east_m": -2.4739524974876628,
+            "north_m": 8.03136960419473
+          },
+          {
+            "distance_m": 8.485265310229984,
+            "east_m": -2.7962391669410818,
+            "north_m": 8.011290402067385
+          },
+          {
+            "distance_m": 8.679655942391191,
+            "east_m": -3.2514563446013396,
+            "north_m": 8.047636852979787
+          },
+          {
+            "distance_m": 9.10244083888303,
+            "east_m": -3.8778564580519785,
+            "north_m": 8.23508703755523
+          },
+          {
+            "distance_m": 9.312513928266293,
+            "east_m": -4.04903939384236,
+            "north_m": 8.386190771218265
+          },
+          {
+            "distance_m": 9.93235207706015,
+            "east_m": -5.962680208435537,
+            "north_m": 7.943428889000782
+          },
+          {
+            "distance_m": 9.566033377194428,
+            "east_m": -5.904348578724648,
+            "north_m": 7.52646413892407
+          },
+          {
+            "distance_m": 9.399444497529347,
+            "east_m": -5.922521804180849,
+            "north_m": 7.2988555500939425
+          },
+          {
+            "distance_m": 9.138454027725802,
+            "east_m": -5.9024426020535055,
+            "north_m": 6.976568880640524
+          },
+          {
+            "distance_m": 8.977870393216413,
+            "east_m": -5.920615827509706,
+            "north_m": 6.748960291810392
+          },
+          {
+            "distance_m": 8.820274567698632,
+            "east_m": -5.938789052965908,
+            "north_m": 6.521351702980265
+          },
+          {
+            "distance_m": 8.665829560605044,
+            "east_m": -5.956962278422109,
+            "north_m": 6.293743114150138
+          },
+          {
+            "distance_m": 8.420503116352677,
+            "east_m": -5.936883076294765,
+            "north_m": 5.971456444696717
+          },
+          {
+            "distance_m": 8.273722484369843,
+            "east_m": -5.9550563017509655,
+            "north_m": 5.743847855866588
+          },
+          {
+            "distance_m": 8.03848734968704,
+            "east_m": -5.934977099623621,
+            "north_m": 5.421561186413167
+          },
+          {
+            "distance_m": 7.809520967199009,
+            "east_m": -5.914897897496276,
+            "north_m": 5.099274516959748
+          },
+          {
+            "distance_m": 7.60043531007656,
+            "east_m": -6.045922429031971,
+            "north_m": 4.605804911715945
+          },
+          {
+            "distance_m": 7.590138937803472,
+            "east_m": -6.253451815734756,
+            "north_m": 4.301691467718727
+          },
+          {
+            "distance_m": 7.232786324408845,
+            "east_m": -5.741808985034752,
+            "north_m": 4.398275525013161
+          },
+          {
+            "distance_m": 7.005022684171706,
+            "east_m": -5.570626049244371,
+            "north_m": 4.247171791350124
+          },
+          {
+            "distance_m": 6.218877487192921,
+            "east_m": -4.867721080626643,
+            "north_m": 3.8703654455281002
+          },
+          {
+            "distance_m": 5.983020436430796,
+            "east_m": -4.545434411173222,
+            "north_m": 3.890444647655445
+          },
+          {
+            "distance_m": 5.799836704535201,
+            "east_m": -4.317825822343092,
+            "north_m": 3.8722714221992414
+          },
+          {
+            "distance_m": 5.6199599578168185,
+            "east_m": -4.090217233512965,
+            "north_m": 3.8540981967430414
+          },
+          {
+            "distance_m": 4.751300897182755,
+            "east_m": -3.6512673046377673,
+            "north_m": 3.0402478987169625
+          },
+          {
+            "distance_m": 4.205295403947279,
+            "east_m": -3.2706490054734574,
+            "north_m": 2.6433623507675956
+          },
+          {
+            "distance_m": 3.838439196643332,
+            "east_m": -2.9665355614762388,
+            "north_m": 2.435832964064811
+          },
+          {
+            "distance_m": 3.516623946276061,
+            "east_m": -2.6059964644392735,
+            "north_m": 2.3612340855688627
+          },
+          {
+            "distance_m": 2.7871588471193975,
+            "east_m": -1.4115278672488847,
+            "north_m": 2.4032984664946935
+          },
+          {
+            "distance_m": 3.3759318081136573,
+            "east_m": -1.4516862715035725,
+            "north_m": 3.0478718054015337
+          },
+          {
+            "distance_m": 3.681758182785548,
+            "east_m": -1.1877312317610416,
+            "north_m": 3.4849157576055894
+          },
+          {
+            "distance_m": 3.800217655038282,
+            "east_m": -1.0366274980980037,
+            "north_m": 3.6560986933959714
+          },
+          {
+            "distance_m": 3.945603938518348,
+            "east_m": -0.7908456838116737,
+            "north_m": 3.8655340567698984
+          },
+          {
+            "distance_m": 4.4603893455356145,
+            "east_m": -0.4704649910293965,
+            "north_m": 4.435508517180791
+          },
+          {
+            "distance_m": 5.374319347724817,
+            "east_m": -0.7200587586580113,
+            "north_m": 5.32586367037396
+          },
+          {
+            "distance_m": 5.821370825782432,
+            "east_m": -0.6837123077456086,
+            "north_m": 5.7810808480342155
+          }
+        ],
+        "source": "real_mask_ground_projected_oriented_footprint",
+        "width_m": 6.021865892391727,
+        "yaw_ambiguous": true
+      },
+      "sppa_metric_dims_m": {
+        "height": 2.6,
+        "length": 4.7454487066149715,
+        "width": 2.4976045824289326
+      },
+      "sppa_observation_id": "sppa-obs-a70786697a587ea7",
+      "sppa_observation_metric_evidence_source": "real_mask_ground_projected_oriented_footprint",
+      "sppa_observation_status": "metric_observation_ready",
+      "sppa_scale_source": "constraint_fused_vehicle_observation",
+      "sppa_shape_policy": "semantic_part_layout_from_metric_dims",
+      "sppa_tag": "generic_vehicle",
+      "sppa_uncertainty": {
+        "confidence": 0.47855642437934875,
+        "covariance_local_enu_m2": [
+          [
+            0.20189688602991335,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.20189688602991335,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.9196087782811971
+          ]
+        ],
+        "fallback_inflation_m": 1.857621,
+        "fallback_unknown": false,
+        "material_from_observation": false,
+        "material_from_prior": true,
+        "material_source": "semantic_prior",
+        "material_uses_role_priors": true,
+        "observation_schema": "SPPA-UNCERTAINTY-0.1",
+        "position_sigma_m": 0.449329,
+        "quality_flags": {
+          "height_from_prior": true,
+          "mask_quality_score": 0.47855642437934875,
+          "mask_source": "real_detector_mask_yoloe_native_polygon_not_ground_truth",
+          "telemetry_measured": false,
+          "used_bbox": true,
+          "used_mask": true,
+          "used_metric_footprint": true,
+          "used_world_projection": true
+        },
+        "scale_from_bbox": false,
+        "scale_from_calibrated_footprint": false,
+        "scale_from_dims": true,
+        "scale_from_mask": false,
+        "scale_from_semantic_prior": false,
+        "scale_sigma_m": 0.958962,
+        "shape_low_confidence": true,
+        "shape_source": "constraint_fused_vehicle_observation",
+        "telemetry_measured": false,
+        "texture_from_observation": false,
+        "visual_metric_yaw_agreement": null,
+        "visual_policy": "covariance_envelope_from_metric_observation",
+        "yaw_ambiguous": false,
+        "yaw_sigma_deg": 13.628661
+      },
+      "status": "passed",
+      "telemetry_is_measured": false,
+      "telemetry_source": "declared_assumed_replay_not_measured",
+      "used_detections": [
+        {
+          "class_id": 3,
+          "class_name": "two-wheeled vehicle",
+          "confidence": 0.47855642437934875,
+          "mask_area_px": 2540,
+          "mask_polygon_area_px2": 2442.0,
+          "mask_polygon_point_count": 80,
+          "mask_polygon_px": [
+            [
+              245.0,
+              222.0
+            ],
+            [
+              245.0,
+              225.0
+            ],
+            [
+              242.0,
+              228.0
+            ],
+            [
+              241.0,
+              228.0
+            ],
+            [
+              240.0,
+              229.0
+            ],
+            [
+              240.0,
+              230.0
+            ],
+            [
+              239.0,
+              231.0
+            ],
+            [
+              239.0,
+              232.0
+            ],
+            [
+              238.0,
+              233.0
+            ],
+            [
+              238.0,
+              235.0
+            ],
+            [
+              237.0,
+              236.0
+            ],
+            [
+              237.0,
+              238.0
+            ],
+            [
+              235.0,
+              240.0
+            ],
+            [
+              235.0,
+              241.0
+            ],
+            [
+              231.0,
+              245.0
+            ],
+            [
+              230.0,
+              245.0
+            ],
+            [
+              229.0,
+              246.0
+            ],
+            [
+              226.0,
+              246.0
+            ],
+            [
+              226.0,
+              265.0
+            ],
+            [
+              229.0,
+              265.0
+            ],
+            [
+              230.0,
+              266.0
+            ],
+            [
+              231.0,
+              266.0
+            ],
+            [
+              232.0,
+              267.0
+            ],
+            [
+              234.0,
+              267.0
+            ],
+            [
+              235.0,
+              268.0
+            ],
+            [
+              236.0,
+              268.0
+            ],
+            [
+              237.0,
+              269.0
+            ],
+            [
+              238.0,
+              269.0
+            ],
+            [
+              239.0,
+              270.0
+            ],
+            [
+              240.0,
+              270.0
+            ],
+            [
+              241.0,
+              271.0
+            ],
+            [
+              243.0,
+              271.0
+            ],
+            [
+              244.0,
+              272.0
+            ],
+            [
+              245.0,
+              272.0
+            ],
+            [
+              246.0,
+              273.0
+            ],
+            [
+              248.0,
+              273.0
+            ],
+            [
+              249.0,
+              274.0
+            ],
+            [
+              251.0,
+              274.0
+            ],
+            [
+              252.0,
+              275.0
+            ],
+            [
+              253.0,
+              275.0
+            ],
+            [
+              256.0,
+              278.0
+            ],
+            [
+              256.0,
+              281.0
+            ],
+            [
+              258.0,
+              281.0
+            ],
+            [
+              258.0,
+              277.0
+            ],
+            [
+              259.0,
+              276.0
+            ],
+            [
+              260.0,
+              276.0
+            ],
+            [
+              261.0,
+              275.0
+            ],
+            [
+              262.0,
+              275.0
+            ],
+            [
+              267.0,
+              270.0
+            ],
+            [
+              267.0,
+              268.0
+            ],
+            [
+              268.0,
+              267.0
+            ],
+            [
+              268.0,
+              266.0
+            ],
+            [
+              269.0,
+              265.0
+            ],
+            [
+              269.0,
+              264.0
+            ],
+            [
+              270.0,
+              263.0
+            ],
+            [
+              278.0,
+              263.0
+            ],
+            [
+              279.0,
+              262.0
+            ],
+            [
+              282.0,
+              262.0
+            ],
+            [
+              284.0,
+              260.0
+            ],
+            [
+              285.0,
+              260.0
+            ],
+            [
+              287.0,
+              258.0
+            ],
+            [
+              287.0,
+              257.0
+            ],
+            [
+              289.0,
+              255.0
+            ],
+            [
+              293.0,
+              255.0
+            ],
+            [
+              293.0,
+              244.0
+            ],
+            [
+              289.0,
+              244.0
+            ],
+            [
+              287.0,
+              242.0
+            ],
+            [
+              287.0,
+              241.0
+            ],
+            [
+              284.0,
+              238.0
+            ],
+            [
+              284.0,
+              237.0
+            ],
+            [
+              283.0,
+              236.0
+            ],
+            [
+              283.0,
+              234.0
+            ],
+            [
+              282.0,
+              233.0
+            ],
+            [
+              282.0,
+              232.0
+            ],
+            [
+              278.0,
+              228.0
+            ],
+            [
+              270.0,
+              228.0
+            ],
+            [
+              269.0,
+              227.0
+            ],
+            [
+              267.0,
+              227.0
+            ],
+            [
+              265.0,
+              225.0
+            ],
+            [
+              265.0,
+              222.0
+            ]
+          ],
+          "mask_source": "ultralytics_result_masks_xy",
+          "xyxy": [
+            225.7920684814453,
+            223.27322387695312,
+            291.5368957519531,
+            278.1585693359375
+          ]
+        }
+      ],
+      "world_m": {
+        "distance": 6.654051728382436,
+        "east": -3.7664046897758885,
+        "north": 5.485489961418531,
+        "up": 0.0
+      },
+      "yaw_ambiguous": true,
+      "yaw_deg": 133.0262761406728
+    }
+  ],
+  "schema": "SPPA-REAL-IMAGE-ASSUMED-FLIGHT-REPLAY-0.1",
+  "telemetry_is_measured": false
+}

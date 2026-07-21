@@ -1,0 +1,38 @@
+{
+  "schema": "SPPA-REAL-INPUT-2D-ANNOTATIONS-0.1",
+  "created_utc": "2026-07-21T00:00:00Z",
+  "purpose": "Record manually reviewed 2D provenance for real user-supplied flight photos without promoting them to 3D ground truth.",
+  "global_claim": "These annotations support detector/input provenance and replay reproducibility. They cannot support an image-to-3D SOTA ranking or a ground-truth first row for 3D quality metrics.",
+  "items": [
+    {
+      "label": "tower",
+      "image": "rea_flight_data/real_photos/tower.png",
+      "image_size": {
+        "width": 640,
+        "height": 480
+      },
+      "crop_source": "full_frame_detector_evidence",
+      "reviewed_semantic_tag": "tower",
+      "review_reason": "User-supplied real flight photo of an electrical lattice pylon; YOLOE-26s detects 'electric pylon' (conf 0.49) with a 75-point native mask.",
+      "is_ground_truth_2d_bbox": false,
+      "is_ground_truth_3d": false,
+      "has_mask": true,
+      "has_reference_mesh": false
+    },
+    {
+      "label": "tractor",
+      "image": "rea_flight_data/real_photos/tractor.png",
+      "image_size": {
+        "width": 640,
+        "height": 480
+      },
+      "crop_source": "full_frame_detector_evidence",
+      "reviewed_semantic_tag": "tractor",
+      "review_reason": "User-supplied real flight photo of a tractor on a field road; YOLOE-26s mislabels it 'two-wheeled vehicle' (conf 0.48), exercising the conservative family-routing path.",
+      "is_ground_truth_2d_bbox": false,
+      "is_ground_truth_3d": false,
+      "has_mask": true,
+      "has_reference_mesh": false
+    }
+  ]
+}
