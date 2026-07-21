@@ -1013,9 +1013,17 @@ proxy. The tractor photo is mislabeled by the detector as
 \texttt{two-wheeled vehicle} (\(0.48\)), so it is routed to the conservative
 \texttt{generic\_vehicle} family rather than a committed wrong token; the
 \(7.1\times6.0\)~m footprint is fused to \(4.75\times2.50\times2.60\)~m and a
-576-triangle proxy. Telemetry for these replays is declared assumed flight
+576-triangle proxy. On the same crops and workstation, the measured neural
+generators degrade on these aerial views: TripoSR (6~GB cap) returns
+26{,}836- and 39{,}700-triangle meshes at \(0.49\)/\(0.09\)~s inference and
+\(1.9\)~GB peak VRAM, but as amorphous blobs without tower or tractor
+structure, and Hunyuan3D-2mini-turbo fails with no surface on both crops (5
+and 20 inference steps), while a ground-level control photo works
+(Figure~\ref{fig:real-flight-probes}d; per-case values in RP). Telemetry
+for these replays is declared assumed flight
 (\(45\)/\(35\)~m AGL, nadir camera), not measured; no 3D ground truth
-exists for the photos. The four earlier archived probes (biker, mountain
+exists for the photos, so this fidelity reading is qualitative, not an IoU
+ranking. The four earlier archived probes (biker, mountain
 tower, mountain tractor, tractor-trailer), the probe grid, per-probe
 evidence, replay audits, and input-mode ablations are retained in RP.
 \begin{figure}[H]
@@ -1031,7 +1039,11 @@ tractor's \(7.1\times6.0\)~m is fused to \(4.75\times2.50\times2.60\)~m.
 (c)~The compiled runtime proxies (396 and 576 triangles): the detector
 mislabels the tractor as \texttt{two-wheeled vehicle}, which exercises the
 conservative \texttt{generic\_vehicle} routing instead of a committed wrong
-token.}
+token. (d)~TripoSR on the same object crops (6~GB cap, RTX~5090): amorphous
+blobs (26{,}836 and 39{,}700 triangles); Hunyuan3D-2mini-turbo returns no
+surface on either aerial crop. Neural rows are qualitative context, not a
+ranking; measured IoU comparisons are the sealed synthetic wave of
+Section~\ref{sec:neural-external-wave}.}
 \label{fig:real-flight-probes}
 \end{figure}
 A

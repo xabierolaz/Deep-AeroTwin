@@ -193,3 +193,10 @@ ejecutado con ellas:
   → `figures/assets/real_flight/` y `figures/fig_real_flight_probes.png`
   (Fig. 11, §4.9). Texto §3.5 y §4.9 actualizado con los valores medidos;
   los cuatro probes archivados de 2026-07-03/04 quedan retenidos en RP.
+5. **Columna de competencia** (misma tarde): TripoSR warm r128 6 GB sobre
+  los crops de las fotos (torre 26 836 tris / 0.49 s / 1 868 MB; tractor
+  39 700 / 0.09 s / 1 870 MB — ambos blobs amorfos) y Hunyuan3D-2mini-turbo
+  6 GB (fallo duro `No surface found` en ambas vistas aéreas, 5 y 20 pasos;
+  control a nivel de suelo OK: 592 504 tris / 2.14 s). Panel (d) de la
+  Fig. 11 + valores en `benchmarks/results/real_flight_comparison_20260721.{json,md}`.
+  Sin IoU: no hay GT 3D de las fotos (fidelidad cualitativa).

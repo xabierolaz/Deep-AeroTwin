@@ -43,8 +43,12 @@ OUT_FIG = PAPER / "figures/fig_real_flight_probes.png"
 CASES = ["tower", "tractor"]
 DET_IMG = {"tower": DET_DIR / "tower_yoloe26s_open_vocab.png",
            "tractor": DET_DIR / "tractor_yoloe26s_open_vocab.png"}
-ROW_TITLE = {"tower": "tower: YOLOE 'electric pylon' 0.49 -> power_tower family",
-             "tractor": "tractor: YOLOE 'two-wheeled vehicle' 0.48 -> conservative generic_vehicle"}
+ROW_TITLE = {"tower": "YOLOE 'electric pylon' 0.49 -> power_tower",
+             "tractor": "YOLOE 'two-wheeled vehicle' 0.48 -> generic_vehicle"}
+TRIPOSR_IMG = {"tower": ASSETS / "triposr_tower.png",
+               "tractor": ASSETS / "triposr_tractor.png"}
+TRIPOSR_NOTE = {"tower": "TripoSR: 26,836 tris, 0.49 s, 1,868 MB -> amorphous blob",
+                "tractor": "TripoSR: 39,700 tris, 0.09 s, 1,870 MB -> amorphous blob"}
 
 
 # ---------------------------------------------------------------- mesh build
@@ -182,8 +186,8 @@ def main() -> None:
     build_meshes(rows)
     proxy_imgs = {c: render_proxy(c) for c in CASES}
 
-    fig = plt.figure(figsize=(12.6, 8.6), dpi=300)
-    gs = fig.add_gridspec(2, 3, width_ratios=[1.15, 0.95, 0.9], hspace=0.46, wspace=0.10)
+    fig = plt.figure(figsize=(13.6, 8.6), dpi=300)
+    gs = fig.add_gridspec(2, 4, width_ratios=[1.05, 0.95, 0.75, 0.85], hspace=0.46, wspace=0.10)
     for i, case in enumerate(CASES):
         row = rows[case]
         ax = fig.add_subplot(gs[i, 0])
@@ -197,8 +201,17 @@ def main() -> None:
         ax.set_title("(b) geo-projected mask footprint vs gated dims", fontsize=9.5)
         ax = fig.add_subplot(gs[i, 2])
         ax.imshow(Image.open(proxy_imgs[case]))
-        ax.set_title("(c) compiled SPPA proxy (runtime, roles)", fontsize=9.5)
+        ax.set_title("(c) SPPA proxy (runtime, roles)", fontsize=9.5)
         ax.axis("off")
+        ax = fig.add_subplot(gs[i, 3])
+        ax.imshow(Image.open(TRIPOSR_IMG[case]))
+        ax.set_title("(d) TripoSR, same crop + RTX 5090", fontsize=9.5)
+        ax.axis("off")
+        ax.text(0.0, -0.07, TRIPOSR_NOTE[case], transform=ax.transAxes, fontsize=8,
+                color="#333333", style="italic")
+    fig.text(0.995, 0.005,
+             "Hunyuan3D-2mini-turbo (6 GB): hard failure 'No surface found' on both aerial crops (5 and 20 steps)",
+             fontsize=8, color="#666666", ha="right", style="italic")
     fig.savefig(OUT_FIG, bbox_inches="tight", pad_inches=0.05)
     plt.close(fig)
     print("SAVED", OUT_FIG)
