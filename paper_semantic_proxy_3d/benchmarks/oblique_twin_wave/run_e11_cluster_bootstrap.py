@@ -247,7 +247,7 @@ def write_tex(out: dict) -> None:
     L.append("% Nadir block removed from the table (moved to prose) per editorial request.")
     L.append("\\begin{tabular}{llccc}")
     L.append("\\toprule")
-    L.append("Ring & Method & mean 3D IoU [95\\% CI] / median & $n$ & SPPA$-$method [95\\% CI] \\\\")
+    L.append("Ring & Method & mean 3D IoU [95\\% CI] & $n$ & SPPA$-$method [95\\% CI] \\\\")
     L.append("\\midrule")
     for ring in RINGS:
         pr = out["per_ring"][ring]
@@ -259,8 +259,7 @@ def write_tex(out: dict) -> None:
                 d = pr["paired_delta_sppa_minus"][m]
                 delta = f"+{d['mean']:.3f} [{d['ci95_cluster'][0]:+.3f}, {d['ci95_cluster'][1]:+.3f}]"
             L.append(
-                f"{ringcell} & {m} & {f3(mrow['mean'])} {ci3(mrow['ci95_mean_cluster'])} / "
-                f"{f3(mrow['median'])} & {pr['n_cases']} & {delta} \\\\"
+                f"{ringcell} & {m.replace(chr(95), chr(92)+chr(95))} & {f3(mrow['mean'])} {ci3(mrow['ci95_mean_cluster'])} & {pr['n_cases']} & {delta} \\\\"
             )
         L.append("\\midrule")
     L.append("\\multicolumn{5}{l}{Correct-token subset (cluster-bootstrap CIs, tower-level resampling)} \\\\")
@@ -277,8 +276,7 @@ def write_tex(out: dict) -> None:
                 d = ct["paired_delta_sppa_minus"][m]
                 delta = f"+{d['mean']:.3f} [{d['ci95_cluster'][0]:+.3f}, {d['ci95_cluster'][1]:+.3f}]"
             L.append(
-                f"{ringcell} & {m} & {f3(mrow['mean'])} {ci3(mrow['ci95_mean_cluster'])} / "
-                f"{f3(mrow['median'])} & {ct['n_cases']} & {delta} \\\\"
+                f"{ringcell} & {m.replace(chr(95), chr(92)+chr(95))} & {f3(mrow['mean'])} {ci3(mrow['ci95_mean_cluster'])} & {ct['n_cases']} & {delta} \\\\"
             )
     L.append("\\midrule")
     L.append("\\multicolumn{5}{l}{Wrong-token rate per ring (Wilson 95\\% CI; cluster CI in braces)} \\\\")

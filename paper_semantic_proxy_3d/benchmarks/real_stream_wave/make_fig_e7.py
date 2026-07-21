@@ -68,13 +68,20 @@ def panel_frame(ax) -> None:
     tel_small = {k: float(tel[k]) for k in ("yaw", "pitch", "roll")}
     drone_n, drone_e = llh_to_ne_m(float(tel["lat"]), float(tel["lon"]))
     img = Image.open(FRAMES_DIR / f"yolo_{FIG_FRAME:06d}.jpg").convert("RGB")
+    # 2026-07-21: crop the 640x640 frame to the tower region (360x360) so the
+    # detection and the anchors are readable at print size; the dropped
+    # bottom-left foreground is the low-LOD blurry band.
+    CROP = (240, 120, 640, 520)  # x0, y0, x1, y1
+    img = img.crop(CROP)
     draw = ImageDraw.Draw(img, "RGBA")
     for det in event["detections"]:
         b = det["bbox"]
-        draw.rectangle([b["x1"], b["y1"], b["x2"], b["y2"]], outline=OI["vermillion"], width=2)
+        x1, y1 = b["x1"] - CROP[0], b["y1"] - CROP[1]
+        x2, y2 = b["x2"] - CROP[0], b["y2"] - CROP[1]
+        draw.rectangle([x1, y1, x2, y2], outline=OI["vermillion"], width=2)
         # white backing chip so the label stays readable over bright terrain
         label = f"{det['type']} {det['confidence']:.2f}"
-        tx, ty = b["x1"], max(0, b["y1"] - 13)
+        tx, ty = x1, max(0, y1 - 13)
         lb = draw.textbbox((tx, ty), label)
         draw.rectangle([lb[0] - 1, lb[1] - 1, lb[2] + 2, lb[3] + 2], fill=(255, 255, 255, 200))
         draw.text((tx, ty), label, fill=OI["vermillion"])
@@ -86,6 +93,10 @@ def panel_frame(ax) -> None:
         obj_h = 25.0 if a["cls"] == "tower" else 1.5
         p_base = ned_to_px(dn, de, ddown, tel_small)
         p_top = ned_to_px(dn, de, ddown - obj_h, tel_small)
+        if p_base:
+            p_base = (p_base[0] - CROP[0], p_base[1] - CROP[1])
+        if p_top:
+            p_top = (p_top[0] - CROP[0], p_top[1] - CROP[1])
         if p_base and p_top:
             draw.line([p_base, p_top], fill=OI["sky_blue"], width=2)
         if p_base:
@@ -93,7 +104,7 @@ def panel_frame(ax) -> None:
                          outline=OI["bluish_green"], width=2)
             draw.text((p_base[0] + 5, p_base[1] - 5), a["label"], fill=OI["bluish_green"])
     ax.imshow(np.asarray(img))
-    ax.set_title("(a) Real frame f642: detector bboxes (red) vs exact GT anchors (green/blue)",
+    ax.set_title("(a) Real frame f642 (tower crop): detector bboxes (red) vs exact GT anchors (green/blue)",
                  fontsize=8)
     ax.axis("off")
 

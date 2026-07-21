@@ -36,9 +36,9 @@ def main() -> int:
     analysis = e7.json.loads((E7_ROOT / "e7_analysis.json").read_text(encoding="utf-8"))
 
     # --- main-text figure: degraded-signal panels (frame + reprojection) ---
-    fig, axes = plt.subplots(1, 2, figsize=(9.2, 3.9))
+    fig, axes = plt.subplots(1, 2, figsize=(9.2, 4.2), gridspec_kw={"width_ratios": [1.2, 1.0]})
     e7.panel_frame(axes[0])
-    axes[0].set_title("(a) Real frame f642: detector bboxes (red) vs exact GT anchors (green/blue)",
+    axes[0].set_title("(a) Real frame f642 (tower crop): detector bboxes (red) vs exact GT anchors (green/blue)",
                       fontsize=8)
     e7.panel_bars(axes[1], analysis)
     axes[1].set_title("(b) Fit to the real image evidence, by detector class", fontsize=8)

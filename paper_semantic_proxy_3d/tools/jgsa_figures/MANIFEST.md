@@ -171,6 +171,29 @@ short/long de la figura del camión apenas se distinguían.
   lea sobre terreno claro. Script: `benchmarks/real_stream_wave/make_fig_e7.py`
   (`panel_frame`), regenerado con `make_fig_e7_split.py`.
 
+### Revisión editorial del usuario (misma fecha, 7 puntos)
+
+- `fig_mission_twin_delta.png` (Fig. 1): panel (a) ya no es un render
+  Blender: es la **foto real de vuelo** `rea_flight_data/real_photos/tower.png`
+  (crop 3:2) con el bbox real medido de YOLOE-26s; panel (b) recrop a
+  carretera+campos sin torre; captions del tex actualizados.
+  Script: `tools/jgsa_figures/fig_mission_twin_delta.py`.
+- Fig. 13a: `panel_frame` ahora recorta el frame f642 a (240,120)-(640,520)
+  (la banda borrosa de primer plano queda fuera; torre y anchors legibles) y
+  el split usa ratio 1.2:1 a favor del panel (a). Caption declara el recorte.
+- Fig. 14 (E11): rejilla 2×4 → **2×2** (cada panel al doble; (a) lleva los
+  dos frames en subgridspec). Script: `run_e11_aggregate.py`.
+- Tabla 10 (E11): columnas reducidas a `mean 3D IoU [95% CI]`, n y
+  `SPPA−method [95% CI]` (fuera "/ median"); escape de `sppa\_mvfit`
+  corregido (bug latente del generador); caption con frase "Read:".
+  Scripts: `run_e11_aggregate.py`, `run_e11_cluster_bootstrap.py`.
+- Fig. 15 (E14): figsize (15.5,5.2) → (12.5,4.4), fuentes 9-11 pt.
+- Tabla 8 (deployment runtime): reestructurada en dos bloques ("Measured on
+  real or recorded evidence" / "Packaged synthetic replays") con texto corto.
+- Conclusiones: reescritura asertiva (mismos hechos; logros primero, incl.
+  fotos reales de vuelo y fallo neural en vistas aéreas; límites compactos
+  al final).
+
 ## Cambios 2026-07-21 (3ª pasada: fotos reales de vuelo en §4.9)
 
 El usuario aportó dos fotos reales de vuelo (`rea_flight_data/real_photos/tower.png`,

@@ -4,8 +4,9 @@ Conceptual mission illustration (no new quantitative data) for the
 SPPA-MVFit reframe: when the image link is degraded or lost, SPPA
 reconstructs the twin's delta from a lightweight semantic descriptor.
 
-  (a) real world ......... photoreal Blender v2 frame with the intruder
-                           object (lattice tower), red dashed box
+  (a) real world ......... real user-supplied flight photo of a lattice
+                           tower (rea_flight_data/real_photos/tower.png),
+                           red dashed box = measured YOLOE-26s detection
   (b) Cesium twin today .. UE/Cesium capture of matching terrain, tower-free
                            crop (the stale twin misses the object)
   (c) twin + SPPA proxy .. same crop with the lattice_tower family proxy
@@ -16,7 +17,7 @@ benchmarks/results/sppa_neural_flagship_wave.json
 (descriptor_bytes mean 1449.7 B; inference_ms median 9.45 ms).
 
 Sources (read-only, no new UE/Blender renders):
-  benchmarks/blender_twin_wave/frames/t1_oblique30_az000.png
+  rea_flight_data/real_photos/tower.png
   benchmarks/oblique_twin_wave/frames/t2_oblique45_az000.png
   tools/jgsa_figures/assets/render_fam_lattice_tower.png
 
@@ -32,7 +33,7 @@ from matplotlib.colors import rgb_to_hsv
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = Path(__file__).resolve().parents[2]  # paper_semantic_proxy_3d/
-SRC_REAL = ROOT / "benchmarks" / "blender_twin_wave" / "frames" / "t1_oblique30_az000.png"
+SRC_REAL = Path(r"D:\Deep-AeroTwin-UE57-Test\rea_flight_data\real_photos\tower.png")
 SRC_TWIN = ROOT / "benchmarks" / "oblique_twin_wave" / "frames" / "t2_oblique45_az000.png"
 SRC_PROXY = ROOT / "tools" / "jgsa_figures" / "assets" / "render_fam_lattice_tower.png"
 OUT = ROOT / "figures" / "fig_mission_twin_delta.png"
@@ -48,14 +49,17 @@ GAP_X = 24
 MARGIN_X = 39  # 3*758 + 2*24 + 2*39 = 2400
 TOP_H, STRIP_H, BOTTOM_H = 36, 64, 30
 
-# Source crops (left, top, right, bottom) in original pixels
-CROP_REAL = (35, 110, 605, 490)   # 570x380, full tower with margin
-CROP_TWIN = (140, 400, 500, 640)  # 360x240, tower-free field band
-# Tower bbox in the real-world source frame (for the red dashed box)
-BOX_REAL_SRC = (256, 122, 390, 480)
+# Source crops (left, top, right, bottom) in original pixels.
+# (a) 2026-07-21: real user-supplied flight photo (640x480) instead of the
+# Blender render; crop keeps the full tower (bbox y 86..395).
+CROP_REAL = (0, 27, 640, 454)     # 640x427 (~3:2), full tower with margin
+CROP_TWIN = (0, 20, 300, 220)     # 300x200 (3:2), tower-free: road + fields
+# Tower bbox in the real photo = measured YOLOE-26s detection
+# (experiments/sppa_detection_reference/20260721_real_flight_photos_yoloe26s_cpu)
+BOX_REAL_SRC = (134.7, 86.0, 276.3, 394.9)
 
 STRIPS = (
-    "(a) real world \u2014 image link degraded/lost",
+    "(a) real world now \u2014 flight photo",
     "(b) Cesium twin today \u2014 object missing",
     "(c) twin + SPPA proxy inserted",
 )

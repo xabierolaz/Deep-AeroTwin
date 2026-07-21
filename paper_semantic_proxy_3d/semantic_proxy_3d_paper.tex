@@ -80,9 +80,10 @@ Figure~\ref{fig:mission-twin-delta} illustrates this twin-delta mission.
 \begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_mission_twin_delta.png}
-\caption{The twin-delta mission (conceptual illustration composed from
-existing project imagery; no new renders or measurements). (a)~The real
-world now contains an intruder tower (Blender photorealistic render).
+\caption{The twin-delta mission (conceptual illustration; no new
+measurements). (a)~The real world now contains an intruder tower: a real
+flight photo recorded for this paper (the dashed box is the measured
+YOLOE-26s detection of Section~\ref{sec:deployment-summary}).
 (b)~The streamed Cesium/Unreal twin is frozen at capture time and does not
 contain it. (c)~The twin after one detection is compiled into an SPPA proxy
 and inserted in place; the chip reports the sealed benchmark values for the
@@ -1069,24 +1070,27 @@ on the two-label cow/tower subset).
 \footnotesize
 \setlength{\tabcolsep}{3pt}
 \renewcommand{\arraystretch}{1.12}
-\caption{Condensed deployment runtime evidence (run identifiers omitted here;
-full matrix in RP). Python contract timings are not
-Unreal frame times, and packaged runs are short synthetic replays, not live
-flight telemetry. The link-budget row is byte accounting on measured replay
-traffic against a modeled video reference, not a measured radio link.}
+\caption{Deployment runtime evidence, split by evidence tier. Top: measured
+on real or recorded data. Bottom: packaged synthetic replays used for the
+scaling limits (full run matrix in RP). Python contract timings are not
+Unreal frame times; the link row is byte accounting against a modeled video
+reference, not a measured radio link.}
 \label{tab:deployment-runtime-summary}
-\begin{tabularx}{\linewidth}{@{}L{0.30\linewidth}Y Y@{}}
+\begin{tabularx}{\linewidth}{@{}L{0.44\linewidth}Y Y@{}}
 \toprule
-Evidence & Summary value & Boundary \\
+Evidence & Value & Note \\
 \midrule
-Median SPPA-MVFit fit (sealed synthetic benchmark) & \(9.4\)~ms CPU per object & single-call wall clock, not frame time \\
-Real-stream fit latency (Section~\ref{sec:real-stream}) & \(11.8\)~ms median per detection & recorded 2--15~Hz stream \\
-Python contract build (descriptor, update packet, scheduler decision) & P95 \(\leq 0.52\)~ms & Python contract cost, not frame time \\
-Measured SPPA JSON update traffic (no-op packets suppressed) & 25.8--37.4~kB/s; modeled compressed video \(\geq\)250~kB/s (2--10~Mbps) & byte accounting on replay; video rate modeled, link not validated \\
-Editor-Cmd and packaged recorded replay & 27/27 payload applications accepted & recorded streams, no live network \\
-Packaged 100-object replay & pose/shape frame P95 \(17.814/19.256\)~ms & desktop feasibility; misses 60 FPS P95 \\
-Packaged HISM dense-update scaling, 100/250/500 objects & shape frame P95 \(37.126/94.018/186.113\)~ms; pose frame P95 \(18.921/41.609/78.933\)~ms & dense updates exceed the 33.3~ms budget (shape from 100, pose from 250 objects); 60 FPS not reached \\
-Packaged HISM partial update, 500 objects & pose/shape frame P95 \(16.528/29.787\)~ms & 10\% changed-track synthetic schedule \\
+\multicolumn{3}{@{}l}{\emph{Measured on real or recorded evidence}} \\
+SPPA-MVFit fit, median (sealed benchmark) & \(9.4\)~ms CPU per object & p95 \(10.6\)~ms \\
+Fit latency on the recorded real stream (Section~\ref{sec:real-stream}) & \(11.8\)~ms median & 2--15~Hz stream \\
+Measured JSON update traffic (no-ops suppressed) & 25.8--37.4~kB/s & vs modeled video \(\geq\)250~kB/s \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Packaged synthetic replays (scaling evidence, not live flight)}} \\
+Python contract build (descriptor + update + scheduler) & P95 \(\leq 0.52\)~ms & contract cost \\
+Editor-Cmd and packaged recorded replay & 27/27 payloads accepted & recorded streams \\
+Packaged 100-object replay, pose/shape frame P95 & \(17.8/19.3\)~ms & misses 60~FPS P95 \\
+HISM dense updates, 100/250/500 objects, shape frame P95 & \(37.1/94.0/186.1\)~ms & over the 33.3~ms budget \\
+HISM partial update, 500 objects (10\% changed tracks) & pose/shape P95 \(16.5/29.8\)~ms & synthetic schedule \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -1208,7 +1212,8 @@ Capsule & 0.445 [0.422, 0.466] & 1.31 \\
 \begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_real_stream_main.png}
-\caption{Real stream case study, degraded-signal view. (a)~Frame 642 with
+\caption{Real stream case study, degraded-signal view. (a)~Frame 642
+(tower crop) with
 detector boxes and exact ground-truth anchors reprojected through the same
 camera model. (b)~2D reprojection IoU against the real image evidence, by
 detector class: SPPA-MVFit does not win this 2D metric; the family prior
@@ -1281,14 +1286,15 @@ fidelity, not in its place.
 \setlength{\tabcolsep}{2pt}
 \caption{E11 oblique twin wave (exploratory post-hoc, not confirmatory;
 positions locked to ground truth; hybrid evidence: simulated imagery, real
-detector, exact simulator GT). Mean 3D voxel IoU against the exact tower
+detector, exact simulator GT). Read: on both oblique rings---the views a
+real pass delivers---SPPA-MVFit leads every baseline, and every paired
+SPPA$-$method interval is positive. Mean 3D voxel IoU against the exact tower
 meshes at \(64^3\) with tower-cluster bootstrap 95\% CIs (11 towers as
 clusters, 10{,}000 resamples, seed 20260720, post-hoc; detections within a
 tower are not treated as independent). Capsule is
 the best token-free baseline on both rings. Wrong-token rows report Wilson
 95\% CIs with the tower-cluster CI in braces. The nadir block is summarized
-in prose; the cross-view blocks are in RP
-(\texttt{reproducibility/sppa\_mvfit/}).}
+in prose; the cross-view blocks are in RP.}
 \label{tab:e11}
 \input{benchmarks/oblique_twin_wave/e11_main_table_full.tex}
 \end{table}
@@ -1511,27 +1517,34 @@ paper contains none.
 SPPA-MVFit targets the moment a UAV digital twin must be updated under a weak
 signal: the static Cesium layer is stale, the image link does not suffice,
 and the detections that do arrive must become explicit per-object volumes at
-once. Family-conditioned SPPA-MVFit shows that a reviewed semantic part graph
-is a measurable occupancy prior for that instant per-object reconstruction:
-the preregistered equal-budget comparison passes its prespecified margin on
-the held-out synthetic test, and the margin is maintained under every
-preregistered observation corruption. Most of the advantage is the
-family-graph representation rather than the fitter; a wrong family token is
-worse than no family prior at all; the margin does not replicate on external
-meshes at this sample size; and adversarial instances that violate the
-structural prior destroy a third of the advantage, exposing identifiable tie
-zones. The durable contribution is the twin-delta update
-contract---family-conditioned roles, bounded in-place updates, a compact
-update descriptor at telemetry-scale update traffic,
+once. This paper has shown that a reviewed semantic part graph is a
+measurable occupancy prior for that instant per-object reconstruction. The
+preregistered equal-budget comparison passes its prespecified margin on the
+held-out synthetic test, the margin holds under every preregistered
+observation corruption, and the decomposition attributes most of the
+advantage to the family-graph representation rather than the fitter. The
+same contract works where it was built to work: on a recorded real detector
+stream it fits inside the stream's latency budget and provides measured
+token-validation signals, and on two real flight photos recorded for this
+paper it compiles the detection end to end---a gate-clamped lattice tower at
+\(5.60\times5.60\times28.00\)~m and a conservative-routed tractor---while
+the measured neural generators fail with no surface or return amorphous
+blobs at GPU cost on those same aerial views. The boundary of the prior is
+measured with equal care, which is what makes it deployable: a wrong family
+token is worse than none, adversarial violations destroy a third of the
+advantage in identifiable zones, and the margin does not replicate on
+external meshes at this sample size---so the contract routes, refines, or
+falls back rather than hallucinating. The durable contribution is the
+twin-delta update contract: family-conditioned roles, bounded in-place
+updates, a compact update descriptor at telemetry-scale update traffic,
 and a measured part-query value (query F1 \(0.434\) versus
-\(0.087\)--\(0.145\) across occupancy and generic controls)---with declared limits:
-camera-validated, LiDAR and night/fog/smoke operation evaluated only through
-prespecified synthetic corruptions and simulated-twin demonstrations (E14
-for camera-less sensing; E11 for cross-view fidelity), not measured on
-hardware, dense packaged shape updates below 60~FPS, and position assumed
-given. The next steps are external public data with metric
-ground truth, detector-derived silhouettes, and, only if claimed, operator
-studies.
+\(0.087\)--\(0.145\) across occupancy and generic controls). Operation is
+camera-validated today: LiDAR-class and night/fog/smoke sensing are
+demonstrated in the simulated twin (E14 for camera-less sensing; E11 for
+cross-view fidelity), dense packaged shape updates stay below 60~FPS, and
+position is assumed given. The next steps are external public data with
+metric ground truth, detector-derived silhouettes, and, only if claimed,
+operator studies.
 
 \section*{Data Availability}
 

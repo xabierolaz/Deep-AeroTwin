@@ -270,12 +270,12 @@ def write_table(a: dict) -> None:
     def fmt(block):
         if block is None:
             return "--"
-        return f"{block['mean']:.3f} [{block['ci95_mean'][0]:.3f}, {block['ci95_mean'][1]:.3f}] / {block['median']:.3f}"
+        return f"{block['mean']:.3f} [{block['ci95_mean'][0]:.3f}, {block['ci95_mean'][1]:.3f}]"
 
     lines = [
         "% E11 Oblique Twin Wave - main table (exploratory post-hoc; positions LOCKED to GT)",
         "\\begin{tabular}{llccc}", "\\toprule",
-        "Ring & Method & mean 3D IoU [95\\% CI] / median & $n$ & SPPA$-$method [95\\% CI] \\\\",
+        "Ring & Method & mean 3D IoU [95\\% CI] & $n$ & SPPA$-$method [95\\% CI] \\\\",
         "\\midrule",
     ]
     for ring in RINGS:
@@ -289,7 +289,7 @@ def write_table(a: dict) -> None:
             diff = "" if method == "sppa_mvfit" else \
                 f"{block['paired_diffs'][f'sppa_minus_{method}']['mean']:+.3f} [{block['paired_diffs'][f'sppa_minus_{method}']['ci95'][0]:+.3f}, {block['paired_diffs'][f'sppa_minus_{method}']['ci95'][1]:+.3f}]"
             ringcell = ring if method == "sppa_mvfit" else ""
-            lines.append(f"{ringcell} & {method} & {fmt(st)} & {st['n']} & {diff} \\\\")
+            lines.append(f"{ringcell} & {method.replace('_', chr(92) + '_')} & {fmt(st)} & {st['n']} & {diff} \\\\")
         if n_rows:
             lines.append("\\midrule")
     lines += [
@@ -338,27 +338,31 @@ def make_figure(rows, dets, manifest, gt_actors, analysis) -> None:
 
     from e11_common import quat_to_R
 
-    fig = plt.figure(figsize=(11, 7))  # 2026-07-21 readability: was (16,10); at text width the fonts rendered sub-4pt
+    # 2026-07-21 (2nd readability pass): 2x2 layout, each panel half the text
+    # width (was 2x4 mini-panels). Cell (0,0) carries both detection frames.
+    fig = plt.figure(figsize=(11, 9))
+    gs = fig.add_gridspec(2, 2, hspace=0.30, wspace=0.16)
     colors = {"tower": "lime", "biker": "red", "cow": "yellow"}
     det_by_frame: dict[str, list[dict]] = {}
     for d in dets:
         det_by_frame.setdefault(d["frame_id"], []).append(d)
 
-    # (a) two sample frames with detections
+    # (a) two sample frames with detections, side by side in cell (0,0)
+    sub = gs[0, 0].subgridspec(1, 2, wspace=0.06)
     for i, fid in enumerate(("t0_oblique30_az000", "t0_oblique45_az120")):
-        ax = fig.add_subplot(2, 4, 1 + i)
+        ax = fig.add_subplot(sub[0, i])
         ax.imshow(Image.open(E11_ROOT / "frames" / f"{fid}.png"))
         for d in det_by_frame.get(fid, []):
             b = d["bbox"]
             ax.add_patch(patches.Rectangle((b["x1"], b["y1"]), b["x2"] - b["x1"], b["y2"] - b["y1"],
                                            fill=False, edgecolor=colors[d["class"]], lw=1.4))
             ax.text(b["x1"], b["y1"] - 2, f'{d["class"][:4]} {d["confidence"]:.2f}',
-                    color=colors[d["class"]], fontsize=9)
-        ax.set_title(f"(a) detections: {fid}", fontsize=11)
+                    color=colors[d["class"]], fontsize=8)
+        ax.set_title(f"(a) detections:\n{fid}", fontsize=10)
         ax.axis("off")
 
     # (b) 3D IoU by ring
-    ax = fig.add_subplot(2, 4, (3, 4))
+    ax = fig.add_subplot(gs[0, 1])
     x = np.arange(len(METHODS))
     width = 0.35
     for j, ring in enumerate(("oblique30", "oblique45")):
@@ -378,7 +382,7 @@ def make_figure(rows, dets, manifest, gt_actors, analysis) -> None:
     ax.grid(axis="y", alpha=0.3)
 
     # (c) cross-view consistency per tower
-    ax = fig.add_subplot(2, 4, (7, 8))
+    ax = fig.add_subplot(gs[1, 1])
     per_t = analysis["consistency"]["per_tower"]
     towers = sorted(per_t)
     best_baseline = max(METHODS[1:], key=lambda m: (
@@ -407,9 +411,7 @@ def make_figure(rows, dets, manifest, gt_actors, analysis) -> None:
     ax.set_facecolor("none")
 
     # (d) oblique frame + fitted SPPA proxy reprojection
-    # NOTE: span corrected (5,8) -> (5,6); (5,8) overlapped panel (c)'s cells
-    # (7,8) and its image painted over panel (c)'s y-label and legend.
-    ax = fig.add_subplot(2, 4, (5, 6))
+    ax = fig.add_subplot(gs[1, 0])
     sppa_rows = [r for r in rows if r["method"] == "sppa_mvfit" and r["token_correct"]
                  and r["ring"] == "oblique30"]
     best_row = max(sppa_rows, key=lambda r: r["iou_3d"])

@@ -142,13 +142,14 @@ def make_figure(analysis: dict) -> None:
     gt_top = cs["gt_occ"].any(axis=2)
     sppa_top = cs["occs"]["sppa_mvfit"].any(axis=2)
 
-    fig, axes = plt.subplots(1, 3, figsize=(15.5, 5.2))
+    fig, axes = plt.subplots(1, 3, figsize=(12.5, 4.4))
 
     ax = axes[0]
     sc = ax.scatter(raw[:, 0], raw[:, 1], c=raw[:, 2], s=1.5, cmap="viridis")
     ax.set_title(f"(a) Simulated LiDAR returns — {FIG_TOWER}, {FIG_ARM} arm\n"
-                 f"(merged 5 scans, n={len(raw)} pts)", fontsize=10)
-    ax.set_xlabel("x (m)"); ax.set_ylabel("y (m)")
+                 f"(merged 5 scans, n={len(raw)} pts)", fontsize=11)
+    ax.set_xlabel("x (m)", fontsize=10); ax.set_ylabel("y (m)", fontsize=10)
+    ax.tick_params(labelsize=9)
     ax.set_aspect("equal"); ax.grid(alpha=0.3)
     cb = fig.colorbar(sc, ax=ax, shrink=0.8); cb.set_label("z (m)")
 
@@ -168,8 +169,10 @@ def make_figure(analysis: dict) -> None:
     ax.plot([], [], color="tab:blue", lw=1.4, ls="--", label="SPPA proxy (top proj.)")
     ax.set_title(f"(b) Top view: observed footprint vs GT vs SPPA proxy\n"
                  f"(fp {fp['length_m']:.2f}$\\times${fp['width_m']:.2f} m, "
-                 f"h={cs['det']['height_m']:.2f} m, yaw={fp['orientation_deg_axial']:.1f}°)")
-    ax.set_xlabel("x cell"); ax.set_ylabel("y cell"); ax.legend(loc="upper right", fontsize=8)
+                 f"h={cs['det']['height_m']:.2f} m, yaw={fp['orientation_deg_axial']:.1f}°)", fontsize=11)
+    ax.set_xlabel("x cell", fontsize=10); ax.set_ylabel("y cell", fontsize=10)
+    ax.tick_params(labelsize=9)
+    ax.legend(loc="upper right", fontsize=9)
     ax.set_aspect("equal")
 
     ax = axes[2]
@@ -189,10 +192,11 @@ def make_figure(analysis: dict) -> None:
         ax.errorbar(xpos + (k - 0.5) * width, means, yerr=[los, his], fmt="none",
                     ecolor="black", elinewidth=1, capsize=3)
     ax.set_xticks(xpos)
-    ax.set_xticklabels([m.replace("_", "-") for m in METHODS], rotation=20, ha="right")
-    ax.set_ylabel("3D voxel IoU vs exact mesh (64³)")
-    ax.set_title("(c) Method x arm — mean IoU$_{3D}$ [95% CI]\n(degraded: 4/11 towers lost to detection failure)")
-    ax.legend(); ax.grid(axis="y", alpha=0.3)
+    ax.set_xticklabels([m.replace("_", "-") for m in METHODS], rotation=20, ha="right", fontsize=9)
+    ax.tick_params(axis="y", labelsize=9)
+    ax.set_ylabel("3D voxel IoU vs exact mesh (64³)", fontsize=10)
+    ax.set_title("(c) Method x arm — mean IoU$_{3D}$ [95% CI]\n(degraded: 4/11 towers lost to detection failure)", fontsize=11)
+    ax.legend(fontsize=9); ax.grid(axis="y", alpha=0.3)
 
     # suptitle removed 2026-07-21 (same readability pass as E11): it duplicated
     # the LaTeX caption and cost a line of figure height at text width.
