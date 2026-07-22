@@ -567,3 +567,19 @@ Digital Twins under Degraded Sensing (SPPA-MVFit)". Plan:
    JCR Q1 vigente, guía de autor JGSA (anonimato si aplica).
 4. E13 (estilizado Blender, 81/84 frames pendientes): aparcado, no bloquea
    el envío.
+
+---
+
+## BLOQUE 2026-07-20 (noche) — SIN SUPLEMENTO + POST-TRIBUNAL
+
+- **Suplemento eliminado** de la submission (archivado in situ); refs S.x →
+  reproducibility package; absorciones en Data Availability/§3.1/§4.9.
+- **Tribunal externo (3 editores):** MAJOR/MAJOR/MINOR → pasada completa
+  aplicada: fix P1 (condiciones robustez invertidas vs tabla), etiquetas
+  post-hoc en abstract, tablas restauradas (familia×estrato, Δ pareados,
+  E11/E14 completas con cluster bootstrap por torre), AUC con CIs, divulgación
+  Enmiendas 03/04 + Holm, abstract nuevo ~250 palabras, threats en viñetas,
+  poda convergente. 27 pp, strict 0 blockers. Detalle: acta R7 addendum noche.
+- **Sin commit de esta pasada** (pedir confirmación).
+- Opcional para subir nota: bloque geoviz (uncertainty display + mapeo
+  descriptor→3D Tiles/CityJSON + CRS/error en metros) — editor B, medio día.

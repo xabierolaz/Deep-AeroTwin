@@ -97,3 +97,17 @@ Mismos 60 casos held-out, mismas 2 condiciones (render oblicuo limpio / máscara
 **Estado final verificado:** main **28 pp**, suplemento **15 pp**; 0 errores LaTeX, 0 refs/citas indefinidas, 0 overfull nuevos (3 preexistentes en suplemento); puerta strict **0 blockers, H1 pass**; `reproducibility/` y datos sellados intactos; **sin commits** (pendiente confirmación expresa del usuario).
 
 **Veredicto:** apto para envío a JGSA tras las decisiones del usuario (commit, DOI Zenodo/UPNA, checks del día de envío: APC CRUE, JCR Q1 vigente, guía JGSA).
+
+---
+
+## ADDENDUM 2026-07-20 (noche) — SUPLEMENTO ELIMINADO + TRIBUNAL EXTERNO JGSA + PASADA POST-TRIBUNAL
+
+**1. Auditoría de paja (agente independiente):** veredicto — el suplemento NO es load-bearing; nada en él sostiene H1, la robustez o el contrato. **Suplemento eliminado de la submission** (archivo archivado in situ con nota `% ARCHIVED 2026-07-20`); ~35 referencias S.x rewired al reproducibility package; absorciones: Data Availability (+4 líneas: preregistro, enmiendas, NIST seeds, SHA-256, comandos), cláusula auditoría resolver (§3.1), open-label probe (§4.9). Poda main: floats external sanity → prosa con números, `fig:role-colored` fuera, tablas E11/E14 comprimidas, RW comprimido, micro-detalles fuera. Main 28→27 pp.
+
+**2. Tribunal editorial externo (3 agentes agnósticos, lectura íntegra):** veredictos MAJOR (metodología), MAJOR (novelty/JGSA), MINOR (honestidad). Hallazgos clave: (a) §4.2 enumeraba las condiciones de robustez INVERTIDAS vs su tabla (bloqueante); (b) abstract sin etiquetas post-hoc en adversarial/real stream ni scope en AUC; (c) jerga interna ("E7 baselines", "Algorithm 2"); (d) preregistro §6 exige tabla por familia — había quedado solo como barras; (e) pseudo-replicación E11/E14 (CIs sobre detecciones de 11 torres); (f) "does not transfer" demasiado fuerte; (g) encaje geoviz cosmético (decisión: abordar en revisión si se pide).
+
+**3. Re-análisis estadístico (datos existentes, sellos intactos):** cluster bootstrap por torre E11 (CIs más anchos: obl30 0.118 [0.109,0.125], obl45 0.087 [0.061,0.120]; P(Δ≤0)=0; tasas token erróneo 6.0% vs 42.2% declaradas con comentario de dilución); E14 con unidad=torre declarada (CIs apenas cambian); AUC CIs: 0.847 [0.792,0.898], 1.000 [1.000,1.000] (degenerado en frontera, declarado "no population claim"); tabla familia×estrato restaurada (rider_cycle 0.458, mínimo 0.043, CIs de celda post-hoc declarados); Δ pareados sellados vs 6 baselines (vs hull +0.036; inversión de mediana 0.567>0.563 discutida); confirmado bit a bit: unviolated≡CSG-ID, alias curated_family_template≡sppa_text_only.
+
+**4. Pasada post-tribunal aplicada:** 14/14 fixes bloqueantes, 4 tablas restauradas (\input desde benchmarks/), divulgación de proceso (Enmiendas 03/04, Holm p≈0), etiquetas post-hoc homogeneizadas (wrong-family, view-ablation), abstract reescrito ~250 palabras liderado por misión, poda convergente (RW, duplicación fitter, fig 2x2 fuera, micro-timings colapsados, threats en 5 viñetas, conclusión sin repetir números). **Estado final: 27 pp, 0 errores, 0 refs/citas indefinidas, 0 overfull, puerta strict 0 blockers H1 pass.**
+
+**5. Pendiente usuario:** commit de esta pasada (NO commiteado aún); decisión sobre encaje geoviz profundo (uncertainty viz + mapeo 3D Tiles/CityJSON + CRS — medio día, recomendado por editor B pero opcional); checks de envío (APC CRUE, JCR Q1, guía JGSA); DOI (Zenodo/UPNA).

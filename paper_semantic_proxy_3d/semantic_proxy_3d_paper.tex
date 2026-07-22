@@ -909,7 +909,9 @@ and the evaluation reuses the synthetic-grid protocol on real geometry.
 Three readings follow. First, the preregistered margin does not replicate on
 external meshes at this sample size: SPPA-MVFit scores \(0.413\) (CI
 \([0.359,0.467]\)) against Generic-MVFit \(0.370\) (CI \([0.335,0.405]\)), a
-paired \(+0.043\) whose interval \([-0.007,+0.094]\) includes zero. Second,
+paired \(+0.043\) whose interval \([-0.007,+0.094]\) includes zero. At
+\(n{=}52\) that interval resolves only large effects: it neither confirms
+transfer of the margin nor excludes a small residual advantage. Second,
 the nonsemantic visual hull dominates raw occupancy with clean real
 silhouettes (\(0.656\), CI \([0.606,0.704]\)), and the trivial geometric
 primitives tell the same story: capsule (\(0.492\)), ellipsoid (\(0.485\)),
@@ -917,7 +919,9 @@ and even the axis-aligned box (\(0.411\)) match or exceed SPPA-MVFit
 (\(0.413\)) here---outside the design distribution the family graph buys no
 volumetric advantage over shape-free baselines, and the value of SPPA is the
 semantic contract: role labels, bounded updates, and a telemetry-scale
-payload. Third, the failure modes are informative and consistent with
+payload---the hull's coverage advantage is the regime the frozen part-query
+task prices: coverage without selection (\(0.087\)--\(0.111\) versus
+\(0.434\) query F1; Section~\ref{sec:ablations}). Third, the failure modes are informative and consistent with
 Section~\ref{sec:wrong-family}: template--instance mismatch (horizontal water
 towers fitted by a vertical tower graph), open geometry (bicycle wheel
 spokes), and one LVIS mislabel retained as an out-of-distribution case (a
@@ -1050,7 +1054,6 @@ Section~\ref{sec:neural-external-wave}.}
 A
 verifier-gated open-label probe of 20 awkward labels verified \(8/20\)
 recipes with zero critical mismatches, and a role-preservation diagnostic
-recipes with zero critical mismatches, and a role-preservation diagnostic
 keeps cab and wheel priors fixed while cargo
 length changes. No 3D
 ground truth exists for these images, so no IoU is reported for them.
@@ -1154,7 +1157,14 @@ well, while true towers suffer severe monocular height underestimation
 (\(\approx\)\(5\)~m observed against a \(25\)~m prior). The perfect
 separation is a no-observed-overlap result on these 217 cases, not a
 population claim; a suspiciously good prior fit is a measured wrong-token
-signature on this stream.
+signature on this stream. A frozen routing policy on these signals
+(registered 2026-07-19 before any outcome; RP) turns the signal into a
+measured coverage decision: routing detections below confidence \(0.34\) to
+the nonsemantic proxy fallback lifts the stream-level median 2D IoU from
+\(0.298\) (always-SPPA) to \(0.432\) (\([0.427,0.435]\)) while still
+compiling the \(19\%\) most confident detections into family proxies
+(always-proxy \(0.446\); oracle routing \(0.452\)). The image-overlap cost
+of the prior is therefore localized where the gate fires, not uniform.
 
 We read this study as the field counterpart of the robustness arm of
 Section~\ref{sec:robustness}: under a real degraded signal---real confidence
@@ -1441,7 +1451,9 @@ detector stream exercises the degraded-signal regime end to end: the fit
 stays far inside the stream's latency budget, the family prior trades image
 overlap for 3D structure under real evidence, and token confidence and prior
 fit are measured validation signals for accepting, refining, or rejecting a
-family token.
+family token, and a frozen routing policy on those signals recovers the
+overlap cost at \(19\%\) coverage (median \(0.432\) versus \(0.298\)
+always-SPPA).
 
 \label{sec:threats}Five threats to validity remain binding.
 
@@ -1485,7 +1497,9 @@ low-altitude views, no 3D ground truth, and 2D reprojection metrics only;
 its measured operational signal is token validation (AUC \(0.847\)
 \([0.792,0.898]\) for \(-\)confidence; \(1.000\) for \(-\)prior-mismatch on
 217 matched cases of one stream---no observed overlap, not a population
-claim).
+claim); its measured routing recovery (median \(0.432\) versus \(0.298\)
+always-SPPA at \(19\%\) coverage) is likewise a single-stream policy
+result.
 \end{itemize}
 
 Within these boundaries the supported claim is narrow: on the held-out
@@ -1520,7 +1534,9 @@ observation corruption, and the decomposition attributes most of the
 advantage to the family-graph representation rather than the fitter. The
 same contract works where it was built to work: on a recorded real detector
 stream it fits inside the stream's latency budget and provides measured
-token-validation signals, and on two real flight photos recorded for this
+token-validation signals with a frozen routing policy that recovers the
+prior's image-overlap cost at reduced coverage, and on two real flight
+photos recorded for this
 paper it compiles the detection end to end---a gate-clamped lattice tower at
 \(5.60\times5.60\times28.00\)~m and a conservative-routed tractor---while
 the measured neural generators fail with no surface or return amorphous
