@@ -1,5 +1,5 @@
-- A VR digital-twin display reconstructs UAV scenes from in-flight detections.
-- Georeferenced semantic telemetry drives live actor spawn, update, and despawn.
-- The runtime contract links detection ingest, Brain, and Unreal/Cesium.
-- The validation plan separates software-only tests from VR hardware trials.
-- Safety limits cover stale actors, uncertainty, overtrust, and BVLOS constraints.
+- Geospatial priors preserve context during degraded or absent video.
+- Semantic deltas update dynamic or changed entities in the HMD scene.
+- Brain links sensor ingest to Unreal/Cesium actor lifecycle.
+- HMD trials compare video, prior-only, hybrid, and VR displays.
+- Safety limits expose stale, uncertain, map-derived, and missing data.
