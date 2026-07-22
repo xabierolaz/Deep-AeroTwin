@@ -559,13 +559,34 @@ A software-only reproducibility scaffold exists for the runtime contract, JSON s
 \label{sec:results}
 
 \subsection{Replay Setup and Synchronization}
-The validation uses the recorded flight M\_20\_1RR (6 July 2026), a power-line inspection flight in a rural area. The onboard video (2160$\times$3840 portrait, 58.5~fps) was cut to a 239-frame analysis segment (1280$\times$960, 10~fps, 23.9~s) covering the closest pass over the inspected supports. Video-to-log synchronization was measured by content, not estimated: template matching against the original recording places the first cut frame at original frame 752, a $+12.856$~s offset. The ArduPilot log provides 239 synchronized poses over the segment (maximum GPS gap 0.22~s, maximum attitude gap 0.10~s), with a terrain reference of 256.4~m MSL. The video enters the pipeline frame by frame over HTTP as indexed, timestamped JPEG frames --- the format in which it would arrive over a telemetry downlink --- not as a file read. A tower detector fine-tuned from a YOLOE-26s base reaches mAP50 0.982 on the portrait validation split; over the analysis segment it produced 147 detections with tower-class content in 99 of 239 frames (median confidence 0.31, best 0.576). Detected supports are georeferenced with the projection model described in the Method section, tracked by Brain, and reconstructed in the twin as SPPA proxy actors.
+The validation uses the recorded flight M\_20\_1RR (6 July 2026), a power-line inspection flight in a rural area. The onboard video (2160$\times$3840 portrait, 58.5~fps) was cut to a 239-frame analysis segment (1280$\times$960, 10~fps, 23.9~s) covering the closest pass over the inspected supports. Video-to-log synchronization was measured by content, not estimated: template matching against the original recording places the first cut frame at original frame 752, a $+12.856$~s offset. The ArduPilot log provides 239 synchronized poses over the segment (maximum GPS gap 0.22~s, maximum attitude gap 0.10~s), with a terrain reference of 256.4~m MSL. The video enters the pipeline frame by frame over HTTP as indexed, timestamped JPEG frames --- the format in which it would arrive over a telemetry downlink --- not as a file read. A tower detector fine-tuned from a YOLOE-26s base reaches mAP50 0.982 on the portrait validation split; over the analysis segment it produced 147 detections with tower-class content in 99 of 239 frames (median confidence 0.31, best 0.576). Detected supports are georeferenced with the projection model described in the Method section, tracked by Brain, and reconstructed in the twin as SPPA proxy actors. Figure~\ref{fig:detection-grid} shows the detector output on four recorded frames of the segment.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.82\linewidth]{figures/fig_detection_grid.png}
+\caption{Detector output on four recorded frames of the real-flight segment ($t=20,25,28,32$~s), shown in the upright camera orientation. The power-line support is boxed with its confidence. All frames are real recorded video; no synthetic imagery is used.}
+    \label{fig:detection-grid}
+\end{figure}
 
 \subsection{Semantic Bandwidth versus Video Baselines}
-Over the replayed mission the detector published 554 obstacle messages totalling 14.46~MB (mean payload 26.1~kB). As emitted during the CPU-bound replay, which ran slower than real time, the stream averaged 615.8~kbps; normalized to the 69.2~s mission interval, the same bytes correspond to 1.67~Mbps. Baselines were encoded from the same flight video: H.264 (CRF~28) at 10.43~Mbps and H.265 (CRF~30) at 5.65~Mbps. The mission-normalized reduction is therefore 84.0\% against H.264 and 70.4\% against H.265 (94.1\% and 89.1\% for the as-emitted stream). These figures exclude Cesium tile traffic: the operating region was pre-cached, and streaming the prior over the same link would reduce the advantage as formalized in the display-bandwidth model of the Method section.
+Over the replayed mission the detector published 554 obstacle messages totalling 14.46~MB (mean payload 26.1~kB). As emitted during the CPU-bound replay, which ran slower than real time, the stream averaged 615.8~kbps; normalized to the 69.2~s mission interval, the same bytes correspond to 1.67~Mbps. Baselines were encoded from the same flight video: H.264 (CRF~28) at 10.43~Mbps and H.265 (CRF~30) at 5.65~Mbps. The mission-normalized reduction is therefore 84.0\% against H.264 and 70.4\% against H.265 (94.1\% and 89.1\% for the as-emitted stream). These figures exclude Cesium tile traffic: the operating region was pre-cached, and streaming the prior over the same link would reduce the advantage as formalized in the display-bandwidth model of the Method section. Figure~\ref{fig:bandwidth} compares the four streams.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.9\linewidth]{figures/fig_bandwidth.png}
+\caption{Bitrate of the semantic object-telemetry stream against H.264 and H.265 encodings of the same flight video (log scale). The as-emitted bar reflects the CPU-bound replay, which ran slower than real time; the mission-normalized bar maps the same bytes onto the 69.2~s mission interval and yields reductions of 84.0\% against H.264 and 70.4\% against H.265.}
+    \label{fig:bandwidth}
+\end{figure}
 
 \subsection{Latency}
-The audit log provides per-message source and Brain-receive timestamps for 649 detection records: the measured detection-to-Brain latency averages 38.2~ms with a p95 of 252.9~ms. Adding a conservative display budget for the remaining software segments --- a 5~Hz Unreal poll (mean half-period 100~ms, worst case 200~ms) and approximately 50~ms for actor spawn and render --- bounds the end-to-end update latency at about 188~ms mean and 503~ms p95 for a visible proxy update in the desktop twin. This figure combines measured and modeled segments and excludes HMD presentation latency, which requires the VR runtime and is future work.
+The audit log provides per-message source and Brain-receive timestamps for 649 detection records: the measured detection-to-Brain latency averages 38.2~ms with a p95 of 252.9~ms. Adding a conservative display budget for the remaining software segments --- a 5~Hz Unreal poll (mean half-period 100~ms, worst case 200~ms) and approximately 50~ms for actor spawn and render --- bounds the end-to-end update latency at about 188~ms mean and 503~ms p95 for a visible proxy update in the desktop twin. This figure combines measured and modeled segments and excludes HMD presentation latency, which requires the VR runtime and is future work. The measured distribution is shown in Figure~\ref{fig:latency-hist}.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.9\linewidth]{figures/fig_latency_hist.png}
+\caption{Measured detection-to-Brain latency for the 649 detection records of the replay audit (observation counts on log scale). Mean 38.2~ms, p95 252.9~ms, maximum 772~ms over a localhost simulated link.}
+    \label{fig:latency-hist}
+\end{figure}
 
 \subsection{Trajectory Fidelity}
 The twin aircraft was driven by the Brain-published world positions and its position was read back from Unreal. Against the reference trajectory from the flight log, the commanded path shows a cross-track error of 0.22~m mean and 0.24~m maximum ($n=2363$); the Unreal readback against the reference stays below 0.23~m ($n=157$). Figure~\ref{fig:trajectory-check} shows the three superimposed paths.
