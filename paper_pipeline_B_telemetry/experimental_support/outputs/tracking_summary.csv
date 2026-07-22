@@ -1,0 +1,5 @@
+profile,scope,id_switches,track_fragmentation_events,false_freshness_rate,stale_state_rate,removed_state_rate
+nominal,synthetic_software_only,2,1,0.017964071856287425,0.03592814371257485,0.005988023952095809
+mild_loss_5pct_jitter_50ms,synthetic_software_only,2,1,0.017964071856287425,0.03592814371257485,0.005988023952095809
+degraded_loss_15pct_jitter_200ms,synthetic_software_only,2,3,0.016766467065868262,0.03592814371257485,0.007784431137724551
+short_outage_5s,synthetic_software_only,2,4,0.011976047904191617,0.059880239520958084,0.04910179640718563

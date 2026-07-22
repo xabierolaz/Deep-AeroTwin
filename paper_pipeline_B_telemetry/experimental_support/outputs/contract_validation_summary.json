@@ -1,0 +1,9 @@
+{
+  "error_count": 0,
+  "errors": [],
+  "replay": "D:\\AYTE DOCTOR\\Papers_Pendientes\\Pipeline_B_Telemetry_VRIH\\experimental_support\\replay\\generated\\pipeline_b_degraded_link_replay.jsonl",
+  "scope": "synthetic_software_only_contract_validation",
+  "status": "pass",
+  "total_obstacles": 1570,
+  "total_payloads": 600
+}

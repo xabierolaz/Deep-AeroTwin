@@ -1,0 +1,66 @@
+{
+  "frame_id": 0,
+  "obstacles": [
+    {
+      "bbox": {
+        "cx": 716.26,
+        "cy": 341.12,
+        "h": 35.36,
+        "w": 62.74
+      },
+      "confidence": 0.8351,
+      "distance": 48.84,
+      "id": 101,
+      "lat": 42.81290829,
+      "lon": -1.64601891,
+      "source": "replay",
+      "source_id": 101,
+      "timestamp_s": 0.0,
+      "truth_id": "bike_01",
+      "type": "bike",
+      "uncertainty": {
+        "position_sigma_m": 0.55,
+        "radius_95_m": 1.1,
+        "source": "synthetic_fixture"
+      },
+      "world_m": {
+        "east": -17.877,
+        "north": 45.451,
+        "up": 0.119
+      },
+      "yaw_deg": 26.29
+    },
+    {
+      "bbox": {
+        "cx": 656.7,
+        "cy": 349.02,
+        "h": 111.55,
+        "w": 42.77
+      },
+      "confidence": 0.868,
+      "distance": 121.026,
+      "id": 501,
+      "lat": 42.81350658,
+      "lon": -1.64631488,
+      "source": "replay",
+      "source_id": 501,
+      "timestamp_s": 0.0,
+      "truth_id": "tower_01",
+      "type": "tower",
+      "uncertainty": {
+        "position_sigma_m": 0.55,
+        "radius_95_m": 1.1,
+        "source": "synthetic_fixture"
+      },
+      "world_m": {
+        "east": -42.046,
+        "north": 112.052,
+        "up": 17.989
+      },
+      "yaw_deg": 0.0
+    }
+  ],
+  "scenario_id": "pipeline_b_degraded_link_operator_scene_v1",
+  "status": "synthetic_software_only",
+  "timestamp_s": 0.0
+}

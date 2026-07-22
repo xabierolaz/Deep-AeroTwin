@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://deep-aerotwin.local/schemas/pipeline-b/ui-data.schema.json",
+  "title": "Pipeline B GET /api/ui/data response",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["telemetry", "home", "obstacles", "evasion"],
+  "properties": {
+    "telemetry": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "lat": { "type": ["number", "null"] },
+        "lon": { "type": ["number", "null"] },
+        "alt": { "type": ["number", "null"] },
+        "rel_alt": { "type": ["number", "null"] },
+        "yaw": { "type": ["number", "null"] },
+        "telemetry_source": { "type": ["string", "null"] },
+        "world_m": { "$ref": "#/$defs/worldM" }
+      }
+    },
+    "home": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "waypoints": {
+      "type": "array"
+    },
+    "obstacles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/uiObstacle"
+      }
+    },
+    "obstacle_tracks_count": {
+      "type": ["integer", "null"]
+    },
+    "evasion": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "worldM": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "north": { "type": ["number", "null"] },
+        "east": { "type": ["number", "null"] },
+        "up": { "type": ["number", "null"] }
+      }
+    },
+    "uiObstacle": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["entity_id", "object_id", "object_type", "type", "confidence"],
+      "properties": {
+        "id": { "type": ["integer", "string", "null"] },
+        "entity_id": { "type": "string" },
+        "object_id": { "type": "string" },
+        "object_type": { "type": "string" },
+        "type": { "type": "string" },
+        "source": { "type": ["string", "null"] },
+        "source_id": { "type": ["integer", "string", "null"] },
+        "confidence": { "type": ["number", "null"] },
+        "lat": { "type": ["number", "null"] },
+        "lon": { "type": ["number", "null"] },
+        "distance": { "type": ["number", "null"] },
+        "world_m": { "$ref": "#/$defs/worldM" },
+        "track_age_s": { "type": ["number", "null"] },
+        "track_seen_count": { "type": ["integer", "null"] },
+        "track_static": { "type": ["boolean", "null"] },
+        "yaw_deg": { "type": ["number", "null"] },
+        "heading_deg": { "type": ["number", "null"] },
+        "uncertainty": {
+          "type": ["object", "null"],
+          "description": "Forward-compatible field for display evaluation."
+        }
+      }
+    }
+  }
+}
