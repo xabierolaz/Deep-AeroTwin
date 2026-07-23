@@ -1,0 +1,9 @@
+{
+  "output_file": "rea_flight_data/video_final.mp4",
+  "video_start_unix_ms": 1783330744238,
+  "video_start_iso_local": "2026-07-06T09:39:04.238+00:00",
+  "note": "offset medido por correlacion temporal contra el video original: frame 935 (15.985 s, corr 0.963)",
+  "deprecated": true,
+  "deprecation_reason": "INCORRECTO. Verificacion 2026-07-23 con crop vertical correcto muestra que el offset real es +12.3 a +12.9 s (frame ~722-752 del original), no +15.985 s. Este JSON esta desplazado ~3.1 s. Usar video_final.json (autoritativo). trajectory_video_final.meta.json se genero con este JSON erroneo y debe regenerarse con video_final.json si se reutiliza.",
+  "authoritative": false
+}

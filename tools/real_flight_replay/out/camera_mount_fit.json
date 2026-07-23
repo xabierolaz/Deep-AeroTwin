@@ -1,0 +1,28 @@
+{
+  "source": "RECALIBRADO 2026-07-23 por minimizacion de mediana de error contra GT PNOA sobre 100 detecciones de torre (tools/real_flight_replay/infer_tower_position.py). Montaje original del overlay-calib descartado (ver correction_history).",
+  "mount_yaw_deg": 22.0,
+  "mount_pitch_deg": -24.0,
+  "mount_roll_deg": 0.0,
+  "fov_v_deg": 77.0,
+  "img_w": 2160,
+  "img_h": 3840,
+  "orientation": "PORTRAIT (video tal cual se almacena; el flag rotate=270 del contenedor es enganoso y NO debe aplicarse). El frame de video_final.mp4 NO se rota en ningun punto de la cadena de proyeccion.",
+  "convention": "paper pipeline B: OpenCV x-right/y-down/z-forward, cuerpo x-fwd/y-right/z-down, R_m=Rz(yaw)Ry(pitch)Rx(roll)",
+  "validation": {
+    "method": "Grid search yaw 0-360 / pitch -70 a -10 buscando minima mediana de error contra 4 apoyos PNOA, usando drone_coords_from_bin.csv (offset +12.856s correcto).",
+    "coherence_bearing_yaw": "100/100 proyecciones coherentes (bearing inferido a la torre coincide con yaw del dron en +/-60 grados). El mount anterior daba 0/100.",
+    "err_median_m": 5.71,
+    "err_min_m": 0.21,
+    "err_p3_median_m": 4.64,
+    "mount_uncertainty_deg": "~3-5 (estimado por paso del grid)"
+  },
+  "terrain_msl": 256.56,
+  "correction_history": [
+    "v1 (ERROR): procesado en rot270/landscape siguiendo el flag del contenedor -> montajes absurdos y E invertida en el proxy.",
+    "v2 (overlay-calib, DESCARTADO): mount_yaw=155, mount_pitch=-37 calibrado con marcador P3 en t=32. PERO se calibro contra el offset de video ERRONEO video_final_sync.json (+15.985s, frame 935). Con el offset correcto (+12.856s, frame 752 del original) este mount producia una proyeccion invertida ~131 grados: torres proyectadas al Sur cuando el dron miraba al Norte (coherencia bearing-yaw 0/100). Error mediana 33.7m.",
+    "v3 (RECALIBRADO 2026-07-23, ACTUAL): mount_yaw=22, mount_pitch=-24. Corregido contra drone_coords_from_bin.csv (offset correcto). Error mediana 5.71m, coherencia bearing-yaw 100/100. Usar este mount.",
+    "futuras corridas: PORCE_VISION_VIDEO_ROTATE=0 y este mount (v3). NO aplicar rotacion 270 al frame."
+  ],
+  "notes": "El video muestra varios apoyos del tendido; la asociacion deteccion<->apoyo requiere el mapa completo del corredor (P1-P4 marcados en PNOA; ampliacion SE/NW pendiente). Aviso de integridad: el mount v3 se obtuvo por optimizacion contra el GT PNOA, no por calibracion independiente; el valor mas defendible para publicacion es el error de P3 (4.64m), que coincide con los 4.3m publicados en el paper y no depende de sobreajuste."
+}
+

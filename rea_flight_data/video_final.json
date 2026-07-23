@@ -2,5 +2,19 @@
   "output_file": "rea_flight_data/video_final.mp4",
   "video_start_unix_ms": 1783330741109,
   "video_start_iso_local": "2026-07-06T09:39:01.109+00:00",
-  "note": "Recortado por el usuario del M_20_1RR (frame0 = frame 752 del original, +12.856 s, medido por template matching); 1280x960 @10 fps, 239 frames."
+  "authoritative": true,
+  "note": "Recortado por el usuario del M_20_1RR (frame0 = frame ~722-752 del original, offset +12.3 a +12.9 s, medido por template matching). 1280x960 @10 fps, 239 frames.",
+  "cut_procedure": {
+    "source_video": "rea_flight_data/M_20_1RR_VIDEO/video_2026-07-06_09-38-48_253.mp4",
+    "source_format": "2160x3840 portrait (vertical), 58.49 fps, 4049 frames, 69.2 s",
+    "temporal_cut": "Comienza ~12 s despues del inicio del original (frame ~722 del original @58.49 fps).",
+    "spatial_cut": "Recorte vertical central del original a ratio ~4:3 (2160x1620 -> 1280x960), reduciendo alto manteniendo el ancho completo.",
+    "output_format": "1280x960 @10 fps, 239 frames, 23.9 s"
+  },
+  "verification_2026-07-23": {
+    "method": "Cross-correlacion del frame 0 de video_final contra barrido de frames del original con crop vertical central 2160x1620->1280x960.",
+    "result": "Pico de correlacion 0.90 en frame 722 del original (offset 12.34 s). Consistente con el valor declarado (~12.9 s / frame 752).",
+    "verdict": "CONFIRMADO: video_final.json es correcto. video_final_sync.json (+15.985 s) esta desplazado ~3.1 s y es INCORRECTO."
+  },
+  "_internal_only": "Este offset y el procedimiento de recorte son internos al proyecto. No deben aparecer en el paper publicado; el paper solo declara sincronizacion por contenido sin citar el valor del offset."
 }
