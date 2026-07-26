@@ -1,2 +1,0 @@
-scope,payload_count,duration_s,total_bytes,mean_payload_bytes,p95_payload_bytes,packet_rate_hz,mean_bps,p95_one_second_bps,baseline_bps,reduction_vs_baseline
-synthetic_software_only,600,59.9,684723,1141.205,1290.0,10.01669449081803,91448.81469115193,103065.2,"{'h264_low_fpv_2mbps': 2000000, 'h265_low_fpv_1_2mbps': 1200000, 'webrtc_fpv_4mbps': 4000000}","{'h264_low_fpv_2mbps': 0.9542755926544241, 'h265_low_fpv_1_2mbps': 0.92379265442404, 'webrtc_fpv_4mbps': 0.977137796327212}"

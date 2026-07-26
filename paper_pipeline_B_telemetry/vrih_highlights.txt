@@ -1,5 +1,0 @@
-- Real-flight replay validates the full chain from recorded video to twin.
-- Semantic telemetry cuts bandwidth 84% vs H.264 and 70% vs H.265.
-- Twin reproduces the logged trajectory with 0.24 m maximum cross-track error.
-- Georeferenced reconstruction lands 4.3 m from orthophoto ground truth.
-- Desktop twin operator display demonstrated; VR headset is declared future work.

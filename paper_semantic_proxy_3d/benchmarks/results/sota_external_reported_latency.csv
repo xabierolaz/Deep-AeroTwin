@@ -1,8 +1,0 @@
-method,input,reported_latency_s,hardware_or_condition,output,source,comparison_status
-TripoSR,single image,0.5,NVIDIA A100 GPU; paper/repository claim: under 0.5 s,textured mesh,Tochilkin et al. 2024 / official GitHub,external reported value; not reproduced here
-SF3D / Stable Fast 3D,single image,0.5,technical report/model card: about 0.5 s / under 1 s,UV-unwrapped textured mesh with materials,Boss et al. 2024 / Stability AI model card,external reported value; not reproduced here
-LRM,single image,5.0,paper abstract: within 5 s,NeRF/triplane 3D reconstruction,Hong et al. 2023,external reported value; not reproduced here
-LGM,text or single image,5.0,paper abstract: within 5 s,3D Gaussians / high-resolution 3D content,Tang et al. 2024,external reported value; not reproduced here
-InstantMesh,single image,10.0,paper abstract: within 10 s,mesh,Xu et al. 2024,external reported value; not reproduced here
-Point-E,text prompt,60.0,paper/OpenAI summary: 1-2 min on a single GPU,point cloud,Nichol et al. 2022,external reported value; not reproduced here
-Magic3D,text prompt,2400.0,paper/project page: about 40 min,textured mesh,Lin et al. 2023,external reported value; not reproduced here

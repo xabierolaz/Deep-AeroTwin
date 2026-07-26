@@ -10,3 +10,15 @@
 [submodule "neural/VideoX-Fun"]
 	path = neural/VideoX-Fun
 	url = https://github.com/aigc-apps/VideoX-Fun.git
+[submodule "Unreal"]
+	path = Unreal
+	url = ./Unreal
+[submodule "paper"]
+	path = paper
+	url = ./paper
+[submodule "paper_pipeline_B_telemetry"]
+	path = paper_pipeline_B_telemetry
+	url = ./paper_pipeline_B_telemetry
+[submodule "paper_semantic_proxy_3d"]
+	path = paper_semantic_proxy_3d
+	url = ./paper_semantic_proxy_3d
