@@ -1,4 +1,0 @@
- create mode 100644 tools/launch_workflow.bat
-0006664 Evidencia paper + auditoria 2026-06-12: planner_obs_ids (D3), campana E2E estadistica (D2), captura PrintWindow robusta, caso peloton UE5.7 real-SITL, figuras y main.tex regenerados, mapa Ejea_AuditD1, latencias D5
-bd285c9 feat: ship PORCE Twin V2 and zero-trust bootstrap
-exit=0 

@@ -1,61 +1,0 @@
-== clone VideoX-Fun ==
-Cloning into 'VideoX-Fun'...
-Updating files:  14% (129/861)Updating files:  15% (130/861)Updating files:  16% (138/861)Updating files:  17% (147/861)Updating files:  18% (155/861)Updating files:  19% (164/861)Updating files:  20% (173/861)Updating files:  21% (181/861)Updating files:  22% (190/861)Updating files:  23% (199/861)Updating files:  24% (207/861)Updating files:  25% (216/861)Updating files:  26% (224/861)Updating files:  27% (233/861)Updating files:  28% (242/861)Updating files:  29% (250/861)Updating files:  30% (259/861)Updating files:  31% (267/861)Updating files:  32% (276/861)Updating files:  33% (285/861)Updating files:  34% (293/861)Updating files:  35% (302/861)Updating files:  36% (310/861)Updating files:  37% (319/861)Updating files:  38% (328/861)Updating files:  39% (336/861)Updating files:  40% (345/861)Updating files:  41% (354/861)Updating files:  42% (362/861)Updating files:  43% (371/861)Updating files:  44% (379/861)Updating files:  44% (383/861)Updating files:  45% (388/861)Updating files:  46% (397/861)Updating files:  47% (405/861)Updating files:  48% (414/861)Updating files:  49% (422/861)Updating files:  50% (431/861)Updating files:  51% (440/861)Updating files:  52% (448/861)Updating files:  53% (457/861)Updating files:  54% (465/861)Updating files:  55% (474/861)Updating files:  56% (483/861)Updating files:  57% (491/861)Updating files:  58% (500/861)Updating files:  59% (508/861)Updating files:  60% (517/861)Updating files:  61% (526/861)Updating files:  62% (534/861)Updating files:  63% (543/861)Updating files:  64% (552/861)Updating files:  65% (560/861)Updating files:  66% (569/861)Updating files:  67% (577/861)Updating files:  68% (586/861)Updating files:  69% (595/861)Updating files:  70% (603/861)Updating files:  71% (612/861)Updating files:  72% (620/861)Updating files:  73% (629/861)Updating files:  74% (638/861)Updating files:  75% (646/861)Updating files:  76% (655/861)Updating files:  76% (656/861)Updating files:  77% (663/861)Updating files:  78% (672/861)Updating files:  79% (681/861)Updating files:  80% (689/861)Updating files:  81% (698/861)Updating files:  82% (707/861)Updating files:  83% (715/861)Updating files:  84% (724/861)Updating files:  85% (732/861)Updating files:  86% (741/861)Updating files:  87% (750/861)Updating files:  88% (758/861)Updating files:  89% (767/861)Updating files:  90% (775/861)Updating files:  91% (784/861)Updating files:  92% (793/861)Updating files:  93% (801/861)Updating files:  94% (810/861)Updating files:  95% (818/861)Updating files:  96% (827/861)Updating files:  96% (828/861)Updating files:  97% (836/861)Updating files:  98% (844/861)Updating files:  99% (853/861)Updating files: 100% (861/861)Updating files: 100% (861/861), done.
-== clone FlashVSR ==
-Cloning into 'FlashVSR'...
-Updating files:  81% (195/240)Updating files:  82% (197/240)Updating files:  83% (200/240)Updating files:  84% (202/240)Updating files:  85% (204/240)Updating files:  86% (207/240)Updating files:  87% (209/240)Updating files:  88% (212/240)Updating files:  89% (214/240)Updating files:  90% (216/240)Updating files:  91% (219/240)Updating files:  92% (221/240)Updating files:  93% (224/240)Updating files:  94% (226/240)Updating files:  95% (228/240)Updating files:  96% (231/240)Updating files:  97% (233/240)Updating files:  97% (234/240)Updating files:  98% (236/240)Updating files:  99% (238/240)Updating files: 100% (240/240)Updating files: 100% (240/240), done.
-== VideoX-Fun requirements ==
-Pillow
-einops
-safetensors
-timm
-tomesd
-librosa
-torch>=2.1.2
-torchdiffeq
-torchsde
-decord
-datasets
-numpy
-scikit-image
-opencv-python
-omegaconf
-SentencePiece
-albumentations
-imageio[ffmpeg]
-imageio[pyav]
-tensorboard
-beautifulsoup4
-ftfy
-func_timeout
-onnxruntime
-accelerate>=0.25.0
-gradio>=3.41.2
-diffusers>=0.30.1
-transformers>=4.46.2
-== FlashVSR requirements ==
-torch==2.6.0+cu124
-torchaudio==2.6.0+cu124
-torchmetrics==1.7.3
-torchsde==0.2.6
-torchvision==0.21.0+cu124
-accelerate==1.8.1
-einops==0.8.1
-huggingface-hub==0.34.4
-matplotlib==3.10.3
-numpy==1.26.4
-opencv-python==4.11.0.86
-opencv-python-headless==4.11.0.86
-peft==0.16.0
-pillow==11.0.0
-safetensors==0.5.3
-sentencepiece==0.2.0
-transformers==4.46.2
-pytorch-lightning==2.5.2
-imageio==2.37.0
-imageio-ffmpeg==0.6.0
-protobuf==3.20.3
-ftfy==6.3.1
-pandas==2.3.0
-tqdm
-datasets

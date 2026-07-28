@@ -1,0 +1,31 @@
+{
+  "bin": "papers\pipeline_a_telemetry\data\\2026-07-06 09-43-41.bin",
+  "video": "papers\pipeline_a_telemetry\data\\video_final.mp4",
+  "video_json": "papers\pipeline_a_telemetry\data\\video_final.json (autoritativo). NOTA: este campo apuntaba historicamente a video_final_sync.json (desplazado +3.1s), pero el t_video0 efectivamente usado en el CSV coincide con video_final.json (1783330741.109, +12.856s). Verificado 2026-07-23 por correlacion visual (frame ~722 del original) y por kinematica: el yaw en el offset muestra el giro a izquierda al inicio seguido de trayectoria estable, consistente con la descripcion del vuelo.",
+  "fps": 10.0,
+  "frames": 239,
+  "width": 1280,
+  "height": 960,
+  "rotation_deg": 0.0,
+  "video_window_unix": [
+    1783330744.238,
+    1783330768.138
+  ],
+  "log_window_unix": [
+    1783330568.4,
+    1783331021.1822603
+  ],
+  "video_inside_log": true,
+  "terrain_ref_msl": 256.38,
+  "centroid": {
+    "lat": 42.14369223758116,
+    "lon": -1.5881488377836719
+  },
+  "dist_centroid_to_repo_home_m": 30655.17940021753,
+  "path_length_in_window_m": 321.7164870121584,
+  "rows_written": 239,
+  "gps_msgs": 8271,
+  "att_msgs": 4504,
+  "gps_max_gap_s_in_window": 0.22014284133911133,
+  "att_max_gap_s_in_window": 0.10024595260620117
+}

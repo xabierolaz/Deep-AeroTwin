@@ -1,0 +1,28 @@
+{
+  "semantic": {
+    "posts": 554,
+    "duration_s": 187.89597845077515,
+    "total_bytes": 14463405,
+    "mean_payload_bytes": 26107.229241877256,
+    "bitrate_kbps": 615.8047710973915,
+    "posts_per_s": 2.9484399004587347,
+    "lat_det_to_brain_ms": {
+      "n": 649,
+      "mean": 38.222955812474794,
+      "p95": 252.915620803833
+    }
+  },
+  "video_baseline": {
+    "original_mp4_bytes": 424674437,
+    "original_kbps": 49080.0412108782,
+    "h264_crf_bytes": 90223956,
+    "h264_crf_kbps": 10427.271087872097,
+    "h265_crf_bytes": 48870627,
+    "h265_crf_kbps": 5648.02629540298
+  },
+  "e2e_latency_ms": {
+    "mean": 188.22295581247482,
+    "p95": 502.915620803833,
+    "model": "det->Brain (audit) + pollUE/2 + spawn(50ms)"
+  }
+}

@@ -1,2 +1,0 @@
-git procs: 0
-lock removed

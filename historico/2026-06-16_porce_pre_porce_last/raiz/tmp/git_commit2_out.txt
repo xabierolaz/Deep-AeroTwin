@@ -1,6 +1,0 @@
-warning: in the working copy of 'paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/main.aux', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'paper/Path_Planning_and_Obstacle_Avoidance_Real_time_Collision_Evasion/main.out', LF will be replaced by CRLF the next time Git touches it
-[main 31ae3de] Paper: robustez full-route (run 224316, peloton 16x23km/h) + latencias D5 + PDF final
- 2 files changed, 2 insertions(+)
-31ae3de Paper: robustez full-route (run 224316, peloton 16x23km/h) + latencias D5 + PDF final
-0006664 Evidencia paper + auditoria 2026-06-12: planner_obs_ids (D3), campana E2E estadistica (D2), captura PrintWindow robusta, caso peloton UE5.7 real-SITL, figuras y main.tex regenerados, mapa Ejea_AuditD1, latencias D5

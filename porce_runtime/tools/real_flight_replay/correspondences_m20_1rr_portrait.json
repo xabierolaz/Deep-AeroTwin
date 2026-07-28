@@ -1,0 +1,11 @@
+{
+  "img_w": 2160,
+  "img_h": 3840,
+  "note": "correspondencias sobre el video PORTRAIT tal cual se almacena (sin rotar). Punto marcado: caja blanca / cabeza del apoyo (h~10.5 m sobre terreno).",
+  "points": [
+    {"frame_idx": 1462, "pole_id": "P3", "u": 387, "v": 843, "h_m": 10.5, "note": "t=25 caja blanca"},
+    {"frame_idx": 1637, "pole_id": "P3", "u": 629, "v": 1010, "h_m": 10.5, "note": "t=28 cabeza (convertida desde marca rot270)"},
+    {"frame_idx": 1871, "pole_id": "P3", "u": 1044, "v": 1554, "h_m": 10.5, "note": "t=32 caja blanca"},
+    {"frame_idx": 2105, "pole_id": "P3", "u": 1909, "v": 2460, "h_m": 10.5, "note": "t=36 cabeza (convertida desde marca rot270)"}
+  ]
+}

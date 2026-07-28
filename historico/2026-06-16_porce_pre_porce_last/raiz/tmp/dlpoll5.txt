@@ -1,3 +1,0 @@
-0
-18G	/mnt/d/Deep-AeroTwin-UE57-Test/neural/VideoX-Fun/models/Diffusion_Transformer/Wan2.1-VACE-1.3B
-2

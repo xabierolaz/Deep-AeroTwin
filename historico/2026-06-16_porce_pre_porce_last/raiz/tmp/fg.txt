@@ -1,3 +1,0 @@
-fg: False frame: yolo_003496.jpg
-[19:04:39.151] [VISION-YOLO] [HB] fps=7.5 frame=3403 capture=640x640 dets=0 tracks=0 send=0 tel=mavlink
-[19:04:44.212] [VISION-YOLO] [HB] fps=10.3 frame=3463 capture=640x640 dets=0 tracks=0 send=0 tel=mavlink

@@ -1,0 +1,326 @@
+{
+  "contract_schema": "SPPA-ARCHETYPE-RECIPES-0.1",
+  "ontology_version": "SPPA-ONTOLOGY-0.3",
+  "archetype_version": "SPPA-ARCHETYPE-0.3",
+  "generator_version": "XYT-SPPA-GEN-0.3",
+  "runtime_llm_allowed": false,
+  "offline_authoring_policy": {
+    "allowed_sources": [
+      "human_reviewed",
+      "llm_assisted_candidate_reviewed_offline"
+    ],
+    "required_before_runtime": [
+      "human_review",
+      "versioned_recipe",
+      "resolver_regression",
+      "fallback_for_unmapped_labels"
+    ]
+  },
+  "runtime_policy": {
+    "unknown_label_behavior": "fallback_unknown_label",
+    "topology_change_action": "regenerate_topology",
+    "matching_topology_update": "shape_param_update_in_place",
+    "description": "Runtime maps labels to reviewed finite archetype recipes or fallback; it does not call a language model."
+  },
+  "archetypes": [
+    {
+      "id": "person",
+      "runtime_archetypes": ["person"],
+      "exact_labels": ["person", "pedestrian", "human"],
+      "keyword_labels": ["worker"],
+      "sample_dims_m": [0.55, 0.55, 1.75],
+      "required_roles": ["rider_clothing", "rider_skin"],
+      "part_recipe": [
+        {"role": "torso", "primitive": "box", "material_role": "rider_clothing"},
+        {"role": "head", "primitive": "sphere", "material_role": "rider_skin"},
+        {"role": "limbs", "primitive": "box", "material_role": "rider_clothing"}
+      ]
+    },
+    {
+      "id": "bicycle",
+      "runtime_archetypes": ["bicycle"],
+      "exact_labels": ["bicycle", "bike"],
+      "keyword_labels": ["cycle"],
+      "sample_dims_m": [1.70, 0.45, 1.15],
+      "required_roles": ["bike_frame", "vehicle_tire"],
+      "part_recipe": [
+        {"role": "front_wheel", "primitive": "torus_or_cylinder", "material_role": "vehicle_tire"},
+        {"role": "rear_wheel", "primitive": "torus_or_cylinder", "material_role": "vehicle_tire"},
+        {"role": "frame", "primitive": "box", "material_role": "bike_frame"}
+      ]
+    },
+    {
+      "id": "biker",
+      "runtime_archetypes": ["biker"],
+      "exact_labels": ["biker", "cyclist", "ciclista", "rider"],
+      "keyword_labels": [],
+      "sample_dims_m": [1.85, 0.65, 2.10],
+      "required_roles": ["bike_frame", "rider_clothing", "rider_skin"],
+      "part_recipe": [
+        {"role": "bicycle", "primitive": "wheel_and_frame_parts", "material_role": "bike_frame"},
+        {"role": "rider_body", "primitive": "box", "material_role": "rider_clothing"},
+        {"role": "rider_head", "primitive": "sphere", "material_role": "rider_skin"}
+      ]
+    },
+    {
+      "id": "motorcycle",
+      "runtime_archetypes": ["motorcycle"],
+      "exact_labels": ["motorcycle", "motorbike"],
+      "keyword_labels": ["moped", "scooter"],
+      "sample_dims_m": [2.05, 0.72, 1.25],
+      "required_roles": ["vehicle_body", "vehicle_tire"],
+      "part_recipe": [
+        {"role": "body", "primitive": "box", "material_role": "vehicle_body"},
+        {"role": "wheels", "primitive": "cylinder", "material_role": "vehicle_tire"}
+      ]
+    },
+    {
+      "id": "light_vehicle",
+      "runtime_archetypes": ["car", "light_vehicle"],
+      "exact_labels": ["car", "coche", "suv"],
+      "keyword_labels": ["vehicle", "taxi"],
+      "sample_dims_m": [4.40, 1.85, 1.55],
+      "required_roles": ["vehicle_body", "vehicle_cab", "vehicle_tire", "vehicle_window"],
+      "part_recipe": [
+        {"role": "body", "primitive": "box", "material_role": "vehicle_body"},
+        {"role": "cab", "primitive": "box", "material_role": "vehicle_cab"},
+        {"role": "wheels", "primitive": "cylinder", "material_role": "vehicle_tire"},
+        {"role": "windows", "primitive": "box", "material_role": "vehicle_window"}
+      ]
+    },
+    {
+      "id": "van",
+      "runtime_archetypes": ["van"],
+      "exact_labels": ["van", "furgoneta"],
+      "keyword_labels": ["ambulance"],
+      "sample_dims_m": [5.40, 2.10, 2.30],
+      "required_roles": ["vehicle_body", "vehicle_cab", "vehicle_tire", "vehicle_window"],
+      "part_recipe": [
+        {"role": "body", "primitive": "box", "material_role": "vehicle_body"},
+        {"role": "cab", "primitive": "box", "material_role": "vehicle_cab"},
+        {"role": "wheels", "primitive": "cylinder", "material_role": "vehicle_tire"},
+        {"role": "windows", "primitive": "box", "material_role": "vehicle_window"}
+      ]
+    },
+    {
+      "id": "pickup",
+      "runtime_archetypes": ["pickup"],
+      "exact_labels": ["pickup"],
+      "keyword_labels": ["ute"],
+      "sample_dims_m": [5.60, 2.10, 1.95],
+      "required_roles": ["vehicle_body", "vehicle_cab", "vehicle_tire"],
+      "part_recipe": [
+        {"role": "cab", "primitive": "box", "material_role": "vehicle_cab"},
+        {"role": "cargo_bed", "primitive": "box", "material_role": "vehicle_body"},
+        {"role": "wheels", "primitive": "cylinder", "material_role": "vehicle_tire"}
+      ]
+    },
+    {
+      "id": "bus",
+      "runtime_archetypes": ["bus"],
+      "exact_labels": ["bus"],
+      "keyword_labels": ["coach", "minibus"],
+      "sample_dims_m": [9.80, 2.55, 3.20],
+      "required_roles": ["vehicle_body", "vehicle_tire", "vehicle_window"],
+      "part_recipe": [
+        {"role": "body", "primitive": "box", "material_role": "vehicle_body"},
+        {"role": "windows", "primitive": "box", "material_role": "vehicle_window"},
+        {"role": "wheels", "primitive": "cylinder", "material_role": "vehicle_tire"}
+      ]
+    },
+    {
+      "id": "heavy_vehicle",
+      "runtime_archetypes": ["truck", "heavy_vehicle"],
+      "exact_labels": ["truck", "camion"],
+      "keyword_labels": ["lorry", "trailer", "semi", "excavator", "bulldozer", "loader"],
+      "sample_dims_m": [7.50, 2.50, 3.20],
+      "required_roles": ["vehicle_body", "vehicle_cab", "vehicle_tire"],
+      "part_recipe": [
+        {"role": "cargo_body", "primitive": "box", "material_role": "vehicle_body", "scale_policy": "length_adaptive"},
+        {"role": "cab", "primitive": "box", "material_role": "vehicle_cab", "scale_policy": "bounded_role_prior"},
+        {"role": "wheels", "primitive": "cylinder", "material_role": "vehicle_tire", "scale_policy": "bounded_role_prior"}
+      ]
+    },
+    {
+      "id": "farm_vehicle",
+      "runtime_archetypes": ["tractor", "farm_vehicle"],
+      "exact_labels": ["tractor"],
+      "keyword_labels": ["harvester", "farm", "agricultural"],
+      "sample_dims_m": [3.80, 2.00, 2.60],
+      "required_roles": ["vehicle_body", "vehicle_tire"],
+      "part_recipe": [
+        {"role": "body", "primitive": "box", "material_role": "vehicle_body"},
+        {"role": "large_rear_wheels", "primitive": "cylinder", "material_role": "vehicle_tire"},
+        {"role": "attachment", "primitive": "box", "material_role": "vehicle_attachment"}
+      ]
+    },
+    {
+      "id": "quadruped",
+      "runtime_archetypes": ["cow", "quadruped"],
+      "exact_labels": ["cow", "vaca", "animal", "dog", "horse", "sheep", "goat", "deer", "bull", "cattle"],
+      "keyword_labels": [],
+      "sample_dims_m": [1.80, 0.70, 1.20],
+      "required_roles": ["animal_body", "animal_limb"],
+      "part_recipe": [
+        {"role": "torso", "primitive": "ellipsoid", "material_role": "animal_body"},
+        {"role": "head", "primitive": "ellipsoid", "material_role": "animal_body"},
+        {"role": "legs", "primitive": "cylinder_or_box", "material_role": "animal_limb"}
+      ]
+    },
+    {
+      "id": "vegetation",
+      "runtime_archetypes": ["tree", "vegetation"],
+      "exact_labels": ["tree", "arbol"],
+      "keyword_labels": ["plant", "vegetation", "canopy", "trunk"],
+      "sample_dims_m": [2.50, 2.50, 4.50],
+      "required_roles": ["vegetation_trunk", "vegetation_canopy"],
+      "part_recipe": [
+        {"role": "trunk", "primitive": "cylinder", "material_role": "vegetation_trunk"},
+        {"role": "canopy", "primitive": "ellipsoid", "material_role": "vegetation_canopy"}
+      ]
+    },
+    {
+      "id": "bush",
+      "runtime_archetypes": ["bush"],
+      "exact_labels": ["bush", "arbusto"],
+      "keyword_labels": ["shrub", "hedge"],
+      "sample_dims_m": [1.50, 1.50, 1.00],
+      "required_roles": ["vegetation_canopy"],
+      "part_recipe": [
+        {"role": "canopy_clusters", "primitive": "ellipsoid", "material_role": "vegetation_canopy"}
+      ]
+    },
+    {
+      "id": "vertical_structure",
+      "runtime_archetypes": ["tower", "vertical_structure"],
+      "exact_labels": ["tower", "pole", "mast", "pylon"],
+      "keyword_labels": ["post", "sign", "antenna", "crane"],
+      "sample_dims_m": [1.80, 1.80, 8.00],
+      "required_roles": ["vertical_structure_metal"],
+      "part_recipe": [
+        {"role": "mast", "primitive": "cylinder", "material_role": "vertical_structure_metal"},
+        {"role": "crossbar_or_antenna", "primitive": "box_or_cylinder", "material_role": "vertical_structure_metal"}
+      ]
+    },
+    {
+      "id": "built_structure",
+      "runtime_archetypes": ["built_structure"],
+      "exact_labels": ["building", "house", "shed", "barn", "warehouse", "bridge", "wall", "fence"],
+      "keyword_labels": ["roof", "structure"],
+      "sample_dims_m": [8.00, 6.00, 4.50],
+      "required_roles": ["built_structure_body", "built_structure_roof", "built_structure_window"],
+      "part_recipe": [
+        {"role": "main_volume", "primitive": "box", "material_role": "built_structure_body"},
+        {"role": "roof_or_deck", "primitive": "box", "material_role": "built_structure_roof"},
+        {"role": "openings_or_facade_cues", "primitive": "box", "material_role": "built_structure_window"}
+      ]
+    },
+    {
+      "id": "forklift",
+      "runtime_archetypes": ["forklift"],
+      "exact_labels": ["forklift"],
+      "keyword_labels": ["fork lift"],
+      "sample_dims_m": [3.20, 1.35, 2.20],
+      "expected_resolution_status": "open_label_verified_recipe",
+      "required_roles": ["vehicle_body", "vehicle_cab", "vehicle_tire", "vehicle_attachment"],
+      "part_recipe": [
+        {"role": "body", "primitive": "box", "material_role": "vehicle_body"},
+        {"role": "cab", "primitive": "box", "material_role": "vehicle_cab"},
+        {"role": "wheels", "primitive": "torus", "material_role": "vehicle_tire"},
+        {"role": "forks_and_mast", "primitive": "box_or_cylinder", "material_role": "vehicle_attachment"}
+      ]
+    },
+    {
+      "id": "traffic_cone",
+      "runtime_archetypes": ["traffic_cone"],
+      "exact_labels": ["traffic cone"],
+      "keyword_labels": ["road cone"],
+      "sample_dims_m": [0.55, 0.55, 0.75],
+      "expected_resolution_status": "open_label_verified_recipe",
+      "required_roles": ["safety_marker", "container_detail"],
+      "part_recipe": [
+        {"role": "base", "primitive": "box", "material_role": "container_detail"},
+        {"role": "cone", "primitive": "cone", "material_role": "safety_marker"}
+      ]
+    },
+    {
+      "id": "water_tank",
+      "runtime_archetypes": ["water_tank"],
+      "exact_labels": ["water tank"],
+      "keyword_labels": ["storage tank"],
+      "sample_dims_m": [3.00, 1.40, 1.60],
+      "expected_resolution_status": "open_label_verified_recipe",
+      "required_roles": ["container_body", "container_detail"],
+      "part_recipe": [
+        {"role": "tank_body", "primitive": "cylinder", "material_role": "container_body"},
+        {"role": "supports_and_cap", "primitive": "box_or_cylinder", "material_role": "container_detail"}
+      ]
+    },
+    {
+      "id": "barrel",
+      "runtime_archetypes": ["barrel"],
+      "exact_labels": ["barrel"],
+      "keyword_labels": ["drum"],
+      "sample_dims_m": [0.70, 0.70, 1.00],
+      "expected_resolution_status": "open_label_verified_recipe",
+      "required_roles": ["container_body", "container_detail"],
+      "part_recipe": [
+        {"role": "barrel_body", "primitive": "cylinder", "material_role": "container_body"},
+        {"role": "ribs", "primitive": "cylinder", "material_role": "container_detail"}
+      ]
+    },
+    {
+      "id": "shipping_container",
+      "runtime_archetypes": ["shipping_container"],
+      "exact_labels": ["shipping container"],
+      "keyword_labels": ["cargo container", "freight container"],
+      "sample_dims_m": [12.20, 2.45, 2.60],
+      "expected_resolution_status": "open_label_verified_recipe",
+      "required_roles": ["container_body", "container_detail"],
+      "part_recipe": [
+        {"role": "main_volume", "primitive": "box", "material_role": "container_body"},
+        {"role": "corrugation_and_door_cues", "primitive": "box", "material_role": "container_detail"}
+      ]
+    },
+    {
+      "id": "quadcopter",
+      "runtime_archetypes": ["quadcopter"],
+      "exact_labels": ["drone", "quadcopter", "uav"],
+      "keyword_labels": [],
+      "sample_dims_m": [0.90, 0.90, 0.22],
+      "expected_resolution_status": "open_label_verified_recipe",
+      "required_roles": ["aircraft_body", "aircraft_rotor"],
+      "part_recipe": [
+        {"role": "central_body", "primitive": "box", "material_role": "aircraft_body"},
+        {"role": "arms", "primitive": "cylinder", "material_role": "aircraft_body"},
+        {"role": "rotors", "primitive": "torus_or_box", "material_role": "aircraft_rotor"}
+      ]
+    },
+    {
+      "id": "hay_bale",
+      "runtime_archetypes": ["hay_bale"],
+      "exact_labels": ["hay bale"],
+      "keyword_labels": ["bale of hay"],
+      "sample_dims_m": [1.50, 1.50, 1.20],
+      "expected_resolution_status": "open_label_verified_recipe",
+      "required_roles": ["agricultural_bale", "agricultural_binding"],
+      "part_recipe": [
+        {"role": "bale_body", "primitive": "cylinder", "material_role": "agricultural_bale"},
+        {"role": "bindings", "primitive": "cylinder", "material_role": "agricultural_binding"}
+      ]
+    },
+    {
+      "id": "unknown",
+      "runtime_archetypes": ["unknown"],
+      "exact_labels": ["unknown"],
+      "keyword_labels": [],
+      "sample_dims_m": [1.20, 0.70, 0.90],
+      "required_roles": ["unknown_conservative_volume", "unknown_footprint"],
+      "part_recipe": [
+        {"role": "conservative_volume", "primitive": "box", "material_role": "unknown_conservative_volume"},
+        {"role": "footprint", "primitive": "box", "material_role": "unknown_footprint"},
+        {"role": "uncertainty_marker", "primitive": "cone", "material_role": "uncertainty_marker"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "bin": "D:\\Deep-AeroTwin-UE57-Test\\papers\pipeline_a_telemetry\data\\2026-07-06 09-43-41.bin",
+  "video": "D:\\Deep-AeroTwin-UE57-Test\\papers\pipeline_a_telemetry\data\\M_20_1RR_VIDEO\\video_2026-07-06_09-38-48_253.mp4",
+  "video_json": "D:\\Deep-AeroTwin-UE57-Test\\papers\pipeline_a_telemetry\data\\M_20_1RR_VIDEO\\video_2026-07-06_09-38-48_253.json",
+  "fps": 58.49336266467041,
+  "frames": 4049,
+  "width": 2160,
+  "height": 3840,
+  "rotation_deg": 270.0,
+  "video_window_unix": [
+    1783330728.253,
+    1783330797.474529
+  ],
+  "log_window_unix": [
+    1783330568.4,
+    1783331021.1822603
+  ],
+  "video_inside_log": true,
+  "terrain_ref_msl": 256.38,
+  "centroid": {
+    "lat": 42.14413817655726,
+    "lon": -1.5882846555030494
+  },
+  "dist_centroid_to_repo_home_m": 30650.262643887374,
+  "path_length_in_window_m": 972.9391633087878,
+  "rows_written": 4049,
+  "gps_msgs": 8271,
+  "att_msgs": 4504,
+  "gps_max_gap_s_in_window": 0.22023296356201172,
+  "att_max_gap_s_in_window": 0.10029911994934082
+}

@@ -171,3 +171,36 @@ figuras_paper_unreal_generadas/yolo_crossing_precheck/yolo_crossing_precheck.mp4
 
 # SPPA: archived supplement (eliminated from JGSA submission 2026-07-20); compiled PDF stays out of the repo
 paper_semantic_proxy_3d/semantic_proxy_3d_submission_supplement.pdf
+papers/overleaf_sync/
+
+# --- Capturas y artefactos de sesion en raiz (no commitear; van a media/ o _archive/) ---
+/.playwright-mcp/
+/_archive/
+/rec_test/
+/rec_flight/
+/rec_flight_final/
+/*.png
+/*.mp4
+/vf_frame_*.png
+/val*_f*.png
+/cmp*_f*.png
+/chk_*.png
+/cap_*.png
+/ann*_check_*.png
+/sbs_check_*.png
+/pie_check_*.png
+/tower_dets_video_final.json
+/seq_keys_dump.json
+/new_loc_keys_dt45.json
+/log_ue_conv.json
+/jump_template.py
+/focus_unreal.ps1
+/capture_unreal_window.ps1
+
+# --- Artefactos de runtime del pipeline (logs, streams, salidas) ---
+porce_runtime/pipeline/vision/
+porce_runtime/pipeline/brain/
+porce_runtime/pipeline/logs/
+porce_runtime/pipeline/detection_results/
+porce_runtime/tools/real_flight_replay/out/
+events.jsonl

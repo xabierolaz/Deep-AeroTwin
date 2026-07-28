@@ -1,0 +1,35 @@
+{
+  "review_policy_id": "SPPA-RECIPE-REVIEW-0.1",
+  "contract_schema": "SPPA-OFFLINE-RECIPE-REVIEW-0.1",
+  "runtime_llm_allowed": false,
+  "allowed_authoring_sources": [
+    "human_reviewed",
+    "llm_assisted_candidate_reviewed_offline"
+  ],
+  "required_before_runtime": [
+    "human_review",
+    "versioned_cache_entry",
+    "finite_primitive_vocabulary",
+    "resolver_regression",
+    "fallback_for_unmapped_labels"
+  ],
+  "allowed_primitives": [
+    "box",
+    "capsule",
+    "cone",
+    "cylinder",
+    "ellipsoid",
+    "sphere",
+    "torus"
+  ],
+  "hard_limits": {
+    "max_parts": 16,
+    "max_triangles": 20000,
+    "min_required_material_roles": 1
+  },
+  "decision_meaning": {
+    "accepted": "Candidate compiles to a reviewed runtime archetype with allowed primitives and material roles.",
+    "fallback_only": "Candidate is allowed only as an uncertainty-marked generic fallback.",
+    "rejected": "Candidate must not be cached for runtime use without further review or implementation."
+  }
+}

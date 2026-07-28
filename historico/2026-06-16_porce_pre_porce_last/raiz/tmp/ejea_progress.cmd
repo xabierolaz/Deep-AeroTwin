@@ -1,3 +1,0 @@
-@echo off
-C:\Windows\System32\nvidia-smi.exe --query-gpu=utilization.gpu,memory.used --format=csv,noheader > "D:\Deep-AeroTwin-UE57-Test\tmp\ejea_progress.txt" 2>&1
-C:\Windows\System32\wsl.exe -e bash -lc "echo =PROC=; ps aux|grep 'streamv2v.inference'|grep -v grep|wc -l; echo =LINES=; grep -c Processed /mnt/d/Deep-AeroTwin-UE57-Test/tmp/wsl_ejea_run.log 2>/dev/null; echo =LASTPROC=; grep Processed /mnt/d/Deep-AeroTwin-UE57-Test/tmp/wsl_ejea_run.log 2>/dev/null | tail -2; echo =AVG=; grep 'Average FPS' /mnt/d/Deep-AeroTwin-UE57-Test/tmp/wsl_ejea_run.log 2>/dev/null; echo =DONE=; grep DONE_EJEA /mnt/d/Deep-AeroTwin-UE57-Test/tmp/wsl_ejea_run.log 2>/dev/null" >> "D:\Deep-AeroTwin-UE57-Test\tmp\ejea_progress.txt" 2>&1

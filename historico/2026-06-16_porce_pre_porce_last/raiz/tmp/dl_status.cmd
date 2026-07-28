@@ -1,2 +1,0 @@
-@echo off
-C:\Windows\System32\wsl.exe -e bash -lc "echo =PROC=; ps aux|grep -E 'huggingface|hf_transfer|python'|grep -v grep|head; echo =NET=; cat /proc/net/dev 2>/dev/null | grep eth0; echo =LOG=; tail -6 /mnt/d/Deep-AeroTwin-UE57-Test/tmp/wsl_models.log; echo =FILES=; find /mnt/d/Deep-AeroTwin-UE57-Test/neural/wan_models -name '*.incomplete' -o -name '*.safetensors' 2>/dev/null | xargs ls -la 2>/dev/null | tail -8" > "D:\Deep-AeroTwin-UE57-Test\tmp\dl_status.txt" 2>&1

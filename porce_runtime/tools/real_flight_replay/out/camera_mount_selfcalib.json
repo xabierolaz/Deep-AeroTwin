@@ -1,0 +1,19 @@
+{
+  "mount_yaw_deg": 83.0417381219558,
+  "mount_pitch_deg": -68.75329100236196,
+  "mount_roll_deg": -13.288958478453088,
+  "fov_v_deg": 109.99999999999999,
+  "dt_s": -4.999999999999999,
+  "gps_offset_ne_m": [
+    -7.999999999999999,
+    -7.999999999999999
+  ],
+  "point_height_m": 8.000000000000002,
+  "n_detections": 91,
+  "reproj_px_mean": 558.5952568004873,
+  "reproj_px_p50": 590.9907615432994,
+  "reproj_px_p95": 889.0712713698413,
+  "img_w": 2160.0,
+  "img_h": 3840.0,
+  "orientation": "portrait (video tal cual; detector en rot270 + punto desrotado)"
+}

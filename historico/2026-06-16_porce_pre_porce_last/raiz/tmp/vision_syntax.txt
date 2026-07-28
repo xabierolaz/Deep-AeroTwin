@@ -1,2 +1,0 @@
-D:\Deep-AeroTwin-UE57-Test\pipeline\vision_system.py: OK
-D:\Deep-AeroTwin-UE57-Test\pipeline\constants.py: OK

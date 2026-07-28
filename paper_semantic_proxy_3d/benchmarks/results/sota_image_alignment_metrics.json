@@ -1,8 +1,0 @@
-{
-  "schema": "SPPA-IMAGE-ALIGNMENT-METRICS-0.1",
-  "created_utc": "2026-07-04T10:18:51Z",
-  "csv": "paper_semantic_proxy_3d/benchmarks/results/sota_image_alignment_metrics.csv",
-  "case_count": 4,
-  "scope": "Detector bbox/confidence and semantic normalization metrics only; no 3D ground-truth quality is claimed.",
-  "all_cases_have_detector_crop": true
-}

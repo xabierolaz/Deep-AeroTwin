@@ -1,4 +1,0 @@
-17:38:36 [BRAIN] [STATUS] Mode: LAND | GPS: 42.218707, -1.225476 Alt: 502.0m (rel 2.0m) | WP: 12 | Obs: 0 | UE: active=0 age=n/a posts=0 unauth=0 err=-
-17:38:36 [BRAIN] [DISARM] Landed; disarm requested.
-17:38:38 [BRAIN] [STATUS] Mode: LAND | GPS: 42.218707, -1.225476 Alt: 500.0m (rel 0.0m) | WP: 12 | Obs: 0 | UE: active=0 age=n/a posts=0 unauth=0 err=-
-17:40:14

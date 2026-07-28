@@ -1,5 +1,0 @@
-model,label,status,wall_ms,build_ms,export_ms,triangles,vertices,mesh_bytes,descriptor_bytes
-sppa,biker,ok,3.844,1.344,2.5,1056,588,25559,31622
-sppa,tower,ok,2.649,0.326,2.323,436,256,10682,30863
-sppa,tractor,ok,3.524,0.924,2.601,1096,584,26439,32202
-sppa,tractor_trailer,ok,3.221,0.941,2.28,2012,1060,48555,32253

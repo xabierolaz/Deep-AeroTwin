@@ -1,0 +1,5 @@
+path: D:/Deep-AeroTwin-UE57-Test/porce_runtime/tools/real_flight_replay/out/dataset_vf2
+train: images/train
+val: images/val
+names:
+  0: tower

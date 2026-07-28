@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "SPPA-DESC-0.2",
+  "title": "SPPA descriptor schema v0.2",
+  "type": "object",
+  "required": [
+    "descriptor_schema",
+    "descriptor_id",
+    "generator_version",
+    "ontology_version",
+    "archetype_version",
+    "policy_version",
+    "created_utc",
+    "input_hash",
+    "track",
+    "semantic",
+    "evidence",
+    "pose",
+    "scale",
+    "uncertainty",
+    "parts",
+    "runtime_policy",
+    "mesh",
+    "cost"
+  ],
+  "properties": {
+    "descriptor_schema": {"const": "SPPA-DESC-0.2"},
+    "descriptor_id": {"type": "string"},
+    "track": {"type": "object"},
+    "semantic": {"type": "object"},
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "evidence_sources": {"type": "array", "items": {"type": "string"}},
+        "visual_part_evidence": {"type": ["object", "null"]},
+        "visual_metric_yaw_consistency": {
+          "type": ["object", "null"],
+          "properties": {
+            "version": {"const": "SPPA-VISUAL-METRIC-YAW-CONSISTENCY-0.1"},
+            "applied": {"type": "boolean"},
+            "source": {"const": "projected_visual_axis"},
+            "visual_axis_source": {"enum": ["round_pair", "longest_line", null]},
+            "projected_visual_axis_yaw_deg": {"type": ["number", "null"]},
+            "footprint_yaw_deg": {"type": ["number", "null"]},
+            "axial_delta_deg": {"type": ["number", "null"]},
+            "agreement": {"enum": ["aligned", "weakly_aligned", "divergent_declared", "missing", "unknown"]},
+            "policy": {"const": "support_gate_only"},
+            "claim_boundary": {"type": "string"}
+          }
+        }
+      }
+    },
+    "pose": {
+      "type": "object",
+      "properties": {
+        "position_world": {"type": ["object", "null"]},
+        "coordinate_frame": {"type": ["string", "null"]},
+        "yaw_rad": {"type": ["number", "null"]},
+        "yaw_deg": {"type": ["number", "null"]},
+        "yaw_source": {
+          "enum": [
+            "none",
+            "explicit_yaw_input",
+            "telemetry_heading",
+            "track_velocity",
+            "mask_pca_axial",
+            "visual_round_pair_axis_image_space",
+            "visual_line_axis_image_space",
+            "projected_footprint_yaw_gate"
+          ]
+        },
+        "yaw_modulo": {"enum": ["none", "pi", "2pi"]},
+        "yaw_ambiguous": {"type": "boolean"},
+        "yaw_coordinate_frame": {"type": ["string", "null"]},
+        "yaw_confidence": {"type": ["number", "null"]},
+        "yaw_policy": {"type": ["string", "null"]},
+        "yaw_claim_boundary": {"type": ["string", "null"]},
+        "yaw_version": {"type": ["string", "null"]}
+      }
+    },
+    "scale": {"type": "object"},
+    "uncertainty": {"type": "object"},
+    "parts": {"type": "array"},
+    "runtime_policy": {"type": "object"},
+    "mesh": {"type": "object"},
+    "cost": {"type": "object"}
+  },
+  "x-requiredPaths": [
+    "track.track_id",
+    "track.timestamp",
+    "track.frame_id",
+    "track.previous_descriptor_id",
+    "semantic.raw_label",
+    "semantic.normalized_label",
+    "semantic.class_confidence",
+    "semantic.archetype",
+    "semantic.resolution_status",
+    "semantic.unknown_label",
+    "evidence.evidence_sources",
+    "evidence.bbox_px",
+    "evidence.image_width",
+    "evidence.image_height",
+    "evidence.image_size_px",
+    "evidence.mask_hash",
+    "evidence.world_pose",
+    "pose.position_world",
+    "pose.coordinate_frame",
+    "pose.yaw_source",
+    "pose.yaw_modulo",
+    "pose.yaw_ambiguous",
+    "scale.scale_source",
+    "scale.scale_uncertainty",
+    "uncertainty.confidence",
+    "uncertainty.yaw_ambiguous",
+    "runtime_policy.cache_key",
+    "runtime_policy.action",
+    "runtime_policy.action_reason",
+    "runtime_policy.scheduler_policy.policy_id",
+    "runtime_policy.scheduler_policy.policy_version",
+    "runtime_policy.scheduler_policy.thresholds.shape_ratio",
+    "runtime_policy.scheduler_policy.thresholds.confidence_bucket_step",
+    "runtime_policy.scheduler_policy.thresholds.velocity_min_delta_m",
+    "runtime_policy.scheduler_policy.geometry_fitting_objective.status",
+    "runtime_policy.scheduler_policy.geometry_fitting_objective.weights.bev_footprint_iou",
+    "runtime_policy.scheduler_policy.geometry_fitting_objective.weights.mask_projection_iou",
+    "runtime_policy.scheduler_policy.geometry_fitting_objective.weights.temporal_jitter",
+    "runtime_policy.scheduler_policy.geometry_fitting_objective.weights.archetype_prior",
+    "runtime_policy.scheduler_policy.geometry_fitting_objective.limits.max_candidates",
+    "runtime_policy.thresholds",
+    "mesh.triangles",
+    "cost.create_cpu_us",
+    "cost.descriptor_build_cpu_us",
+    "cost.descriptor_bytes"
+  ],
+  "x-requiredWhenEvidenceSource": [
+    {
+      "source": "visual_metric_yaw_consistency",
+      "requiredPaths": [
+        "evidence.visual_metric_yaw_consistency.version",
+        "evidence.visual_metric_yaw_consistency.applied",
+        "evidence.visual_metric_yaw_consistency.source",
+        "evidence.visual_metric_yaw_consistency.projected_visual_axis_yaw_deg",
+        "evidence.visual_metric_yaw_consistency.footprint_yaw_deg",
+        "evidence.visual_metric_yaw_consistency.axial_delta_deg",
+        "evidence.visual_metric_yaw_consistency.agreement",
+        "evidence.visual_metric_yaw_consistency.policy",
+        "pose.yaw_source",
+        "pose.yaw_coordinate_frame",
+        "pose.yaw_modulo",
+        "pose.yaw_ambiguous",
+        "pose.yaw_policy",
+        "pose.yaw_claim_boundary"
+      ],
+      "equals": {
+        "evidence.visual_metric_yaw_consistency.version": "SPPA-VISUAL-METRIC-YAW-CONSISTENCY-0.1",
+        "evidence.visual_metric_yaw_consistency.applied": true,
+        "evidence.visual_metric_yaw_consistency.source": "projected_visual_axis",
+        "evidence.visual_metric_yaw_consistency.policy": "support_gate_only",
+        "pose.yaw_source": "projected_footprint_yaw_gate",
+        "pose.yaw_coordinate_frame": "declared_assumed_flight_replay_local_ned",
+        "pose.yaw_modulo": "pi",
+        "pose.yaw_ambiguous": true,
+        "pose.yaw_policy": "visual_metric_gate_nondivergent"
+      }
+    }
+  ]
+}

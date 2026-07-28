@@ -1,8 +1,0 @@
-{
-  "ok": true,
-  "render_mode": "<PelotonRiderRenderMode.CHILD_ACTOR_BLUEPRINT: 2>",
-  "rider_class": "<Object '/Game/ciclista.ciclista_C' (0x000001E700117000) Class 'BlueprintGeneratedClass'>",
-  "reconstructed": "error: 'PelotonSplineActor' object has no attribute 'rerun_construction_scripts'",
-  "child_actor_components": 11,
-  "static_rider_components": 0
-}

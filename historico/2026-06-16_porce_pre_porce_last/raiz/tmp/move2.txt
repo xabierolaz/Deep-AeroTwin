@@ -1,1 +1,0 @@
-moved: True frame: yolo_002880.jpg

@@ -1,0 +1,8 @@
+path: D:\Deep-AeroTwin\yolo\dataset
+train: images/train
+val: images/val
+test: images/test
+names:
+  0: biker
+  1: cow
+  2: tower

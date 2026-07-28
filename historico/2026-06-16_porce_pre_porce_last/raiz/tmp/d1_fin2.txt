@@ -1,4 +1,0 @@
-mtime: 21:38:54 now: 21:49:29
-21:49:29 [BRAIN] [PORCE] Obstaculo detectado a 25.5m. Planificando ruta A*...
-21:49:29 [BRAIN] [PORCE] Ruta generada: 10 sub-puntos.
-[21:49:28.392] [VISION-YOLO] Dets frame=1 tracks=12 send=1

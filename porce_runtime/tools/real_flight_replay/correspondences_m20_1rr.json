@@ -1,0 +1,6 @@
+[
+  {"frame_idx": 1462, "pole_id": "P3", "u": 845, "v": 1750, "note": "t=25 apoyo grande abajo-izq"},
+  {"frame_idx": 1637, "pole_id": "P3", "u": 1010, "v": 1530, "note": "t=28"},
+  {"frame_idx": 1871, "pole_id": "P3", "u": 1600, "v": 1110, "note": "t=32"},
+  {"frame_idx": 2105, "pole_id": "P3", "u": 2460, "v": 250, "note": "t=36 arriba-dcha"}
+]

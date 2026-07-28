@@ -1,6 +1,0 @@
-now: 18:23:25
-summary mtime: 18:16:53
-dir2: 1038 files
-out2: 
-err2: 
-pythons: 13

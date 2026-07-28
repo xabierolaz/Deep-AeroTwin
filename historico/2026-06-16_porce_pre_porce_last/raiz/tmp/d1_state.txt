@@ -1,5 +1,0 @@
-8080: False
-9090: True
-pythons: 9
-wt: 1
-cmds: 11

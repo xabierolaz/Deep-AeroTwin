@@ -1,4 +1,0 @@
-backend,count,phase,n,frame_p50_ms,frame_p95_ms,frame_p99_ms,fps_p50,hitch_gt_33ms,hitch_gt_50ms,actors_p50,components_p50,triangles_p50,estimated_draw_calls_p50
-semantic_proxy_instanced,100,create_steady,360,7.7065005,8.94502815,9.735768590000003,129.7605975,0,0,1.0,11.0,208864.0,11.0
-semantic_proxy_instanced,100,pose_stream,360,7.99595,21.315005900000003,23.932562000000004,125.06340449999999,0,0,1.0,11.0,208864.0,11.0
-semantic_proxy_instanced,100,shape_stream,360,8.0866475,46.1508139,50.12442141000002,123.66063650000001,24,4,1.0,11.0,208864.0,11.0

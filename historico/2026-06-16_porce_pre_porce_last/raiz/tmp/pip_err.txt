@@ -1,3 +1,0 @@
-
-[notice] A new release of pip is available: 26.0.1 -> 26.1.2
-[notice] To update, run: D:\Deep-AeroTwin-UE57-Test\venv\Scripts\python.exe -m pip install --upgrade pip

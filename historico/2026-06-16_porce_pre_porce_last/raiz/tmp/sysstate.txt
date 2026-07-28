@@ -1,3 +1,0 @@
-﻿UE: 0
-mcp3000: False
-brain8080: False

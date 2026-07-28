@@ -1,2 +1,0 @@
-@echo off
-C:\Windows\System32\wsl.exe -e bash -lc "echo '=PROC='; ps aux | grep -E 'pip|python|wsl_setup' | grep -v grep | head -5; echo '=LOGSIZE='; wc -l /mnt/d/Deep-AeroTwin-UE57-Test/tmp/wsl_sdv2_setup.log 2>/dev/null; echo '=LOGTAIL='; tail -20 /mnt/d/Deep-AeroTwin-UE57-Test/tmp/wsl_sdv2_setup.log 2>/dev/null; echo '=VENV='; ls ~/sdv2_venv/bin/python 2>/dev/null && echo venv_ok || echo no_venv" > "D:\Deep-AeroTwin-UE57-Test\tmp\wsl_status.txt" 2>&1

@@ -1,0 +1,10 @@
+# Ground truth de apoyos de linea electrica en la zona de vuelo M_20_1RR
+# Fuente: ortofoto PNOA (WMS IGN, OI.OrthoimageCoverage), identificacion visual a 0.167 m/px.
+# OSM no tiene NINGUNA infraestructura electrica en 3 km a la redonda (comprobado 2026-07-21).
+# Precision estimada: ~1-2 m (georreferencia WMS + lectura de pixel).
+id,lat,lon,source,notes
+P1,42.145142,-1.588138,pnoa_ortho_20260721,apoyo con cruceta en limite de parcela (campo marron N)
+P2,42.144632,-1.588037,pnoa_ortho_20260721,apoyo con cruceta en limite de parcela
+P3,42.143402,-1.587662,pnoa_ortho_20260721,poste con crucetas en esquina de parcela (el del frame t=25)
+P4,42.142151,-1.587297,pnoa_ortho_20260721,apoyo pequeno en limite de parcela (tramo sur)
+# Posibles apoyos adicionales no confirmados: entre P2 y P3 (zona y~1000 px) y al sur de P4.

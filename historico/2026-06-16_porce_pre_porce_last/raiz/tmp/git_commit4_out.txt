@@ -1,8 +1,0 @@
-warning: in the working copy of 'docs/d4_twin_demo_20260612.md', LF will be replaced by CRLF the next time Git touches it
-[main abf991d] docs: demo D4 twin spawn/update/despawn verificada (API + LogPorceTelemetry)
- 1 file changed, 30 insertions(+)
- create mode 100644 docs/d4_twin_demo_20260612.md
-abf991d docs: demo D4 twin spawn/update/despawn verificada (API + LogPorceTelemetry)
-43cbd23 Fig4 con frame pristino: fix anotacion debug de vision contaminaba frames de audit (copia pre-anotacion); caso definitivo run 233504 (WP6, 16 obs, detour 3.4m, clearance 34.3m)
-31ae3de Paper: robustez full-route (run 224316, peloton 16x23km/h) + latencias D5 + PDF final
-0006664 Evidencia paper + auditoria 2026-06-12: planner_obs_ids (D3), campana E2E estadistica (D2), captura PrintWindow robusta, caso peloton UE5.7 real-SITL, figuras y main.tex regenerados, mapa Ejea_AuditD1, latencias D5

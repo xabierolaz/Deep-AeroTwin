@@ -1,3 +1,0 @@
-{"frame_id": "t0_nadir_az000", "ring": "nadir", "drift_px": [22.7, -2.8], "styled_mean": 141.6}
-{"frame_id": "t0_nadir_az090", "ring": "nadir", "drift_px": [-33.0, -33.6], "styled_mean": 139.3}
-{"frame_id": "t0_nadir_az180", "ring": "nadir", "drift_px": [-5.4, -37.8], "styled_mean": 137.1}

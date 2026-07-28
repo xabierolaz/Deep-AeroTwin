@@ -1,6 +1,0 @@
-your 13root           7  0.0  0.0   3120  1792 ?        Sl   07:31   0:00 plan9 --control-socket 7 --log-level 4 --server-fd 8 --pipe-fd 10 --log-truncate
-root         212  7.9  0.0 107012 22528 ?        Ssl  07:31   0:00 /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
-=LOGSIZE=
-=LOGTAIL=
-=VENV=
-no_venv

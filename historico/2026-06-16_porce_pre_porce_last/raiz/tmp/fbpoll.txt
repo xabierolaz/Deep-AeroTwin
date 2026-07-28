@@ -1,3 +1,0 @@
-=== proc ===
-=== log tail ===
-tail: cannot open '/mnt/d/Deep-AeroTwin-UE57-Test/tmp/fvsr_build.log' for reading: No such file or directory

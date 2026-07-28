@@ -1,0 +1,5 @@
+path: D:/Deep-AeroTwin-UE57-Test/tools/real_flight_replay/out/dataset
+train: images/train
+val: images/val
+names:
+  0: tower

@@ -1,3 +1,0 @@
-WSL_OK
-487 sh -lc echo WSL_OK; pgrep -af arducopter; echo DONE
-DONE

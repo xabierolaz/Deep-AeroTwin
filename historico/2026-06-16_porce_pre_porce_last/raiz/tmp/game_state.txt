@@ -1,2 +1,0 @@
-game pid 62268 responding: True cpu:2203
-vision procs: 0

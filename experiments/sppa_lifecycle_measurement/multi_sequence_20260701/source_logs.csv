@@ -1,8 +1,0 @@
-path,status,events,observations,truncated_obstacle_ingest_events,active_count_sum,active_count_events,workflow,control_mode,porce_enable_evasion,obstacle_token_enabled
-pipeline\logs\zero_trust\20260219_212154\brain\events.jsonl,ok,7936,83344,3959,176986,4333,,,True,True
-pipeline\logs\zero_trust\20260618_124757\brain\events.jsonl,ok,6124,80002,3062,95465,4185,SIMULATION,AUTONOMOUS,True,True
-pipeline\logs\zero_trust\20260220_035901\brain\events.jsonl,ok,8084,78869,2371,203617,6195,,,True,True
-pipeline\logs\zero_trust\20260219_091623\brain\events.jsonl,ok,36288,76417,69,76548,32320,,,True,True
-pipeline\logs\zero_trust\20260618_131747\brain\events.jsonl,ok,4930,68768,3138,103367,3524,SIMULATION,AUTONOMOUS,True,True
-pipeline\logs\zero_trust\20260218_234222\brain\events.jsonl,ok,10312,46860,0,46860,4714,,,True,True
-pipeline\logs\zero_trust\20260620_071403\brain\events.jsonl,ok,1935,2392,0,2392,844,SIMULATION,AUTONOMOUS,True,True

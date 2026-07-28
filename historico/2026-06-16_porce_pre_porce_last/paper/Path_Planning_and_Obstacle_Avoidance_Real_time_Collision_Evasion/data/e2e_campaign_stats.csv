@@ -1,5 +1,0 @@
-scenario,runs,completed,duration_mean_s,duration_std_s,path_mean_m,path_std_m
-PORCE on + detections,11,11,207.1,0.3,1463.8,1.4
-PORCE off + detections,10,10,205.0,0.0,1455.5,0.2
-PORCE on + no detections,10,10,205.9,1.0,1455.8,0.2
-PORCE off + no detections,10,10,206.8,1.0,1455.7,0.2

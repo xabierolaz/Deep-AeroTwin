@@ -1,4 +1,0 @@
-set 'PlayInEditorFloating': Object: Property 'LastExecutedPlayModeType' for attribute 'LastExecutedPlayModeType' on 'LevelEditorPlaySettings' is protected and cannot be set
-set 'PIE_StandaloneWithPreview': Object: Property 'LastExecutedPlayModeType' for attribute 'LastExecutedPlayModeType' on 'LevelEditorPlaySettings' is protected and cannot be set
-set 1: Object: Property 'LastExecutedPlayModeType' for attribute 'LastExecutedPlayModeType' on 'LevelEditorPlaySettings' is protected and cannot be set
-get failed: Object: Property 'LastExecutedPlayModeType' for attribute 'LastExecutedPlayModeType' on 'LevelEditorPlaySettings' is pro

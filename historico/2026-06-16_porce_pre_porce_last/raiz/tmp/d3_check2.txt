@@ -1,4 +1,0 @@
-﻿venv exists: True
-py: D:\Deep-AeroTwin-UE57-Test\venv\Scripts\python.exe
-exit: 
-

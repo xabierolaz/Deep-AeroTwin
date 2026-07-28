@@ -1,2 +1,0 @@
-@echo off
-C:\Windows\System32\wsl.exe -e bash -lc "echo =PROC=; ps aux|grep -E 'pip|python|bash.*wsl_setup'|grep -v grep|head; echo =VENVSIZE=; du -sh ~/sdv2_venv 2>/dev/null; echo =TORCH=; ~/sdv2_venv/bin/python -c 'import torch;print(torch.__version__)' 2>/dev/null || echo torch_not_ready; echo =TAIL=; tail -4 /mnt/d/Deep-AeroTwin-UE57-Test/tmp/wsl_sdv2_setup.log" > "D:\Deep-AeroTwin-UE57-Test\tmp\wsl_ps.txt" 2>&1

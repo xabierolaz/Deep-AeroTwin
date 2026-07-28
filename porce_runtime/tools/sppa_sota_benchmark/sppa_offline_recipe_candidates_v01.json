@@ -1,0 +1,131 @@
+{
+  "contract_schema": "SPPA-OFFLINE-RECIPE-CANDIDATES-0.1",
+  "review_policy_id": "SPPA-RECIPE-REVIEW-0.1",
+  "runtime_llm_allowed": false,
+  "candidates": [
+    {
+      "id": "accepted_dump_truck_heavy_vehicle",
+      "authoring_source": "llm_assisted_candidate_reviewed_offline",
+      "input_label": "dump truck",
+      "proposed_archetype": "heavy_vehicle",
+      "expected_runtime_archetype": "heavy_vehicle",
+      "expected_decision": "accepted",
+      "sample_dims_m": [7.2, 2.5, 3.1],
+      "required_material_roles": ["vehicle_body", "vehicle_cab", "vehicle_tire"],
+      "part_recipe": [
+        {
+          "role": "cargo_body",
+          "primitive": "box",
+          "material_role": "vehicle_body",
+          "scale_policy": "length_adaptive"
+        },
+        {
+          "role": "cab",
+          "primitive": "box",
+          "material_role": "vehicle_cab",
+          "scale_policy": "bounded_role_prior"
+        },
+        {
+          "role": "wheels",
+          "primitive": "cylinder",
+          "material_role": "vehicle_tire",
+          "scale_policy": "bounded_role_prior"
+        }
+      ]
+    },
+    {
+      "id": "fallback_unlisted_obstacle",
+      "authoring_source": "human_reviewed",
+      "input_label": "unlisted obstacle",
+      "proposed_archetype": "unknown",
+      "expected_runtime_archetype": "unknown",
+      "expected_decision": "fallback_only",
+      "sample_dims_m": [1.4, 0.9, 1.1],
+      "required_material_roles": ["unknown_conservative_volume", "unknown_footprint"],
+      "part_recipe": [
+        {
+          "role": "conservative_volume",
+          "primitive": "box",
+          "material_role": "unknown_conservative_volume"
+        },
+        {
+          "role": "footprint",
+          "primitive": "box",
+          "material_role": "unknown_footprint"
+        },
+        {
+          "role": "uncertainty_marker",
+          "primitive": "cone",
+          "material_role": "uncertainty_marker"
+        }
+      ]
+    },
+    {
+      "id": "rejected_person_poster_false_semantics",
+      "authoring_source": "llm_assisted_candidate_reviewed_offline",
+      "input_label": "person poster",
+      "proposed_archetype": "person",
+      "expected_runtime_archetype": "unknown",
+      "expected_decision": "rejected",
+      "sample_dims_m": [0.6, 0.1, 1.6],
+      "required_material_roles": ["rider_clothing", "rider_skin"],
+      "part_recipe": [
+        {
+          "role": "torso",
+          "primitive": "box",
+          "material_role": "rider_clothing"
+        },
+        {
+          "role": "head",
+          "primitive": "sphere",
+          "material_role": "rider_skin"
+        }
+      ]
+    },
+    {
+      "id": "rejected_drone_unreviewed_topology",
+      "authoring_source": "llm_assisted_candidate_reviewed_offline",
+      "input_label": "delivery drone",
+      "proposed_archetype": "aerial_vehicle",
+      "expected_runtime_archetype": "unknown",
+      "expected_decision": "rejected",
+      "sample_dims_m": [0.8, 0.8, 0.25],
+      "required_material_roles": ["vehicle_body", "rotor"],
+      "part_recipe": [
+        {
+          "role": "body",
+          "primitive": "box",
+          "material_role": "vehicle_body"
+        },
+        {
+          "role": "rotors",
+          "primitive": "propeller",
+          "material_role": "rotor"
+        }
+      ]
+    },
+    {
+      "id": "rejected_runtime_llm_request",
+      "authoring_source": "llm_assisted_candidate_reviewed_offline",
+      "input_label": "construction crane",
+      "proposed_archetype": "vertical_structure",
+      "expected_runtime_archetype": "unknown",
+      "expected_decision": "rejected",
+      "runtime_llm_requested": true,
+      "sample_dims_m": [3.0, 3.0, 18.0],
+      "required_material_roles": ["vertical_structure_metal"],
+      "part_recipe": [
+        {
+          "role": "mast",
+          "primitive": "cylinder",
+          "material_role": "vertical_structure_metal"
+        },
+        {
+          "role": "boom",
+          "primitive": "box",
+          "material_role": "vertical_structure_metal"
+        }
+      ]
+    }
+  ]
+}
