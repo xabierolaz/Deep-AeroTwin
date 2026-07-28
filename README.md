@@ -94,3 +94,26 @@ github.com/xabierolaz/<repo>    git.overleaf.com/<project_id>  → PDF compilado
 - **"No PDF" en Overleaf pero compila local**: casi siempre es el compilador (fontspec/XeLaTeX) o un archivo referenciado que falta en el deploy; compara con `git status` del deploy.
 - **Credenciales**: GitHub va por `gh auth`; Overleaf usa el token git guardado en el Credential Manager de Windows (se genera en Account Settings → Git Integration; username `git`, password = token).
 - **Borrar repos GitHub**: requiere `gh auth refresh -h github.com -s delete_repo` o hacerlo en la web (Settings → Danger Zone).
+
+## Cómo subir cambios a GitHub (repo principal y papers)
+
+Hay **tres niveles de git** en este monorepo; cada uno se commitea por separado:
+
+1. **Repo principal** (raíz `Deep-AeroTwin-UE57-Test/`): código, README, `media/`, lanzadores.
+   - Flujo normal: `git add <archivos>` → `git commit -m "…"` → `git push`.
+   - El trabajo día a día va en la **rama activa** (p. ej. `pipeline-b-geoprojection-unification`); `main` es la cara pública: **el README que se ve en github.com es el de `main`**. Para llevar algo a main sin mezclar el resto de la rama: cherry-pick del commit concreto sobre `origin/main` (se puede hacer con un worktree temporal) y push a `main`.
+   - **Archivos grandes van por Git LFS** (ya configurado en `.gitattributes`): `*.mp4`, `*.uasset`, `*.umap`, `*.ubulk`, `*.uexp`. No hace falta hacer nada especial: `git add` los mete por LFS automáticamente. Vídeos demos y capturas finales van en `media/`; artefactos intermedios (frames sueltos, scripts de prueba, capturas de diagnóstico) **no se commitean** — quedan en local, `_archive/` o ignorados.
+2. **Repos de papers** (`papers/<paper>/`): cada uno es un repo git **independiente** (su propio historial, sin remoto propio). Se edita ahí (fuente canónica) y se hace commit local normal. La publicación a GitHub/Overleaf **no** se hace con push desde aquí, sino con el sistema de sync de abajo.
+3. **Deploy de papers** (`papers/overleaf_sync/<paper>/`): lo gestiona solo `sync.sh` (auto-sync o `.bat`). Nunca editar a mano ni commitear ahí.
+
+**Regla crítica al añadir figuras a un paper**: `sync.sh` copia una **lista fija** de figuras en cada `regen_<paper>()`. Si añades una figura nueva a `papers/<paper>/figures/` y la referencias en el `.tex`, **añade también el `cp` correspondiente en `papers/overleaf_sync/sync.sh`**; si no, la compilación local falla ("file not found") y el sync aborta sin subir nada (es a propósito: nunca se sube algo que no compila).
+
+**Resumen del flujo completo de un cambio de paper**:
+
+```
+1. Editar papers/<paper>/… (tex, figuras)  →  2. commit local en ese repo
+3. Si hay figura nueva: añadir cp en sync.sh
+4. Doble clic SYNC_<PAPER>.bat (o dejar que actúe el auto-sync en ~20 s)
+   → regenera deploy → compila con latexmk (MiKTeX) → pull --rebase → push GitHub + Overleaf
+5. Verificar: PDF en Overleaf y repo github.com/xabierolaz/<repo_paper> actualizado
+```
