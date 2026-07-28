@@ -6,7 +6,9 @@ Monorepo del proyecto Deep-AeroTwin / PORCE: gemelo digital UAV con Unreal Engin
 
 Vídeo comparativo del pipeline de telemetría semántica (Pipeline B): a la izquierda el vídeo real de a bordo con las detecciones YOLO de torres; a la derecha el gemelo en Unreal Engine 5 / Cesium, donde el actor proxy aparece en la pose ENU georreferenciada en el momento en que la detección se confirma (t≈1,3 s y t≈16 s) y persiste el resto del vuelo.
 
-▶️ [media/side_by_side_twin.mp4](media/side_by_side_twin.mp4) (24 s, 2560×960)
+![Demo side-by-side: vuelo real con detecciones YOLO (izquierda) vs gemelo digital Unreal/Cesium con spawn de proxies (derecha)](media/side_by_side_twin_preview.gif)
+
+▶️ [Ver el vídeo completo en alta calidad (media/side_by_side_twin.mp4, 24 s, 2560×960)](media/side_by_side_twin.mp4)
 
 ## Mapa del repositorio
 
